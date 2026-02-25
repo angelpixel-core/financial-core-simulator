@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "securerandom"
+
 module FCS
   module Application
     class Runner
@@ -23,7 +25,7 @@ module FCS
         @cli = cli
       end
 
-      def run!(input_path:, output_dir:, fee_enabled:)
+      def run!(input_path:, output_dir:, fee_enabled:, explain: false, verbose: false)
         input = @parser.parse_file(input_path)
 
         # CLI flag tiene precedencia (y además deja el input normalizado)
@@ -39,16 +41,28 @@ module FCS
         input_hash = FCS::Hashing::SHA256.hex(canonical)
 
         schema_version = input.fetch("schemaVersion")
-        valuation_ts =
-          input.dig("priceSnapshot", "valuationTimestamp") # opcional; si falta, reporter usa Time.now.utc
+        valuation_ts = input.dig("priceSnapshot", "valuationTimestamp")
 
-        result = @simulate.call(input)
+        run_id = SecureRandom.uuid
+
+        result = @simulate.call(input, explain: explain)
+
+        payload = {
+          "engineVersion" => FCS::VERSION,
+          "schemaVersion" => schema_version,
+          "inputHash" => input_hash,
+          "runId" => run_id,
+          "valuationTimestamp" => valuation_ts,
+          "accounts" => result.fetch("accounts"),
+          "global" => result.fetch("global")
+        }
 
         json_path = @reporter.write!(
           output_dir: output_dir,
           engine_version: FCS::VERSION,
           schema_version: schema_version,
           input_hash: input_hash,
+          run_id: run_id,
           valuation_timestamp: valuation_ts,
           accounts: result.fetch("accounts"),
           global: result.fetch("global")
@@ -56,15 +70,8 @@ module FCS
 
         @positions_csv.write!(output_dir: output_dir, accounts: result.fetch("accounts"))
         @pnl_csv.write!(output_dir: output_dir, accounts: result.fetch("accounts"))
-        @cli.print(
-          "engineVersion" => FCS::VERSION,
-          "schemaVersion" => schema_version,
-          "inputHash" => input_hash,
-          "runId" => JSON.parse(File.read(json_path)).fetch("runId"),
-          "valuationTimestamp" => valuation_ts,
-          "accounts" => result.fetch("accounts"),
-          "global" => result.fetch("global")
-        )
+
+        @cli.print(payload) if verbose
 
         json_path
       end

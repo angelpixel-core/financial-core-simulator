@@ -8,14 +8,14 @@ require "fileutils"
 module FCS
   module Reporting
     class JsonReport
-      def write!(output_dir:, engine_version:, schema_version:, input_hash:, valuation_timestamp: Time.now.utc.iso8601, accounts: [], global: {})
+      def write!(output_dir:, engine_version:, schema_version:, input_hash:, run_id:, valuation_timestamp: Time.now.utc.iso8601, accounts: [], global: {})
         FileUtils.mkdir_p(output_dir)
 
         payload = {
           "engineVersion" => engine_version,
           "schemaVersion" => schema_version,
           "inputHash" => input_hash,
-          "runId" => SecureRandom.uuid,
+          "runId" => run_id,
           "valuationTimestamp" => valuation_timestamp,
           "accounts" => accounts,
           "global" => global

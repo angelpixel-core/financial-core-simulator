@@ -3,7 +3,7 @@
 module FCS
   module Application
     class Simulate
-      def call(input)
+      def call(input, explain: false)
         fx = FCS::Engine::FXConverter.new(price_snapshot: input.fetch("priceSnapshot"))
 
         fee_enabled = input.dig("feeModel", "enabled")
@@ -12,7 +12,7 @@ module FCS
 
         valuation = FCS::Engine::ValuationEngine.new(price_snapshot: input.fetch("priceSnapshot"))
 
-        accounts = build_accounts(input, ledger.state, valuation, fx)
+        accounts = build_accounts(input, ledger.state, valuation, fx, explain: explain)
         global = consolidate_global(accounts, fx)
 
         { "accounts" => accounts, "global" => global }
@@ -20,7 +20,7 @@ module FCS
 
       private
 
-      def build_accounts(input, state, valuation, fx)
+      def build_accounts(input, state, valuation, fx, explain:)
         account_ids = input.fetch("accounts").map { |a| a.fetch("accountId") }
         market_ids = input.fetch("markets").map { |m| m.fetch("marketId") }
 
@@ -34,7 +34,7 @@ module FCS
             realized_net = pos.realized_net_quote
             total = realized_net + unreal
 
-            {
+            payload = {
               "marketId" => market_id,
               "quantity" => pos.qty.to_s,
               "avgCost" => pos.avg_cost.to_s,
@@ -44,6 +44,21 @@ module FCS
               "unrealizedPnLQuote" => unreal.to_s,
               "totalPnLQuote" => total.to_s
             }
+
+            if explain
+              snapshot_price = valuation.snapshot_price_for(market_id)
+              payload["explain"] = {
+                "snapshotPrice" => snapshot_price.to_s,
+                "avgCost" => pos.avg_cost.to_s,
+                "qty" => pos.qty.to_s,
+                "realizedPnLQuote" => realized.to_s,
+                "feesQuote" => fees.to_s,
+                "unrealizedPnLQuote" => unreal.to_s,
+                "totalPnLQuote" => total.to_s
+              }
+            end
+
+            payload
           end
 
           totals = sum_market_fields(markets, fx)

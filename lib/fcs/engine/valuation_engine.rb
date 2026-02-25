@@ -12,6 +12,10 @@ module FCS
         (price - position.avg_cost) * position.qty
       end
 
+      def snapshot_price_for(market_id)
+        @prices.fetch(market_id)
+      end
+
       private
 
       def build_price_map(prices_arr)
