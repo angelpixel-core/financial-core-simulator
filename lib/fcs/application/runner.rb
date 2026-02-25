@@ -7,12 +7,18 @@ module FCS
         parser: FCS::Ingestion::Parser.new,
         validator: FCS::Ingestion::Validator.new,
         sorter: FCS::Engine::TradeSorter.new,
-        reporter: FCS::Reporting::JsonReport.new
+        simulate: FCS::Application::Simulate.new,
+        reporter: FCS::Reporting::JsonReport.new,
+        positions_csv: FCS::Reporting::CsvPositions.new,
+        pnl_csv: FCS::Reporting::CsvPnL.new
       )
         @parser = parser
         @validator = validator
         @sorter = sorter
+        @simulate = simulate
         @reporter = reporter
+        @positions_csv = positions_csv
+        @pnl_csv = pnl_csv
       end
 
       def run!(input_path:, output_dir:, fee_enabled:)
@@ -34,9 +40,9 @@ module FCS
         valuation_ts =
           input.dig("priceSnapshot", "valuationTimestamp") # opcional; si falta, reporter usa Time.now.utc
 
-        result = FCS::Application::Simulate.new.call(input)
+        result = @simulate.call(input)
 
-        @reporter.write!(
+        json_path = @reporter.write!(
           output_dir: output_dir,
           engine_version: FCS::VERSION,
           schema_version: schema_version,
@@ -45,6 +51,11 @@ module FCS
           accounts: result.fetch("accounts"),
           global: result.fetch("global")
         )
+
+        @positions_csv.write!(output_dir: output_dir, accounts: result.fetch("accounts"))
+        @pnl_csv.write!(output_dir: output_dir, accounts: result.fetch("accounts"))
+
+        json_path
       end
     end
   end

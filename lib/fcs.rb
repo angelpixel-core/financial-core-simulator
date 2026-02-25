@@ -7,7 +7,8 @@ loader.inflector.inflect(
   "fcs"            => "FCS",
   "canonical_json" => "CanonicalJSON",
   "sha256"         => "SHA256",
-  "fx_converter"   => "FXConverter"
+  "fx_converter"   => "FXConverter",
+  "csv_pnl"        => "CsvPnL"
 )
 loader.setup
 

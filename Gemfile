@@ -6,3 +6,5 @@ gem "rspec"
 gem "zeitwerk"
 
 gem "bigdecimal", "~> 4.0"
+
+gem "csv", "~> 3.3"
