@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative "../lib/fcs"
+require "optparse"
+
+options = {
+  input: nil,
+  output_dir: "output",
+  fee_enabled: true
+}
+
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: fcs run --input path/to/input.json [--output-dir output] [--no-fee]"
+
+  opts.on("--input PATH", "Path to input JSON (required)") { |v| options[:input] = v }
+  opts.on("--output-dir DIR", "Output directory (default: output)") { |v| options[:output_dir] = v }
+  opts.on("--no-fee", "Disable fee model (ignore fee fields)") { options[:fee_enabled] = false }
+  opts.on("-v", "--version", "Print version") { puts FCS::VERSION; exit(0) }
+  opts.on("-h", "--help", "Print help") { puts opts; exit(0) }
+end
+
+subcommand = ARGV.shift
+if subcommand != "run"
+  puts parser
+  exit(1)
+end
+
+parser.parse!(ARGV)
+
+if options[:input].nil? || options[:input].strip.empty?
+  warn "ERR: --input is required"
+  puts parser
+  exit(2)
+end
+
+puts "FCS #{FCS::VERSION}"
+puts "Input: #{options[:input]}"
+puts "Output: #{options[:output_dir]}"
+puts "Fee enabled: #{options[:fee_enabled]}"
+puts "(stub) next: parse + validate + run engine + write reports"
+
