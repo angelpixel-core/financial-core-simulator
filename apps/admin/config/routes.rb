@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  mount Avo::Engine, at: Avo.configuration.root_path
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -11,4 +12,8 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+
+  get "/runs/:id/result", to: "run_artifacts#result", as: :run_result
+  get "/runs/:id/positions", to: "run_artifacts#positions", as: :run_positions
+  get "/runs/:id/pnl", to: "run_artifacts#pnl", as: :run_pnl
 end

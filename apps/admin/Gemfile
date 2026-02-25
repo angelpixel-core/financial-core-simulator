@@ -62,3 +62,5 @@ group :development do
 end
 
 gem "financial-core-simulator", path: "../..", require: "fcs"
+
+gem "avo", "~> 3.29"
