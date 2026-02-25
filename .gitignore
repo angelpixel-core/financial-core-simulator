@@ -1,2 +1,6 @@
 /apps/admin/config/master.key
 /apps/admin/config/credentials/*.key
+
+# FCS runtime artifacts
+output/
+apps/admin/storage/
