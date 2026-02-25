@@ -34,7 +34,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
     pos = engine.state.position_for(account_id: "acc-1", market_id: "ETH-USD")
 
     expect(pos.qty.to_s).to eq("3.0")
-    # avg = (2*100 + 1*160)/3 = 120
+    # avg = (2*100 + 1*160) / 3 = 120
     expect(pos.avg_cost.to_s).to eq("120.0")
   end
 end

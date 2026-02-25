@@ -9,14 +9,17 @@ module FCS
 
       attr_reader :state
 
-      def apply_trade!(t)
-        side = t.fetch("side")
-
-        case side
+      def apply_trade!(trade)
+        case trade.fetch("side")
         when "BUY"
-          apply_buy!(t)
+          apply_buy!(trade)
         else
-          raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, "Unsupported side in V1 step", details: { side: side })
+          # en S3.2 vamos a agregar SELL
+          raise FCS::Error.new(
+            FCS::Errors::ERR_VALIDATION,
+            "Unsupported side (expected BUY in this step)",
+            details: { side: trade["side"], tradeId: trade["tradeId"] }
+          )
         end
       end
 
