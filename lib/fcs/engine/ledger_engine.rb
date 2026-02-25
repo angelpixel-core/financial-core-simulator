@@ -13,11 +13,12 @@ module FCS
         case trade.fetch("side")
         when "BUY"
           apply_buy!(trade)
+        when "SELL"
+          apply_sell!(trade)
         else
-          # en S3.2 vamos a agregar SELL
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,
-            "Unsupported side (expected BUY in this step)",
+            "Unsupported side",
             details: { side: trade["side"], tradeId: trade["tradeId"] }
           )
         end
@@ -27,11 +28,16 @@ module FCS
 
       def apply_buy!(t)
         pos = @state.position_for(account_id: t.fetch("accountId"), market_id: t.fetch("marketId"))
-
         qty = FCS::Types::Decimal18.from_string(t.fetch("quantityBase"))
         price = FCS::Types::Decimal18.from_string(t.fetch("priceQuotePerBase"))
-
         pos.apply_buy!(buy_qty: qty, buy_price: price)
+      end
+
+      def apply_sell!(t)
+        pos = @state.position_for(account_id: t.fetch("accountId"), market_id: t.fetch("marketId"))
+        qty = FCS::Types::Decimal18.from_string(t.fetch("quantityBase"))
+        price = FCS::Types::Decimal18.from_string(t.fetch("priceQuotePerBase"))
+        pos.apply_sell!(sell_qty: qty, sell_price: price)
       end
     end
   end

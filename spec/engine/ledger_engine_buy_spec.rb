@@ -3,11 +3,80 @@
 require_relative "../../lib/fcs"
 
 RSpec.describe FCS::Engine::LedgerEngine do
-  it "applies BUY trades and updates avg cost (average cost method)" do
+  it "applies SELL and accumulates realizedPnL using avg cost" do
     engine = described_class.new
 
-    t1 = {
-      "tradeId" => "t1",
+    buy = {
+      "tradeId" => "b1",
+      "accountId" => "acc-1",
+      "marketId" => "ETH-USD",
+      "timestamp" => 1,
+      "seq" => 1,
+      "side" => "BUY",
+      "quantityBase" => "3",
+      "priceQuotePerBase" => "100"
+    }
+
+    sell = {
+      "tradeId" => "s1",
+      "accountId" => "acc-1",
+      "marketId" => "ETH-USD",
+      "timestamp" => 2,
+      "seq" => 1,
+      "side" => "SELL",
+      "quantityBase" => "2",
+      "priceQuotePerBase" => "130"
+    }
+
+    engine.apply_trade!(buy)
+    engine.apply_trade!(sell)
+
+    pos = engine.state.position_for(account_id: "acc-1", market_id: "ETH-USD")
+
+    expect(pos.qty.to_s).to eq("1.0")
+    expect(pos.avg_cost.to_s).to eq("100.0")
+    # realized = (130 - 100) * 2 = 60
+    expect(pos.realized_pnl_quote.to_s).to eq("60.0")
+  end
+
+  it "rejects SELL that would make position negative" do
+    engine = described_class.new
+
+    buy = {
+      "tradeId" => "b1",
+      "accountId" => "acc-1",
+      "marketId" => "ETH-USD",
+      "timestamp" => 1,
+      "seq" => 1,
+      "side" => "BUY",
+      "quantityBase" => "1",
+      "priceQuotePerBase" => "100"
+    }
+
+    sell = {
+      "tradeId" => "s1",
+      "accountId" => "acc-1",
+      "marketId" => "ETH-USD",
+      "timestamp" => 2,
+      "seq" => 1,
+      "side" => "SELL",
+      "quantityBase" => "2",
+      "priceQuotePerBase" => "110"
+    }
+
+    engine.apply_trade!(buy)
+
+    expect { engine.apply_trade!(sell) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_POSITION_NEGATIVE)
+      }
+  end
+
+  it "resets avg_cost to 0 when position is fully closed" do
+    engine = described_class.new
+
+    buy = {
+      "tradeId" => "b1",
       "accountId" => "acc-1",
       "marketId" => "ETH-USD",
       "timestamp" => 1,
@@ -17,24 +86,22 @@ RSpec.describe FCS::Engine::LedgerEngine do
       "priceQuotePerBase" => "100"
     }
 
-    t2 = {
-      "tradeId" => "t2",
+    sell = {
+      "tradeId" => "s1",
       "accountId" => "acc-1",
       "marketId" => "ETH-USD",
       "timestamp" => 2,
       "seq" => 1,
-      "side" => "BUY",
-      "quantityBase" => "1",
-      "priceQuotePerBase" => "160"
+      "side" => "SELL",
+      "quantityBase" => "2",
+      "priceQuotePerBase" => "90"
     }
 
-    engine.apply_trade!(t1)
-    engine.apply_trade!(t2)
+    engine.apply_trade!(buy)
+    engine.apply_trade!(sell)
 
     pos = engine.state.position_for(account_id: "acc-1", market_id: "ETH-USD")
-
-    expect(pos.qty.to_s).to eq("3.0")
-    # avg = (2*100 + 1*160) / 3 = 120
-    expect(pos.avg_cost.to_s).to eq("120.0")
+    expect(pos.qty.to_s).to eq("0.0")
+    expect(pos.avg_cost.to_s).to eq("0.0")
   end
 end
