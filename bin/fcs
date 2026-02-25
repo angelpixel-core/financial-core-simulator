@@ -3,6 +3,7 @@
 
 require_relative "../lib/fcs"
 require "optparse"
+require "benchmark"
 
 subcommand = ARGV.shift
 
@@ -45,13 +46,52 @@ when "run"
   )
 
   puts "OK: wrote #{path}"
+
+when "bench"
+  bench = {
+    trades: 100_000,
+    accounts: 10,
+    markets: 5
+  }
+
+  parser = OptionParser.new do |opts|
+    opts.banner = "Usage: fcs bench [--trades N] [--accounts N] [--markets N]"
+
+    opts.on("--trades N", Integer, "Number of trades (default: 100000)") { |v| bench[:trades] = v }
+    opts.on("--accounts N", Integer, "Number of accounts (default: 10)") { |v| bench[:accounts] = v }
+    opts.on("--markets N", Integer, "Number of markets (default: 5)") { |v| bench[:markets] = v }
+    opts.on("-v", "--version", "Print version") { puts FCS::VERSION; exit(0) }
+    opts.on("-h", "--help", "Print help") { puts opts; exit(0) }
+  end
+
+  parser.parse!(ARGV)
+
+  input = FCS::Benchmarking::InputGenerator.new.generate(
+    trades: bench[:trades],
+    accounts: bench[:accounts],
+    markets: bench[:markets]
+  )
+
+  simulate = FCS::Application::Simulate.new
+
+  elapsed = Benchmark.realtime do
+    simulate.call(input)
+  end
+
+  puts "Bench:"
+  puts "  trades=#{bench[:trades]} accounts=#{bench[:accounts]} markets=#{bench[:markets]}"
+  puts format("  elapsed=%.3fs", elapsed)
+
 else
   puts <<~TXT
     Usage:
-      fcs run --input path/to/input.json [--output-dir output] [--no-fee]
+      fcs run   --input path/to/input.json [--output-dir output] [--no-fee]
+      fcs bench [--trades N] [--accounts N] [--markets N]
 
     Examples:
       fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output
+      fcs bench
+      fcs bench --trades 200000 --accounts 20 --markets 10
   TXT
   exit(1)
 end
