@@ -10,7 +10,8 @@ module FCS
         simulate: FCS::Application::Simulate.new,
         reporter: FCS::Reporting::JsonReport.new,
         positions_csv: FCS::Reporting::CsvPositions.new,
-        pnl_csv: FCS::Reporting::CsvPnL.new
+        pnl_csv: FCS::Reporting::CsvPnL.new,
+        cli: FCS::Reporting::CliSummary.new
       )
         @parser = parser
         @validator = validator
@@ -19,6 +20,7 @@ module FCS
         @reporter = reporter
         @positions_csv = positions_csv
         @pnl_csv = pnl_csv
+        @cli = cli
       end
 
       def run!(input_path:, output_dir:, fee_enabled:)
@@ -54,6 +56,15 @@ module FCS
 
         @positions_csv.write!(output_dir: output_dir, accounts: result.fetch("accounts"))
         @pnl_csv.write!(output_dir: output_dir, accounts: result.fetch("accounts"))
+        @cli.print(
+          "engineVersion" => FCS::VERSION,
+          "schemaVersion" => schema_version,
+          "inputHash" => input_hash,
+          "runId" => JSON.parse(File.read(json_path)).fetch("runId"),
+          "valuationTimestamp" => valuation_ts,
+          "accounts" => result.fetch("accounts"),
+          "global" => result.fetch("global")
+        )
 
         json_path
       end
