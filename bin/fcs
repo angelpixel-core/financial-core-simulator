@@ -38,5 +38,10 @@ puts "FCS #{FCS::VERSION}"
 puts "Input: #{options[:input]}"
 puts "Output: #{options[:output_dir]}"
 puts "Fee enabled: #{options[:fee_enabled]}"
-puts "(stub) next: parse + validate + run engine + write reports"
+
+# puts "(stub) next: parse + validate + run engine + write reports"
+runner = FCS::Application::Runner.new
+path = runner.run!(input_path: options[:input], output_dir: options[:output_dir], fee_enabled: options[:fee_enabled])
+
+puts "OK: wrote #{path}"
 
