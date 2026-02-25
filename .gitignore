@@ -1,1 +1,2 @@
-output
+/apps/admin/config/master.key
+/apps/admin/config/credentials/*.key
