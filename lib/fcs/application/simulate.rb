@@ -4,22 +4,23 @@ module FCS
   module Application
     class Simulate
       def call(input)
+        fx = FCS::Engine::FXConverter.new(price_snapshot: input.fetch("priceSnapshot"))
+
         fee_enabled = input.dig("feeModel", "enabled")
         ledger = FCS::Engine::LedgerEngine.new(fee_enabled: fee_enabled)
         input.fetch("trades").each { |t| ledger.apply_trade!(t) }
 
         valuation = FCS::Engine::ValuationEngine.new(price_snapshot: input.fetch("priceSnapshot"))
 
-        # Build report model (plain hashes) sin acoplar Reporting a Engine
-        accounts = build_accounts(input, ledger.state, valuation)
-        global = consolidate_global(accounts)
+        accounts = build_accounts(input, ledger.state, valuation, fx)
+        global = consolidate_global(accounts, fx)
 
         { "accounts" => accounts, "global" => global }
       end
 
       private
 
-      def build_accounts(input, state, valuation)
+      def build_accounts(input, state, valuation, fx)
         account_ids = input.fetch("accounts").map { |a| a.fetch("accountId") }
         market_ids = input.fetch("markets").map { |m| m.fetch("marketId") }
 
@@ -45,7 +46,7 @@ module FCS
             }
           end
 
-          totals = sum_market_fields(markets)
+          totals = sum_market_fields(markets, fx)
 
           {
             "accountId" => account_id,
@@ -55,7 +56,7 @@ module FCS
         end
       end
 
-      def sum_market_fields(markets)
+      def sum_market_fields(markets, fx)
         z = FCS::Types::Decimal18.new(0)
         realized = z
         fees = z
@@ -77,11 +78,11 @@ module FCS
           "realizedNetPnLQuote" => realized_net.to_s,
           "unrealizedPnLQuote" => unreal.to_s,
           "totalPnLQuote" => total.to_s,
-          "totalPnLUsd" => nil # S4.2
+          "totalPnLUsd" => fx.enabled? ? fx.quote_to_usd(total).to_s : nil
         }
       end
 
-      def consolidate_global(accounts)
+      def consolidate_global(accounts, fx)
         z = FCS::Types::Decimal18.new(0)
         realized = z
         fees = z
@@ -104,7 +105,7 @@ module FCS
           "realizedNetPnLQuote" => realized_net.to_s,
           "unrealizedPnLQuote" => unreal.to_s,
           "totalPnLQuote" => total.to_s,
-          "totalPnLUsd" => nil # S4.2
+          "totalPnLUsd" => fx.enabled? ? fx.quote_to_usd(total).to_s : nil
         }
       end
     end

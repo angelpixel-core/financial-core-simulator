@@ -6,7 +6,8 @@ loader = Zeitwerk::Loader.for_gem
 loader.inflector.inflect(
   "fcs"            => "FCS",
   "canonical_json" => "CanonicalJSON",
-  "sha256"         => "SHA256"
+  "sha256"         => "SHA256",
+  "fx_converter"   => "FXConverter"
 )
 loader.setup
 
