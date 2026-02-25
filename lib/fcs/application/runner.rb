@@ -34,12 +34,16 @@ module FCS
         valuation_ts =
           input.dig("priceSnapshot", "valuationTimestamp") # opcional; si falta, reporter usa Time.now.utc
 
+        result = FCS::Application::Simulate.new.call(input)
+
         @reporter.write!(
           output_dir: output_dir,
           engine_version: FCS::VERSION,
           schema_version: schema_version,
           input_hash: input_hash,
-          valuation_timestamp: valuation_ts
+          valuation_timestamp: valuation_ts,
+          accounts: result.fetch("accounts"),
+          global: result.fetch("global")
         )
       end
     end

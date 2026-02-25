@@ -8,7 +8,7 @@ require "fileutils"
 module FCS
   module Reporting
     class JsonReport
-      def write!(output_dir:, engine_version:, schema_version:, input_hash:, valuation_timestamp: Time.now.utc.iso8601)
+      def write!(output_dir:, engine_version:, schema_version:, input_hash:, valuation_timestamp: Time.now.utc.iso8601, accounts: [], global: {})
         FileUtils.mkdir_p(output_dir)
 
         payload = {
@@ -17,12 +17,8 @@ module FCS
           "inputHash" => input_hash,
           "runId" => SecureRandom.uuid,
           "valuationTimestamp" => valuation_timestamp,
-          # Stub: el engine todavía no corre. Dejamos lugar ya con estructura.
-          "accounts" => [],
-          "global" => {
-            "pnlQuote" => "0",
-            "pnlUsd" => nil
-          }
+          "accounts" => accounts,
+          "global" => global
         }
 
         path = File.join(output_dir, "result.json")

@@ -3,17 +3,27 @@
 module FCS
   module Engine
     class Position
-      attr_reader :qty, :avg_cost, :realized_pnl_quote
+      attr_reader :qty, :avg_cost, :realized_pnl_quote, :fees_quote
 
-      def initialize(qty:, avg_cost:, realized_pnl_quote:)
+      def initialize(qty:, avg_cost:, realized_pnl_quote:, fees_quote:)
         @qty = qty
         @avg_cost = avg_cost
         @realized_pnl_quote = realized_pnl_quote
+        @fees_quote = fees_quote
       end
 
       def self.empty
         z = FCS::Types::Decimal18.new(0)
-        new(qty: z, avg_cost: z, realized_pnl_quote: z)
+        new(qty: z, avg_cost: z, realized_pnl_quote: z, fees_quote: z)
+      end
+
+      def apply_fee!(fee_quote)
+        @fees_quote = @fees_quote + fee_quote
+        self
+      end
+
+      def realized_net_quote
+        @realized_pnl_quote - @fees_quote
       end
 
       def apply_buy!(buy_qty:, buy_price:)
@@ -31,30 +41,22 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_POSITION_NEGATIVE,
             "SELL would make position negative",
-            details: {
-              qty: @qty.to_s,
-              sellQty: sell_qty.to_s
-            }
+            details: { qty: @qty.to_s, sellQty: sell_qty.to_s }
           )
         end
 
-        # realized += (sell_price - avg_cost) * sell_qty
         delta = (sell_price - @avg_cost) * sell_qty
         @realized_pnl_quote = @realized_pnl_quote + delta
 
         @qty = @qty - sell_qty
-
-        # si queda en 0, avg_cost = 0 (PRD)
-        if @qty.zero?
-          @avg_cost = FCS::Types::Decimal18.new(0)
-        end
+        @avg_cost = FCS::Types::Decimal18.new(0) if @qty.zero?
 
         self
       end
 
       private
 
-      attr_writer :qty, :avg_cost, :realized_pnl_quote
+      attr_writer :qty, :avg_cost, :realized_pnl_quote, :fees_quote
     end
   end
 end
