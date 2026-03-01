@@ -24,10 +24,9 @@ class Avo::Resources::Run < Avo::BaseResource
     field :error_message, as: :textarea
 
     panel "Artifacts viewer" do
-      # Estos 3 son métodos del modelo Run, no dependen de blocks ni de Avo context.
-      field :result_json_path, as: :text, name: "result.json"
-      field :positions_csv_path, as: :text, name: "positions.csv"
-      field :pnl_csv_path, as: :text, name: "pnl.csv"
+      field :result_json_link, as: :text, as_html: true, name: "result.json"
+      field :positions_csv_link, as: :text, as_html: true, name: "positions.csv"
+      field :pnl_csv_link, as: :text, as_html: true, name: "pnl.csv"
     end
   end
 
