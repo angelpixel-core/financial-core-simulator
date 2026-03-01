@@ -1,5 +1,11 @@
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe Run, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  describe "defaults" do
+    it "sets queued status on create" do
+      run = described_class.create!(input_json: { "schemaVersion" => "1.0" })
+
+      expect(run).to be_queued
+    end
+  end
 end
