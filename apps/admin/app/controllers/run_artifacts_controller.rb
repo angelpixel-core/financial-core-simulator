@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class RunArtifactsController < ApplicationController
+  include TokenAuthorization
+
   before_action :load_run
   before_action :authorize_artifact_access!
 
@@ -18,12 +20,16 @@ class RunArtifactsController < ApplicationController
     path = artifact_path_for(:positions_csv_path)
     return render plain: "Artifact not found", status: :not_found if path.nil?
 
+    return render_csv_preview(path) if preview_requested?
+
     send_file path, type: "text/csv", disposition: "attachment", filename: "positions.csv"
   end
 
   def pnl
     path = artifact_path_for(:pnl_csv_path)
     return render plain: "Artifact not found", status: :not_found if path.nil?
+
+    return render_csv_preview(path) if preview_requested?
 
     send_file path, type: "text/csv", disposition: "attachment", filename: "pnl.csv"
   end
@@ -35,26 +41,18 @@ class RunArtifactsController < ApplicationController
   end
 
   def authorize_artifact_access!
-    return if @run.succeeded? && token_authorized?
+    return if @run.succeeded? && token_authorized_for?("ADMIN_ARTIFACTS_TOKEN")
 
     render plain: "Forbidden", status: :forbidden
   end
 
-  def token_authorized?
-    expected_token = ENV["ADMIN_ARTIFACTS_TOKEN"].to_s
-    return true if expected_token.empty?
-
-    provided_token = bearer_token.presence || request.headers["X-Admin-Artifact-Token"].to_s
-    ActiveSupport::SecurityUtils.secure_compare(provided_token, expected_token)
-  rescue ArgumentError
-    false
+  def preview_requested?
+    params[:preview].to_s == "1"
   end
 
-  def bearer_token
-    auth_header = request.headers["Authorization"].to_s
-    return nil unless auth_header.start_with?("Bearer ")
-
-    auth_header.delete_prefix("Bearer ")
+  def render_csv_preview(path)
+    rows = File.readlines(path, chomp: true).first(120)
+    render plain: rows.join("\n"), content_type: "text/plain"
   end
 
   def artifact_path_for(attribute)

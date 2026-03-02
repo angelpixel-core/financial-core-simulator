@@ -93,4 +93,48 @@ RSpec.describe "Run artifacts", type: :request do
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
+
+  it "serves artifact when configured token is provided via X-Admin-Artifact-Token" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
+
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-token-header.json")
+    File.write(path, JSON.generate({ ok: true }))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/result", headers: { "X-Admin-Artifact-Token" => "secret-token" }
+
+    expect(response).to have_http_status(:ok)
+    expect(JSON.parse(response.body)).to eq({ "ok" => true })
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
+  it "renders CSV preview inline when preview=1 is passed" do
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("positions.csv")
+    File.write(path, "account,qty\nacc-1,10\n")
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "positions_csv_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/positions", params: { preview: 1 }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.media_type).to eq("text/plain")
+    expect(response.body).to include("account,qty")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
 end

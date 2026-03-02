@@ -30,10 +30,22 @@ class Avo::Resources::Run < Avo::BaseResource
         view_context.link_to("View result.json", view_context.main_app.run_result_path(id: record.id), target: "_blank", rel: "noopener")
       end
 
+      field :positions_preview, as: :text, as_html: true, only_on: :show, name: "positions preview" do
+        next "Unavailable" if record.positions_csv_path.blank?
+
+        view_context.link_to("Preview positions.csv", view_context.main_app.run_positions_path(id: record.id, preview: 1), target: "_blank", rel: "noopener")
+      end
+
       field :positions_download, as: :text, as_html: true, only_on: :show, name: "positions.csv" do
         next "Unavailable" if record.positions_csv_path.blank?
 
         view_context.link_to("Download positions.csv", view_context.main_app.run_positions_path(id: record.id), target: "_blank", rel: "noopener")
+      end
+
+      field :pnl_preview, as: :text, as_html: true, only_on: :show, name: "pnl preview" do
+        next "Unavailable" if record.pnl_csv_path.blank?
+
+        view_context.link_to("Preview pnl.csv", view_context.main_app.run_pnl_path(id: record.id, preview: 1), target: "_blank", rel: "noopener")
       end
 
       field :pnl_download, as: :text, as_html: true, only_on: :show, name: "pnl.csv" do
@@ -46,5 +58,6 @@ class Avo::Resources::Run < Avo::BaseResource
 
   def filters
     filter Avo::Filters::RunStatus
+    filter Avo::Filters::RunInputHash
   end
 end

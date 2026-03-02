@@ -16,4 +16,22 @@ RSpec.describe "Admin overview", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Top accounts (live)")
   end
+
+  it "returns forbidden when ADMIN_UI_TOKEN is set and token is missing" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/overview"
+
+    expect(response).to have_http_status(:forbidden)
+  end
+
+  it "allows access when ADMIN_UI_TOKEN is provided" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/overview", headers: { "X-Admin-Token" => "ui-secret" }
+
+    expect(response).to have_http_status(:ok)
+  end
 end

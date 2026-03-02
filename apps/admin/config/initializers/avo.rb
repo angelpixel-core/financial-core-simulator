@@ -19,8 +19,18 @@ Avo.configure do |config|
 
   ## == Authentication ==
   # config.current_user_method = :current_user
-  # config.authenticate_with do
-  # end
+  config.authenticate_with do
+    expected_token = ENV["ADMIN_UI_TOKEN"].to_s
+    next if expected_token.empty?
+
+    auth_header = request.headers["Authorization"].to_s
+    bearer = auth_header.start_with?("Bearer ") ? auth_header.delete_prefix("Bearer ") : nil
+    provided_token = bearer.presence || request.headers["X-Admin-Token"].to_s
+
+    unless provided_token.present? && ActiveSupport::SecurityUtils.secure_compare(provided_token, expected_token)
+      head :forbidden
+    end
+  end
 
   ## == Authorization ==
   # config.is_admin_method = :is_admin
