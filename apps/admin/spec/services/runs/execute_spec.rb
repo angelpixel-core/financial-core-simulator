@@ -68,9 +68,24 @@ RSpec.describe Runs::Execute do
 
       run.reload
       expect(run).to be_failed
-      expect(run.error_code).to eq("StandardError")
+      expect(run.error_code).to eq("ERR_EXECUTION_FAILURE")
       expect(run.error_message).to eq("boom")
       expect(run.duration_ms).not_to be_nil
+    end
+
+    it "maps FCS::Error code when runner raises domain error" do
+      run = Run.create!(input_json: input_json)
+
+      runner = instance_double(FCS::Application::Runner)
+      allow(FCS::Application::Runner).to receive(:new).and_return(runner)
+      allow(runner).to receive(:run!).and_raise(FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "invalid input"))
+
+      expect { service.call(run) }.to raise_error(FCS::Error)
+
+      run.reload
+      expect(run).to be_failed
+      expect(run.error_code).to eq(FCS::Errors::ERR_INVALID_INPUT)
+      expect(run.error_message).to eq("invalid input")
     end
   end
 end

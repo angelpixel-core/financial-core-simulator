@@ -45,7 +45,12 @@ module Runs
       run
     rescue StandardError => e
       duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).to_i rescue nil
-      run.update!(status: :failed, duration_ms: duration_ms, error_code: e.class.name, error_message: e.message)
+      run.update!(
+        status: :failed,
+        duration_ms: duration_ms,
+        error_code: Runs::ErrorCodeMapper.call(e),
+        error_message: e.message
+      )
       raise
     end
 
