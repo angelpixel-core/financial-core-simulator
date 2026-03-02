@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fcs-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: admin_development
+    ports:
+      - "5432:5432"
+    volumes:
+      - fcs_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d admin_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  fcs_pg_data:
