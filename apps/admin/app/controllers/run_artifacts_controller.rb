@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class RunArtifactsController < ApplicationController
+  before_action :load_run
+  before_action :authorize_artifact_access!
+
   def result
     path = artifact_path_for(:result_json_path)
     return render plain: "Artifact not found", status: :not_found if path.nil?
@@ -27,9 +30,35 @@ class RunArtifactsController < ApplicationController
 
   private
 
+  def load_run
+    @run = Run.find(params[:id])
+  end
+
+  def authorize_artifact_access!
+    return if @run.succeeded? && token_authorized?
+
+    render plain: "Forbidden", status: :forbidden
+  end
+
+  def token_authorized?
+    expected_token = ENV["ADMIN_ARTIFACTS_TOKEN"].to_s
+    return true if expected_token.empty?
+
+    provided_token = bearer_token.presence || request.headers["X-Admin-Artifact-Token"].to_s
+    ActiveSupport::SecurityUtils.secure_compare(provided_token, expected_token)
+  rescue ArgumentError
+    false
+  end
+
+  def bearer_token
+    auth_header = request.headers["Authorization"].to_s
+    return nil unless auth_header.start_with?("Bearer ")
+
+    auth_header.delete_prefix("Bearer ")
+  end
+
   def artifact_path_for(attribute)
-    run = Run.find(params[:id])
-    raw_path = run.public_send(attribute)
+    raw_path = @run.public_send(attribute)
     return nil if raw_path.blank?
 
     expanded_path = File.expand_path(raw_path)
