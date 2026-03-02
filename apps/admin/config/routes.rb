@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  get "/avo/resources/runs/:id/result", to: redirect("/runs/%{id}/result")
+  get "/avo/resources/runs/:id/positions", to: redirect("/runs/%{id}/positions")
+  get "/avo/resources/runs/:id/pnl", to: redirect("/runs/%{id}/pnl")
+
   mount Avo::Engine, at: Avo.configuration.root_path
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

@@ -24,9 +24,23 @@ class Avo::Resources::Run < Avo::BaseResource
     field :error_message, as: :textarea
 
     panel "Artifacts viewer" do
-      field :result_json_link, as: :text, as_html: true, name: "result.json"
-      field :positions_csv_link, as: :text, as_html: true, name: "positions.csv"
-      field :pnl_csv_link, as: :text, as_html: true, name: "pnl.csv"
+      field :result_download, as: :text, as_html: true, only_on: :show, name: "result.json" do
+        next "Unavailable" if record.result_json_path.blank?
+
+        view_context.link_to("View result.json", view_context.main_app.run_result_path(id: record.id), target: "_blank", rel: "noopener")
+      end
+
+      field :positions_download, as: :text, as_html: true, only_on: :show, name: "positions.csv" do
+        next "Unavailable" if record.positions_csv_path.blank?
+
+        view_context.link_to("Download positions.csv", view_context.main_app.run_positions_path(id: record.id), target: "_blank", rel: "noopener")
+      end
+
+      field :pnl_download, as: :text, as_html: true, only_on: :show, name: "pnl.csv" do
+        next "Unavailable" if record.pnl_csv_path.blank?
+
+        view_context.link_to("Download pnl.csv", view_context.main_app.run_pnl_path(id: record.id), target: "_blank", rel: "noopener")
+      end
     end
   end
 
