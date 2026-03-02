@@ -98,6 +98,8 @@ class Avo::Resources::Run < Avo::BaseResource
   end
 
   def filters
+    filter Avo::Filters::RunGlobalSearch
+    filter Avo::Filters::RunSearchPreset
     filter Avo::Filters::RunStatus
     filter Avo::Filters::RunInputHash
     filter Avo::Filters::RunUuid
