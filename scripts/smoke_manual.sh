@@ -32,9 +32,12 @@ curl -fsS "$BASE_URL/runs/$RUN_ID/positions" >/dev/null && echo "OK positions.cs
 curl -fsS "$BASE_URL/runs/$RUN_ID/pnl" >/dev/null && echo "OK pnl.csv"
 
 echo
-echo "5) Verificando redirect de compatibilidad Avo..."
+echo "5) Verificando redirects de compatibilidad..."
+curl -fsSI "$BASE_URL/admin/resources/runs/$RUN_ID/result" | rg -n "302|301|Location" || true
 curl -fsSI "$BASE_URL/avo/resources/runs/$RUN_ID/result" | rg -n "302|301|Location" || true
+curl -fsSI "$BASE_URL/avo" | rg -n "302|301|Location" || true
 
 echo
 echo "Smoke manual finalizado."
-echo "Abrir UI: $BASE_URL/avo/resources/runs/$RUN_ID"
+echo "Abrir UI Runs: $BASE_URL/admin/resources/runs/$RUN_ID"
+echo "Abrir UI Overview: $BASE_URL/admin/overview"

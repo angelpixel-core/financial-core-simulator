@@ -1,9 +1,17 @@
 Rails.application.routes.draw do
   get "/admin/overview", to: "admin/overview#show", as: :admin_overview
+  get "/admin/overview/top-accounts", to: "admin/overview#top_accounts", as: :admin_overview_top_accounts
+  get "/admin/component-comparison", to: "admin/component_comparisons#show", as: :admin_component_comparison
+
+  get "/admin/resources/runs/:id/result", to: redirect("/runs/%{id}/result")
+  get "/admin/resources/runs/:id/positions", to: redirect("/runs/%{id}/positions")
+  get "/admin/resources/runs/:id/pnl", to: redirect("/runs/%{id}/pnl")
 
   get "/avo/resources/runs/:id/result", to: redirect("/runs/%{id}/result")
   get "/avo/resources/runs/:id/positions", to: redirect("/runs/%{id}/positions")
   get "/avo/resources/runs/:id/pnl", to: redirect("/runs/%{id}/pnl")
+  get "/avo", to: redirect("/admin"), as: :legacy_avo_root
+  get "/avo/*path", to: redirect("/admin/%{path}"), as: :legacy_avo_catch_all
 
   mount Avo::Engine, at: Avo.configuration.root_path
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
