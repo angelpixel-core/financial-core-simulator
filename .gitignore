@@ -4,3 +4,9 @@
 # FCS runtime artifacts
 output/
 apps/admin/storage/
+
+.opencode
+.codex
+.cursor
+openspec
+.claude
