@@ -4,8 +4,6 @@ class RunArtifactsController < ApplicationController
   require "csv"
   require "cgi"
 
-  include TokenAuthorization
-
   before_action :load_run
   before_action :authorize_artifact_access!
 
@@ -44,7 +42,8 @@ class RunArtifactsController < ApplicationController
   end
 
   def authorize_artifact_access!
-    return if @run.succeeded? && token_authorized_for?("ADMIN_ARTIFACTS_TOKEN")
+    policy = Artifacts::AccessPolicy.new(run: @run, request: request)
+    return if policy.allowed?
 
     render plain: "Forbidden", status: :forbidden
   end
@@ -81,16 +80,6 @@ class RunArtifactsController < ApplicationController
   end
 
   def artifact_path_for(attribute)
-    raw_path = @run.public_send(attribute)
-    return nil if raw_path.blank?
-
-    expanded_path = File.expand_path(raw_path)
-    storage_root = File.expand_path(Rails.root.join("storage", "runs"))
-    allowed_prefix = "#{storage_root}#{File::SEPARATOR}"
-
-    return nil unless expanded_path.start_with?(allowed_prefix)
-    return nil unless File.file?(expanded_path)
-
-    expanded_path
+    Artifacts::PathResolver.new(run: @run, attribute: attribute).call
   end
 end
