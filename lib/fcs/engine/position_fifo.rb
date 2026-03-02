@@ -1,0 +1,84 @@
+module FCS
+  module Engine
+    class PositionFifo
+      attr_reader :qty, :avg_cost, :realized_pnl_quote, :fees_quote
+
+      def initialize(qty:, avg_cost:, realized_pnl_quote:, fees_quote:, lots:)
+        @qty = qty
+        @avg_cost = avg_cost
+        @realized_pnl_quote = realized_pnl_quote
+        @fees_quote = fees_quote
+        @lots = lots
+      end
+
+      def self.empty
+        z = FCS::Types::Decimal18.new(0)
+        new(qty: z, avg_cost: z, realized_pnl_quote: z, fees_quote: z, lots: [])
+      end
+
+      def apply_fee!(fee_quote)
+        @fees_quote += fee_quote
+        self
+      end
+
+      def realized_net_quote
+        @realized_pnl_quote - @fees_quote
+      end
+
+      def apply_buy!(buy_qty:, buy_price:)
+        @lots << { qty: buy_qty, price: buy_price }
+        @qty += buy_qty
+        recompute_avg_cost!
+        self
+      end
+
+      def apply_sell!(sell_qty:, sell_price:)
+        if (@qty - sell_qty).atoms < 0
+          raise FCS::Error.new(
+            FCS::Errors::ERR_POSITION_NEGATIVE,
+            'SELL would make position negative',
+            details: { qty: @qty.to_s, sellQty: sell_qty.to_s }
+          )
+        end
+
+        remaining = sell_qty
+        while remaining.atoms > 0
+          current_lot = @lots.first
+          lot_qty = current_lot.fetch(:qty)
+          lot_price = current_lot.fetch(:price)
+          consumed = lot_qty.atoms <= remaining.atoms ? lot_qty : remaining
+
+          delta = (sell_price - lot_price) * consumed
+          @realized_pnl_quote += delta
+
+          if consumed.atoms == lot_qty.atoms
+            @lots.shift
+          else
+            current_lot[:qty] = lot_qty - consumed
+          end
+
+          remaining -= consumed
+        end
+
+        @qty -= sell_qty
+        recompute_avg_cost!
+        self
+      end
+
+      private
+
+      def recompute_avg_cost!
+        if @qty.zero?
+          @avg_cost = FCS::Types::Decimal18.new(0)
+          return
+        end
+
+        total_cost = @lots.reduce(FCS::Types::Decimal18.new(0)) do |sum, lot|
+          sum + (lot.fetch(:qty) * lot.fetch(:price))
+        end
+
+        @avg_cost = total_cost / @qty
+      end
+    end
+  end
+end

@@ -3,18 +3,17 @@
 module FCS
   module Engine
     class LedgerState
-      def initialize
+      def initialize(position_builder: -> { Position.empty })
         @positions = {} # key: "accountId|marketId" => Position
+        @position_builder = position_builder
       end
 
       def position_for(account_id:, market_id:)
         key = key_for(account_id, market_id)
-        @positions[key] ||= Position.empty
+        @positions[key] ||= @position_builder.call
       end
 
-      def positions
-        @positions
-      end
+      attr_reader :positions
 
       private
 

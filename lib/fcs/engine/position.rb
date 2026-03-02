@@ -18,7 +18,7 @@ module FCS
       end
 
       def apply_fee!(fee_quote)
-        @fees_quote = @fees_quote + fee_quote
+        @fees_quote += fee_quote
         self
       end
 
@@ -27,29 +27,60 @@ module FCS
       end
 
       def apply_buy!(buy_qty:, buy_price:)
-        total_cost = (@qty * @avg_cost) + (buy_qty * buy_price)
-        new_qty = @qty + buy_qty
-        new_avg = total_cost / new_qty
+        if @qty.atoms >= 0
+          total_cost = (@qty * @avg_cost) + (buy_qty * buy_price)
+          new_qty = @qty + buy_qty
+          new_avg = total_cost / new_qty
 
-        @qty = new_qty
-        @avg_cost = new_avg
+          @qty = new_qty
+          @avg_cost = new_avg
+          return self
+        end
+
+        short_qty = @qty.abs
+        cover_qty = buy_qty.atoms <= short_qty.atoms ? buy_qty : short_qty
+
+        delta = (@avg_cost - buy_price) * cover_qty
+        @realized_pnl_quote += delta
+
+        new_qty_atoms = @qty.atoms + buy_qty.atoms
+        @qty = FCS::Types::Decimal18.new(new_qty_atoms)
+
+        @avg_cost = if new_qty_atoms < 0
+                      @avg_cost
+                    elsif new_qty_atoms == 0
+                      FCS::Types::Decimal18.new(0)
+                    else
+                      buy_price
+                    end
+
         self
       end
 
       def apply_sell!(sell_qty:, sell_price:)
-        if (@qty - sell_qty).atoms < 0
-          raise FCS::Error.new(
-            FCS::Errors::ERR_POSITION_NEGATIVE,
-            "SELL would make position negative",
-            details: { qty: @qty.to_s, sellQty: sell_qty.to_s }
-          )
+        if @qty.atoms <= 0
+          total_short_cost = (@qty.abs * @avg_cost) + (sell_qty * sell_price)
+          new_short_qty = @qty.abs + sell_qty
+
+          @qty = FCS::Types::Decimal18.new(-new_short_qty.atoms)
+          @avg_cost = total_short_cost / new_short_qty
+          return self
         end
 
-        delta = (sell_price - @avg_cost) * sell_qty
-        @realized_pnl_quote = @realized_pnl_quote + delta
+        close_qty = sell_qty.atoms <= @qty.atoms ? sell_qty : @qty
+        delta = (sell_price - @avg_cost) * close_qty
+        @realized_pnl_quote += delta
 
-        @qty = @qty - sell_qty
-        @avg_cost = FCS::Types::Decimal18.new(0) if @qty.zero?
+        remaining_sell_atoms = sell_qty.atoms - close_qty.atoms
+
+        if remaining_sell_atoms > 0
+          remaining_sell = FCS::Types::Decimal18.new(remaining_sell_atoms)
+          @qty = FCS::Types::Decimal18.new(-remaining_sell.atoms)
+          @avg_cost = sell_price
+        else
+          @qty -= sell_qty
+          @avg_cost = FCS::Types::Decimal18.new(0) if @qty.zero?
+        end
 
         self
       end
