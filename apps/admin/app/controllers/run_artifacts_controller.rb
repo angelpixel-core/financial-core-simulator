@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class RunArtifactsController < ApplicationController
+  require "csv"
+  require "cgi"
+
   include TokenAuthorization
 
   before_action :load_run
@@ -51,8 +54,30 @@ class RunArtifactsController < ApplicationController
   end
 
   def render_csv_preview(path)
-    rows = File.readlines(path, chomp: true).first(120)
-    render plain: rows.join("\n"), content_type: "text/plain"
+    table_html = csv_preview_table(path)
+    render html: table_html.html_safe
+  end
+
+  def csv_preview_table(path)
+    csv = CSV.read(path, headers: true)
+    headers = csv.headers || []
+    rows = csv.first(100)
+
+    header_cells = headers.map { |cell| "<th>#{CGI.escapeHTML(cell.to_s)}</th>" }.join
+    body_rows = rows.map do |row|
+      values = headers.map { |header| "<td>#{CGI.escapeHTML(row[header].to_s)}</td>" }.join
+      "<tr>#{values}</tr>"
+    end.join
+
+    <<~HTML
+      <main style="font-family: 'IBM Plex Sans', 'Inter', sans-serif; padding: 16px;">
+        <h1 style="margin-top: 0;">CSV Preview: #{CGI.escapeHTML(File.basename(path))}</h1>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead style="background: #f2f4f8;"><tr>#{header_cells}</tr></thead>
+          <tbody>#{body_rows}</tbody>
+        </table>
+      </main>
+    HTML
   end
 
   def artifact_path_for(attribute)

@@ -132,8 +132,11 @@ RSpec.describe "Run artifacts", type: :request do
     get "/runs/#{run.id}/positions", params: { preview: 1 }
 
     expect(response).to have_http_status(:ok)
-    expect(response.media_type).to eq("text/plain")
-    expect(response.body).to include("account,qty")
+    expect(response.media_type).to eq("text/html")
+    expect(response.body).to include("CSV Preview")
+    expect(response.body).to include("<table")
+    expect(response.body).to include("account")
+    expect(response.body).to include("acc-1")
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end

@@ -80,5 +80,6 @@ class Avo::Resources::Run < Avo::BaseResource
   def filters
     filter Avo::Filters::RunStatus
     filter Avo::Filters::RunInputHash
+    filter Avo::Filters::RunUuid
   end
 end
