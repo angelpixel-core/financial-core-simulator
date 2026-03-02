@@ -1,71 +1,76 @@
-<h1>Financial Overview</h1>
+<main class="overview">
+  <header class="overview__header">
+    <div>
+      <p class="overview__eyebrow">Admin</p>
+      <h1>Financial Overview</h1>
+      <p class="overview__subtitle">Minimal operational dashboard for run health and PnL signals.</p>
+    </div>
+    <nav class="overview__nav">
+      <a class="overview__link" href="/admin/resources/runs">Open Runs</a>
+      <a class="overview__link" href="<%= admin_component_comparison_path %>">VC vs Phlex</a>
+    </nav>
+  </header>
 
-<section>
-  <h2>Run KPIs</h2>
-  <ul>
-    <li>Total runs (7d): <strong><%= @metrics[:total_runs_7d] %></strong></li>
-    <li>Total runs (30d): <strong><%= @metrics[:total_runs_30d] %></strong></li>
-    <li>Success rate (last 50): <strong><%= @metrics[:success_rate_last_50] %>%</strong></li>
-    <li>
-      Avg duration (last 50 succeeded):
-      <strong><%= @metrics[:avg_duration_ms_last_50].nil? ? "N/A" : "#{@metrics[:avg_duration_ms_last_50]} ms" %></strong>
-    </li>
-  </ul>
-</section>
+  <section class="overview__grid overview__grid--kpi">
+    <%= render Admin::Dashboard::KpiCardComponent.new(
+      title: "Total runs (7d)",
+      value: @metrics[:total_runs_7d],
+      subtitle: "Recent execution volume"
+    ) %>
+    <%= render Admin::Dashboard::KpiCardComponent.new(
+      title: "Total runs (30d)",
+      value: @metrics[:total_runs_30d],
+      subtitle: "Monthly execution volume"
+    ) %>
+    <%= render Admin::Dashboard::KpiCardComponent.new(
+      title: "Success rate (last 50)",
+      value: "#{@metrics[:success_rate_last_50]}%",
+      subtitle: "Succeeded vs total runs"
+    ) %>
+    <%= render Admin::Dashboard::KpiCardComponent.new(
+      title: "Avg duration (last 50 succeeded)",
+      value: @metrics[:avg_duration_ms_last_50].nil? ? "N/A" : "#{@metrics[:avg_duration_ms_last_50]} ms",
+      subtitle: "Execution latency trend"
+    ) %>
+  </section>
 
-<section>
-  <h2>Latest succeeded run</h2>
-  <% if @metrics[:latest_run].nil? %>
-    <p>No succeeded runs yet.</p>
-  <% else %>
-    <ul>
-      <li>Run: <strong>#<%= @metrics[:latest_run][:id] %></strong></li>
-      <li>Input hash: <code><%= @metrics[:latest_run][:input_hash] %></code></li>
-      <li>Duration: <strong><%= @metrics[:latest_run][:duration_ms] %> ms</strong></li>
-      <li>Schema: <strong><%= @metrics[:latest_run][:schema_version] %></strong></li>
-      <li>Engine: <strong><%= @metrics[:latest_run][:engine_version] %></strong></li>
-    </ul>
-  <% end %>
-</section>
+  <section class="dashboard-card">
+    <h2>Latest succeeded run</h2>
+    <% if @metrics[:latest_run].nil? %>
+      <p class="empty-state">No succeeded runs yet.</p>
+    <% else %>
+      <ul class="detail-list">
+        <li><span>Run</span><strong>#<%= @metrics[:latest_run][:id] %></strong></li>
+        <li><span>Input hash</span><code><%= @metrics[:latest_run][:input_hash] %></code></li>
+        <li><span>Duration</span><strong><%= @metrics[:latest_run][:duration_ms] %> ms</strong></li>
+        <li><span>Schema</span><strong><%= @metrics[:latest_run][:schema_version] %></strong></li>
+        <li><span>Engine</span><strong><%= @metrics[:latest_run][:engine_version] %></strong></li>
+      </ul>
+    <% end %>
+  </section>
 
-<section>
-  <h2>Global PnL (latest succeeded run)</h2>
-  <% if @metrics[:latest_global].nil? %>
-    <p>Global totals unavailable (missing or invalid result.json).</p>
-  <% else %>
-    <ul>
-      <li>Total: <strong><%= @metrics[:latest_global]["totalPnLQuote"] %></strong></li>
-      <li>Realized net: <strong><%= @metrics[:latest_global]["realizedNetPnLQuote"] %></strong></li>
-      <li>Unrealized: <strong><%= @metrics[:latest_global]["unrealizedPnLQuote"] %></strong></li>
-      <li>Total USD: <strong><%= @metrics[:latest_global]["totalPnLUsd"] || "N/A" %></strong></li>
-    </ul>
-  <% end %>
-</section>
+  <section class="dashboard-card">
+    <h2>Global PnL (latest succeeded run)</h2>
+    <% if @metrics[:latest_global].nil? %>
+      <p class="empty-state">Global totals unavailable (missing or invalid result.json).</p>
+    <% else %>
+      <ul class="detail-list">
+        <li><span>Total</span><strong><%= @metrics[:latest_global]["totalPnLQuote"] %></strong></li>
+        <li><span>Realized net</span><strong><%= @metrics[:latest_global]["realizedNetPnLQuote"] %></strong></li>
+        <li><span>Unrealized</span><strong><%= @metrics[:latest_global]["unrealizedPnLQuote"] %></strong></li>
+        <li><span>Total USD</span><strong><%= @metrics[:latest_global]["totalPnLUsd"] || "N/A" %></strong></li>
+      </ul>
+    <% end %>
+  </section>
 
-<section>
-  <h2>Top accounts (latest succeeded run)</h2>
-  <% if @metrics[:top_accounts].empty? %>
-    <p>No account totals available.</p>
-  <% else %>
-    <table>
-      <thead>
-        <tr>
-          <th>Account</th>
-          <th>Total PnL Quote</th>
-          <th>Realized Net</th>
-          <th>Unrealized</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @metrics[:top_accounts].each do |account| %>
-          <tr>
-            <td><%= account[:account_id] %></td>
-            <td><%= account[:total_pnl_quote].to_s("F") %></td>
-            <td><%= account[:realized_net_pnl_quote].to_s("F") %></td>
-            <td><%= account[:unrealized_pnl_quote].to_s("F") %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% end %>
-</section>
+  <section
+    class="overview__live"
+    data-controller="poll"
+    data-poll-url-value="<%= admin_overview_top_accounts_path %>"
+    data-poll-interval-value="12000"
+  >
+    <div data-poll-target="container">
+      <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics } %>
+    </div>
+  </section>
+</main>

@@ -1,0 +1,4 @@
+<%= render Admin::Dashboard::PhlexTopAccountsWidget.new(
+  accounts: metrics[:top_accounts],
+  updated_at: Time.current.strftime("%H:%M:%S")
+) %>

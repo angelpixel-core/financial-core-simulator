@@ -1,0 +1,24 @@
+<% if @accounts.empty? %>
+  <p class="empty-state">No account totals available.</p>
+<% else %>
+  <table class="top-accounts-table">
+    <thead>
+      <tr>
+        <th>Account</th>
+        <th>Total PnL Quote</th>
+        <th>Realized Net</th>
+        <th>Unrealized</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @accounts.each do |account| %>
+        <tr>
+          <td><%= account[:account_id] %></td>
+          <td><%= account[:total_pnl_quote].to_s("F") %></td>
+          <td><%= account[:realized_net_pnl_quote].to_s("F") %></td>
+          <td><%= account[:unrealized_pnl_quote].to_s("F") %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

@@ -191,6 +191,7 @@ GEM
     marcel (1.1.0)
     meta-tags (2.22.3)
       actionpack (>= 6.0.0)
+    method_source (1.1.0)
     mini_magick (5.3.1)
       logger
     mini_mime (1.1.5)
@@ -230,6 +231,13 @@ GEM
     pg (1.6.3)
     pg (1.6.3-aarch64-linux)
     pg (1.6.3-x86_64-linux)
+    phlex (2.4.1)
+      refract (~> 1.0)
+      zeitwerk (~> 2.7)
+    phlex-rails (2.4.0)
+      phlex (~> 2.4.0)
+      railties (>= 7.1, < 9)
+      zeitwerk (~> 2.7)
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
@@ -292,6 +300,9 @@ GEM
       erb
       psych (>= 4.0.0)
       tsort
+    refract (1.1.0)
+      prism
+      zeitwerk
     regexp_parser (2.11.3)
     reline (0.6.3)
       io-console (~> 0.5)
@@ -389,10 +400,10 @@ GEM
     unicode-emoji (4.2.0)
     uri (1.1.1)
     useragent (0.16.11)
-    view_component (4.4.0)
-      actionview (>= 7.1.0)
-      activesupport (>= 7.1.0)
+    view_component (3.24.0)
+      activesupport (>= 5.2.0, < 8.2)
       concurrent-ruby (~> 1)
+      method_source (~> 1.0)
     web-console (4.3.0)
       actionview (>= 8.0.0)
       bindex (>= 0.4.0)
@@ -420,6 +431,7 @@ DEPENDENCIES
   jbuilder
   kamal
   pg (~> 1.1)
+  phlex-rails (~> 2.2)
   propshaft
   puma (>= 5.0)
   rails (~> 8.1.2)
@@ -432,6 +444,7 @@ DEPENDENCIES
   thruster
   turbo-rails
   tzinfo-data
+  view_component (~> 3.13)
   web-console
 
 CHECKSUMS
@@ -496,6 +509,7 @@ CHECKSUMS
   mail (2.9.0) sha256=6fa6673ecd71c60c2d996260f9ee3dd387d4673b8169b502134659ece6d34941
   marcel (1.1.0) sha256=fdcfcfa33cc52e93c4308d40e4090a5d4ea279e160a7f6af988260fa970e0bee
   meta-tags (2.22.3) sha256=41ead5437140869717cbdd659cc6f1caa3e498b3e74b03ed63503b5b38ed504f
+  method_source (1.1.0) sha256=181301c9c45b731b4769bc81e8860e72f9161ad7d66dd99103c9ab84f560f5c5
   mini_magick (5.3.1) sha256=29395dfd76badcabb6403ee5aff6f681e867074f8f28ce08d78661e9e4a351c4
   mini_mime (1.1.5) sha256=8681b7e2e4215f2a159f9400b5816d85e9d8c6c6b491e96a12797e798f8bccef
   mini_portile2 (2.8.9) sha256=0cd7c7f824e010c072e33f68bc02d85a00aeb6fce05bb4819c03dfd3c140c289
@@ -519,6 +533,8 @@ CHECKSUMS
   pg (1.6.3) sha256=1388d0563e13d2758c1089e35e973a3249e955c659592d10e5b77c468f628a99
   pg (1.6.3-aarch64-linux) sha256=0698ad563e02383c27510b76bf7d4cd2de19cd1d16a5013f375dd473e4be72ea
   pg (1.6.3-x86_64-linux) sha256=5d9e188c8f7a0295d162b7b88a768d8452a899977d44f3274d1946d67920ae8d
+  phlex (2.4.1) sha256=e596717fbfe38b5271840266758779ebe75092e02629f0c170287e6290a70b12
+  phlex-rails (2.4.0) sha256=2bcddbd488681acb25753bab1887d3ac150e644244ff8ba307f2171a4d0195f5
   pp (0.6.3) sha256=2951d514450b93ccfeb1df7d021cae0da16e0a7f95ee1e2273719669d0ab9df6
   prettyprint (0.2.0) sha256=2bc9e15581a94742064a3cc8b0fb9d45aae3d03a1baa6ef80922627a0766f193
   prism (1.9.0) sha256=7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85
@@ -540,6 +556,7 @@ CHECKSUMS
   rainbow (3.1.1) sha256=039491aa3a89f42efa1d6dec2fc4e62ede96eb6acd95e52f1ad581182b79bc6a
   rake (13.3.1) sha256=8c9e89d09f66a26a01264e7e3480ec0607f0c497a861ef16063604b1b08eb19c
   rdoc (7.2.0) sha256=8650f76cd4009c3b54955eb5d7e3a075c60a57276766ebf36f9085e8c9f23192
+  refract (1.1.0) sha256=ee3b9627e39f7692831101e2fedd73e0d09a592ff5d5c05f171d14211fc7a9c7
   regexp_parser (2.11.3) sha256=ca13f381a173b7a93450e53459075c9b76a10433caadcb2f1180f2c741fc55a4
   reline (0.6.3) sha256=1198b04973565b36ec0f11542ab3f5cfeeec34823f4e54cebde90968092b1835
   rspec-core (3.13.6) sha256=a8823c6411667b60a8bca135364351dda34cd55e44ff94c4be4633b37d828b2d
@@ -574,7 +591,7 @@ CHECKSUMS
   unicode-emoji (4.2.0) sha256=519e69150f75652e40bf736106cfbc8f0f73aa3fb6a65afe62fefa7f80b0f80f
   uri (1.1.1) sha256=379fa58d27ffb1387eaada68c749d1426738bd0f654d812fcc07e7568f5c57c6
   useragent (0.16.11) sha256=700e6413ad4bb954bb63547fa098dddf7b0ebe75b40cc6f93b8d54255b173844
-  view_component (4.4.0) sha256=ecccecb495ee4b4a5d9f93382992dc32c11a0708fde5ec261150a0f5223393d0
+  view_component (3.24.0) sha256=ede4e9c0ca1605a9f6b74773b6e93de100807a4f057eae983d20acf069950aee
   web-console (4.3.0) sha256=e13b71301cdfc2093f155b5aa3a622db80b4672d1f2f713119cc7ec7ac6a6da4
   websocket-driver (0.8.0) sha256=ed0dba4b943c22f17f9a734817e808bc84cdce6a7e22045f5315aa57676d4962
   websocket-extensions (0.1.5) sha256=1c6ba63092cda343eb53fc657110c71c754c56484aad42578495227d717a8241
