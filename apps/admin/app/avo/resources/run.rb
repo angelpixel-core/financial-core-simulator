@@ -23,6 +23,26 @@ class Avo::Resources::Run < Avo::BaseResource
     field :error_code, as: :text
     field :error_message, as: :textarea
 
+    panel "Execution" do
+      field :execute_run, as: :text, as_html: true, only_on: :show, name: "execute run" do
+        view_context.link_to(
+          "Execute now",
+          view_context.main_app.run_execute_path(id: record.id),
+          data: { turbo_method: :post },
+          rel: "noopener"
+        )
+      end
+
+      field :enqueue_run, as: :text, as_html: true, only_on: :show, name: "enqueue run" do
+        view_context.link_to(
+          "Enqueue execution",
+          view_context.main_app.run_execute_path(id: record.id, async: 1),
+          data: { turbo_method: :post },
+          rel: "noopener"
+        )
+      end
+    end
+
     panel "Verification" do
       field :verification_status, as: :badge,
         options: {
