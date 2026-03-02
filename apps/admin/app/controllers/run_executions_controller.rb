@@ -1,6 +1,4 @@
 class RunExecutionsController < ApplicationController
-  include TokenAuthorization
-
   before_action :load_run
   before_action :authorize_admin_ui!
 
@@ -26,7 +24,8 @@ class RunExecutionsController < ApplicationController
   end
 
   def authorize_admin_ui!
-    return if token_authorized_for?("ADMIN_UI_TOKEN")
+    auth = Admin::Authorization.new(request: request)
+    return if auth.allow?(required_role: "operator", token_key: "ADMIN_UI_TOKEN")
 
     render plain: "Forbidden", status: :forbidden
   end

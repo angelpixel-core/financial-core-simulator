@@ -41,4 +41,15 @@ RSpec.describe Artifacts::AccessPolicy do
 
     expect(policy.allowed?).to be(true)
   end
+
+  it "allows access when viewer role headers are provided" do
+    allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
+    request.headers["X-Admin-User"] = "viewer-user"
+    request.headers["X-Admin-Role"] = "viewer"
+    run = Run.create!(status: :succeeded, input_json: { "schemaVersion" => "1.0" })
+
+    policy = described_class.new(run: run, request: request)
+
+    expect(policy.allowed?).to be(true)
+  end
 end

@@ -35,6 +35,30 @@
   </section>
 
   <section class="dashboard-card">
+    <h2>Run trend (14d)</h2>
+    <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
+    <div class="trend-bars">
+      <% @metrics[:runs_trend_14d].each do |point| %>
+        <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
+        <div class="trend-bars__item">
+          <div class="trend-bars__bar" style="height: <%= height %>%"></div>
+          <span><%= point[:day] %></span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="dashboard-card">
+    <h2>Status mix (30d)</h2>
+    <ul class="detail-list">
+      <li><span>Queued</span><strong><%= @metrics[:status_mix_30d][:queued] %></strong></li>
+      <li><span>Running</span><strong><%= @metrics[:status_mix_30d][:running] %></strong></li>
+      <li><span>Succeeded</span><strong><%= @metrics[:status_mix_30d][:succeeded] %></strong></li>
+      <li><span>Failed</span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
+    </ul>
+  </section>
+
+  <section class="dashboard-card">
     <h2>Latest succeeded run</h2>
     <% if @metrics[:latest_run].nil? %>
       <p class="empty-state">No succeeded runs yet.</p>

@@ -7,6 +7,8 @@ RSpec.describe "Admin overview", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Financial Overview")
     expect(response.body).to include("No succeeded runs yet.")
+    expect(response.body).to include("Run trend (14d)")
+    expect(response.body).to include("Status mix (30d)")
     expect(response.body).to include("data-controller=\"poll\"")
   end
 
@@ -40,6 +42,15 @@ RSpec.describe "Admin overview", type: :request do
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
     get "/admin/overview", headers: { "X-Admin-Token" => "ui-secret" }
+
+    expect(response).to have_http_status(:ok)
+  end
+
+  it "allows access via role-based policy when ADMIN_UI_TOKEN is set" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/overview", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
 
     expect(response).to have_http_status(:ok)
   end

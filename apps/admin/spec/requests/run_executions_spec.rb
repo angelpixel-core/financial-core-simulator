@@ -57,4 +57,19 @@ RSpec.describe "Run executions", type: :request do
 
     expect(response).to have_http_status(:ok)
   end
+
+  it "allows execution via operator role when ADMIN_UI_TOKEN is set" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    run = Run.create!(status: :queued, input_json: { "schemaVersion" => "1.0" })
+
+    service = instance_double(Runs::Execute)
+    allow(Runs::Execute).to receive(:new).and_return(service)
+    expect(service).to receive(:call).with(run, fee_enabled: true, explain: true, verbose: false)
+
+    post "/runs/#{run.id}/execute", headers: { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }, as: :json
+
+    expect(response).to have_http_status(:ok)
+  end
 end

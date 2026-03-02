@@ -132,6 +132,33 @@ body {
   color: var(--muted);
 }
 
+.trend-bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
+  align-items: end;
+  gap: 6px;
+  min-height: 140px;
+}
+
+.trend-bars__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.trend-bars__bar {
+  width: 20px;
+  min-height: 4px;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, #0f766e, #155e75);
+}
+
+.trend-bars__item span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .top-accounts-table {
   width: 100%;
   border-collapse: collapse;

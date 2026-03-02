@@ -19,4 +19,13 @@ RSpec.describe "Admin component comparison", type: :request do
 
     expect(response).to have_http_status(:forbidden)
   end
+
+  it "allows access via role-based policy when ADMIN_UI_TOKEN is set" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/component-comparison", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
+
+    expect(response).to have_http_status(:ok)
+  end
 end

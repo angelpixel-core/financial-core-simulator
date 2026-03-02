@@ -14,6 +14,8 @@ module Admin
         total_runs_30d: runs_since(WINDOW_30_DAYS).count,
         success_rate_last_50: success_rate_last_50,
         avg_duration_ms_last_50: avg_duration_ms_last_50,
+        runs_trend_14d: runs_trend_14d,
+        status_mix_30d: status_mix_30d,
         latest_run: latest_run_data,
         latest_global: latest_global_data,
         top_accounts: top_accounts_data
@@ -94,6 +96,26 @@ module Admin
         total_pnl_quote: decimal_value(totals["totalPnLQuote"]),
         realized_net_pnl_quote: decimal_value(totals["realizedNetPnLQuote"]),
         unrealized_pnl_quote: decimal_value(totals["unrealizedPnLQuote"])
+      }
+    end
+
+    def runs_trend_14d
+      start_date = 13.days.ago.to_date
+      counts = runs_since(14.days).group("DATE(created_at)").count
+
+      (start_date..Date.current).map do |day|
+        count = counts[day] || counts[day.to_s] || 0
+        { day: day.strftime("%m-%d"), count: count }
+      end
+    end
+
+    def status_mix_30d
+      raw = runs_since(WINDOW_30_DAYS).group(:status).count
+      {
+        queued: raw.fetch("queued", 0) + raw.fetch(0, 0),
+        running: raw.fetch("running", 0) + raw.fetch(1, 0),
+        succeeded: raw.fetch("succeeded", 0) + raw.fetch(2, 0),
+        failed: raw.fetch("failed", 0) + raw.fetch(3, 0)
       }
     end
 

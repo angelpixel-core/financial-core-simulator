@@ -1,6 +1,4 @@
 class Admin::ComponentComparisonsController < ApplicationController
-  include TokenAuthorization
-
   before_action :authorize_admin_ui!
 
   def show
@@ -13,7 +11,8 @@ class Admin::ComponentComparisonsController < ApplicationController
   private
 
   def authorize_admin_ui!
-    return if token_authorized_for?("ADMIN_UI_TOKEN")
+    auth = Admin::Authorization.new(request: request)
+    return if auth.allow?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")
 
     render plain: "Forbidden", status: :forbidden
   end

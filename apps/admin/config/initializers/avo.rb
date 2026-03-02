@@ -20,16 +20,8 @@ Avo.configure do |config|
   ## == Authentication ==
   # config.current_user_method = :current_user
   config.authenticate_with do
-    expected_token = ENV["ADMIN_UI_TOKEN"].to_s
-    next if expected_token.empty?
-
-    auth_header = request.headers["Authorization"].to_s
-    bearer = auth_header.start_with?("Bearer ") ? auth_header.delete_prefix("Bearer ") : nil
-    provided_token = bearer.presence || request.headers["X-Admin-Token"].to_s
-
-    unless provided_token.present? && ActiveSupport::SecurityUtils.secure_compare(provided_token, expected_token)
-      head :forbidden
-    end
+    auth = Admin::Authorization.new(request: request)
+    head :forbidden unless auth.allow?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")
   end
 
   ## == Authorization ==
@@ -168,4 +160,15 @@ Avo.configure do |config|
   # config.profile_menu = -> {
   #   link "Profile", path: "/avo/profile", icon: "heroicons/outline/user-circle"
   # }
+
+  config.main_menu = -> {
+    section "Overview", icon: "heroicons/outline/chart-bar" do
+      link "Financial overview", path: "/admin/overview"
+      link "Top accounts (live)", path: "/admin/overview/top-accounts"
+    end
+
+    section "Resources", icon: "avo/resources" do
+      all_resources
+    end
+  }
 end

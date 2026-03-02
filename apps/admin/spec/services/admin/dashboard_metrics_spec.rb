@@ -11,6 +11,8 @@ RSpec.describe Admin::DashboardMetrics do
       expect(metrics[:total_runs_30d]).to eq(0)
       expect(metrics[:success_rate_last_50]).to eq(0)
       expect(metrics[:avg_duration_ms_last_50]).to be_nil
+      expect(metrics[:runs_trend_14d].length).to eq(14)
+      expect(metrics[:status_mix_30d]).to eq(queued: 0, running: 0, succeeded: 0, failed: 0)
       expect(metrics[:latest_run]).to be_nil
       expect(metrics[:latest_global]).to be_nil
       expect(metrics[:top_accounts]).to eq([])
@@ -50,6 +52,8 @@ RSpec.describe Admin::DashboardMetrics do
         expect(metrics[:total_runs_30d]).to eq(1)
         expect(metrics[:success_rate_last_50]).to eq(50)
         expect(metrics[:avg_duration_ms_last_50]).to eq(200.0)
+        expect(metrics[:runs_trend_14d].map { |point| point[:count] }.sum).to eq(1)
+        expect(metrics[:status_mix_30d]).to eq(queued: 0, running: 0, succeeded: 1, failed: 0)
         expect(metrics[:latest_run][:id]).to eq(run.id)
         expect(metrics[:latest_global]["totalPnLQuote"]).to eq("10.5")
         expect(metrics[:top_accounts].first[:account_id]).to eq("acc-2")
