@@ -16,6 +16,17 @@ loader.ignore("#{__dir__}/financial")
 loader.setup
 
 module FCS
+  class << self
+    attr_writer :logger
+
+    def logger
+      @logger ||= begin
+        logger = FCS::Logging::SimpleLogger.new(io: $stderr)
+        logger.level = FCS::Logging::SimpleLogger::WARN
+        logger
+      end
+    end
+  end
 end
 
 loader.eager_load

@@ -3,7 +3,6 @@
 
 require_relative "../lib/fcs"
 require "optparse"
-require "benchmark"
 
 subcommand = ARGV.shift
 
@@ -14,17 +13,25 @@ when "run"
     output_dir: "output",
     fee_enabled: true,
     explain: false,
-    verbose: false
+    verbose: false,
+    quiet: true
   }
 
   parser = OptionParser.new do |opts|
-    opts.banner = "Usage: fcs run --input path/to/input.json [--output-dir output] [--no-fee] [--explain] [--verbose]"
+    opts.banner = "Usage: fcs run --input path/to/input.json [--output-dir output] [--no-fee] [--explain] [--verbose|--quiet]"
 
     opts.on("--input PATH", "Path to input JSON (required)") { |v| options[:input] = v }
     opts.on("--output-dir DIR", "Output directory (default: output)") { |v| options[:output_dir] = v }
     opts.on("--no-fee", "Disable fee model (ignore fee fields)") { options[:fee_enabled] = false }
     opts.on("--explain", "Include explainability fields in result.json") { options[:explain] = true }
-    opts.on("--verbose", "Print CLI summary") { options[:verbose] = true }
+    opts.on("--verbose", "Enable detailed CLI output and summary") do
+      options[:verbose] = true
+      options[:quiet] = false
+    end
+    opts.on("--quiet", "Silence non-error output (default)") do
+      options[:verbose] = false
+      options[:quiet] = true
+    end
     opts.on("-v", "--version", "Print version") { puts FCS::VERSION; exit(0) }
     opts.on("-h", "--help", "Print help") { puts opts; exit(0) }
   end
@@ -37,12 +44,16 @@ when "run"
     exit(2)
   end
 
-  puts "FCS #{FCS::VERSION}"
-  puts "Input: #{options[:input]}"
-  puts "Output: #{options[:output_dir]}"
-  puts "Fee enabled: #{options[:fee_enabled]}"
-  puts "Explain: #{options[:explain]}"
-  puts "Verbose: #{options[:verbose]}"
+  unless options[:quiet]
+    puts "FCS #{FCS::VERSION}"
+    puts "Input: #{options[:input]}"
+    puts "Output: #{options[:output_dir]}"
+    puts "Fee enabled: #{options[:fee_enabled]}"
+    puts "Explain: #{options[:explain]}"
+    puts "Verbose: #{options[:verbose]}"
+  end
+
+  FCS.logger.level = options[:verbose] ? FCS::Logging::SimpleLogger::INFO : FCS::Logging::SimpleLogger::WARN
 
   runner = FCS::Application::Runner.new
   path = runner.run!(
@@ -53,9 +64,11 @@ when "run"
     verbose: options[:verbose]
   )
 
-  puts "OK: wrote #{path}"
+  puts "OK: wrote #{path}" unless options[:quiet]
 
 when "bench"
+  require "benchmark"
+
   bench = {
     trades: 100_000,
     accounts: 10,
@@ -93,7 +106,7 @@ when "bench"
 else
   puts <<~TXT
     Usage:
-      fcs run   --input path/to/input.json [--output-dir output] [--no-fee] [--explain] [--verbose]
+      fcs run   --input path/to/input.json [--output-dir output] [--no-fee] [--explain] [--verbose|--quiet]
       fcs bench [--trades N] [--accounts N] [--markets N]
 
     Examples:

@@ -1,0 +1,27 @@
+module FCS
+  module Application
+    class ReportArtifactsWriter
+      def initialize(
+        reporter: FCS::Reporting::JsonReport.new,
+        positions_csv: FCS::Reporting::CsvPositions.new,
+        pnl_csv: FCS::Reporting::CsvPnL.new
+      )
+        @reporter = reporter
+        @positions_csv = positions_csv
+        @pnl_csv = pnl_csv
+      end
+
+      def write_all!(output_dir:, payload:)
+        json_path = @reporter.write!(output_dir: output_dir, payload: payload)
+        positions_path = @positions_csv.write!(output_dir: output_dir, accounts: payload.fetch('accounts'))
+        pnl_path = @pnl_csv.write!(output_dir: output_dir, accounts: payload.fetch('accounts'))
+
+        {
+          json_path: json_path,
+          positions_csv_path: positions_path,
+          pnl_csv_path: pnl_path
+        }
+      end
+    end
+  end
+end
