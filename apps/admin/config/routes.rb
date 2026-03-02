@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get "/admin/overview", to: "admin/overview#show", as: :admin_overview
+
   get "/avo/resources/runs/:id/result", to: redirect("/runs/%{id}/result")
   get "/avo/resources/runs/:id/positions", to: redirect("/runs/%{id}/positions")
   get "/avo/resources/runs/:id/pnl", to: redirect("/runs/%{id}/pnl")
