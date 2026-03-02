@@ -15,6 +15,15 @@ RSpec.describe "Admin overview", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Top accounts (live)")
+    expect(response.body).to include("Back to overview")
+  end
+
+  it "renders top accounts fragment for xhr polling" do
+    get "/admin/overview/top-accounts", headers: { "X-Requested-With" => "XMLHttpRequest" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Top accounts (live)")
+    expect(response.body).not_to include("Back to overview")
   end
 
   it "returns forbidden when ADMIN_UI_TOKEN is set and token is missing" do

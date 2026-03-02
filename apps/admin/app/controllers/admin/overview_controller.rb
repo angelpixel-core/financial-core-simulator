@@ -9,7 +9,11 @@ class Admin::OverviewController < ApplicationController
 
   def top_accounts
     @metrics = Admin::DashboardMetrics.new.call
-    render partial: "admin/overview/top_accounts", locals: { metrics: @metrics }
+    if request.xhr?
+      render partial: "admin/overview/top_accounts", locals: { metrics: @metrics }
+    else
+      render :top_accounts
+    end
   end
 
   private
