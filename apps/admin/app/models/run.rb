@@ -8,6 +8,13 @@ class Run < ApplicationRecord
     failed: 3
   }
 
+  enum :verification_status, {
+    unverified: "unverified",
+    verified: "verified",
+    mismatch: "mismatch",
+    verification_error: "verification_error"
+  }, validate: true
+
   validates :status, presence: true
   validates :run_uuid, uniqueness: true, allow_nil: true
 
@@ -29,6 +36,7 @@ class Run < ApplicationRecord
 
   def set_defaults
     self.status ||= :queued
+    self.verification_status ||= :unverified
   end
 
   def artifact_link(label, path, url)

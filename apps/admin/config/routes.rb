@@ -30,4 +30,5 @@ Rails.application.routes.draw do
   get "/runs/:id/result", to: "run_artifacts#result", as: :run_result
   get "/runs/:id/positions", to: "run_artifacts#positions", as: :run_positions
   get "/runs/:id/pnl", to: "run_artifacts#pnl", as: :run_pnl
+  post "/runs/:id/verify", to: "run_verifications#create", as: :run_verify
 end

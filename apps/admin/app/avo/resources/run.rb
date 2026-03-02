@@ -23,6 +23,27 @@ class Avo::Resources::Run < Avo::BaseResource
     field :error_code, as: :text
     field :error_message, as: :textarea
 
+    panel "Verification" do
+      field :verification_status, as: :badge,
+        options: {
+          unverified: :warning,
+          verified: :success,
+          mismatch: :danger,
+          verification_error: :danger
+        }
+      field :verified_at, as: :date_time
+      field :verification_input_hash, as: :text
+      field :verification_error, as: :textarea
+      field :verify_input_hash, as: :text, as_html: true, only_on: :show, name: "verify input hash" do
+        view_context.link_to(
+          "Verify now",
+          view_context.main_app.run_verify_path(id: record.id),
+          data: { turbo_method: :post },
+          rel: "noopener"
+        )
+      end
+    end
+
     panel "Artifacts viewer" do
       field :result_download, as: :text, as_html: true, only_on: :show, name: "result.json" do
         next "Unavailable" if record.result_json_path.blank?
