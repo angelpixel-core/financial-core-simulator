@@ -1,38 +1,44 @@
 # frozen_string_literal: true
 
 class RunArtifactsController < ApplicationController
-  # Si luego activás auth, acá podés meter before_action :authenticate_user! o similar.
-
   def result
-    run = Run.find(params[:id])
-    path = run.result_json_path
-
-    return render plain: "Artifact not found", status: :not_found if path.blank? || !File.exist?(path)
+    path = artifact_path_for(:result_json_path)
+    return render plain: "Artifact not found", status: :not_found if path.nil?
 
     json = File.read(path)
-
-    # render JSON pretty para lectura humana
     render json: JSON.parse(json)
   rescue JSON::ParserError
-    # si por alguna razón el file no es JSON válido
     send_file path, type: "application/json", disposition: "inline"
   end
 
   def positions
-    run = Run.find(params[:id])
-    path = run.positions_csv_path
-
-    return render plain: "Artifact not found", status: :not_found if path.blank? || !File.exist?(path)
+    path = artifact_path_for(:positions_csv_path)
+    return render plain: "Artifact not found", status: :not_found if path.nil?
 
     send_file path, type: "text/csv", disposition: "attachment", filename: "positions.csv"
   end
 
   def pnl
-    run = Run.find(params[:id])
-    path = run.pnl_csv_path
-
-    return render plain: "Artifact not found", status: :not_found if path.blank? || !File.exist?(path)
+    path = artifact_path_for(:pnl_csv_path)
+    return render plain: "Artifact not found", status: :not_found if path.nil?
 
     send_file path, type: "text/csv", disposition: "attachment", filename: "pnl.csv"
+  end
+
+  private
+
+  def artifact_path_for(attribute)
+    run = Run.find(params[:id])
+    raw_path = run.public_send(attribute)
+    return nil if raw_path.blank?
+
+    expanded_path = File.expand_path(raw_path)
+    storage_root = File.expand_path(Rails.root.join("storage", "runs"))
+    allowed_prefix = "#{storage_root}#{File::SEPARATOR}"
+
+    return nil unless expanded_path.start_with?(allowed_prefix)
+    return nil unless File.file?(expanded_path)
+
+    expanded_path
   end
 end
