@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1.0",
+  "accounts": [
+    { "accountId": "acc-1" }
+  ],
+  "markets": [
+    { "marketId": "ETH-USD" }
+  ],
+  "trades": [],
+  "priceSnapshot": {
+    "valuationTimestamp": "2026-03-03T12:00:00Z",
+    "prices": [
+      { "marketId": "ETH-USD", "priceQuotePerBase": "3150.25" }
+    ],
+    "fx": { "quoteUsd": "1" }
+  },
+  "timeline": {
+    "events": [
+      {
+        "eventType": "PRICE_UPDATED",
+        "timelineSeq": 101,
+        "timestamp": "2026-03-03T12:00:01Z",
+        "source": "feed.binance",
+        "externalId": "px-ethusd-0001",
+        "marketId": "ETH-USD",
+        "priceQuotePerBase": "3151.00"
+      },
+      {
+        "eventType": "TRADE_APPLIED",
+        "timelineSeq": 102,
+        "timestamp": "2026-03-03T12:00:02Z",
+        "source": "sim.core",
+        "externalId": "trd-0001",
+        "trade": {
+          "tradeId": "t-0001",
+          "accountId": "acc-1",
+          "marketId": "ETH-USD",
+          "seq": 1,
+          "side": "BUY",
+          "quantityBase": "0.5",
+          "priceQuotePerBase": "3150.80"
+        }
+      },
+      {
+        "eventType": "PRICE_UPDATED",
+        "timelineSeq": 103,
+        "timestamp": "2026-03-03T12:00:03Z",
+        "source": "feed.binance",
+        "externalId": "px-ethusd-0002",
+        "marketId": "ETH-USD",
+        "priceQuotePerBase": "3152.30"
+      },
+      {
+        "eventType": "TRADE_APPLIED",
+        "timelineSeq": 104,
+        "timestamp": "2026-03-03T12:00:04Z",
+        "source": "sim.core",
+        "externalId": "trd-0002",
+        "trade": {
+          "tradeId": "t-0002",
+          "accountId": "acc-1",
+          "marketId": "ETH-USD",
+          "seq": 2,
+          "side": "SELL",
+          "quantityBase": "0.2",
+          "priceQuotePerBase": "3152.00"
+        }
+      }
+    ]
+  }
+}
