@@ -28,7 +28,9 @@ module FCS
         path = latest_checkpoint_path
         return nil if path.nil?
 
-        JSON.parse(File.read(path))
+        checkpoint = JSON.parse(File.read(path))
+        validate_checkpoint_compatibility!(checkpoint)
+        checkpoint
       end
 
       private
@@ -75,6 +77,33 @@ module FCS
         paths.max_by do |path|
           File.basename(path).match(/checkpoint_(\d+)\.json/)[1].to_i
         end
+      end
+
+      def validate_checkpoint_compatibility!(checkpoint)
+        metadata = checkpoint['metadata']
+        return if metadata.nil?
+
+        unless metadata['engineVersion'] == @engine_version
+          raise FCS::Error.new(
+            FCS::Errors::ERR_VALIDATION,
+            'Incompatible checkpoint engineVersion',
+            details: {
+              expectedEngineVersion: @engine_version,
+              checkpointEngineVersion: metadata['engineVersion']
+            }
+          )
+        end
+
+        return if metadata['schemaVersion'] == @schema_version
+
+        raise FCS::Error.new(
+          FCS::Errors::ERR_VALIDATION,
+          'Incompatible checkpoint schemaVersion',
+          details: {
+            expectedSchemaVersion: @schema_version,
+            checkpointSchemaVersion: metadata['schemaVersion']
+          }
+        )
       end
     end
   end

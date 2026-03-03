@@ -37,7 +37,7 @@ module FCS
         return nil unless checkpoint.is_a?(Hash)
 
         accounts = checkpoint.dig('state', 'accounts')
-        return checkpoint['timelineSeq'] unless accounts.is_a?(Array)
+        return nil unless accounts.is_a?(Array)
 
         accounts.each do |account|
           account_id = account.fetch('accountId')
