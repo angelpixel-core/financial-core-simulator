@@ -39,6 +39,24 @@ RSpec.describe "Admin overview", type: :request do
     expect(response).to have_http_status(:forbidden)
   end
 
+  it "returns forbidden for top accounts endpoint when ADMIN_UI_TOKEN is set and token is missing" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/overview/top-accounts"
+
+    expect(response).to have_http_status(:forbidden)
+  end
+
+  it "returns forbidden for top accounts xhr endpoint when ADMIN_UI_TOKEN is set and token is missing" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/overview/top-accounts", headers: { "X-Requested-With" => "XMLHttpRequest" }
+
+    expect(response).to have_http_status(:forbidden)
+  end
+
   it "allows access when ADMIN_UI_TOKEN is provided" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
