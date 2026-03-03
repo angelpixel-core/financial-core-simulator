@@ -140,4 +140,102 @@ RSpec.describe "Run artifacts", type: :request do
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
+
+  it "renders risk view table from result.json" do
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-risk.json")
+    File.write(path, JSON.generate(
+      {
+        "accounts" => [
+          {
+            "accountId" => "acc-1",
+            "risk" => {
+              "status" => "LIQUIDATABLE",
+              "marginRatio" => "0.900000000000000000"
+            },
+            "riskEvents" => [
+              {
+                "type" => "RISK_LIQUIDATION_CANDIDATE",
+                "reasonCode" => "ERR_RISK_LIQUIDATABLE",
+                "marketId" => "BTC-USD",
+                "seq" => 12,
+                "severity" => "100"
+              }
+            ]
+          }
+        ]
+      }
+    ))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/risk"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.media_type).to eq("text/html")
+    expect(response.body).to include("Risk View")
+    expect(response.body).to include("acc-1")
+    expect(response.body).to include("LIQUIDATABLE")
+    expect(response.body).to include("0.900000000000000000")
+    expect(response.body).to include("ERR_RISK_LIQUIDATABLE")
+    expect(response.body).to include("badge--liquidatable")
+    expect(response.body).to include("Status filter")
+    expect(response.body).to include("ALL: 1")
+    expect(response.body).to include("LIQUIDATABLE: 1")
+    expect(response.body).to include("Risk distribution")
+    expect(response.body).to include("aria-label=\"risk-pie-chart\"")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
+  it "filters risk view by status" do
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-risk-filter.json")
+    File.write(path, JSON.generate(
+      {
+        "accounts" => [
+          {
+            "accountId" => "acc-healthy",
+            "risk" => {
+              "status" => "HEALTHY",
+              "marginRatio" => "1.500000000000000000"
+            },
+            "riskEvents" => []
+          },
+          {
+            "accountId" => "acc-mc",
+            "risk" => {
+              "status" => "MARGIN_CALL",
+              "marginRatio" => "0.950000000000000000"
+            },
+            "riskEvents" => []
+          }
+        ]
+      }
+    ))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/risk", params: { status: "MARGIN_CALL" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("acc-mc")
+    expect(response.body).to include("badge--margin-call")
+    expect(response.body).not_to include("acc-healthy")
+    expect(response.body).to include("ALL: 2")
+    expect(response.body).to include("HEALTHY: 1")
+    expect(response.body).to include("MARGIN_CALL: 1")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
 end

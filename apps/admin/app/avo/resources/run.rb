@@ -94,6 +94,12 @@ class Avo::Resources::Run < Avo::BaseResource
 
         view_context.link_to("Download pnl.csv", view_context.main_app.run_pnl_path(id: record.id), target: "_blank", rel: "noopener")
       end
+
+      field :risk_view, as: :text, as_html: true, only_on: :show, name: "risk view" do
+        next "Unavailable" if record.result_json_path.blank?
+
+        view_context.link_to("Open risk view", view_context.main_app.run_risk_path(id: record.id), target: "_blank", rel: "noopener")
+      end
     end
   end
 

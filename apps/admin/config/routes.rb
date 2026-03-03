@@ -6,10 +6,12 @@ Rails.application.routes.draw do
   get "/admin/resources/runs/:id/result", to: redirect("/runs/%{id}/result")
   get "/admin/resources/runs/:id/positions", to: redirect("/runs/%{id}/positions")
   get "/admin/resources/runs/:id/pnl", to: redirect("/runs/%{id}/pnl")
+  get "/admin/resources/runs/:id/risk", to: redirect("/runs/%{id}/risk")
 
   get "/avo/resources/runs/:id/result", to: redirect("/runs/%{id}/result")
   get "/avo/resources/runs/:id/positions", to: redirect("/runs/%{id}/positions")
   get "/avo/resources/runs/:id/pnl", to: redirect("/runs/%{id}/pnl")
+  get "/avo/resources/runs/:id/risk", to: redirect("/runs/%{id}/risk")
   get "/avo", to: redirect("/admin"), as: :legacy_avo_root
   get "/avo/*path", to: redirect("/admin/%{path}"), as: :legacy_avo_catch_all
 
@@ -30,6 +32,7 @@ Rails.application.routes.draw do
   get "/runs/:id/result", to: "run_artifacts#result", as: :run_result
   get "/runs/:id/positions", to: "run_artifacts#positions", as: :run_positions
   get "/runs/:id/pnl", to: "run_artifacts#pnl", as: :run_pnl
+  get "/runs/:id/risk", to: "run_artifacts#risk", as: :run_risk
   post "/runs/:id/execute", to: "run_executions#create", as: :run_execute
   post "/runs/:id/verify", to: "run_verifications#create", as: :run_verify
 end
