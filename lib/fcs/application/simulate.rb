@@ -9,19 +9,32 @@ module FCS
         fee_enabled = input.dig('feeModel', 'enabled')
         accounting_method = input.dig('accountingModel', 'method') || FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
         account_collateral = extract_account_collateral(input)
-        max_leverage = extract_max_leverage(input)
+        risk_config = extract_risk_config(input)
+        risk_engine = FCS::Engine::RiskEngine.new(account_collateral: account_collateral, risk_config: risk_config)
 
         ledger = FCS::Engine::LedgerEngine.new(
           fee_enabled: fee_enabled,
           accounting_method: accounting_method,
           account_collateral: account_collateral,
-          max_leverage: max_leverage
+          max_leverage: risk_config[:maxLeverage],
+          risk_engine: risk_engine
         )
         input.fetch('trades').each { |t| ledger.apply_trade!(t) }
 
         valuation = FCS::Engine::ValuationEngine.new(price_snapshot: input.fetch('priceSnapshot'))
+        risk_health = risk_engine.evaluate_accounts!(state: ledger.state, valuation: valuation)
+        liquidation_candidates = risk_engine.liquidation_candidates(risk_health)
+        risk_events_by_account = index_risk_events(liquidation_candidates)
 
-        accounts = build_accounts(input, ledger.state, valuation, fx, explain: explain)
+        accounts = build_accounts(
+          input,
+          ledger.state,
+          valuation,
+          fx,
+          risk_health: risk_health,
+          risk_events_by_account: risk_events_by_account,
+          explain: explain
+        )
         global = consolidate_global(accounts, fx)
 
         { 'accounts' => accounts, 'global' => global }
@@ -29,7 +42,7 @@ module FCS
 
       private
 
-      def build_accounts(input, state, valuation, fx, explain:)
+      def build_accounts(input, state, valuation, fx, risk_health:, risk_events_by_account:, explain:)
         account_ids = input.fetch('accounts').map { |a| a.fetch('accountId') }
         market_ids = input.fetch('markets').map { |m| m.fetch('marketId') }
 
@@ -71,12 +84,25 @@ module FCS
           end
 
           totals = sum_market_fields(markets, fx)
+          health = risk_health.fetch(account_id, nil)
 
-          {
+          payload = {
             'accountId' => account_id,
             'markets' => markets,
             'totals' => totals
           }
+
+          unless health.nil?
+            payload['risk'] = {
+              'status' => health.fetch(:status),
+              'equityQuote' => health.fetch(:equity_quote).to_s,
+              'maintenanceMarginQuote' => health.fetch(:maintenance_margin_quote).to_s,
+              'marginRatio' => health.fetch(:margin_ratio)&.to_s
+            }
+          end
+
+          payload['riskEvents'] = risk_events_by_account.fetch(account_id, [])
+          payload
         end
       end
 
@@ -142,11 +168,38 @@ module FCS
         end
       end
 
-      def extract_max_leverage(input)
-        max_leverage = input.dig('riskModel', 'maxLeverage')
-        return nil if max_leverage.nil?
+      def extract_risk_config(input)
+        model = input.fetch('riskModel', {})
+        config = {}
 
-        FCS::Types::Decimal18.from_string(max_leverage)
+        max_leverage = model['maxLeverage']
+        config[:maxLeverage] = FCS::Types::Decimal18.from_string(max_leverage) unless max_leverage.nil?
+
+        maintenance = model['maintenanceMarginRatio']
+        config[:maintenanceMarginRatio] = FCS::Types::Decimal18.from_string(maintenance) unless maintenance.nil?
+
+        liquidation = model['liquidation']
+        unless liquidation.nil?
+          config[:liquidation] = {
+            enabled: liquidation.fetch('enabled', true),
+            closeFactor: liquidation['closeFactor']
+          }
+        end
+
+        config
+      end
+
+      def index_risk_events(candidates)
+        candidates.each_with_object(Hash.new { |h, k| h[k] = [] }) do |candidate, grouped|
+          grouped[candidate.fetch(:account_id)] << {
+            'type' => 'RISK_LIQUIDATION_CANDIDATE',
+            'reasonCode' => FCS::Errors::ERR_RISK_LIQUIDATABLE,
+            'accountId' => candidate.fetch(:account_id),
+            'marketId' => candidate.fetch(:market_id),
+            'seq' => candidate.fetch(:seq),
+            'severity' => candidate.fetch(:severity).to_s
+          }
+        end
       end
     end
   end

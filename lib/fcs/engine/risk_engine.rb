@@ -19,9 +19,9 @@ module FCS
 
         if accounting_method == FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_FIFO
           raise FCS::Error.new(
-            FCS::Errors::ERR_VALIDATION,
+            FCS::Errors::ERR_RISK_REJECTION,
             'Short selling is not supported with FIFO accounting',
-            details: { accountingMethod: accounting_method }
+            details: { accountingMethod: accounting_method, reason: 'FIFO_SHORT_FORBIDDEN' }
           )
         end
 
@@ -29,7 +29,7 @@ module FCS
         max_leverage = @risk_config[:max_leverage]
         if collateral.nil? || max_leverage.nil? || collateral.zero?
           raise FCS::Error.new(
-            FCS::Errors::ERR_VALIDATION,
+            FCS::Errors::ERR_RISK_CONFIG_INVALID,
             'Short selling requires collateralQuote and riskModel.maxLeverage',
             details: { accountId: account_id }
           )
@@ -41,14 +41,15 @@ module FCS
         return true if projected_notional.atoms <= max_notional.atoms
 
         raise FCS::Error.new(
-          FCS::Errors::ERR_VALIDATION,
+          FCS::Errors::ERR_RISK_REJECTION,
           'Leverage limit exceeded',
           details: {
             accountId: account_id,
             marketId: market_id,
             projectedNotionalQuote: projected_notional.to_s,
             collateralQuote: collateral.to_s,
-            maxLeverage: max_leverage.to_s
+            maxLeverage: max_leverage.to_s,
+            reason: 'MAX_LEVERAGE_EXCEEDED'
           }
         )
       end
