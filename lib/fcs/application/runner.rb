@@ -62,7 +62,8 @@ module FCS
           run_id: run_id,
           valuation_timestamp: valuation_ts,
           accounts: result.fetch('accounts'),
-          global: result.fetch('global')
+          global: result.fetch('global'),
+          replay: build_replay_metadata(input: input, checkpoint: checkpoint)
         )
 
         artifacts = @artifacts_writer.write_all!(
@@ -123,6 +124,18 @@ module FCS
 
       def timeline_feature_enabled?
         ENV['FCS_TIMELINE_ENABLED'] == '1'
+      end
+
+      def build_replay_metadata(input:, checkpoint:)
+        timeline = input['timeline']
+        return nil unless timeline.is_a?(Hash) && timeline['events'].is_a?(Array)
+
+        metadata = { 'mode' => 'timeline' }
+        if checkpoint.is_a?(Hash) && checkpoint.key?('timelineSeq')
+          metadata['checkpointTimelineSeq'] =
+            checkpoint['timelineSeq']
+        end
+        metadata
       end
     end
   end

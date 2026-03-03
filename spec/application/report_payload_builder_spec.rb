@@ -22,4 +22,29 @@ RSpec.describe FCS::Application::ReportPayloadBuilder do
       'global' => { 'totalPnLQuote' => '0.0' }
     )
   end
+
+  it 'adds replay metadata only when provided' do
+    payload = described_class.build(
+      engine_version: '0.1.0',
+      schema_version: '1.0',
+      input_hash: 'abc123',
+      run_id: 'run-1',
+      valuation_timestamp: '2026-02-25T03:00:00Z',
+      accounts: [{ 'accountId' => 'acc-1' }],
+      global: { 'totalPnLQuote' => '0.0' },
+      replay: {
+        'mode' => 'timeline',
+        'checkpointTimelineSeq' => 42
+      }
+    )
+
+    expect(payload).to include(
+      'engineVersion' => '0.1.0',
+      'schemaVersion' => '1.0',
+      'replay' => {
+        'mode' => 'timeline',
+        'checkpointTimelineSeq' => 42
+      }
+    )
+  end
 end
