@@ -147,4 +147,80 @@ RSpec.describe 'Timeline processing integration' do
     expect(first).to eq(second)
     expect(first.fetch('accounts').first.fetch('markets').first.fetch('quantity')).to eq('1.0')
   end
+
+  it 'keeps final output equivalent between full replay and checkpoint-seeded replay' do
+    full_input = base_input
+    full_input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'TRADE_APPLIED',
+          'timelineSeq' => 1,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'sim.core',
+          'externalId' => 'tr-1',
+          'trade' => {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          }
+        },
+        {
+          'eventType' => 'PRICE_UPDATED',
+          'timelineSeq' => 2,
+          'timestamp' => '2026-03-03T12:00:02Z',
+          'source' => 'feed.binance',
+          'externalId' => 'px-1',
+          'marketId' => 'ETH-USD',
+          'priceQuotePerBase' => '120'
+        }
+      ]
+    }
+
+    from_checkpoint_input = base_input
+    from_checkpoint_input['checkpoint'] = {
+      'timelineSeq' => 1,
+      'state' => {
+        'accounts' => [
+          {
+            'accountId' => 'acc-1',
+            'markets' => [
+              {
+                'marketId' => 'ETH-USD',
+                'quantity' => '1.0',
+                'avgCost' => '100.0'
+              }
+            ]
+          }
+        ]
+      },
+      'metadata' => {
+        'engineVersion' => FCS::VERSION,
+        'schemaVersion' => '1.0',
+        'inputHash' => 'checkpoint-hash',
+        'stateHash' => 'state-hash'
+      }
+    }
+    from_checkpoint_input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'PRICE_UPDATED',
+          'timelineSeq' => 2,
+          'timestamp' => '2026-03-03T12:00:02Z',
+          'source' => 'feed.binance',
+          'externalId' => 'px-1',
+          'marketId' => 'ETH-USD',
+          'priceQuotePerBase' => '120'
+        }
+      ]
+    }
+
+    full_replay = FCS::Application::Simulate.new.call(full_input)
+    checkpoint_replay = FCS::Application::Simulate.new.call(from_checkpoint_input)
+
+    expect(checkpoint_replay).to eq(full_replay)
+  end
 end
