@@ -80,9 +80,56 @@ module FCS
         raise_invalid!('riskModel must be an object', field: 'riskModel') unless model.is_a?(Hash)
 
         max_leverage = model['maxLeverage']
-        return if max_leverage.nil?
+        unless max_leverage.nil?
+          validate_positive_decimal_string!(max_leverage, field: 'riskModel.maxLeverage',
+                                                          context: {})
+        end
 
-        validate_positive_decimal_string!(max_leverage, field: 'riskModel.maxLeverage', context: {})
+        maintenance = model['maintenanceMarginRatio']
+        if model.key?('maintenanceMarginRatio') && maintenance.nil?
+          raise_invalid!('riskModel.maintenanceMarginRatio is required when provided',
+                         field: 'riskModel.maintenanceMarginRatio')
+        end
+
+        unless maintenance.nil?
+          validate_ratio_decimal_string!(
+            maintenance,
+            field: 'riskModel.maintenanceMarginRatio',
+            context: {},
+            max: '0.95'
+          )
+        end
+
+        liquidation = model['liquidation']
+        return if liquidation.nil?
+
+        unless liquidation.is_a?(Hash)
+          raise_invalid!('riskModel.liquidation must be an object',
+                         field: 'riskModel.liquidation')
+        end
+
+        enabled = liquidation['enabled']
+        unless enabled.nil? || enabled == true || enabled == false
+          raise_invalid!('riskModel.liquidation.enabled must be boolean', field: 'riskModel.liquidation.enabled')
+        end
+
+        close_factor = liquidation['closeFactor']
+        unless liquidation.key?('closeFactor')
+          raise_invalid!('riskModel.liquidation.closeFactor is required', field: 'riskModel.liquidation.closeFactor')
+        end
+
+        if liquidation.key?('closeFactor') && close_factor.nil?
+          raise_invalid!('riskModel.liquidation.closeFactor is required', field: 'riskModel.liquidation.closeFactor')
+        end
+
+        return if close_factor.nil?
+
+        validate_ratio_decimal_string!(
+          close_factor,
+          field: 'riskModel.liquidation.closeFactor',
+          context: {},
+          max: '1'
+        )
       end
 
       def validate_account_collateral!(accounts)
@@ -208,6 +255,15 @@ module FCS
 
       def validate_non_negative_decimal_string!(v, field:, context:)
         validate_decimal_string!(v, field:, context:, allow_zero: true)
+      end
+
+      def validate_ratio_decimal_string!(v, field:, context:, max: '1')
+        validate_decimal_string!(v, field:, context:, allow_zero: false)
+        parsed = FCS::Types::Decimal18.from_string(v)
+        max_decimal = FCS::Types::Decimal18.from_string(max)
+        return if parsed.atoms <= max_decimal.atoms
+
+        raise_invalid!("Must be <= #{max}", field: field, details: context.merge(value: v))
       end
 
       def validate_decimal_string!(v, field:, context:, allow_zero:)
