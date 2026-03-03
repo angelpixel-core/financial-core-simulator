@@ -1,0 +1,76 @@
+require_relative '../../lib/fcs'
+
+RSpec.describe FCS::Engine::RiskEngine do
+  let(:position) { FCS::Engine::Position.empty }
+
+  it 'rejects FIFO short selling' do
+    engine = described_class.new(
+      account_collateral: { 'acc-1' => FCS::Types::Decimal18.from_string('100') },
+      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string('2') }
+    )
+
+    expect do
+      engine.pre_trade_check!(
+        account_id: 'acc-1',
+        market_id: 'ETH-USD',
+        side: 'SELL',
+        quantity: '1',
+        price: '100',
+        position: position,
+        accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_FIFO
+      )
+    end.to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_VALIDATION) }
+  end
+
+  it 'rejects short selling when leverage config is missing' do
+    engine = described_class.new(account_collateral: {}, risk_config: {})
+
+    expect do
+      engine.pre_trade_check!(
+        account_id: 'acc-1',
+        market_id: 'ETH-USD',
+        side: 'SELL',
+        quantity: '1',
+        price: '100',
+        position: position,
+        accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
+      )
+    end.to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_VALIDATION) }
+  end
+
+  it 'returns deterministic liquidation candidates ordered by severity' do
+    state = FCS::Engine::LedgerState.new
+    state.position_for(account_id: 'acc-b', market_id: 'ETH-USD').apply_sell!(
+      sell_qty: FCS::Types::Decimal18.from_string('3'),
+      sell_price: FCS::Types::Decimal18.from_string('100')
+    )
+    state.position_for(account_id: 'acc-a', market_id: 'ETH-USD').apply_sell!(
+      sell_qty: FCS::Types::Decimal18.from_string('1'),
+      sell_price: FCS::Types::Decimal18.from_string('100')
+    )
+
+    valuation = FCS::Engine::ValuationEngine.new(
+      price_snapshot: {
+        'prices' => [
+          { 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '120' }
+        ]
+      }
+    )
+
+    engine = described_class.new(
+      account_collateral: {
+        'acc-a' => FCS::Types::Decimal18.new(0),
+        'acc-b' => FCS::Types::Decimal18.new(0)
+      },
+      risk_config: { maintenanceMarginRatio: FCS::Types::Decimal18.from_string('0.25') }
+    )
+
+    health = engine.evaluate_accounts!(state: state, valuation: valuation)
+    expect(health.fetch('acc-a')[:status]).to eq(FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE)
+    expect(health.fetch('acc-b')[:status]).to eq(FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE)
+
+    candidates = engine.liquidation_candidates(health)
+
+    expect(candidates.map { |c| c[:account_id] }).to eq(%w[acc-b acc-a])
+  end
+end
