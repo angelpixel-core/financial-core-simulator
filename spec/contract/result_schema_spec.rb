@@ -57,6 +57,7 @@ RSpec.describe 'result.json schema contract' do
     gt = payload['global']
     expect(gt.keys).to include('realizedPnLQuote', 'feesQuote', 'realizedNetPnLQuote', 'unrealizedPnLQuote',
                                'totalPnLQuote', 'totalPnLUsd')
+    expect(payload).not_to have_key('replay')
   end
 
   it 'includes explain block when explain is enabled' do
