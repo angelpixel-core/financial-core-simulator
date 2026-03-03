@@ -10,3 +10,5 @@ apps/admin/storage/
 .cursor
 openspec
 .claude
+
+.private
