@@ -69,10 +69,13 @@ module FCS
         timeline = h['timeline']
         return if timeline.nil?
 
+        previous_seq = nil
         timeline.fetch('events').each do |event|
           raise_invalid!('timeline.events item must be an object', field: 'timeline.events') unless event.is_a?(Hash)
 
           validate_timeline_common_fields!(event)
+          validate_timeline_monotonic_seq!(event.fetch('timelineSeq'), previous_seq)
+          previous_seq = event.fetch('timelineSeq')
 
           case event.fetch('eventType')
           when 'PRICE_UPDATED'
@@ -85,6 +88,17 @@ module FCS
                            details: { eventType: event.fetch('eventType') })
           end
         end
+      end
+
+      def validate_timeline_monotonic_seq!(current_seq, previous_seq)
+        return if previous_seq.nil?
+        return if current_seq > previous_seq
+
+        raise_invalid!(
+          'timeline timelineSeq must be strictly increasing',
+          field: 'timeline.events.timelineSeq',
+          details: { previousSeq: previous_seq, currentSeq: current_seq }
+        )
       end
 
       def validate_timeline_common_fields!(event)
