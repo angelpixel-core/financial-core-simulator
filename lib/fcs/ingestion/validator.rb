@@ -24,6 +24,7 @@ module FCS
         validate_account_collateral!(accounts)
 
         validate_snapshot!(h, market_ids)
+        validate_timeline!(h)
 
         validate_trades!(trades, account_ids, market_ids, fee_enabled?(h))
         validate_seq_uniqueness!(trades)
@@ -53,6 +54,141 @@ module FCS
         raise_invalid!('markets must be an array', field: 'markets')   unless h['markets'].is_a?(Array)
         raise_invalid!('trades must be an array', field: 'trades')     unless h['trades'].is_a?(Array)
         raise_invalid!('priceSnapshot must be an object', field: 'priceSnapshot') unless h['priceSnapshot'].is_a?(Hash)
+
+        timeline = h['timeline']
+        return if timeline.nil?
+
+        raise_invalid!('timeline must be an object', field: 'timeline') unless timeline.is_a?(Hash)
+        return if timeline['events'].is_a?(Array)
+
+        raise_invalid!('timeline.events must be an array',
+                       field: 'timeline.events')
+      end
+
+      def validate_timeline!(h)
+        timeline = h['timeline']
+        return if timeline.nil?
+
+        timeline.fetch('events').each do |event|
+          raise_invalid!('timeline.events item must be an object', field: 'timeline.events') unless event.is_a?(Hash)
+
+          validate_timeline_common_fields!(event)
+
+          case event.fetch('eventType')
+          when 'PRICE_UPDATED'
+            validate_timeline_price_updated!(event)
+          when 'TRADE_APPLIED'
+            validate_timeline_trade_applied!(event)
+          else
+            raise_invalid!('Unsupported timeline eventType',
+                           field: 'timeline.events.eventType',
+                           details: { eventType: event.fetch('eventType') })
+          end
+        end
+      end
+
+      def validate_timeline_common_fields!(event)
+        unless event.key?('eventType')
+          raise_invalid!('timeline eventType is required',
+                         field: 'timeline.events.eventType')
+        end
+        unless event.key?('timelineSeq')
+          raise_invalid!('timeline timelineSeq is required',
+                         field: 'timeline.events.timelineSeq')
+        end
+        raise_invalid!('timeline source is required', field: 'timeline.events.source') unless event.key?('source')
+        unless event.key?('externalId')
+          raise_invalid!('timeline externalId is required',
+                         field: 'timeline.events.externalId')
+        end
+        unless event.key?('timestamp')
+          raise_invalid!('timeline timestamp is required',
+                         field: 'timeline.events.timestamp')
+        end
+
+        unless non_empty_string?(event['eventType'])
+          raise_invalid!('timeline eventType must be a non-empty string',
+                         field: 'timeline.events.eventType')
+        end
+        unless event['timelineSeq'].is_a?(Integer)
+          raise_invalid!('timeline timelineSeq must be an integer',
+                         field: 'timeline.events.timelineSeq')
+        end
+        unless non_empty_string?(event['source'])
+          raise_invalid!('timeline source must be a non-empty string',
+                         field: 'timeline.events.source')
+        end
+        unless non_empty_string?(event['externalId'])
+          raise_invalid!('timeline externalId must be a non-empty string',
+                         field: 'timeline.events.externalId')
+        end
+        return if non_empty_string?(event['timestamp'])
+
+        raise_invalid!('timeline timestamp must be a non-empty string',
+                       field: 'timeline.events.timestamp')
+      end
+
+      def validate_timeline_price_updated!(event)
+        unless event.key?('marketId')
+          raise_invalid!('timeline PRICE_UPDATED marketId is required',
+                         field: 'timeline.events.marketId')
+        end
+        unless event.key?('priceQuotePerBase')
+          raise_invalid!('timeline PRICE_UPDATED priceQuotePerBase is required',
+                         field: 'timeline.events.priceQuotePerBase')
+        end
+
+        unless non_empty_string?(event['marketId'])
+          raise_invalid!('timeline PRICE_UPDATED marketId must be a non-empty string',
+                         field: 'timeline.events.marketId')
+        end
+        validate_positive_decimal_string!(
+          event['priceQuotePerBase'],
+          field: 'timeline.events.priceQuotePerBase',
+          context: { marketId: event['marketId'] }
+        )
+      end
+
+      def validate_timeline_trade_applied!(event)
+        trade = event['trade']
+        unless trade.is_a?(Hash)
+          raise_invalid!('timeline TRADE_APPLIED trade is required',
+                         field: 'timeline.events.trade')
+        end
+
+        %w[tradeId accountId marketId seq side quantityBase priceQuotePerBase].each do |field|
+          unless trade.key?(field)
+            raise_invalid!("timeline TRADE_APPLIED trade.#{field} is required",
+                           field: "timeline.events.trade.#{field}")
+          end
+        end
+
+        unless non_empty_string?(trade['tradeId'])
+          raise_invalid!('timeline.events.trade.tradeId must be a non-empty string',
+                         field: 'timeline.events.trade.tradeId')
+        end
+        unless non_empty_string?(trade['accountId'])
+          raise_invalid!('timeline.events.trade.accountId must be a non-empty string',
+                         field: 'timeline.events.trade.accountId')
+        end
+        unless non_empty_string?(trade['marketId'])
+          raise_invalid!('timeline.events.trade.marketId must be a non-empty string',
+                         field: 'timeline.events.trade.marketId')
+        end
+        unless trade['seq'].is_a?(Integer)
+          raise_invalid!('timeline.events.trade.seq must be an integer',
+                         field: 'timeline.events.trade.seq')
+        end
+        raise_invalid!('Invalid side', field: 'timeline.events.trade.side', details: { side: trade['side'] }) unless %w[
+          BUY SELL
+        ].include?(trade['side'])
+
+        validate_positive_decimal_string!(trade['quantityBase'],
+                                          field: 'timeline.events.trade.quantityBase',
+                                          context: { tradeId: trade['tradeId'] })
+        validate_positive_decimal_string!(trade['priceQuotePerBase'],
+                                          field: 'timeline.events.trade.priceQuotePerBase',
+                                          context: { tradeId: trade['tradeId'] })
       end
 
       def validate_accounting_model!(h)
@@ -278,6 +414,10 @@ module FCS
         return unless !allow_zero && v == '0'
 
         raise_invalid!('Must be > 0', field: field, details: context.merge(value: v))
+      end
+
+      def non_empty_string?(v)
+        v.is_a?(String) && !v.strip.empty?
       end
 
       def raise_invalid!(msg, field:, details: {})
