@@ -235,4 +235,64 @@ RSpec.describe FCS::Ingestion::Validator do
         expect(e.details).to include(field: 'timeline.events.timelineSeq')
       }
   end
+
+  it 'acepta reintento con duplicado exacto de clave idempotente en timeline' do
+    input = base_input
+    input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'PRICE_UPDATED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'feed.binance',
+          'externalId' => 'px-ethusd-dup-1',
+          'marketId' => 'ETH-USD',
+          'priceQuotePerBase' => '3151.00'
+        },
+        {
+          'eventType' => 'PRICE_UPDATED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'feed.binance',
+          'externalId' => 'px-ethusd-dup-1',
+          'marketId' => 'ETH-USD',
+          'priceQuotePerBase' => '3151.00'
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }.not_to raise_error
+  end
+
+  it 'falla si hay colision parcial de clave idempotente en timeline' do
+    input = base_input
+    input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'PRICE_UPDATED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'feed.binance',
+          'externalId' => 'px-ethusd-col-1',
+          'marketId' => 'ETH-USD',
+          'priceQuotePerBase' => '3151.00'
+        },
+        {
+          'eventType' => 'PRICE_UPDATED',
+          'timelineSeq' => 102,
+          'timestamp' => '2026-03-03T12:00:02Z',
+          'source' => 'feed.binance',
+          'externalId' => 'px-ethusd-col-1',
+          'marketId' => 'ETH-USD',
+          'priceQuotePerBase' => '3152.00'
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'timeline.events.externalId')
+      }
+  end
 end
