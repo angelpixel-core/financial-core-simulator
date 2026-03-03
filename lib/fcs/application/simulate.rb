@@ -21,7 +21,9 @@ module FCS
         )
 
         valuation = FCS::Engine::ValuationEngine.new(price_snapshot: input.fetch('priceSnapshot'))
-        apply_execution_flow!(input: input, ledger: ledger, valuation: valuation)
+        timeline_processor = FCS::Application::EventTimelineProcessor.new
+        apply_execution_flow!(input: input, ledger: ledger, valuation: valuation,
+                              timeline_processor: timeline_processor)
         risk_health = risk_engine.evaluate_accounts!(state: ledger.state, valuation: valuation)
         liquidation_candidates = risk_engine.liquidation_candidates(risk_health)
         risk_events_by_account = index_risk_events(liquidation_candidates)
@@ -106,31 +108,15 @@ module FCS
         end
       end
 
-      def apply_execution_flow!(input:, ledger:, valuation:)
+      def apply_execution_flow!(input:, ledger:, valuation:, timeline_processor:)
         timeline = input['timeline']
 
         if timeline.is_a?(Hash) && timeline['events'].is_a?(Array)
-          apply_timeline_events!(events: timeline.fetch('events'), ledger: ledger, valuation: valuation)
+          timeline_processor.call(events: timeline.fetch('events'), ledger: ledger, valuation: valuation)
           return
         end
 
         input.fetch('trades').each { |trade| ledger.apply_trade!(trade) }
-      end
-
-      def apply_timeline_events!(events:, ledger:, valuation:)
-        events
-          .sort_by { |event| event.fetch('timelineSeq') }
-          .each do |event|
-            case event.fetch('eventType')
-            when 'PRICE_UPDATED'
-              valuation.update_price!(
-                market_id: event.fetch('marketId'),
-                price_quote_per_base: event.fetch('priceQuotePerBase')
-              )
-            when 'TRADE_APPLIED'
-              ledger.apply_trade!(event.fetch('trade'))
-            end
-          end
       end
 
       def sum_market_fields(markets, fx)
