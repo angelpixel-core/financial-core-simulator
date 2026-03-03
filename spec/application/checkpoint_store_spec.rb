@@ -58,4 +58,33 @@ RSpec.describe FCS::Application::CheckpointStore do
       expect(Dir.glob(File.join(dir, '*.json'))).to eq([])
     end
   end
+
+  it 'rejects latest checkpoint when metadata is incompatible' do
+    Dir.mktmpdir do |dir|
+      File.write(
+        File.join(dir, 'checkpoint_10.json'),
+        JSON.pretty_generate(
+          {
+            'timelineSeq' => 10,
+            'state' => { 'accounts' => [] },
+            'metadata' => {
+              'engineVersion' => 'legacy-engine',
+              'schemaVersion' => '2.0',
+              'inputHash' => 'abc123',
+              'stateHash' => 'state-hash'
+            }
+          }
+        )
+      )
+
+      store = described_class.new(
+        output_dir: dir,
+        checkpoint_every: 3,
+        engine_version: FCS::VERSION,
+        schema_version: '1.0'
+      )
+
+      expect { store.latest_checkpoint }.to raise_error(FCS::Error)
+    end
+  end
 end

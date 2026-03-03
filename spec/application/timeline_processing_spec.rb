@@ -223,4 +223,54 @@ RSpec.describe 'Timeline processing integration' do
 
     expect(checkpoint_replay).to eq(full_replay)
   end
+
+  it 'falls back safely when checkpoint state is missing' do
+    full_input = base_input
+    full_input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'TRADE_APPLIED',
+          'timelineSeq' => 1,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'sim.core',
+          'externalId' => 'tr-1',
+          'trade' => {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          }
+        },
+        {
+          'eventType' => 'PRICE_UPDATED',
+          'timelineSeq' => 2,
+          'timestamp' => '2026-03-03T12:00:02Z',
+          'source' => 'feed.binance',
+          'externalId' => 'px-1',
+          'marketId' => 'ETH-USD',
+          'priceQuotePerBase' => '120'
+        }
+      ]
+    }
+
+    missing_checkpoint_input = base_input
+    missing_checkpoint_input['checkpoint'] = {
+      'timelineSeq' => 1,
+      'metadata' => {
+        'engineVersion' => FCS::VERSION,
+        'schemaVersion' => '1.0',
+        'inputHash' => 'checkpoint-hash',
+        'stateHash' => 'state-hash'
+      }
+    }
+    missing_checkpoint_input['timeline'] = full_input.fetch('timeline')
+
+    full_replay = FCS::Application::Simulate.new.call(full_input)
+    replay_with_missing_checkpoint = FCS::Application::Simulate.new.call(missing_checkpoint_input)
+
+    expect(replay_with_missing_checkpoint).to eq(full_replay)
+  end
 end
