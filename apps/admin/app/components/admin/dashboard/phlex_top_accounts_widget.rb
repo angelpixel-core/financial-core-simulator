@@ -1,6 +1,8 @@
+require "bigdecimal"
+
 class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
   def initialize(accounts:, updated_at:)
-    @accounts = accounts
+    @accounts = Array(accounts)
     @updated_at = updated_at
   end
 
@@ -11,7 +13,9 @@ class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
         p(class: "dashboard-card__meta") { "Updated #{@updated_at}" }
       end
 
-      if @accounts.empty?
+      accounts = sorted_accounts
+
+      if accounts.empty?
         p(class: "empty-state") { "No account totals available." }
       else
         table(class: "top-accounts-table") do
@@ -24,7 +28,7 @@ class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
             end
           end
           tbody do
-            @accounts.each do |account|
+            accounts.each do |account|
               tr do
                 td { account[:account_id] }
                 td { account[:total_pnl_quote].to_s("F") }
@@ -36,5 +40,17 @@ class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
         end
       end
     end
+  end
+
+  private
+
+  def sorted_accounts
+    @accounts.sort_by { |account| -decimal_value(account[:total_pnl_quote]) }
+  end
+
+  def decimal_value(value)
+    BigDecimal(value.to_s)
+  rescue ArgumentError
+    BigDecimal("0")
   end
 end
