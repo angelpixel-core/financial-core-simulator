@@ -203,4 +203,36 @@ RSpec.describe FCS::Ingestion::Validator do
         expect(e.details).to include(field: 'timeline.events.timestamp')
       }
   end
+
+  it 'falla si timelineSeq no es monotono creciente' do
+    input = base_input
+    input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'PRICE_UPDATED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'feed.binance',
+          'externalId' => 'px-ethusd-0001',
+          'marketId' => 'ETH-USD',
+          'priceQuotePerBase' => '3151.00'
+        },
+        {
+          'eventType' => 'PRICE_UPDATED',
+          'timelineSeq' => 100,
+          'timestamp' => '2026-03-03T12:00:02Z',
+          'source' => 'feed.binance',
+          'externalId' => 'px-ethusd-0002',
+          'marketId' => 'ETH-USD',
+          'priceQuotePerBase' => '3152.00'
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'timeline.events.timelineSeq')
+      }
+  end
 end
