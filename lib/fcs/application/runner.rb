@@ -34,8 +34,7 @@ module FCS
 
         @validator.validate!(input)
 
-        # Determinismo: ordenar trades antes de hashear + antes del engine
-        input['trades'] = @sorter.sort(input.fetch('trades'))
+        input = prepare_execution_input(input)
 
         canonical = FCS::Hashing::CanonicalJSON.dump(input)
         input_hash = FCS::Hashing::SHA256.hex(canonical)
@@ -69,6 +68,33 @@ module FCS
         @logger.info("fcs.run.done run_id=#{run_id} output=#{json_path}")
 
         json_path
+      end
+
+      private
+
+      def prepare_execution_input(input)
+        return prepare_batch_input(input) unless timeline_mode_enabled?(input)
+
+        input['trades'] = extract_timeline_trades(input)
+        input
+      end
+
+      def prepare_batch_input(input)
+        input['trades'] = @sorter.sort(input.fetch('trades'))
+        input
+      end
+
+      def timeline_mode_enabled?(input)
+        ENV['FCS_TIMELINE_ENABLED'] == '1' && input['timeline'].is_a?(Hash) && input['timeline']['events'].is_a?(Array)
+      end
+
+      def extract_timeline_trades(input)
+        input
+          .fetch('timeline')
+          .fetch('events')
+          .sort_by { |event| event.fetch('timelineSeq') }
+          .select { |event| event.fetch('eventType') == 'TRADE_APPLIED' }
+          .map { |event| event.fetch('trade') }
       end
     end
   end
