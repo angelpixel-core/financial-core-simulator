@@ -11,20 +11,31 @@ module FCS
         fee_enabled: true,
         accounting_method: ACCOUNTING_METHOD_AVERAGE,
         account_collateral: {},
-        max_leverage: nil
+        max_leverage: nil,
+        risk_engine: nil
       )
         @state = state || LedgerState.new(position_builder: position_builder_for(accounting_method))
         @fee_enabled = fee_enabled
         @accounting_method = accounting_method
-        @account_collateral = account_collateral
-        @max_leverage = max_leverage
+        @risk_engine = risk_engine || FCS::Engine::RiskEngine.new(
+          account_collateral: account_collateral,
+          risk_config: { maxLeverage: max_leverage }
+        )
       end
 
       attr_reader :state
 
       def apply_trade!(trade)
         pos = @state.position_for(account_id: trade.fetch('accountId'), market_id: trade.fetch('marketId'))
-        enforce_short_constraints!(pos, trade)
+        @risk_engine.pre_trade_check!(
+          account_id: trade.fetch('accountId'),
+          market_id: trade.fetch('marketId'),
+          side: trade.fetch('side'),
+          quantity: trade.fetch('quantityBase'),
+          price: trade.fetch('priceQuotePerBase'),
+          position: pos,
+          accounting_method: @accounting_method
+        )
 
         if @fee_enabled
           fee_quote = extract_fee_quote(trade)
@@ -46,60 +57,6 @@ module FCS
       end
 
       private
-
-      def enforce_short_constraints!(pos, trade)
-        projected_qty_atoms = projected_qty_atoms(pos: pos, trade: trade)
-        return unless projected_qty_atoms < 0
-
-        if @accounting_method == ACCOUNTING_METHOD_FIFO
-          raise FCS::Error.new(
-            FCS::Errors::ERR_VALIDATION,
-            'Short selling is not supported with FIFO accounting',
-            details: { accountingMethod: @accounting_method }
-          )
-        end
-
-        account_id = trade.fetch('accountId')
-        collateral = @account_collateral[account_id]
-
-        if collateral.nil? || @max_leverage.nil? || collateral.zero?
-          raise FCS::Error.new(
-            FCS::Errors::ERR_VALIDATION,
-            'Short selling requires collateralQuote and riskModel.maxLeverage',
-            details: { accountId: account_id }
-          )
-        end
-
-        projected_abs_qty = FCS::Types::Decimal18.new(projected_qty_atoms.abs)
-        price = FCS::Types::Decimal18.from_string(trade.fetch('priceQuotePerBase'))
-        projected_notional = projected_abs_qty * price
-        max_notional = collateral * @max_leverage
-        return if projected_notional.atoms <= max_notional.atoms
-
-        raise FCS::Error.new(
-          FCS::Errors::ERR_VALIDATION,
-          'Leverage limit exceeded',
-          details: {
-            accountId: account_id,
-            projectedNotionalQuote: projected_notional.to_s,
-            collateralQuote: collateral.to_s,
-            maxLeverage: @max_leverage.to_s
-          }
-        )
-      end
-
-      def projected_qty_atoms(pos:, trade:)
-        qty = FCS::Types::Decimal18.from_string(trade.fetch('quantityBase'))
-
-        case trade.fetch('side')
-        when 'BUY'
-          pos.qty.atoms + qty.atoms
-        when 'SELL'
-          pos.qty.atoms - qty.atoms
-        else
-          pos.qty.atoms
-        end
-      end
 
       def position_builder_for(accounting_method)
         case accounting_method
