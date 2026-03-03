@@ -80,6 +80,7 @@ module FCS
       end
 
       def prepare_batch_input(input)
+        input.delete('timeline')
         input['trades'] = @sorter.sort(input.fetch('trades'))
         input
       end
