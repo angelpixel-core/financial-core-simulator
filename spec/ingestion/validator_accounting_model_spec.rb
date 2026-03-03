@@ -44,4 +44,36 @@ RSpec.describe FCS::Ingestion::Validator do
       expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
     }
   end
+
+  it 'rejects invalid maintenanceMarginRatio above configured bound' do
+    input = base_input.merge('riskModel' => { 'maintenanceMarginRatio' => '0.99' })
+
+    expect { described_class.new.validate!(input) }.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+      expect(e.details[:field]).to eq('riskModel.maintenanceMarginRatio')
+    }
+  end
+
+  it 'rejects missing liquidation.closeFactor when liquidation config is present' do
+    input = base_input.merge('riskModel' => { 'liquidation' => { 'enabled' => true } })
+
+    expect { described_class.new.validate!(input) }.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+      expect(e.details[:field]).to eq('riskModel.liquidation.closeFactor')
+    }
+  end
+
+  it 'accepts valid maintenanceMarginRatio and liquidation.closeFactor' do
+    input = base_input.merge(
+      'riskModel' => {
+        'maintenanceMarginRatio' => '0.25',
+        'liquidation' => {
+          'enabled' => true,
+          'closeFactor' => '0.5'
+        }
+      }
+    )
+
+    expect { described_class.new.validate!(input) }.not_to raise_error
+  end
 end
