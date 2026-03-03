@@ -86,6 +86,7 @@ RSpec.describe FCS::Application::Runner do
   end
   let(:cli) { instance_double(FCS::Reporting::CliSummary, print: true) }
   let(:logger) { double('logger', info: true) }
+  let(:checkpoint_store) { instance_double(FCS::Application::CheckpointStore, latest_checkpoint: nil) }
 
   around do |example|
     previous = ENV['FCS_TIMELINE_ENABLED']
@@ -127,9 +128,10 @@ RSpec.describe FCS::Application::Runner do
     runner.run!(input_path: 'input.json', output_dir: 'output', fee_enabled: false)
 
     expect(sorter).not_to have_received(:sort)
-    expect(simulate).to have_received(:call) do |input_arg, **_kwargs|
+    expect(simulate).to have_received(:call) do |input_arg, **kwargs|
       trade_ids = input_arg.fetch('trades').map { |trade| trade.fetch('tradeId') }
       expect(trade_ids).to eq(%w[t-1 t-2])
+      expect(kwargs).to include(checkpoint_store: kind_of(FCS::Application::CheckpointStore))
     end
   end
 end

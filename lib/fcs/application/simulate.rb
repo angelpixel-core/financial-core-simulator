@@ -3,7 +3,7 @@
 module FCS
   module Application
     class Simulate
-      def call(input, explain: false)
+      def call(input, explain: false, checkpoint_store: nil, input_hash: nil)
         fx = FCS::Engine::FXConverter.new(price_snapshot: input.fetch('priceSnapshot'))
 
         fee_enabled = input.dig('feeModel', 'enabled')
@@ -23,7 +23,9 @@ module FCS
         valuation = FCS::Engine::ValuationEngine.new(price_snapshot: input.fetch('priceSnapshot'))
         timeline_processor = FCS::Application::EventTimelineProcessor.new
         apply_execution_flow!(input: input, ledger: ledger, valuation: valuation,
-                              timeline_processor: timeline_processor)
+                              timeline_processor: timeline_processor,
+                              checkpoint_store: checkpoint_store,
+                              input_hash: input_hash)
         risk_health = risk_engine.evaluate_accounts!(state: ledger.state, valuation: valuation)
         liquidation_candidates = risk_engine.liquidation_candidates(risk_health)
         risk_events_by_account = index_risk_events(liquidation_candidates)
@@ -108,11 +110,18 @@ module FCS
         end
       end
 
-      def apply_execution_flow!(input:, ledger:, valuation:, timeline_processor:)
+      def apply_execution_flow!(input:, ledger:, valuation:, timeline_processor:, checkpoint_store:, input_hash:)
         timeline = input['timeline']
 
         if timeline.is_a?(Hash) && timeline['events'].is_a?(Array)
-          timeline_processor.call(events: timeline.fetch('events'), ledger: ledger, valuation: valuation)
+          timeline_processor.call(
+            events: timeline.fetch('events'),
+            ledger: ledger,
+            valuation: valuation,
+            checkpoint: input['checkpoint'],
+            checkpoint_store: checkpoint_store,
+            input_hash: input_hash
+          )
           return
         end
 

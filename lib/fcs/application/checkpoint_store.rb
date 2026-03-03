@@ -24,6 +24,13 @@ module FCS
         checkpoint
       end
 
+      def latest_checkpoint
+        path = latest_checkpoint_path
+        return nil if path.nil?
+
+        JSON.parse(File.read(path))
+      end
+
       private
 
       def checkpoint_due?(event_count)
@@ -59,6 +66,15 @@ module FCS
 
       def checkpoint_filename(timeline_seq)
         "checkpoint_#{timeline_seq}.json"
+      end
+
+      def latest_checkpoint_path
+        paths = Dir.glob(File.join(@output_dir, 'checkpoint_*.json'))
+        return nil if paths.empty?
+
+        paths.max_by do |path|
+          File.basename(path).match(/checkpoint_(\d+)\.json/)[1].to_i
+        end
       end
     end
   end

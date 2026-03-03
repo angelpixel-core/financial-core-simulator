@@ -44,7 +44,16 @@ module FCS
 
         run_id = SecureRandom.uuid
 
-        result = @simulate.call(input, explain: explain)
+        checkpoint_store = build_checkpoint_store(output_dir: output_dir, schema_version: schema_version)
+        checkpoint = checkpoint_store&.latest_checkpoint
+        input['checkpoint'] ||= checkpoint unless checkpoint.nil?
+
+        result = @simulate.call(
+          input,
+          explain: explain,
+          checkpoint_store: checkpoint_store,
+          input_hash: input_hash
+        )
 
         payload = FCS::Application::ReportPayloadBuilder.build(
           engine_version: FCS::VERSION,
@@ -96,6 +105,24 @@ module FCS
           .sort_by { |event| event.fetch('timelineSeq') }
           .select { |event| event.fetch('eventType') == 'TRADE_APPLIED' }
           .map { |event| event.fetch('trade') }
+      end
+
+      def build_checkpoint_store(output_dir:, schema_version:)
+        return nil unless timeline_feature_enabled?
+
+        checkpoint_every = ENV.fetch('FCS_CHECKPOINT_EVERY', '100').to_i
+        return nil if checkpoint_every <= 0
+
+        FCS::Application::CheckpointStore.new(
+          output_dir: output_dir,
+          checkpoint_every: checkpoint_every,
+          engine_version: FCS::VERSION,
+          schema_version: schema_version
+        )
+      end
+
+      def timeline_feature_enabled?
+        ENV['FCS_TIMELINE_ENABLED'] == '1'
       end
     end
   end
