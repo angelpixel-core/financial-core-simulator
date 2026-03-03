@@ -70,10 +70,35 @@ module FCS
         return if timeline.nil?
 
         previous_seq = nil
+        seen_full_idempotency = {}
+        seen_source_external = {}
         timeline.fetch('events').each do |event|
           raise_invalid!('timeline.events item must be an object', field: 'timeline.events') unless event.is_a?(Hash)
 
           validate_timeline_common_fields!(event)
+
+          idempotency_key = timeline_full_idempotency_key(event)
+          source_external_key = timeline_source_external_key(event)
+
+          if seen_full_idempotency.key?(idempotency_key)
+            validate_timeline_exact_duplicate!(
+              event,
+              stored_event: seen_full_idempotency.fetch(idempotency_key),
+              idempotency_key: idempotency_key
+            )
+
+            next
+          end
+
+          validate_timeline_partial_collision!(
+            event,
+            source_external_key: source_external_key,
+            seen_source_external: seen_source_external
+          )
+
+          seen_full_idempotency[idempotency_key] = event
+          seen_source_external[source_external_key] = event.fetch('timelineSeq')
+
           validate_timeline_monotonic_seq!(event.fetch('timelineSeq'), previous_seq)
           previous_seq = event.fetch('timelineSeq')
 
@@ -88,6 +113,52 @@ module FCS
                            details: { eventType: event.fetch('eventType') })
           end
         end
+      end
+
+      def timeline_full_idempotency_key(event)
+        [
+          event.fetch('source'),
+          event.fetch('externalId'),
+          event.fetch('timelineSeq')
+        ]
+      end
+
+      def timeline_source_external_key(event)
+        [
+          event.fetch('source'),
+          event.fetch('externalId')
+        ]
+      end
+
+      def validate_timeline_exact_duplicate!(event, stored_event:, idempotency_key:)
+        return if stored_event == event
+
+        raise_invalid!(
+          'timeline idempotency key conflict for duplicate event',
+          field: 'timeline.events.idempotencyKey',
+          details: {
+            source: idempotency_key[0],
+            externalId: idempotency_key[1],
+            timelineSeq: idempotency_key[2]
+          }
+        )
+      end
+
+      def validate_timeline_partial_collision!(event, source_external_key:, seen_source_external:)
+        previous_seq = seen_source_external[source_external_key]
+        return if previous_seq.nil?
+        return if previous_seq == event.fetch('timelineSeq')
+
+        raise_invalid!(
+          'timeline idempotency collision for source+externalId',
+          field: 'timeline.events.externalId',
+          details: {
+            source: source_external_key[0],
+            externalId: source_external_key[1],
+            previousSeq: previous_seq,
+            currentSeq: event.fetch('timelineSeq')
+          }
+        )
       end
 
       def validate_timeline_monotonic_seq!(current_seq, previous_seq)
