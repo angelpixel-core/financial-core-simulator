@@ -68,7 +68,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
 
     expect { engine.apply_trade!(sell) }
       .to raise_error(FCS::Error) { |e|
-        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.code).to eq(FCS::Errors::ERR_RISK_CONFIG_INVALID)
       }
   end
 

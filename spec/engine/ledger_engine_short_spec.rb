@@ -48,7 +48,7 @@ RSpec.describe 'LedgerEngine short selling with leverage' do
     engine = FCS::Engine::LedgerEngine.new
 
     expect { engine.apply_trade!(sell_trade(qty: '1', price: '100')) }
-      .to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_VALIDATION) }
+      .to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_RISK_CONFIG_INVALID) }
   end
 
   it 'rejects short when leverage exceeds threshold' do
@@ -58,6 +58,6 @@ RSpec.describe 'LedgerEngine short selling with leverage' do
     )
 
     expect { engine.apply_trade!(sell_trade(qty: '3', price: '100')) }
-      .to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_VALIDATION) }
+      .to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_RISK_REJECTION) }
   end
 end

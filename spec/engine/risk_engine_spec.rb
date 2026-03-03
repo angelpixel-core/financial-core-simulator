@@ -19,7 +19,7 @@ RSpec.describe FCS::Engine::RiskEngine do
         position: position,
         accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_FIFO
       )
-    end.to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_VALIDATION) }
+    end.to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_RISK_REJECTION) }
   end
 
   it 'rejects short selling when leverage config is missing' do
@@ -35,7 +35,26 @@ RSpec.describe FCS::Engine::RiskEngine do
         position: position,
         accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
       )
-    end.to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_VALIDATION) }
+    end.to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_RISK_CONFIG_INVALID) }
+  end
+
+  it 'rejects trade when projected notional exceeds leverage limit' do
+    engine = described_class.new(
+      account_collateral: { 'acc-1' => FCS::Types::Decimal18.from_string('100') },
+      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string('2') }
+    )
+
+    expect do
+      engine.pre_trade_check!(
+        account_id: 'acc-1',
+        market_id: 'ETH-USD',
+        side: 'SELL',
+        quantity: '3',
+        price: '100',
+        position: position,
+        accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
+      )
+    end.to raise_error(FCS::Error) { |e| expect(e.code).to eq(FCS::Errors::ERR_RISK_REJECTION) }
   end
 
   it 'returns deterministic liquidation candidates ordered by severity' do
