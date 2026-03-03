@@ -59,5 +59,79 @@ RSpec.describe Admin::DashboardMetrics do
         expect(metrics[:top_accounts].first[:account_id]).to eq("acc-2")
       end
     end
+
+    it "prefers live state metrics for latest global and top accounts when available" do
+      run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+      run.update!(duration_ms: 120, input_hash: "hash-live", schema_version: "1.0", engine_version: "0.1.0")
+
+      Dir.mktmpdir do |dir|
+        json_path = File.join(dir, "result.json")
+        File.write(
+          json_path,
+          JSON.pretty_generate(
+            {
+              "global" => { "totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "3.0", "unrealizedPnLQuote" => "2.0" },
+              "accounts" => [
+                { "accountId" => "acc-artifact", "totals" => { "totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "3.0", "unrealizedPnLQuote" => "2.0" } }
+              ]
+            }
+          )
+        )
+        run.update!(artifacts: { "result_json_path" => json_path })
+
+        live_provider = class_double("Admin::LiveStateMetrics").as_stubbed_const
+        live_instance = instance_double(
+          "Admin::LiveStateMetrics",
+          call: {
+            checkpoint_timeline_seq: 10,
+            latest_global: { "totalPnLQuote" => "77.0", "realizedNetPnLQuote" => "70.0", "unrealizedPnLQuote" => "7.0" },
+            top_accounts: [
+              {
+                account_id: "acc-live",
+                total_pnl_quote: BigDecimal("77.0"),
+                realized_net_pnl_quote: BigDecimal("70.0"),
+                unrealized_pnl_quote: BigDecimal("7.0")
+              }
+            ]
+          }
+        )
+        expect(live_provider).to receive(:new).and_return(live_instance)
+
+        metrics = described_class.new.call
+
+        expect(metrics[:latest_global]["totalPnLQuote"]).to eq("77.0")
+        expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq([ "acc-live" ])
+      end
+    end
+
+    it "falls back to artifact-backed metrics when live source raises" do
+      run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+
+      Dir.mktmpdir do |dir|
+        json_path = File.join(dir, "result.json")
+        File.write(
+          json_path,
+          JSON.pretty_generate(
+            {
+              "global" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" },
+              "accounts" => [
+                { "accountId" => "acc-fallback", "totals" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" } }
+              ]
+            }
+          )
+        )
+        run.update!(artifacts: { "result_json_path" => json_path })
+
+        live_provider = class_double("Admin::LiveStateMetrics").as_stubbed_const
+        live_instance = instance_double("Admin::LiveStateMetrics")
+        expect(live_provider).to receive(:new).and_return(live_instance)
+        expect(live_instance).to receive(:call).and_raise(StandardError, "live unavailable")
+
+        metrics = described_class.new.call
+
+        expect(metrics[:latest_global]["totalPnLQuote"]).to eq("9.0")
+        expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq([ "acc-fallback" ])
+      end
+    end
   end
 end

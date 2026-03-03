@@ -9,6 +9,8 @@ module Admin
     TOP_ACCOUNTS_LIMIT = 5
 
     def call
+      live_state = live_state_metrics
+
       {
         total_runs_7d: runs_since(WINDOW_7_DAYS).count,
         total_runs_30d: runs_since(WINDOW_30_DAYS).count,
@@ -17,8 +19,8 @@ module Admin
         runs_trend_14d: runs_trend_14d,
         status_mix_30d: status_mix_30d,
         latest_run: latest_run_data,
-        latest_global: latest_global_data,
-        top_accounts: top_accounts_data
+        latest_global: latest_global_data(live_state),
+        top_accounts: top_accounts_data(live_state)
       }
     end
 
@@ -71,14 +73,20 @@ module Admin
       nil
     end
 
-    def latest_global_data
+    def latest_global_data(live_state)
+      live_global = live_state&.fetch(:latest_global, nil)
+      return live_global if live_global.is_a?(Hash)
+
       payload = latest_payload
       return nil if payload.nil?
 
       payload["global"]
     end
 
-    def top_accounts_data
+    def top_accounts_data(live_state)
+      live_accounts = live_state&.fetch(:top_accounts, nil)
+      return live_accounts if live_accounts.is_a?(Array)
+
       payload = latest_payload
       return [] if payload.nil?
 
@@ -87,6 +95,12 @@ module Admin
         .map { |account| account_metrics(account) }
         .sort_by { |entry| -entry[:total_pnl_quote] }
         .first(TOP_ACCOUNTS_LIMIT)
+    end
+
+    def live_state_metrics
+      Admin::LiveStateMetrics.new.call
+    rescue StandardError
+      nil
     end
 
     def account_metrics(account)
