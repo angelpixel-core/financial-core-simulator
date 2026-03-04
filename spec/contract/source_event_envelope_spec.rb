@@ -30,4 +30,8 @@ RSpec.describe FCS::Ingestion::SourceEventValidator do
         }
     end
   end
+
+  it 'accepts envelope when all required metadata is present' do
+    expect { validator.validate!(base_event) }.not_to raise_error
+  end
 end
