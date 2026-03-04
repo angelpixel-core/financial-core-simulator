@@ -76,5 +76,38 @@ RSpec.describe Admin::LiveStateMetrics do
       run.destroy! if defined?(run) && run.persisted?
       FileUtils.rm_rf(base_dir) if defined?(base_dir)
     end
+
+    it "returns nil top_accounts when checkpoint has accounts without totals" do
+      base_dir = Rails.root.join("storage", "runs", "spec_live_state_metrics", "positions_only")
+      FileUtils.mkdir_p(base_dir)
+
+      run = Run.create!(status: :succeeded, input_json: { "schemaVersion" => "1.0" }, output_dir: base_dir.to_s)
+      File.write(
+        File.join(base_dir, "checkpoint_6.json"),
+        JSON.pretty_generate(
+          {
+            "timelineSeq" => 6,
+            "state" => {
+              "accounts" => [
+                {
+                  "accountId" => "acc-1",
+                  "markets" => [
+                    { "marketId" => "BTC-USD", "quantity" => "0.5", "avgCost" => "59000" }
+                  ]
+                }
+              ]
+            }
+          }
+        )
+      )
+
+      metrics = described_class.new.call
+
+      expect(metrics[:checkpoint_timeline_seq]).to eq(6)
+      expect(metrics[:top_accounts]).to be_nil
+    ensure
+      run.destroy! if defined?(run) && run.persisted?
+      FileUtils.rm_rf(base_dir) if defined?(base_dir)
+    end
   end
 end

@@ -50,7 +50,15 @@ module Admin
     end
 
     def top_accounts_data(accounts)
-      Array(accounts)
+      source = Array(accounts)
+      return nil if source.empty?
+
+      with_totals = source.select do |account|
+        account.is_a?(Hash) && account["totals"].is_a?(Hash)
+      end
+      return nil if with_totals.empty?
+
+      with_totals
         .map { |account| account_metrics(account) }
         .sort_by { |entry| -entry[:total_pnl_quote] }
         .first(TOP_ACCOUNTS_LIMIT)

@@ -133,5 +133,40 @@ RSpec.describe Admin::DashboardMetrics do
         expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq([ "acc-fallback" ])
       end
     end
+
+    it "falls back to artifact-backed top accounts when live data has no totals" do
+      run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+
+      Dir.mktmpdir do |dir|
+        json_path = File.join(dir, "result.json")
+        File.write(
+          json_path,
+          JSON.pretty_generate(
+            {
+              "global" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" },
+              "accounts" => [
+                { "accountId" => "acc-fallback", "totals" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" } }
+              ]
+            }
+          )
+        )
+        run.update!(artifacts: { "result_json_path" => json_path })
+
+        live_provider = class_double("Admin::LiveStateMetrics").as_stubbed_const
+        live_instance = instance_double(
+          "Admin::LiveStateMetrics",
+          call: {
+            checkpoint_timeline_seq: 6,
+            latest_global: nil,
+            top_accounts: nil
+          }
+        )
+        expect(live_provider).to receive(:new).and_return(live_instance)
+
+        metrics = described_class.new.call
+
+        expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq([ "acc-fallback" ])
+      end
+    end
   end
 end
