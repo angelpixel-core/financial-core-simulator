@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   get "/admin/overview", to: "admin/overview#show", as: :admin_overview
   get "/admin/overview/top-accounts", to: "admin/overview#top_accounts", as: :admin_overview_top_accounts
+  get "/dashboard/ingestion-validation-errors", to: "admin/overview#ingestion_validation_errors", as: :dashboard_ingestion_validation_errors
   get "/admin/component-comparison", to: "admin/component_comparisons#show", as: :admin_component_comparison
 
   get "/admin/resources/runs/:id/result", to: redirect("/runs/%{id}/result")

@@ -7,6 +7,17 @@ module Admin
     WINDOW_30_DAYS = 30.days
     RECENT_RUNS_LIMIT = 50
     TOP_ACCOUNTS_LIMIT = 5
+    INGESTION_ERRORS_LIMIT = 50
+    VALIDATION_ERROR_CODES = [
+      Runs::ErrorCodeMapper::VALIDATION_GENERAL,
+      Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING,
+      Runs::ErrorCodeMapper::VALIDATION_RISK,
+      Runs::ErrorCodeMapper::VALIDATION_COLLATERAL,
+      Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL,
+      Runs::ErrorCodeMapper::VALIDATION_UNKNOWN_REFERENCE,
+      Runs::ErrorCodeMapper::VALIDATION_DUPLICATE_SEQ,
+      Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
+    ].freeze
 
     def call
       live_state = live_state_metrics
@@ -24,7 +35,52 @@ module Admin
       }
     end
 
+    def ingestion_validation_errors(limit: INGESTION_ERRORS_LIMIT)
+      validation_failed_runs(limit: limit).map do |run|
+        input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
+
+        {
+          source: source_for_validation_error(run, input_json),
+          field: field_for_validation_error(run.error_code),
+          message: run.error_message.to_s,
+          occurredAt: run.updated_at&.utc&.iso8601,
+          correlationId: input_json["correlationId"] || run.run_uuid
+        }
+      end
+    end
+
     private
+
+    def validation_failed_runs(limit:)
+      Run.failed.where(error_code: VALIDATION_ERROR_CODES).order(id: :desc).limit(limit)
+    end
+
+    def source_for_validation_error(run, input_json)
+      input_json["source"] ||
+        input_json.dig("timeline", "events", 0, "source") ||
+        run.error_code
+    end
+
+    def field_for_validation_error(error_code)
+      case error_code
+      when Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING
+        "accountingModel.method"
+      when Runs::ErrorCodeMapper::VALIDATION_RISK
+        "riskModel"
+      when Runs::ErrorCodeMapper::VALIDATION_COLLATERAL
+        "accounts.collateralQuote"
+      when Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL
+        "trade.decimal"
+      when Runs::ErrorCodeMapper::VALIDATION_UNKNOWN_REFERENCE
+        "reference"
+      when Runs::ErrorCodeMapper::VALIDATION_DUPLICATE_SEQ
+        "trades.seq"
+      when Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
+        "number"
+      else
+        "sourceEvent"
+      end
+    end
 
     def runs_since(window)
       Run.where(created_at: window.ago..Time.current)

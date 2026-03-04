@@ -14,6 +14,10 @@ class Admin::OverviewController < ApplicationController
     end
   end
 
+  def ingestion_validation_errors
+    render json: { errors: dashboard_ingestion_validation_errors }, status: :ok
+  end
+
   private
 
   def authorize_admin_ui!
@@ -25,5 +29,9 @@ class Admin::OverviewController < ApplicationController
 
   def dashboard_metrics
     Admin::DashboardMetrics.new.call
+  end
+
+  def dashboard_ingestion_validation_errors
+    Admin::DashboardMetrics.new.ingestion_validation_errors
   end
 end
