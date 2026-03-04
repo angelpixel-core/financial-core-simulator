@@ -9,6 +9,8 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     expect(response.body).to include("/admin/overview/ingestion-validation-errors")
     expect(response.body).to include("submit->poll#applyFilters")
     expect(response.body).to include("click->poll#resetFilters")
+    expect(response.body).to include("input->poll#scheduleFilters")
+    expect(response.body).to include("blur->poll#applyFilters")
   end
 
   it "keeps selected filters in panel polling url on overview" do

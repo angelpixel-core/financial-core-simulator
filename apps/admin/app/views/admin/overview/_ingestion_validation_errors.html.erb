@@ -6,10 +6,10 @@
 
   <form method="get" action="<%= admin_overview_ingestion_validation_errors_path %>" data-turbo="false" data-action="submit->poll#applyFilters" style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
     <label for="source-filter" style="font-weight: 600;">Source</label>
-    <input id="source-filter" name="source" type="text" value="<%= selected_source %>" placeholder="agente.hft.alpha" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;" />
+    <input id="source-filter" name="source" type="text" value="<%= selected_source %>" placeholder="agente.hft.alpha" data-action="input->poll#scheduleFilters blur->poll#applyFilters" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;" />
 
     <label for="field-filter" style="font-weight: 600;">Field</label>
-    <input id="field-filter" name="field" type="text" value="<%= selected_field %>" placeholder="riskModel" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;" />
+    <input id="field-filter" name="field" type="text" value="<%= selected_field %>" placeholder="riskModel" data-action="input->poll#scheduleFilters blur->poll#applyFilters" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;" />
 
     <button type="submit" style="padding: 4px 10px; border: 1px solid #1a202c; border-radius: 6px; background: #1a202c; color: #fff;">Apply</button>
     <button type="button" data-action="click->poll#resetFilters" style="padding: 4px 10px; border: 1px solid #cbd5e0; border-radius: 6px; color: #1a202c; background: #fff;">Reset</button>

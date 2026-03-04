@@ -10,10 +10,12 @@ export default class extends Controller {
   connect() {
     this.refresh()
     this.timer = setInterval(() => this.refresh(), this.intervalValue)
+    this.filterTimer = null
   }
 
   disconnect() {
     clearInterval(this.timer)
+    this.clearScheduledFilters()
   }
 
   async refresh() {
@@ -28,12 +30,23 @@ export default class extends Controller {
   }
 
   applyFilters(event) {
-    event.preventDefault()
+    if (event) event.preventDefault()
+    this.clearScheduledFilters()
 
-    const form = event.target
+    const form = this.resolveForm(event)
+    if (!form) return
+
     const nextUrl = this.buildUrlWithQuery(form.action, new FormData(form))
     this.urlValue = nextUrl
     this.refresh()
+  }
+
+  scheduleFilters(event) {
+    const form = this.resolveForm(event)
+    if (!form) return
+
+    this.clearScheduledFilters()
+    this.filterTimer = setTimeout(() => this.applyFiltersFromForm(form), 450)
   }
 
   resetFilters(event) {
@@ -45,6 +58,29 @@ export default class extends Controller {
     form.reset()
     this.urlValue = form.action
     this.refresh()
+  }
+
+  applyFiltersFromForm(form) {
+    const nextUrl = this.buildUrlWithQuery(form.action, new FormData(form))
+    this.urlValue = nextUrl
+    this.refresh()
+  }
+
+  resolveForm(event) {
+    if (!event) return null
+
+    if (event.target instanceof HTMLFormElement) return event.target
+    if (event.target?.form) return event.target.form
+    if (event.currentTarget?.form) return event.currentTarget.form
+
+    return null
+  }
+
+  clearScheduledFilters() {
+    if (!this.filterTimer) return
+
+    clearTimeout(this.filterTimer)
+    this.filterTimer = null
   }
 
   buildUrlWithQuery(baseUrl, formData) {
