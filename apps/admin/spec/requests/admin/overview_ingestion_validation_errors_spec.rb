@@ -38,6 +38,32 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     expect(response.body).not_to include("source.agent.internal")
   end
 
+  it "filters by partial source match in the ingestion validation errors panel" do
+    create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK, message: "risk invalid")
+    create_validation_failed_run(source: "source.venue.external", error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
+
+    get "/admin/overview/ingestion-validation-errors",
+        params: { source: "agen" },
+        headers: { "X-Requested-With" => "XMLHttpRequest" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("agente.hft.alpha")
+    expect(response.body).not_to include("source.venue.external")
+  end
+
+  it "filters by source alias match in the ingestion validation errors panel" do
+    create_validation_failed_run(source: "source.venue.external", error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
+    create_validation_failed_run(source: "source.agent.internal", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK, message: "risk invalid")
+
+    get "/admin/overview/ingestion-validation-errors",
+        params: { source: "src" },
+        headers: { "X-Requested-With" => "XMLHttpRequest" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("source.venue.external")
+    expect(response.body).to include("source.agent.internal")
+  end
+
   it "filters by field in the ingestion validation errors panel" do
     create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK, message: "risk invalid")
     create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
@@ -49,6 +75,21 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("riskModel")
     expect(response.body).not_to include("accountingModel.method")
+  end
+
+  it "filters by partial case-insensitive field in the ingestion validation errors panel" do
+    create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK, message: "risk invalid")
+    create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
+    create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL, message: "trade decimal invalid")
+
+    get "/admin/overview/ingestion-validation-errors",
+        params: { field: "Model" },
+        headers: { "X-Requested-With" => "XMLHttpRequest" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("riskModel")
+    expect(response.body).to include("accountingModel.method")
+    expect(response.body).not_to include("trade.decimal")
   end
 
   it "renders empty-state for non-matching source+field filter" do

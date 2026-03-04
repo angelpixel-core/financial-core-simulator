@@ -62,13 +62,35 @@ module Admin
     def filter_validation_errors_by_source(entries, source)
       return entries if source.blank?
 
-      entries.select { |entry| entry[:source].to_s == source }
+      query = normalize_filter_query(source)
+      entries.select { |entry| partial_source_match?(entry[:source], query) }
     end
 
     def filter_validation_errors_by_field(entries, field)
       return entries if field.blank?
 
-      entries.select { |entry| entry[:field].to_s == field }
+      query = normalize_filter_query(field)
+      entries.select { |entry| partial_match?(entry[:field], query) }
+    end
+
+    def partial_source_match?(value, query)
+      expanded_source_aliases(value).any? { |candidate| candidate.include?(query) }
+    end
+
+    def expanded_source_aliases(value)
+      normalized = normalize_filter_query(value)
+      variants = [ normalized ]
+      variants << normalized.gsub("source", "src") if normalized.include?("source")
+      variants << normalized.gsub("src", "source") if normalized.include?("src")
+      variants.uniq
+    end
+
+    def partial_match?(value, query)
+      normalize_filter_query(value).include?(query)
+    end
+
+    def normalize_filter_query(value)
+      value.to_s.downcase.strip
     end
 
     def source_for_validation_error(run, input_json)
