@@ -1,0 +1,14 @@
+{
+  "eventVersion": "1.0",
+  "source": "venue.internal.matcher",
+  "eventType": "ORDER_FILLED",
+  "correlationId": "corr-venue-001",
+  "occurredAt": "2026-03-04T10:00:01Z",
+  "payload": {
+    "externalOrderId": "ord-1001",
+    "marketId": "ANG-ETH",
+    "status": "FILLED",
+    "filledQuantityBase": "12.5",
+    "avgFillPriceQuotePerBase": "0.0030"
+  }
+}

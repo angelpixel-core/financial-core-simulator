@@ -2,28 +2,44 @@ module FCS
   module Ingestion
     class SourceEventValidator
       REQUIRED_FIELDS = %w[eventVersion source eventType correlationId occurredAt payload].freeze
+      REQUIRED_STRING_FIELDS = %w[eventVersion source eventType correlationId occurredAt].freeze
 
       def validate!(event)
-        raise_invalid!('source event must be an object', field: 'sourceEvent') unless event.is_a?(Hash)
-
-        REQUIRED_FIELDS.each do |field|
-          raise_invalid!('missing required source event field', field: "sourceEvent.#{field}") unless event.key?(field)
-        end
-
-        validate_non_empty_string!(event['eventVersion'], field: 'sourceEvent.eventVersion')
-        validate_non_empty_string!(event['source'], field: 'sourceEvent.source')
-        validate_non_empty_string!(event['eventType'], field: 'sourceEvent.eventType')
-        validate_non_empty_string!(event['correlationId'], field: 'sourceEvent.correlationId')
-        validate_non_empty_string!(event['occurredAt'], field: 'sourceEvent.occurredAt')
-        unless event['payload'].is_a?(Hash)
-          raise_invalid!('source event payload must be an object',
-                         field: 'sourceEvent.payload')
-        end
+        validate_event_shape!(event)
+        validate_required_fields!(event)
+        validate_string_fields!(event)
+        validate_payload!(event)
 
         true
       end
 
       private
+
+      def validate_event_shape!(event)
+        return if event.is_a?(Hash)
+
+        raise_invalid!('source event must be an object', field: 'sourceEvent')
+      end
+
+      def validate_required_fields!(event)
+        REQUIRED_FIELDS.each do |field|
+          next if event.key?(field)
+
+          raise_invalid!('missing required source event field', field: "sourceEvent.#{field}")
+        end
+      end
+
+      def validate_string_fields!(event)
+        REQUIRED_STRING_FIELDS.each do |field|
+          validate_non_empty_string!(event.fetch(field), field: "sourceEvent.#{field}")
+        end
+      end
+
+      def validate_payload!(event)
+        return if event['payload'].is_a?(Hash)
+
+        raise_invalid!('source event payload must be an object', field: 'sourceEvent.payload')
+      end
 
       def validate_non_empty_string!(value, field:)
         return if value.is_a?(String) && !value.strip.empty?
