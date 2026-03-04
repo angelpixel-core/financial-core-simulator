@@ -103,7 +103,7 @@
   <section
     class="overview__live"
     data-controller="poll"
-    data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path %>"
+    data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path(source: @selected_source, field: @selected_field) %>"
     data-poll-interval-value="12000"
   >
     <div data-poll-target="container">

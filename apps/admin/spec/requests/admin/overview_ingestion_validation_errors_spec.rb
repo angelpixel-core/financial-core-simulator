@@ -7,6 +7,15 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Ingestion validation errors")
     expect(response.body).to include("/admin/overview/ingestion-validation-errors")
+    expect(response.body).to include("submit->poll#applyFilters")
+    expect(response.body).to include("click->poll#resetFilters")
+  end
+
+  it "keeps selected filters in panel polling url on overview" do
+    get "/admin/overview", params: { source: "source.venue.external", field: "riskModel" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("data-poll-url-value=\"/admin/overview/ingestion-validation-errors?field=riskModel&amp;source=source.venue.external\"")
   end
 
   it "renders ingestion validation errors fragment for xhr polling" do

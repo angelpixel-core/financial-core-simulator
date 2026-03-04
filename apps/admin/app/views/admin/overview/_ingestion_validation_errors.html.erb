@@ -4,7 +4,7 @@
     <p class="dashboard-card__meta">Updated <%= Time.current.strftime("%H:%M:%S") %></p>
   </header>
 
-  <form method="get" action="<%= admin_overview_ingestion_validation_errors_path %>" style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+  <form method="get" action="<%= admin_overview_ingestion_validation_errors_path %>" data-turbo="false" data-action="submit->poll#applyFilters" style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
     <label for="source-filter" style="font-weight: 600;">Source</label>
     <input id="source-filter" name="source" type="text" value="<%= selected_source %>" placeholder="agente.hft.alpha" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;" />
 
@@ -12,7 +12,7 @@
     <input id="field-filter" name="field" type="text" value="<%= selected_field %>" placeholder="riskModel" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;" />
 
     <button type="submit" style="padding: 4px 10px; border: 1px solid #1a202c; border-radius: 6px; background: #1a202c; color: #fff;">Apply</button>
-    <a href="<%= admin_overview_ingestion_validation_errors_path %>" style="padding: 4px 10px; border: 1px solid #cbd5e0; border-radius: 6px; color: #1a202c; text-decoration: none;">Reset</a>
+    <button type="button" data-action="click->poll#resetFilters" style="padding: 4px 10px; border: 1px solid #cbd5e0; border-radius: 6px; color: #1a202c; background: #fff;">Reset</button>
   </form>
 
   <% if errors.blank? %>

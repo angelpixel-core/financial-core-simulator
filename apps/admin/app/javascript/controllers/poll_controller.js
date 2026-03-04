@@ -26,4 +26,36 @@ export default class extends Controller {
 
     this.containerTarget.innerHTML = await response.text()
   }
+
+  applyFilters(event) {
+    event.preventDefault()
+
+    const form = event.target
+    const nextUrl = this.buildUrlWithQuery(form.action, new FormData(form))
+    this.urlValue = nextUrl
+    this.refresh()
+  }
+
+  resetFilters(event) {
+    event.preventDefault()
+
+    const form = event.currentTarget.form
+    if (!form) return
+
+    form.reset()
+    this.urlValue = form.action
+    this.refresh()
+  }
+
+  buildUrlWithQuery(baseUrl, formData) {
+    const params = new URLSearchParams()
+
+    for (const [key, value] of formData.entries()) {
+      const normalized = String(value).trim()
+      if (normalized.length > 0) params.append(key, normalized)
+    }
+
+    const query = params.toString()
+    return query.length > 0 ? `${baseUrl}?${query}` : baseUrl
+  }
 }
