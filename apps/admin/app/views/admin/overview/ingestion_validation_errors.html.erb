@@ -12,6 +12,10 @@
   </header>
 
   <section class="overview__live">
-    <%= render partial: "admin/overview/ingestion_validation_errors", locals: { errors: @errors } %>
+    <%= render partial: "admin/overview/ingestion_validation_errors", locals: {
+      errors: @errors,
+      selected_source: @selected_source,
+      selected_field: @selected_field
+    } %>
   </section>
 </main>

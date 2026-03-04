@@ -17,16 +17,16 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
   end
 
   it "filters by source in the ingestion validation errors panel" do
-    create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK, message: "risk invalid")
-    create_validation_failed_run(source: "venue.internal.matcher", error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
+    create_validation_failed_run(source: "source.agent.internal", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK, message: "risk invalid")
+    create_validation_failed_run(source: "source.venue.external", error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
 
     get "/admin/overview/ingestion-validation-errors",
-        params: { source: "venue.internal.matcher" },
+        params: { source: "source.venue.external" },
         headers: { "X-Requested-With" => "XMLHttpRequest" }
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("venue.internal.matcher")
-    expect(response.body).not_to include("agente.hft.alpha")
+    expect(response.body).to include("source.venue.external")
+    expect(response.body).not_to include("source.agent.internal")
   end
 
   it "filters by field in the ingestion validation errors panel" do

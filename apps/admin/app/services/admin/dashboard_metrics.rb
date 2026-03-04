@@ -35,8 +35,8 @@ module Admin
       }
     end
 
-    def ingestion_validation_errors(limit: INGESTION_ERRORS_LIMIT)
-      validation_failed_runs(limit: limit).map do |run|
+    def ingestion_validation_errors(limit: INGESTION_ERRORS_LIMIT, source: nil, field: nil)
+      entries = validation_failed_runs.map do |run|
         input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
 
         {
@@ -47,12 +47,28 @@ module Admin
           correlationId: input_json["correlationId"] || run.run_uuid
         }
       end
+
+      entries = filter_validation_errors_by_source(entries, source)
+      entries = filter_validation_errors_by_field(entries, field)
+      entries.first(limit)
     end
 
     private
 
-    def validation_failed_runs(limit:)
-      Run.failed.where(error_code: VALIDATION_ERROR_CODES).order(id: :desc).limit(limit)
+    def validation_failed_runs
+      Run.failed.where(error_code: VALIDATION_ERROR_CODES).order(id: :desc)
+    end
+
+    def filter_validation_errors_by_source(entries, source)
+      return entries if source.blank?
+
+      entries.select { |entry| entry[:source].to_s == source }
+    end
+
+    def filter_validation_errors_by_field(entries, field)
+      return entries if field.blank?
+
+      entries.select { |entry| entry[:field].to_s == field }
     end
 
     def source_for_validation_error(run, input_json)

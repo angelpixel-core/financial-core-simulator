@@ -3,7 +3,9 @@ class Admin::OverviewController < ApplicationController
 
   def show
     @metrics = dashboard_metrics
-    @ingestion_validation_errors = dashboard_ingestion_validation_errors
+    @selected_source = normalize_filter_value(params[:source])
+    @selected_field = normalize_filter_value(params[:field])
+    @ingestion_validation_errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
   end
 
   def top_accounts
@@ -16,13 +18,21 @@ class Admin::OverviewController < ApplicationController
   end
 
   def ingestion_validation_errors
-    render json: { errors: dashboard_ingestion_validation_errors }, status: :ok
+    source = normalize_filter_value(params[:source])
+    field = normalize_filter_value(params[:field])
+    render json: { errors: dashboard_ingestion_validation_errors(source: source, field: field) }, status: :ok
   end
 
   def ingestion_validation_errors_panel
-    @errors = dashboard_ingestion_validation_errors
+    @selected_source = normalize_filter_value(params[:source])
+    @selected_field = normalize_filter_value(params[:field])
+    @errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
     if request.xhr?
-      render partial: "admin/overview/ingestion_validation_errors", locals: { errors: @errors }
+      render partial: "admin/overview/ingestion_validation_errors", locals: {
+        errors: @errors,
+        selected_source: @selected_source,
+        selected_field: @selected_field
+      }
     else
       render :ingestion_validation_errors
     end
@@ -41,7 +51,14 @@ class Admin::OverviewController < ApplicationController
     Admin::DashboardMetrics.new.call
   end
 
-  def dashboard_ingestion_validation_errors
-    Admin::DashboardMetrics.new.ingestion_validation_errors
+  def dashboard_ingestion_validation_errors(source: nil, field: nil)
+    Admin::DashboardMetrics.new.ingestion_validation_errors(source: source, field: field)
+  end
+
+  def normalize_filter_value(value)
+    normalized = value.to_s.strip
+    return nil if normalized.empty?
+
+    normalized
   end
 end

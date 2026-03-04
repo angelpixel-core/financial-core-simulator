@@ -107,7 +107,11 @@
     data-poll-interval-value="12000"
   >
     <div data-poll-target="container">
-      <%= render partial: "admin/overview/ingestion_validation_errors", locals: { errors: @ingestion_validation_errors } %>
+      <%= render partial: "admin/overview/ingestion_validation_errors", locals: {
+        errors: @ingestion_validation_errors,
+        selected_source: @selected_source,
+        selected_field: @selected_field
+      } %>
     </div>
   </section>
 </main>
