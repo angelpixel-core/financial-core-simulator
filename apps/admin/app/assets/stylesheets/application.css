@@ -147,6 +147,12 @@ body {
   gap: 6px;
 }
 
+.trend-bars__bar-wrap {
+  height: 96px;
+  display: flex;
+  align-items: flex-end;
+}
+
 .trend-bars__bar {
   width: 20px;
   min-height: 4px;
