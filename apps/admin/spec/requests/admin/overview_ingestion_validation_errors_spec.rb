@@ -15,4 +15,57 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Ingestion validation errors")
   end
+
+  it "filters by source in the ingestion validation errors panel" do
+    create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK, message: "risk invalid")
+    create_validation_failed_run(source: "venue.internal.matcher", error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
+
+    get "/admin/overview/ingestion-validation-errors",
+        params: { source: "venue.internal.matcher" },
+        headers: { "X-Requested-With" => "XMLHttpRequest" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("venue.internal.matcher")
+    expect(response.body).not_to include("agente.hft.alpha")
+  end
+
+  it "filters by field in the ingestion validation errors panel" do
+    create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK, message: "risk invalid")
+    create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
+
+    get "/admin/overview/ingestion-validation-errors",
+        params: { field: "riskModel" },
+        headers: { "X-Requested-With" => "XMLHttpRequest" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("riskModel")
+    expect(response.body).not_to include("accountingModel.method")
+  end
+
+  it "renders empty-state for non-matching source+field filter" do
+    create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK, message: "risk invalid")
+
+    get "/admin/overview/ingestion-validation-errors",
+        params: { source: "faucet.erc20.ang", field: "accounts.collateralQuote" },
+        headers: { "X-Requested-With" => "XMLHttpRequest" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("No ingestion validation errors.")
+  end
+
+  def create_validation_failed_run(source:, error_code:, message:)
+    Run.create!(
+      status: :failed,
+      error_code: error_code,
+      error_message: message,
+      input_json: {
+        "correlationId" => "corr-#{SecureRandom.hex(4)}",
+        "timeline" => {
+          "events" => [
+            { "source" => source }
+          ]
+        }
+      }
+    )
+  end
 end
