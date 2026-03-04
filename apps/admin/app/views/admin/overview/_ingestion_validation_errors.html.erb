@@ -1,0 +1,33 @@
+<article class="dashboard-card">
+  <header class="dashboard-card__header">
+    <h3>Ingestion validation errors</h3>
+    <p class="dashboard-card__meta">Updated <%= Time.current.strftime("%H:%M:%S") %></p>
+  </header>
+
+  <% if errors.blank? %>
+    <p class="empty-state">No ingestion validation errors.</p>
+  <% else %>
+    <table class="top-accounts-table">
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th>Field</th>
+          <th>Message</th>
+          <th>Occurred</th>
+          <th>Correlation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% errors.each do |error| %>
+          <tr>
+            <td><%= error[:source] %></td>
+            <td><%= error[:field] %></td>
+            <td><%= error[:message] %></td>
+            <td><%= error[:occurredAt] || "-" %></td>
+            <td><%= error[:correlationId] || "-" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</article>

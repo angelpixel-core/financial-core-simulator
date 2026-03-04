@@ -99,4 +99,15 @@
       <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics } %>
     </div>
   </section>
+
+  <section
+    class="overview__live"
+    data-controller="poll"
+    data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path %>"
+    data-poll-interval-value="12000"
+  >
+    <div data-poll-target="container">
+      <%= render partial: "admin/overview/ingestion_validation_errors", locals: { errors: @ingestion_validation_errors } %>
+    </div>
+  </section>
 </main>

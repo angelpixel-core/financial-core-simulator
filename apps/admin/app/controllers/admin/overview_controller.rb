@@ -3,6 +3,7 @@ class Admin::OverviewController < ApplicationController
 
   def show
     @metrics = dashboard_metrics
+    @ingestion_validation_errors = dashboard_ingestion_validation_errors
   end
 
   def top_accounts
@@ -16,6 +17,15 @@ class Admin::OverviewController < ApplicationController
 
   def ingestion_validation_errors
     render json: { errors: dashboard_ingestion_validation_errors }, status: :ok
+  end
+
+  def ingestion_validation_errors_panel
+    @errors = dashboard_ingestion_validation_errors
+    if request.xhr?
+      render partial: "admin/overview/ingestion_validation_errors", locals: { errors: @errors }
+    else
+      render :ingestion_validation_errors
+    end
   end
 
   private

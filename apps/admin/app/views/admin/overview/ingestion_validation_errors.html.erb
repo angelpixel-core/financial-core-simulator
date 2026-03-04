@@ -1,0 +1,17 @@
+<main class="overview">
+  <header class="overview__header">
+    <div>
+      <p class="overview__eyebrow">Admin</p>
+      <h1>Ingestion Validation Errors</h1>
+      <p class="overview__subtitle">Standalone view for latest envelope validation failures.</p>
+    </div>
+    <nav class="overview__nav">
+      <a class="overview__link" href="<%= admin_overview_path %>">Back to overview</a>
+      <a class="overview__link" href="/admin/resources/runs">Open Runs</a>
+    </nav>
+  </header>
+
+  <section class="overview__live">
+    <%= render partial: "admin/overview/ingestion_validation_errors", locals: { errors: @errors } %>
+  </section>
+</main>
