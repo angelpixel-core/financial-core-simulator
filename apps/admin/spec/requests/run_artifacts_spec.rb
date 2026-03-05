@@ -117,6 +117,52 @@ RSpec.describe "Run artifacts", type: :request do
     FileUtils.rm_f(path) if defined?(path)
   end
 
+  it "returns forbidden when only X-Admin-Token is provided for artifact access" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
+
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-token-ui-header.json")
+    File.write(path, JSON.generate({ ok: true }))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/result", headers: { "X-Admin-Token" => "secret-token" }
+
+    expect(response).to have_http_status(:forbidden)
+    expect(response.body).to include("Forbidden")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
+  it "serves artifact when operator role header is provided" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
+
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-token-operator-role.json")
+    File.write(path, JSON.generate({ ok: true }))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/result", headers: { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+
+    expect(response).to have_http_status(:ok)
+    expect(JSON.parse(response.body)).to eq({ "ok" => true })
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
   it "renders CSV preview inline when preview=1 is passed" do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
