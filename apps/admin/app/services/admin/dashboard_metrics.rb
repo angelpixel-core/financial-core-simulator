@@ -19,6 +19,10 @@ module Admin
       Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
     ].freeze
 
+    def initialize(ingestion_validation_error_mapper: Admin::Dashboard::IngestionValidationErrorMapper.new)
+      @ingestion_validation_error_mapper = ingestion_validation_error_mapper
+    end
+
     def call
       live_state = live_state_metrics
 
@@ -37,15 +41,7 @@ module Admin
 
     def ingestion_validation_errors(limit: INGESTION_ERRORS_LIMIT, source: nil, field: nil)
       entries = validation_failed_runs.map do |run|
-        input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
-
-        {
-          source: source_for_validation_error(run, input_json),
-          field: field_for_validation_error(run.error_code),
-          message: run.error_message.to_s,
-          occurredAt: run.updated_at&.utc&.iso8601,
-          correlationId: input_json["correlationId"] || run.run_uuid
-        }
+        @ingestion_validation_error_mapper.map(run: run)
       end
 
       entries = filter_validation_errors_by_source(entries, source)
@@ -91,33 +87,6 @@ module Admin
 
     def normalize_filter_query(value)
       value.to_s.downcase.strip
-    end
-
-    def source_for_validation_error(run, input_json)
-      input_json["source"] ||
-        input_json.dig("timeline", "events", 0, "source") ||
-        run.error_code
-    end
-
-    def field_for_validation_error(error_code)
-      case error_code
-      when Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING
-        "accountingModel.method"
-      when Runs::ErrorCodeMapper::VALIDATION_RISK
-        "riskModel"
-      when Runs::ErrorCodeMapper::VALIDATION_COLLATERAL
-        "accounts.collateralQuote"
-      when Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL
-        "trade.decimal"
-      when Runs::ErrorCodeMapper::VALIDATION_UNKNOWN_REFERENCE
-        "reference"
-      when Runs::ErrorCodeMapper::VALIDATION_DUPLICATE_SEQ
-        "trades.seq"
-      when Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
-        "number"
-      else
-        "sourceEvent"
-      end
     end
 
     def runs_since(window)

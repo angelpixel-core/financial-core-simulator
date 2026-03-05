@@ -20,7 +20,9 @@ class Admin::OverviewController < ApplicationController
   def ingestion_validation_errors
     source = normalize_filter_value(params[:source])
     field = normalize_filter_value(params[:field])
-    render json: { errors: dashboard_ingestion_validation_errors(source: source, field: field) }, status: :ok
+    render json: ingestion_validation_errors_response_serializer.serialize(
+      errors: dashboard_ingestion_validation_errors(source: source, field: field)
+    ), status: :ok
   end
 
   def dashboard_overview
@@ -90,6 +92,10 @@ class Admin::OverviewController < ApplicationController
     @widget_response_serializer ||= Admin::Dashboard::WidgetResponseSerializer.new(
       compatibility_guard: dashboard_compatibility_guard
     )
+  end
+
+  def ingestion_validation_errors_response_serializer
+    @ingestion_validation_errors_response_serializer ||= Admin::Dashboard::IngestionValidationErrorsResponseSerializer.new
   end
 
   def dashboard_ingestion_validation_errors(source: nil, field: nil)
