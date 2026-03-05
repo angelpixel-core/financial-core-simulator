@@ -25,40 +25,53 @@ class Admin::OverviewController < ApplicationController
 
   def dashboard_overview
     metrics = dashboard_metrics
-
-    render json: {
-      runKpis: {
-        totalRuns7d: metrics[:total_runs_7d],
-        totalRuns30d: metrics[:total_runs_30d],
-        successRateLast50: metrics[:success_rate_last_50],
-        avgDurationMsLast50: metrics[:avg_duration_ms_last_50]
+    payload = {
+      "runKpis" => {
+        "totalRuns7d" => metrics[:total_runs_7d],
+        "totalRuns30d" => metrics[:total_runs_30d],
+        "successRateLast50" => metrics[:success_rate_last_50],
+        "avgDurationMsLast50" => metrics[:avg_duration_ms_last_50]
       },
-      runsTrend14d: metrics[:runs_trend_14d],
-      statusMix30d: metrics[:status_mix_30d],
-      latestRun: metrics[:latest_run],
-      globalSummary: metrics[:latest_global],
-      topAccounts: metrics[:top_accounts]
-    }, status: :ok
+      "runsTrend14d" => metrics[:runs_trend_14d],
+      "statusMix30d" => metrics[:status_mix_30d],
+      "latestRun" => metrics[:latest_run],
+      "globalSummary" => metrics[:latest_global],
+      "topAccounts" => metrics[:top_accounts]
+    }
+
+    render json: dashboard_compatibility_guard.overview_payload(payload: payload, metrics: metrics), status: :ok
   end
 
   def dashboard_top_accounts
     metrics = dashboard_metrics
-    render json: { topAccounts: metrics[:top_accounts] || [] }, status: :ok
+    render json: dashboard_compatibility_guard.widget_payload(
+      payload: { "topAccounts" => metrics[:top_accounts] || [] },
+      required_widget_keys: [ "topAccounts" ]
+    ), status: :ok
   end
 
   def dashboard_risk
     metrics = dashboard_metrics
-    render json: { riskView: metrics[:risk_view] || {} }, status: :ok
+    render json: dashboard_compatibility_guard.widget_payload(
+      payload: { "riskView" => metrics[:risk_view] || {} },
+      required_widget_keys: [ "riskView" ]
+    ), status: :ok
   end
 
   def dashboard_trend
     metrics = dashboard_metrics
-    render json: { runsTrend14d: metrics[:runs_trend_14d] || [] }, status: :ok
+    render json: dashboard_compatibility_guard.widget_payload(
+      payload: { "runsTrend14d" => metrics[:runs_trend_14d] || [] },
+      required_widget_keys: [ "runsTrend14d" ]
+    ), status: :ok
   end
 
   def dashboard_latest_run
     metrics = dashboard_metrics
-    render json: { latestRun: metrics[:latest_run] }, status: :ok
+    render json: dashboard_compatibility_guard.widget_payload(
+      payload: { "latestRun" => metrics[:latest_run] },
+      required_widget_keys: [ "latestRun" ]
+    ), status: :ok
   end
 
   def ingestion_validation_errors_panel
@@ -87,6 +100,10 @@ class Admin::OverviewController < ApplicationController
 
   def dashboard_metrics
     Admin::DashboardMetrics.new.call
+  end
+
+  def dashboard_compatibility_guard
+    @dashboard_compatibility_guard ||= Admin::Dashboard::CompatibilityGuard.new
   end
 
   def dashboard_ingestion_validation_errors(source: nil, field: nil)

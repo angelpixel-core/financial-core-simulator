@@ -7,7 +7,8 @@ RSpec.describe "Dashboard widgets", type: :request do
     expect(response).to have_http_status(:ok)
 
     parsed = JSON.parse(response.body)
-    expect(parsed.keys).to eq([ "topAccounts" ])
+    expect(parsed.keys).to contain_exactly("contractVersion", "topAccounts")
+    expect(parsed.fetch("contractVersion")).to eq("v1")
     expect(parsed.fetch("topAccounts")).to be_a(Array)
   end
 
@@ -17,7 +18,8 @@ RSpec.describe "Dashboard widgets", type: :request do
     expect(response).to have_http_status(:ok)
 
     parsed = JSON.parse(response.body)
-    expect(parsed.keys).to eq([ "riskView" ])
+    expect(parsed.keys).to contain_exactly("contractVersion", "riskView")
+    expect(parsed.fetch("contractVersion")).to eq("v1")
     expect(parsed.fetch("riskView")).to be_a(Hash)
   end
 
@@ -27,7 +29,8 @@ RSpec.describe "Dashboard widgets", type: :request do
     expect(response).to have_http_status(:ok)
 
     parsed = JSON.parse(response.body)
-    expect(parsed.keys).to eq([ "runsTrend14d" ])
+    expect(parsed.keys).to contain_exactly("contractVersion", "runsTrend14d")
+    expect(parsed.fetch("contractVersion")).to eq("v1")
     expect(parsed.fetch("runsTrend14d")).to be_a(Array)
   end
 
@@ -37,7 +40,8 @@ RSpec.describe "Dashboard widgets", type: :request do
     expect(response).to have_http_status(:ok)
 
     parsed = JSON.parse(response.body)
-    expect(parsed.keys).to eq([ "latestRun" ])
+    expect(parsed.keys).to contain_exactly("contractVersion", "latestRun")
+    expect(parsed.fetch("contractVersion")).to eq("v1")
   end
 
   it "returns forbidden for widget endpoints when ADMIN_UI_TOKEN is configured and token is missing" do
