@@ -1,0 +1,9 @@
+<article class="ui-empty-state">
+  <% if @icon.present? %>
+    <p class="ui-empty-state__icon" aria-hidden="true"><%= @icon %></p>
+  <% end %>
+  <% if @title.present? %>
+    <h3 class="ui-empty-state__title"><%= @title %></h3>
+  <% end %>
+  <p class="ui-empty-state__message empty-state"><%= @message %></p>
+</article>

@@ -183,3 +183,40 @@ body {
   font-weight: 600;
   background: var(--surface-soft);
 }
+
+.ui-empty-state {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--surface-soft);
+}
+
+.ui-empty-state__icon {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.ui-empty-state__title {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.ui-data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ui-data-table th,
+.ui-data-table td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.ui-data-table th {
+  color: var(--muted);
+  font-weight: 600;
+  background: var(--surface-soft);
+}
