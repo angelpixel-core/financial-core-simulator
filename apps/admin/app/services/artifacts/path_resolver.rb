@@ -10,13 +10,27 @@ module Artifacts
       raw_path = @run.public_send(@attribute)
       return nil if raw_path.blank?
 
-      expanded_path = File.expand_path(raw_path)
-      allowed_prefix = "#{@storage_root}#{File::SEPARATOR}"
+      expanded_path = Pathname.new(raw_path).expand_path
+      return nil unless expanded_path.file?
 
-      return nil unless expanded_path.start_with?(allowed_prefix)
-      return nil unless File.file?(expanded_path)
+      resolved_storage_root = resolve_storage_root
+      resolved_artifact_path = expanded_path.realpath
+      allowed_prefix = "#{resolved_storage_root}#{File::SEPARATOR}"
 
-      expanded_path
+      return nil unless resolved_artifact_path.to_s.start_with?(allowed_prefix)
+
+      resolved_artifact_path.to_s
+    rescue Errno::ENOENT, Errno::EACCES
+      nil
+    end
+
+    private
+
+    def resolve_storage_root
+      storage_root = Pathname.new(@storage_root)
+      return storage_root.realpath if storage_root.exist?
+
+      storage_root
     end
   end
 end

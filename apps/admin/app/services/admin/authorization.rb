@@ -49,15 +49,11 @@ module Admin
     end
 
     def provided_token_for(token_key)
-      bearer_token.presence ||
-        @request.headers["X-Admin-Token"].to_s.presence ||
-        artifact_header_token_for(token_key)
-    end
-
-    def artifact_header_token_for(token_key)
-      return nil unless token_key == "ADMIN_ARTIFACTS_TOKEN"
-
-      @request.headers["X-Admin-Artifact-Token"].to_s.presence
+      if token_key == "ADMIN_ARTIFACTS_TOKEN"
+        bearer_token.presence || @request.headers["X-Admin-Artifact-Token"].to_s.presence
+      else
+        bearer_token.presence || @request.headers["X-Admin-Token"].to_s.presence
+      end
     end
   end
 end
