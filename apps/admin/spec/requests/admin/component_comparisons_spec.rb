@@ -28,4 +28,17 @@ RSpec.describe "Admin component comparison", type: :request do
 
     expect(response).to have_http_status(:ok)
   end
+
+  it "renders drilldown table and empty-state variants for default/loading/empty/error" do
+    get "/admin/component-comparison"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("DataTable: default")
+    expect(response.body).to include("DataTable: loading")
+    expect(response.body).to include("EmptyState: empty")
+    expect(response.body).to include("EmptyState: error")
+    expect(response.body).to include("No account totals available.")
+    expect(response.body).to include("Loading dashboard data...")
+    expect(response.body).to include("Dashboard source unavailable.")
+  end
 end
