@@ -23,6 +23,24 @@ class Admin::OverviewController < ApplicationController
     render json: { errors: dashboard_ingestion_validation_errors(source: source, field: field) }, status: :ok
   end
 
+  def dashboard_overview
+    metrics = dashboard_metrics
+
+    render json: {
+      runKpis: {
+        totalRuns7d: metrics[:total_runs_7d],
+        totalRuns30d: metrics[:total_runs_30d],
+        successRateLast50: metrics[:success_rate_last_50],
+        avgDurationMsLast50: metrics[:avg_duration_ms_last_50]
+      },
+      runsTrend14d: metrics[:runs_trend_14d],
+      statusMix30d: metrics[:status_mix_30d],
+      latestRun: metrics[:latest_run],
+      globalSummary: metrics[:latest_global],
+      topAccounts: metrics[:top_accounts]
+    }, status: :ok
+  end
+
   def ingestion_validation_errors_panel
     @selected_source = normalize_filter_value(params[:source])
     @selected_field = normalize_filter_value(params[:field])
