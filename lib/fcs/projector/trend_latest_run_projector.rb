@@ -7,7 +7,7 @@ module FCS
       SUPPORTED_EVENT_TYPE = 'RUN_LIFECYCLE_NORMALIZED'.freeze
       SUPPORTED_STATUSES = %w[queued running succeeded failed].freeze
 
-      def initialize(today: Date.current)
+      def initialize(today: Date.today)
         @today = today
         @event_counts_by_day = Hash.new(0)
         @latest_run = nil
