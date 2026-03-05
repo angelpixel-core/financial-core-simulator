@@ -1,6 +1,8 @@
 module Admin
   module Dashboard
     class ReadMetrics
+      class ReadPathUnavailableError < StandardError; end
+
       def initialize(
         env: ENV,
         read_path_config: nil,
@@ -13,19 +15,19 @@ module Admin
       end
 
       def call
-        return read_from_artifact unless @read_path_config.bff_read_enabled?
+        return read_from_bff_with_optional_fallback if @read_path_config.bff_read_enabled?
 
-        read_from_bff_with_optional_fallback
+        read_from_artifact
       end
 
       private
 
       def read_from_bff_with_optional_fallback
         @bff_reader.call
-      rescue StandardError
-        raise unless @read_path_config.fallback_enabled?
+      rescue StandardError => error
+        return read_from_artifact if @read_path_config.fallback_enabled?
 
-        read_from_artifact
+        raise ReadPathUnavailableError, "BFF read failed and fallback is disabled: #{error.message}"
       end
 
       def read_from_artifact

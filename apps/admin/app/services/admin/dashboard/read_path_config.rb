@@ -3,6 +3,7 @@ module Admin
     class ReadPathConfig
       FEATURE_FLAG_KEY = "ADMIN_DASHBOARD_BFF_READ_ENABLED"
       FALLBACK_FLAG_KEY = "ADMIN_DASHBOARD_BFF_FALLBACK_ENABLED"
+      TRUE_VALUES = %w[1 true on yes].freeze
 
       def initialize(env: ENV)
         @env = env
@@ -19,7 +20,8 @@ module Admin
       private
 
       def parse_boolean(key)
-        ActiveModel::Type::Boolean.new.cast(@env[key])
+        value = @env[key].to_s.strip.downcase
+        TRUE_VALUES.include?(value)
       end
     end
   end
