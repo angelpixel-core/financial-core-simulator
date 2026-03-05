@@ -22,6 +22,10 @@ Rails.application.routes.draw do
   get "/avo", to: redirect("/admin"), as: :legacy_avo_root
   get "/avo/*path", to: redirect("/admin/%{path}"), as: :legacy_avo_catch_all
 
+  if Rails.env.development? && defined?(Lookbook)
+    mount Lookbook::Engine, at: "/lookbook"
+  end
+
   mount Avo::Engine, at: Avo.configuration.root_path
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

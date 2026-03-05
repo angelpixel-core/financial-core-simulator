@@ -59,6 +59,9 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Component catalog and preview UI for ViewComponent/Phlex
+  gem "lookbook", "~> 2.3"
 end
 
 gem "financial-core-simulator", path: "../..", require: "fcs"
