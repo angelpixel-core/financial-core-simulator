@@ -15,6 +15,7 @@ module Admin
         legacy_payload = overview_payload.fetch("legacy", {})
 
         normalized = legacy_payload.deep_symbolize_keys
+        normalized[:latest_global] = metrics[:latest_global] if metrics[:latest_global].is_a?(Hash)
         normalized[:risk_view] = metrics[:risk_view]
         normalized
       end

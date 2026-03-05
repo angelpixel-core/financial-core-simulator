@@ -18,6 +18,7 @@ RSpec.describe "Admin overview BFF feature flag", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("acc-bff")
+      expect(response.body).to include("777.0")
       expect(response.body).not_to include("acc-artifact")
     end
   end
@@ -74,7 +75,12 @@ RSpec.describe "Admin overview BFF feature flag", type: :request do
       runs_trend_14d: (0...14).map { |offset| { day: (Date.current - (13 - offset)).strftime("%m-%d"), count: 0 } },
       status_mix_30d: { queued: 0, running: 0, succeeded: 0, failed: 0 },
       latest_run: nil,
-      latest_global: nil,
+      latest_global: {
+        "totalPnLQuote" => "777.0",
+        "realizedNetPnLQuote" => "700.0",
+        "unrealizedPnLQuote" => "77.0",
+        "totalPnLUsd" => "777.0"
+      },
       top_accounts: [
         {
           account_id: account_id,
