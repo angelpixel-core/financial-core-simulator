@@ -1,6 +1,8 @@
 class RunExecutionsController < ApplicationController
+  include AdminUiAuthorizable
+
   before_action :load_run
-  before_action :authorize_admin_ui!
+  before_action -> { authorize_admin_ui!(required_role: "operator") }
 
   def create
     if async_requested?
@@ -21,13 +23,6 @@ class RunExecutionsController < ApplicationController
 
   def load_run
     @run = Run.find(params[:id])
-  end
-
-  def authorize_admin_ui!
-    auth = Admin::Authorization.new(request: request)
-    return if auth.allow?(required_role: "operator", token_key: "ADMIN_UI_TOKEN")
-
-    render plain: "Forbidden", status: :forbidden
   end
 
   def async_requested?

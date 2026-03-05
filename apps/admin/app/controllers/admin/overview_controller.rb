@@ -1,5 +1,7 @@
 class Admin::OverviewController < ApplicationController
-  before_action :authorize_admin_ui!
+  include AdminUiAuthorizable
+
+  before_action -> { authorize_admin_ui!(required_role: "viewer") }
 
   def show
     @metrics = dashboard_metrics
@@ -66,13 +68,6 @@ class Admin::OverviewController < ApplicationController
   end
 
   private
-
-  def authorize_admin_ui!
-    auth = Admin::Authorization.new(request: request)
-    return if auth.allow?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")
-
-    render plain: "Forbidden", status: :forbidden
-  end
 
   def dashboard_metrics
     Admin::Dashboard::ReadMetrics.new.call
