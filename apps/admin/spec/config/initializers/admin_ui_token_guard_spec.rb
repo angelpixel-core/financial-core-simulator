@@ -21,13 +21,13 @@ RSpec.describe "admin_ui_token_guard initializer" do
     allow(Rails).to receive(:env).and_return(production_env)
     ENV["ADMIN_UI_TOKEN"] = nil
 
-    expect { load initializer_path }.to raise_error(RuntimeError, /ADMIN_UI_TOKEN/)
+    expect { load initializer_path }.to raise_error(RuntimeError, "Missing required ADMIN_UI_TOKEN in production")
   end
 
   it "fails fast in production when ADMIN_UI_TOKEN is blank" do
     allow(Rails).to receive(:env).and_return(production_env)
     ENV["ADMIN_UI_TOKEN"] = "   "
 
-    expect { load initializer_path }.to raise_error(RuntimeError, /ADMIN_UI_TOKEN/)
+    expect { load initializer_path }.to raise_error(RuntimeError, "Missing required ADMIN_UI_TOKEN in production")
   end
 end
