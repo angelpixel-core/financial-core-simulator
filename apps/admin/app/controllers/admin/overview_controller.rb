@@ -73,7 +73,7 @@ class Admin::OverviewController < ApplicationController
   end
 
   def dashboard_metrics
-    Admin::DashboardMetrics.new.call
+    Admin::Dashboard::ReadMetrics.new.call
   end
 
   def dashboard_compatibility_guard
