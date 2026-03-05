@@ -41,6 +41,20 @@ RSpec.describe "Admin overview BFF fallback", type: :request do
     end
   end
 
+  it "returns non-success for dashboard widget endpoint on BFF degradation when fallback is disabled" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_DASHBOARD_BFF_READ_ENABLED").and_return("1")
+    allow(ENV).to receive(:[]).with("ADMIN_DASHBOARD_BFF_FALLBACK_ENABLED").and_return("0")
+
+    failing_bff = instance_double("Admin::Dashboard::BffReadMetrics")
+    allow(failing_bff).to receive(:call).and_raise(StandardError, "bff unavailable")
+    allow(Admin::Dashboard::BffReadMetrics).to receive(:new).and_return(failing_bff)
+
+    get "/dashboard/top-accounts", as: :json
+
+    expect(response).to have_http_status(:internal_server_error)
+  end
+
   def run_with_accounts_json(dir:, account_id:, total_pnl_quote:)
     run = Run.create!(status: :succeeded, input_json: { "schemaVersion" => "1.0" })
     path = File.join(dir, "result.json")

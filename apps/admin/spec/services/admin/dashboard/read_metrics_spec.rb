@@ -45,4 +45,21 @@ RSpec.describe Admin::Dashboard::ReadMetrics do
       described_class.new(env: { "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "1" }, bff_reader: bff_reader, artifact_reader: artifact_reader).call
     end.to raise_error(StandardError, "bff unavailable")
   end
+
+  it "raises when BFF fails and fallback is explicitly disabled" do
+    bff_reader = instance_double("Admin::Dashboard::BffReadMetrics")
+    allow(bff_reader).to receive(:call).and_raise(StandardError, "bff unavailable")
+    artifact_reader = instance_double("Admin::DashboardMetrics")
+
+    expect do
+      described_class.new(
+        env: {
+          "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "1",
+          "ADMIN_DASHBOARD_BFF_FALLBACK_ENABLED" => "0"
+        },
+        bff_reader: bff_reader,
+        artifact_reader: artifact_reader
+      ).call
+    end.to raise_error(StandardError, "bff unavailable")
+  end
 end
