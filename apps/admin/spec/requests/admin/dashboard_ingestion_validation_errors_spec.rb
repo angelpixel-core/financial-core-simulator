@@ -20,7 +20,8 @@ RSpec.describe "Dashboard ingestion validation errors", type: :request do
 
     expect(response).to have_http_status(:ok)
     parsed = JSON.parse(response.body)
-    expect(parsed).to include("errors")
+    expect(parsed).to include("contractVersion", "errors")
+    expect(parsed.fetch("contractVersion")).to eq("v1")
     expect(parsed["errors"]).to be_a(Array)
     expect(parsed["errors"]).not_to be_empty
     expect(parsed["errors"].first).to include("source", "field", "message", "occurredAt", "correlationId")
