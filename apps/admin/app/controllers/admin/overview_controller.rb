@@ -25,53 +25,27 @@ class Admin::OverviewController < ApplicationController
 
   def dashboard_overview
     metrics = dashboard_metrics
-    payload = {
-      "runKpis" => {
-        "totalRuns7d" => metrics[:total_runs_7d],
-        "totalRuns30d" => metrics[:total_runs_30d],
-        "successRateLast50" => metrics[:success_rate_last_50],
-        "avgDurationMsLast50" => metrics[:avg_duration_ms_last_50]
-      },
-      "runsTrend14d" => metrics[:runs_trend_14d],
-      "statusMix30d" => metrics[:status_mix_30d],
-      "latestRun" => metrics[:latest_run],
-      "globalSummary" => metrics[:latest_global],
-      "topAccounts" => metrics[:top_accounts]
-    }
-
-    render json: dashboard_compatibility_guard.overview_payload(payload: payload, metrics: metrics), status: :ok
+    render json: overview_response_serializer.serialize(metrics: metrics), status: :ok
   end
 
   def dashboard_top_accounts
     metrics = dashboard_metrics
-    render json: dashboard_compatibility_guard.widget_payload(
-      payload: { "topAccounts" => metrics[:top_accounts] || [] },
-      required_widget_keys: [ "topAccounts" ]
-    ), status: :ok
+    render json: widget_response_serializer.top_accounts(metrics: metrics), status: :ok
   end
 
   def dashboard_risk
     metrics = dashboard_metrics
-    render json: dashboard_compatibility_guard.widget_payload(
-      payload: { "riskView" => metrics[:risk_view] || {} },
-      required_widget_keys: [ "riskView" ]
-    ), status: :ok
+    render json: widget_response_serializer.risk(metrics: metrics), status: :ok
   end
 
   def dashboard_trend
     metrics = dashboard_metrics
-    render json: dashboard_compatibility_guard.widget_payload(
-      payload: { "runsTrend14d" => metrics[:runs_trend_14d] || [] },
-      required_widget_keys: [ "runsTrend14d" ]
-    ), status: :ok
+    render json: widget_response_serializer.trend(metrics: metrics), status: :ok
   end
 
   def dashboard_latest_run
     metrics = dashboard_metrics
-    render json: dashboard_compatibility_guard.widget_payload(
-      payload: { "latestRun" => metrics[:latest_run] },
-      required_widget_keys: [ "latestRun" ]
-    ), status: :ok
+    render json: widget_response_serializer.latest_run(metrics: metrics), status: :ok
   end
 
   def ingestion_validation_errors_panel
@@ -104,6 +78,18 @@ class Admin::OverviewController < ApplicationController
 
   def dashboard_compatibility_guard
     @dashboard_compatibility_guard ||= Admin::Dashboard::CompatibilityGuard.new
+  end
+
+  def overview_response_serializer
+    @overview_response_serializer ||= Admin::Dashboard::OverviewResponseSerializer.new(
+      compatibility_guard: dashboard_compatibility_guard
+    )
+  end
+
+  def widget_response_serializer
+    @widget_response_serializer ||= Admin::Dashboard::WidgetResponseSerializer.new(
+      compatibility_guard: dashboard_compatibility_guard
+    )
   end
 
   def dashboard_ingestion_validation_errors(source: nil, field: nil)
