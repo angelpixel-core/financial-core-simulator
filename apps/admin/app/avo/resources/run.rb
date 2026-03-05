@@ -64,6 +64,20 @@ class Avo::Resources::Run < Avo::BaseResource
       end
     end
 
+    panel "Triage drilldown" do
+      field :overview_drilldown, as: :text, as_html: true, only_on: :show, name: "overview" do
+        view_context.link_to("Open admin overview", view_context.main_app.admin_overview_path, rel: "noopener")
+      end
+
+      field :top_accounts_drilldown, as: :text, as_html: true, only_on: :show, name: "top accounts" do
+        view_context.link_to("Open top accounts", view_context.main_app.admin_overview_top_accounts_path, rel: "noopener")
+      end
+
+      field :ingestion_errors_drilldown, as: :text, as_html: true, only_on: :show, name: "ingestion errors" do
+        view_context.link_to("Open ingestion validation errors", view_context.main_app.admin_overview_ingestion_validation_errors_path, rel: "noopener")
+      end
+    end
+
     panel "Artifacts viewer" do
       field :result_download, as: :text, as_html: true, only_on: :show, name: "result.json" do
         next "Unavailable" if record.result_json_path.blank?
