@@ -2,6 +2,7 @@ module Admin
   module Dashboard
     class ReadMetrics
       FEATURE_FLAG_KEY = "ADMIN_DASHBOARD_BFF_READ_ENABLED"
+      FALLBACK_FLAG_KEY = "ADMIN_DASHBOARD_BFF_FALLBACK_ENABLED"
 
       def initialize(
         env: ENV,
@@ -17,12 +18,20 @@ module Admin
         return @artifact_reader.call unless bff_read_enabled?
 
         @bff_reader.call
+      rescue StandardError
+        raise unless fallback_enabled?
+
+        @artifact_reader.call
       end
 
       private
 
       def bff_read_enabled?
         ActiveModel::Type::Boolean.new.cast(@env[FEATURE_FLAG_KEY])
+      end
+
+      def fallback_enabled?
+        ActiveModel::Type::Boolean.new.cast(@env[FALLBACK_FLAG_KEY])
       end
     end
   end
