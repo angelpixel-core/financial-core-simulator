@@ -45,11 +45,13 @@ module FCS
       def apply_account_totals!(event, occurred_at, occurred_at_value)
         payload = event.fetch('payload')
         account_id = payload.fetch('accountId')
+        correlation_id = event.fetch('correlationId')
 
         validate_non_empty_string!(account_id, field: 'event.payload.accountId')
+        validate_non_empty_string!(correlation_id, field: 'event.correlationId')
 
         previous = @top_accounts_occurred_at[account_id]
-        return if previous && occurred_at < previous
+        return if previous && occurred_at <= previous
 
         @top_accounts_occurred_at[account_id] = occurred_at
         @top_accounts_by_id[account_id] = {
@@ -57,7 +59,7 @@ module FCS
           'totalPnLQuote' => payload.fetch('totalPnLQuote').to_s,
           'realizedNetPnLQuote' => payload.fetch('realizedNetPnLQuote').to_s,
           'unrealizedPnLQuote' => payload.fetch('unrealizedPnLQuote').to_s,
-          'correlationId' => event.fetch('correlationId').to_s,
+          'correlationId' => correlation_id,
           'occurredAt' => occurred_at_value
         }
       end
@@ -65,18 +67,20 @@ module FCS
       def apply_risk_snapshot!(event, occurred_at, occurred_at_value)
         payload = event.fetch('payload')
         account_id = payload.fetch('accountId')
+        correlation_id = event.fetch('correlationId')
 
         validate_non_empty_string!(account_id, field: 'event.payload.accountId')
+        validate_non_empty_string!(correlation_id, field: 'event.correlationId')
 
         previous = @risk_view_occurred_at[account_id]
-        return if previous && occurred_at < previous
+        return if previous && occurred_at <= previous
 
         @risk_view_occurred_at[account_id] = occurred_at
         @risk_view_by_id[account_id] = {
           'accountId' => account_id,
           'status' => payload.fetch('status').to_s,
           'marginRatio' => payload.fetch('marginRatio').to_s,
-          'correlationId' => event.fetch('correlationId').to_s,
+          'correlationId' => correlation_id,
           'occurredAt' => occurred_at_value
         }
       end
@@ -84,7 +88,7 @@ module FCS
       def sorted_top_accounts
         @top_accounts_by_id
           .values
-          .sort_by { |row| -decimal_value(row.fetch('totalPnLQuote')) }
+          .sort_by { |row| [-decimal_value(row.fetch('totalPnLQuote')), row.fetch('accountId')] }
       end
 
       def decimal_value(value)
