@@ -31,4 +31,15 @@ RSpec.describe "Dashboard compatibility contract", type: :request do
     expect(parsed).to include("contractVersion", "topAccounts")
     expect(parsed.fetch("contractVersion")).to eq("v1")
   end
+
+  it "keeps ingestion validation errors response additive with contract version marker" do
+    get "/dashboard/ingestion-validation-errors", as: :json
+
+    expect(response).to have_http_status(:ok)
+
+    parsed = JSON.parse(response.body)
+    expect(parsed).to include("contractVersion", "errors")
+    expect(parsed.fetch("contractVersion")).to eq("v1")
+    expect(parsed.fetch("errors")).to all(include("source", "field", "message", "occurredAt", "correlationId"))
+  end
 end

@@ -34,6 +34,11 @@ RSpec.describe "Dashboard contract regression", type: :request do
     expect(top_accounts.fetch("contractVersion")).to eq("v1")
     expect(top_accounts.keys).to contain_exactly("contractVersion", "topAccounts")
 
+    ingestion_errors = get_json("/dashboard/ingestion-validation-errors")
+    expect(ingestion_errors.fetch("contractVersion")).to eq("v1")
+    expect(ingestion_errors.keys).to contain_exactly("contractVersion", "errors")
+    expect(ingestion_errors.fetch("errors")).to all(include("source", "field", "message", "occurredAt", "correlationId"))
+
     risk = get_json("/dashboard/risk")
     expect(risk.fetch("contractVersion")).to eq("v1")
     expect(risk.keys).to contain_exactly("contractVersion", "riskView")
@@ -59,6 +64,7 @@ RSpec.describe "Dashboard contract regression", type: :request do
     required_payload_key_by_path = {
       "/dashboard/overview" => "runKpis",
       "/dashboard/top-accounts" => "topAccounts",
+      "/dashboard/ingestion-validation-errors" => "errors",
       "/dashboard/risk" => "riskView",
       "/dashboard/trend" => "runsTrend14d",
       "/dashboard/latest-run" => "latestRun"
