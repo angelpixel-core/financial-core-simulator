@@ -3,6 +3,10 @@ Rails.application.routes.draw do
   get "/admin/overview/top-accounts", to: "admin/overview#top_accounts", as: :admin_overview_top_accounts
   get "/admin/overview/ingestion-validation-errors", to: "admin/overview#ingestion_validation_errors_panel", as: :admin_overview_ingestion_validation_errors
   get "/dashboard/overview", to: "admin/overview#dashboard_overview", as: :dashboard_overview
+  get "/dashboard/top-accounts", to: "admin/overview#dashboard_top_accounts", as: :dashboard_top_accounts
+  get "/dashboard/risk", to: "admin/overview#dashboard_risk", as: :dashboard_risk
+  get "/dashboard/trend", to: "admin/overview#dashboard_trend", as: :dashboard_trend
+  get "/dashboard/latest-run", to: "admin/overview#dashboard_latest_run", as: :dashboard_latest_run
   get "/dashboard/ingestion-validation-errors", to: "admin/overview#ingestion_validation_errors", as: :dashboard_ingestion_validation_errors
   get "/admin/component-comparison", to: "admin/component_comparisons#show", as: :admin_component_comparison
 

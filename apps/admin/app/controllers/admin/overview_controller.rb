@@ -41,6 +41,26 @@ class Admin::OverviewController < ApplicationController
     }, status: :ok
   end
 
+  def dashboard_top_accounts
+    metrics = dashboard_metrics
+    render json: { topAccounts: metrics[:top_accounts] || [] }, status: :ok
+  end
+
+  def dashboard_risk
+    metrics = dashboard_metrics
+    render json: { riskView: metrics[:risk_view] || {} }, status: :ok
+  end
+
+  def dashboard_trend
+    metrics = dashboard_metrics
+    render json: { runsTrend14d: metrics[:runs_trend_14d] || [] }, status: :ok
+  end
+
+  def dashboard_latest_run
+    metrics = dashboard_metrics
+    render json: { latestRun: metrics[:latest_run] }, status: :ok
+  end
+
   def ingestion_validation_errors_panel
     @selected_source = normalize_filter_value(params[:source])
     @selected_field = normalize_filter_value(params[:field])
