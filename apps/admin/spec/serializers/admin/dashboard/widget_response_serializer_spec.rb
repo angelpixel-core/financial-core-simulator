@@ -28,4 +28,18 @@ RSpec.describe Admin::Dashboard::WidgetResponseSerializer do
 
     expect(result).to eq("contractVersion" => "v1", "runsTrend14d" => [])
   end
+
+  it "serializes latest run with additive empty object when metric is nil" do
+    guard = instance_double("Admin::Dashboard::CompatibilityGuard")
+    serializer = described_class.new(compatibility_guard: guard)
+
+    expect(guard).to receive(:widget_payload).with(
+      payload: { "latestRun" => {} },
+      required_widget_keys: [ "latestRun" ]
+    ).and_return("contractVersion" => "v1", "latestRun" => {})
+
+    result = serializer.latest_run(metrics: { latest_run: nil })
+
+    expect(result).to eq("contractVersion" => "v1", "latestRun" => {})
+  end
 end

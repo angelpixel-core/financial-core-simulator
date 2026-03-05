@@ -13,11 +13,11 @@ module Admin
             "successRateLast50" => metrics[:success_rate_last_50],
             "avgDurationMsLast50" => metrics[:avg_duration_ms_last_50]
           },
-          "runsTrend14d" => metrics[:runs_trend_14d],
-          "statusMix30d" => metrics[:status_mix_30d],
-          "latestRun" => metrics[:latest_run],
-          "globalSummary" => metrics[:latest_global],
-          "topAccounts" => metrics[:top_accounts]
+          "runsTrend14d" => Array(metrics[:runs_trend_14d]),
+          "statusMix30d" => metrics[:status_mix_30d] || {},
+          "latestRun" => metrics[:latest_run] || {},
+          "globalSummary" => metrics[:latest_global] || {},
+          "topAccounts" => Array(metrics[:top_accounts])
         }
 
         @compatibility_guard.overview_payload(payload: payload, metrics: metrics)

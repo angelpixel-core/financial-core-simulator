@@ -18,7 +18,7 @@ module Admin
       end
 
       def latest_run(metrics:)
-        serialize_widget(payload: { "latestRun" => metrics[:latest_run] }, required_widget_keys: [ "latestRun" ])
+        serialize_widget(payload: { "latestRun" => metrics[:latest_run] || {} }, required_widget_keys: [ "latestRun" ])
       end
 
       private

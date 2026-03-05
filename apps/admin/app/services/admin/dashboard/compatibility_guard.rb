@@ -62,6 +62,7 @@ module Admin
       end
 
       def normalize_hash(payload)
+        return {} if payload.nil?
         return payload.deep_stringify_keys if payload.respond_to?(:deep_stringify_keys)
 
         payload

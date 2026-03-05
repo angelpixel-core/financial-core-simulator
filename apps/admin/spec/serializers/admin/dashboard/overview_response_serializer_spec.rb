@@ -24,4 +24,26 @@ RSpec.describe Admin::Dashboard::OverviewResponseSerializer do
 
     expect(serializer.serialize(metrics: metrics_payload)).to eq("contractVersion" => "v1")
   end
+
+  it "normalizes nil metrics to additive empty structures" do
+    serializer = described_class.new
+
+    payload = serializer.serialize(metrics: {
+      total_runs_7d: 0,
+      total_runs_30d: 0,
+      success_rate_last_50: 0,
+      avg_duration_ms_last_50: nil,
+      runs_trend_14d: nil,
+      status_mix_30d: nil,
+      latest_run: nil,
+      latest_global: nil,
+      top_accounts: nil
+    })
+
+    expect(payload.fetch("runsTrend14d")).to eq([])
+    expect(payload.fetch("statusMix30d")).to eq({})
+    expect(payload.fetch("latestRun")).to eq({})
+    expect(payload.fetch("globalSummary")).to eq({})
+    expect(payload.fetch("topAccounts")).to eq([])
+  end
 end
