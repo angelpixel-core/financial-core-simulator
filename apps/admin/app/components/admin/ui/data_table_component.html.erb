@@ -7,12 +7,26 @@
     </tr>
   </thead>
   <tbody>
-    <% @rows.each do |row| %>
+    <% if loading? %>
       <tr>
-        <% @columns.each do |column| %>
-          <td><%= row.fetch(column.fetch(:key), "-") %></td>
-        <% end %>
+        <td colspan="<%= column_count %>"><%= @loading_message %></td>
       </tr>
+    <% elsif error? %>
+      <tr>
+        <td colspan="<%= column_count %>"><%= @error_message %></td>
+      </tr>
+    <% elsif empty? %>
+      <tr>
+        <td colspan="<%= column_count %>">No account totals available.</td>
+      </tr>
+    <% else %>
+      <% @rows.each do |row| %>
+        <tr>
+          <% @columns.each do |column| %>
+            <td><%= row.fetch(column.fetch(:key), "-") %></td>
+          <% end %>
+        </tr>
+      <% end %>
     <% end %>
   </tbody>
 </table>
