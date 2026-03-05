@@ -2,6 +2,7 @@ class Admin::OverviewController < ApplicationController
   include AdminUiAuthorizable
 
   before_action -> { authorize_admin_ui!(required_role: "viewer") }
+  rescue_from Admin::Dashboard::ReadMetrics::ReadPathUnavailableError, with: :render_dashboard_unavailable
 
   def show
     @metrics = dashboard_metrics
@@ -28,28 +29,33 @@ class Admin::OverviewController < ApplicationController
   end
 
   def dashboard_overview
-    metrics = dashboard_metrics
-    render json: overview_response_serializer.serialize(metrics: metrics), status: :ok
+    render_dashboard_json do |metrics|
+      overview_response_serializer.serialize(metrics: metrics)
+    end
   end
 
   def dashboard_top_accounts
-    metrics = dashboard_metrics
-    render json: widget_response_serializer.top_accounts(metrics: metrics), status: :ok
+    render_dashboard_json do |metrics|
+      widget_response_serializer.top_accounts(metrics: metrics)
+    end
   end
 
   def dashboard_risk
-    metrics = dashboard_metrics
-    render json: widget_response_serializer.risk(metrics: metrics), status: :ok
+    render_dashboard_json do |metrics|
+      widget_response_serializer.risk(metrics: metrics)
+    end
   end
 
   def dashboard_trend
-    metrics = dashboard_metrics
-    render json: widget_response_serializer.trend(metrics: metrics), status: :ok
+    render_dashboard_json do |metrics|
+      widget_response_serializer.trend(metrics: metrics)
+    end
   end
 
   def dashboard_latest_run
-    metrics = dashboard_metrics
-    render json: widget_response_serializer.latest_run(metrics: metrics), status: :ok
+    render_dashboard_json do |metrics|
+      widget_response_serializer.latest_run(metrics: metrics)
+    end
   end
 
   def ingestion_validation_errors_panel
@@ -95,6 +101,18 @@ class Admin::OverviewController < ApplicationController
 
   def dashboard_ingestion_validation_errors(source: nil, field: nil)
     Admin::DashboardMetrics.new.ingestion_validation_errors(source: source, field: field)
+  end
+
+  def render_dashboard_json
+    metrics = dashboard_metrics
+    render json: yield(metrics), status: :ok
+  end
+
+  def render_dashboard_unavailable(_error)
+    render json: {
+      "contractVersion" => Admin::Dashboard::CompatibilityGuard::CONTRACT_VERSION,
+      "error" => "dashboard_read_unavailable"
+    }, status: :service_unavailable
   end
 
   def normalize_filter_value(value)

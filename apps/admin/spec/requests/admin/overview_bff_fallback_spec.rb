@@ -52,7 +52,10 @@ RSpec.describe "Admin overview BFF fallback", type: :request do
 
     get "/dashboard/top-accounts", as: :json
 
-    expect(response).to have_http_status(:internal_server_error)
+    expect(response).to have_http_status(:service_unavailable)
+    parsed = JSON.parse(response.body)
+    expect(parsed.fetch("contractVersion")).to eq("v1")
+    expect(parsed.fetch("error")).to eq("dashboard_read_unavailable")
   end
 
   def run_with_accounts_json(dir:, account_id:, total_pnl_quote:)
