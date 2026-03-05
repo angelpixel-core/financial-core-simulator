@@ -7,15 +7,24 @@ class RunExecutionsController < ApplicationController
   def create
     if async_requested?
       RunExecutionJob.perform_later(@run.id, fee_enabled: fee_enabled?, explain: explain?, verbose: verbose?)
-      payload = { status: "enqueued", run_id: @run.id }
+      payload = execution_payload(status: "enqueued")
     else
       Runs::Execute.new.call(@run, fee_enabled: fee_enabled?, explain: explain?, verbose: verbose?)
-      payload = { status: "executed", run_id: @run.id }
+      payload = execution_payload(status: "executed")
     end
 
     respond_to do |format|
       format.json { render json: payload, status: :ok }
       format.html { redirect_back fallback_location: "/admin/resources/runs/#{@run.id}" }
+    end
+  rescue StandardError => error
+    payload = execution_payload(status: "failed").merge("error" => error.message)
+
+    respond_to do |format|
+      format.json { render json: payload, status: :unprocessable_entity }
+      format.html do
+        redirect_back fallback_location: "/admin/resources/runs/#{@run.id}", alert: error.message
+      end
     end
   end
 
@@ -43,5 +52,13 @@ class RunExecutionsController < ApplicationController
 
   def parse_boolean(value)
     ActiveModel::Type::Boolean.new.cast(value)
+  end
+
+  def execution_payload(status:)
+    {
+      "status" => status,
+      "runId" => @run.id,
+      "runStatus" => @run.reload.status
+    }
   end
 end
