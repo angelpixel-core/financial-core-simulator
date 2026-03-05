@@ -18,7 +18,9 @@ module Admin
       expected_token = @env[token_key].to_s
       return true if expected_token.empty?
 
-      provided_token = bearer_token.presence || @request.headers["X-Admin-Token"].to_s.presence || @request.headers["X-Admin-Artifact-Token"].to_s
+      provided_token = provided_token_for(token_key)
+      return false if provided_token.blank?
+
       ActiveSupport::SecurityUtils.secure_compare(provided_token, expected_token)
     rescue ArgumentError
       false
@@ -44,6 +46,18 @@ module Admin
       return nil unless auth_header.start_with?("Bearer ")
 
       auth_header.delete_prefix("Bearer ")
+    end
+
+    def provided_token_for(token_key)
+      bearer_token.presence ||
+        @request.headers["X-Admin-Token"].to_s.presence ||
+        artifact_header_token_for(token_key)
+    end
+
+    def artifact_header_token_for(token_key)
+      return nil unless token_key == "ADMIN_ARTIFACTS_TOKEN"
+
+      @request.headers["X-Admin-Artifact-Token"].to_s.presence
     end
   end
 end

@@ -54,4 +54,13 @@ RSpec.describe Admin::Authorization do
     expect(auth.allow?(required_role: "operator", token_key: "ADMIN_UI_TOKEN")).to be(true)
     expect(auth.allow?(required_role: "admin", token_key: "ADMIN_UI_TOKEN")).to be(true)
   end
+
+  it "does not accept artifact token header for ADMIN_UI_TOKEN checks" do
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+    request.headers["X-Admin-Artifact-Token"] = "ui-secret"
+
+    auth = described_class.new(request: request)
+
+    expect(auth.allow?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")).to be(false)
+  end
 end

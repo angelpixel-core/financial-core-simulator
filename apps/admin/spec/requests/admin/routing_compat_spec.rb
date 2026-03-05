@@ -16,4 +16,13 @@ RSpec.describe "Admin routing compatibility", type: :request do
 
     expect(response).to have_http_status(:forbidden)
   end
+
+  it "allows Avo resources access when ADMIN_UI_TOKEN bearer token is provided" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/resources/runs", headers: { "Authorization" => "Bearer ui-secret" }
+
+    expect(response).not_to have_http_status(:forbidden)
+  end
 end
