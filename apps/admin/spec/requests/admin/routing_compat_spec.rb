@@ -8,6 +8,28 @@ RSpec.describe "Admin routing compatibility", type: :request do
     expect(response.headers["Location"]).to end_with("/admin")
   end
 
+  it "redirects legacy /avo catch-all path to /admin equivalent" do
+    get "/avo/resources/runs"
+
+    expect(response).to have_http_status(:moved_permanently)
+    expect(response.headers["Location"]).to end_with("/admin/resources/runs")
+  end
+
+  it "keeps exact /up publicly accessible even when ADMIN_UI_TOKEN is set" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/up"
+
+    expect(response).to have_http_status(:ok)
+  end
+
+  it "does not treat non-exact /up/* paths as public health exceptions" do
+    get "/up/internal"
+
+    expect(response).not_to have_http_status(:ok)
+  end
+
   it "forbids Avo resources access when ADMIN_UI_TOKEN is set and missing" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
@@ -24,5 +46,14 @@ RSpec.describe "Admin routing compatibility", type: :request do
     get "/admin/resources/runs", headers: { "Authorization" => "Bearer ui-secret" }
 
     expect(response).not_to have_http_status(:forbidden)
+  end
+
+  it "forbids dashboard overview when ADMIN_UI_TOKEN is set and token is missing" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/dashboard/overview", as: :json
+
+    expect(response).to have_http_status(:forbidden)
   end
 end
