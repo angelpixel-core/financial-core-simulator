@@ -11,7 +11,8 @@ class Admin::Ui::EmptyStateComponentPreview < ViewComponent::Preview
     render Admin::Ui::EmptyStateComponent.new(
       title: "Loading",
       message: "Preparing dashboard data.",
-      icon: "..."
+      icon: "...",
+      tone: :loading
     )
   end
 
@@ -25,7 +26,8 @@ class Admin::Ui::EmptyStateComponentPreview < ViewComponent::Preview
     render Admin::Ui::EmptyStateComponent.new(
       title: "Data unavailable",
       message: "The dashboard source is temporarily unavailable. Try again in a few seconds.",
-      icon: "!"
+      icon: "!",
+      tone: :error
     )
   end
 end

@@ -22,35 +22,24 @@ class Admin::Ui::DataTableComponentPreview < ViewComponent::Preview
   def loading
     render Admin::Ui::DataTableComponent.new(
       columns: columns,
-      rows: [
-        {
-          account: "loading...",
-          total_pnl_quote: "...",
-          realized_net: "...",
-          unrealized: "..."
-        }
-      ]
+      rows: [],
+      state: :loading
     )
   end
 
   def empty
     render Admin::Ui::DataTableComponent.new(
       columns: columns,
-      rows: []
+      rows: [],
+      state: :empty
     )
   end
 
   def error
     render Admin::Ui::DataTableComponent.new(
       columns: columns,
-      rows: [
-        {
-          account: "error",
-          total_pnl_quote: "-",
-          realized_net: "Data source unavailable",
-          unrealized: "-"
-        }
-      ]
+      rows: [],
+      state: :error
     )
   end
 

@@ -11,7 +11,7 @@ class Admin::Dashboard::KpiCardComponentPreview < ViewComponent::Preview
     render Admin::Dashboard::KpiCardComponent.new(
       title: "Success rate (last 50)",
       value: "...",
-      subtitle: "Loading KPI"
+      subtitle: "Loading dashboard data"
     )
   end
 
