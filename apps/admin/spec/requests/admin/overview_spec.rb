@@ -57,6 +57,23 @@ RSpec.describe "Admin overview", type: :request do
     expect(response).to have_http_status(:forbidden)
   end
 
+  it "denies unauthenticated access across overview and dashboard protected surfaces when ADMIN_UI_TOKEN is set" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    [
+      "/admin/overview",
+      "/admin/overview/top-accounts",
+      "/dashboard/overview",
+      "/dashboard/top-accounts",
+      "/dashboard/ingestion-validation-errors"
+    ].each do |path|
+      get path, as: :json
+
+      expect(response).to have_http_status(:forbidden), "Expected #{path} to require authentication"
+    end
+  end
+
   it "allows access when ADMIN_UI_TOKEN is provided" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
