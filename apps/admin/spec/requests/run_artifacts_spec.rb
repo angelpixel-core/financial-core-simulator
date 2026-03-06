@@ -189,6 +189,52 @@ RSpec.describe "Run artifacts", type: :request do
     FileUtils.rm_f(path) if defined?(path)
   end
 
+  it "returns forbidden when only viewer role header is provided" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
+
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-token-viewer-role.json")
+    File.write(path, JSON.generate({ ok: true }))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/result", headers: { "X-Admin-User" => "viewer", "X-Admin-Role" => "viewer" }
+
+    expect(response).to have_http_status(:forbidden)
+    expect(response.body).to include("Forbidden")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
+  it "returns forbidden for unsupported basic authorization mechanism" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
+
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-token-basic-auth.json")
+    File.write(path, JSON.generate({ ok: true }))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/result", headers: { "Authorization" => "Basic c2VjcmV0LXRva2Vu" }
+
+    expect(response).to have_http_status(:forbidden)
+    expect(response.body).to include("Forbidden")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
   it "renders CSV preview inline when preview=1 is passed" do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)

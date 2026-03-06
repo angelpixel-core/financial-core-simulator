@@ -72,4 +72,13 @@ RSpec.describe "Run artifacts redirect", type: :request do
     expect(response).to have_http_status(:moved_permanently)
     expect(response.headers["Location"]).to end_with("/runs/#{run.id}/pnl")
   end
+
+  it "keeps admin risk redirect target stable when query params are present" do
+    run = Run.create!(input_json: { "schemaVersion" => "1.0" })
+
+    get "/admin/resources/runs/#{run.id}/risk", params: { status: "MARGIN_CALL" }
+
+    expect(response).to have_http_status(:moved_permanently)
+    expect(response.headers["Location"]).to end_with("/runs/#{run.id}/risk")
+  end
 end
