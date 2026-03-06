@@ -12,18 +12,50 @@ module Admin
     end
 
     def allow?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")
+      allow_machine_or_session?(required_role: required_role, token_key: token_key)
+    rescue ArgumentError
+      false
+    end
+
+    def allow_admin_session?(required_role: "viewer")
       user = current_user
-      return role_allowed?(user.fetch(:role), required_role) if user
+      return false unless user
+
+      role_allowed?(user.fetch(:role), required_role)
+    end
+
+    def allow_machine_or_session?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")
+      return true if allow_admin_session?(required_role: required_role)
+
+      if token_key == "ADMIN_ARTIFACTS_TOKEN"
+        allow_machine_artifact_token?(required_role: required_role)
+      else
+        allow_machine_ui_token?(required_role: required_role, token_key: token_key)
+      end
+    end
+
+    def allow_machine_ui_token?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")
+      return false unless machine_role_allowed?(required_role)
 
       expected_token = @env[token_key].to_s
       return true if expected_token.empty?
 
-      provided_token = provided_token_for(token_key)
+      provided_token = bearer_token.presence || @request.headers["X-Admin-Token"].to_s.presence
       return false if provided_token.blank?
 
       ActiveSupport::SecurityUtils.secure_compare(provided_token, expected_token)
-    rescue ArgumentError
-      false
+    end
+
+    def allow_machine_artifact_token?(required_role: "viewer")
+      return false unless machine_role_allowed?(required_role)
+
+      expected_token = @env["ADMIN_ARTIFACTS_TOKEN"].to_s
+      return true if expected_token.empty?
+
+      provided_token = bearer_token.presence || @request.headers["X-Admin-Artifact-Token"].to_s.presence
+      return false if provided_token.blank?
+
+      ActiveSupport::SecurityUtils.secure_compare(provided_token, expected_token)
     end
 
     private
@@ -48,12 +80,9 @@ module Admin
       auth_header.delete_prefix("Bearer ")
     end
 
-    def provided_token_for(token_key)
-      if token_key == "ADMIN_ARTIFACTS_TOKEN"
-        bearer_token.presence || @request.headers["X-Admin-Artifact-Token"].to_s.presence
-      else
-        bearer_token.presence || @request.headers["X-Admin-Token"].to_s.presence
-      end
+    def machine_role_allowed?(required_role)
+      allowed_roles = %w[viewer operator]
+      allowed_roles.include?(required_role)
     end
   end
 end
