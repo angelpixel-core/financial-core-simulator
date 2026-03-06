@@ -2,7 +2,7 @@ class RunVerificationsController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :load_run
-  before_action :authorize_machine_or_session_operator!
+  before_action :authorize_run_verification!
 
   def create
     result = Runs::VerifyInputHash.new.call(@run)
@@ -24,6 +24,10 @@ class RunVerificationsController < ApplicationController
   end
 
   private
+
+  def authorize_run_verification!
+    authorize_machine_or_session_operator!
+  end
 
   def load_run
     @run = Run.find(params[:id])

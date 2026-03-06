@@ -1,12 +1,12 @@
 class Admin::OverviewController < ApplicationController
   include AdminUiAuthorizable
 
-  before_action -> { authorize_admin_session!(required_role: "viewer") }, only: %i[
+  before_action :authorize_overview_session_viewer!, only: %i[
     show
     top_accounts
     ingestion_validation_errors_panel
   ]
-  before_action -> { authorize_machine_or_session!(required_role: "viewer") }, only: %i[
+  before_action :authorize_dashboard_viewer!, only: %i[
     dashboard_overview
     dashboard_top_accounts
     dashboard_risk
@@ -92,6 +92,14 @@ class Admin::OverviewController < ApplicationController
   end
 
   private
+
+  def authorize_overview_session_viewer!
+    authorize_admin_session_viewer!
+  end
+
+  def authorize_dashboard_viewer!
+    authorize_machine_or_session_viewer!
+  end
 
   def dashboard_metrics
     Admin::Dashboard::ReadMetrics.new.call

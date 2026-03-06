@@ -59,10 +59,13 @@ class RunArtifactsController < ApplicationController
   end
 
   def authorize_artifact_access!
-    policy = Artifacts::AccessPolicy.new(run: @run, request: request)
-    return if policy.allowed?
+    return if artifact_access_policy.allowed?
 
     render plain: "Forbidden", status: :forbidden
+  end
+
+  def artifact_access_policy
+    @artifact_access_policy ||= Artifacts::AccessPolicy.new(run: @run, request: request)
   end
 
   def preview_requested?

@@ -2,7 +2,7 @@ class RunExecutionsController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :load_run
-  before_action :authorize_machine_or_session_operator!
+  before_action :authorize_run_execution!
 
   def create
     if async_requested?
@@ -29,6 +29,10 @@ class RunExecutionsController < ApplicationController
   end
 
   private
+
+  def authorize_run_execution!
+    authorize_machine_or_session_operator!
+  end
 
   def load_run
     @run = Run.find(params[:id])
