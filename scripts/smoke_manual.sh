@@ -4,6 +4,12 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ADMIN_DIR="$ROOT_DIR/apps/admin"
 BASE_URL="${BASE_URL:-http://localhost:3000}"
+ADMIN_UI_TOKEN="${ADMIN_UI_TOKEN:-}"
+
+if [[ -z "$ADMIN_UI_TOKEN" ]]; then
+	echo "ERROR: ADMIN_UI_TOKEN is required for protected /dashboard/* smoke checks" >&2
+	exit 1
+fi
 
 echo "== Smoke manual: Financial Core Simulator =="
 echo "BASE_URL=$BASE_URL"
@@ -11,6 +17,15 @@ echo "BASE_URL=$BASE_URL"
 echo
 echo "1) Verificando healthcheck del admin..."
 curl -fsS "$BASE_URL/up" >/dev/null && echo "OK /up"
+
+echo
+echo "1.1) Verificando guard de auth en dashboard (sin token debe rechazar)..."
+DASHBOARD_GUARD_STATUS="$(curl -sS -o /dev/null -w "%{http_code}" "$BASE_URL/dashboard/overview")"
+if [[ "$DASHBOARD_GUARD_STATUS" != "401" && "$DASHBOARD_GUARD_STATUS" != "403" ]]; then
+	echo "ERROR: expected 401/403 for unauthenticated dashboard overview, got $DASHBOARD_GUARD_STATUS" >&2
+	exit 1
+fi
+echo "OK unauth dashboard guard ($DASHBOARD_GUARD_STATUS)"
 
 echo
 echo "2) Ejecutando run demo para poblar artifacts..."
@@ -26,13 +41,19 @@ fi
 echo "RUN_ID=$RUN_ID"
 
 echo
-echo "4) Verificando endpoints de artifacts..."
+echo "4) Verificando endpoints protegidos de dashboard..."
+curl -fsS -H "Authorization: Bearer $ADMIN_UI_TOKEN" "$BASE_URL/dashboard/overview" >/dev/null && echo "OK dashboard overview"
+curl -fsS -H "Authorization: Bearer $ADMIN_UI_TOKEN" "$BASE_URL/dashboard/top-accounts" >/dev/null && echo "OK dashboard top-accounts"
+curl -fsS -H "Authorization: Bearer $ADMIN_UI_TOKEN" "$BASE_URL/dashboard/ingestion-validation-errors" >/dev/null && echo "OK dashboard ingestion-validation-errors"
+
+echo
+echo "5) Verificando endpoints de artifacts..."
 curl -fsS "$BASE_URL/runs/$RUN_ID/result" >/dev/null && echo "OK result.json"
 curl -fsS "$BASE_URL/runs/$RUN_ID/positions" >/dev/null && echo "OK positions.csv"
 curl -fsS "$BASE_URL/runs/$RUN_ID/pnl" >/dev/null && echo "OK pnl.csv"
 
 echo
-echo "5) Verificando redirects de compatibilidad..."
+echo "6) Verificando redirects de compatibilidad..."
 curl -fsSI "$BASE_URL/admin/resources/runs/$RUN_ID/result" | rg -n "302|301|Location" || true
 curl -fsSI "$BASE_URL/avo/resources/runs/$RUN_ID/result" | rg -n "302|301|Location" || true
 curl -fsSI "$BASE_URL/avo" | rg -n "302|301|Location" || true
