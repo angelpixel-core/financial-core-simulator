@@ -11,7 +11,15 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     expect(response.body).to include("submit->ingestion-filters#syncPollUrl")
     expect(response.body).to include("click->ingestion-filters#reset")
     expect(response.body).to include("input->ingestion-filters#scheduleSubmit")
-    expect(response.body).to include("blur->ingestion-filters#submitNow")
+    expect(response.body).not_to include("blur->ingestion-filters#submitNow")
+
+    source_index = response.body.index("id=\"source-filter\"")
+    field_index = response.body.index("id=\"field-filter\"")
+    apply_index = response.body.index(">Apply<")
+    reset_index = response.body.index(">Reset<")
+    expect(source_index).to be < field_index
+    expect(field_index).to be < apply_index
+    expect(apply_index).to be < reset_index
   end
 
   it "keeps selected filters in panel polling url on overview" do

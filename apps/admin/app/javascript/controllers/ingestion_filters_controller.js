@@ -43,9 +43,19 @@ export default class extends Controller {
     if (!form) return
 
     this.clearScheduledSubmit()
-    form.reset()
+    this.clearFilterInputs(form)
     this.setPollUrl(form)
     form.requestSubmit()
+  }
+
+  clearFilterInputs(form) {
+    this.filterInput(form, "source")
+    this.filterInput(form, "field")
+  }
+
+  filterInput(form, name) {
+    const input = form.elements.namedItem(name)
+    if (input instanceof HTMLInputElement) input.value = ""
   }
 
   resolveForm(event) {
