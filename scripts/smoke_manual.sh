@@ -41,11 +41,11 @@ echo "OK unauth admin guard ($ADMIN_GUARD_STATUS)"
 
 echo
 echo "2) Ejecutando run demo para poblar artifacts..."
-BUNDLE_GEMFILE="$ADMIN_DIR/Gemfile" bundle exec rails runner "$ADMIN_DIR/script/run_demo.rb"
+BUNDLE_GEMFILE="$ADMIN_DIR/Gemfile" "$ADMIN_DIR/bin/rails" runner "$ADMIN_DIR/script/run_demo.rb"
 
 echo
 echo "3) Obteniendo ultimo run id..."
-RUN_ID="$(BUNDLE_GEMFILE="$ADMIN_DIR/Gemfile" bundle exec rails runner 'puts Run.order(id: :desc).limit(1).pick(:id)' | tail -n 1)"
+RUN_ID="$(BUNDLE_GEMFILE="$ADMIN_DIR/Gemfile" "$ADMIN_DIR/bin/rails" runner 'puts Run.order(id: :desc).limit(1).pick(:id)' | tail -n 1)"
 if [[ -z "$RUN_ID" ]]; then
 	echo "ERROR: no se encontro Run" >&2
 	exit 1
