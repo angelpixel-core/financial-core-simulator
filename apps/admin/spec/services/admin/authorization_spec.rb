@@ -1,4 +1,5 @@
 require "rails_helper"
+require "bcrypt"
 
 RSpec.describe Admin::Authorization do
   let(:request) { ActionDispatch::TestRequest.create }
@@ -65,6 +66,60 @@ RSpec.describe Admin::Authorization do
   end
 
   describe "explicit gate split contract" do
+    it "allows session-only gate when admin account session is present" do
+      account = Account.create!(
+        email: "session-viewer@example.com",
+        status: :verified,
+        password_hash: BCrypt::Password.create("secret-pass")
+      )
+      session_request = instance_double(
+        ActionDispatch::Request,
+        headers: {},
+        session: { "admin_account_id" => account.id },
+        params: {}
+      )
+
+      auth = described_class.new(request: session_request)
+
+      expect(auth.allow_admin_session?(required_role: "viewer")).to be(true)
+    end
+
+    it "allows session-only gate when account_id session key is used" do
+      account = Account.create!(
+        email: "session-viewer-account-id@example.com",
+        status: :verified,
+        password_hash: BCrypt::Password.create("secret-pass")
+      )
+      session_request = instance_double(
+        ActionDispatch::Request,
+        headers: {},
+        session: { "account_id" => account.id },
+        params: {}
+      )
+
+      auth = described_class.new(request: session_request)
+
+      expect(auth.allow_admin_session?(required_role: "viewer")).to be(true)
+    end
+
+    it "allows session-only gate when admin_account_id is a symbol key" do
+      account = Account.create!(
+        email: "session-viewer-symbol@example.com",
+        status: :verified,
+        password_hash: BCrypt::Password.create("secret-pass")
+      )
+      session_request = instance_double(
+        ActionDispatch::Request,
+        headers: {},
+        session: { admin_account_id: account.id },
+        params: {}
+      )
+
+      auth = described_class.new(request: session_request)
+
+      expect(auth.allow_admin_session?(required_role: "viewer")).to be(true)
+    end
+
     it "enforces role thresholds for session-only gate" do
       request.headers["X-Admin-User"] = "ops-session"
       request.headers["X-Admin-Role"] = "operator"

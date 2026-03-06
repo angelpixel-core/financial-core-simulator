@@ -70,6 +70,10 @@ RSpec.describe "Admin routing compatibility", type: :request do
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/admin/overview")
     expect(response.headers["Set-Cookie"].to_s).to include("admin_session")
+
+    get "/admin/overview"
+
+    expect(response).to have_http_status(:ok)
   end
 
   it "rejects admin login with invalid credentials" do

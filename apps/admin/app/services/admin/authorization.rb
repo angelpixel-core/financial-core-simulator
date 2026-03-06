@@ -61,12 +61,37 @@ module Admin
     private
 
     def current_user
+      session_account = account_from_session
+      return session_account if session_account
+
       role = @request.headers["X-Admin-Role"].to_s.strip.downcase
       user = @request.headers["X-Admin-User"].to_s.strip
       return nil if role.empty? && user.empty?
       return nil unless ROLE_ORDER.key?(role)
 
       { id: user.presence || "header-user", role: role }
+    end
+
+    def account_from_session
+      account_id = session_account_id
+      return nil if account_id.blank?
+
+      account = Account.find_by(id: account_id)
+      return nil unless account
+
+      role = account.respond_to?(:role) ? account.role.to_s.strip.downcase : "viewer"
+      role = "viewer" unless ROLE_ORDER.key?(role)
+
+      { id: account.id.to_s, role: role }
+    end
+
+    def session_account_id
+      session = @request.session
+
+      session["admin_account_id"] ||
+        session[:admin_account_id] ||
+        session["account_id"] ||
+        session[:account_id]
     end
 
     def role_allowed?(role, required_role)
