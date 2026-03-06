@@ -1,7 +1,19 @@
 class Admin::OverviewController < ApplicationController
   include AdminUiAuthorizable
 
-  before_action -> { authorize_admin_ui!(required_role: "viewer") }
+  before_action -> { authorize_admin_session!(required_role: "viewer") }, only: %i[
+    show
+    top_accounts
+    ingestion_validation_errors_panel
+  ]
+  before_action -> { authorize_machine_or_session!(required_role: "viewer") }, only: %i[
+    dashboard_overview
+    dashboard_top_accounts
+    dashboard_risk
+    dashboard_trend
+    dashboard_latest_run
+    ingestion_validation_errors
+  ]
   rescue_from Admin::Dashboard::ReadMetrics::ReadPathUnavailableError, with: :render_dashboard_unavailable
 
   def show
