@@ -4,7 +4,7 @@ require "tmpdir"
 
 RSpec.describe "Admin overview", type: :request do
   it "renders empty state without exploding when no runs exist" do
-    get "/admin/overview"
+    get "/admin/overview", headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Financial Overview")
@@ -15,7 +15,7 @@ RSpec.describe "Admin overview", type: :request do
   end
 
   it "renders top accounts partial endpoint" do
-    get "/admin/overview/top-accounts"
+    get "/admin/overview/top-accounts", headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Top accounts (live)")
@@ -23,7 +23,7 @@ RSpec.describe "Admin overview", type: :request do
   end
 
   it "renders top accounts fragment for xhr polling" do
-    get "/admin/overview/top-accounts", headers: { "X-Requested-With" => "XMLHttpRequest" }
+    get "/admin/overview/top-accounts", headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Top accounts (live)")
@@ -74,13 +74,13 @@ RSpec.describe "Admin overview", type: :request do
     end
   end
 
-  it "allows access when ADMIN_UI_TOKEN is provided" do
+  it "keeps admin html overview on session gate when ADMIN_UI_TOKEN is provided" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
     get "/admin/overview", headers: { "X-Admin-Token" => "ui-secret" }
 
-    expect(response).to have_http_status(:ok)
+    expect(response).to have_http_status(:forbidden)
   end
 
   it "allows access via role-based policy when ADMIN_UI_TOKEN is set" do
@@ -101,7 +101,7 @@ RSpec.describe "Admin overview", type: :request do
         live_instance = instance_double("Admin::LiveStateMetrics", call: live_metrics_for(account_id: "acc-live", total_pnl_quote: "77.0"))
         expect(live_provider).to receive(:new).and_return(live_instance)
 
-        get "/admin/overview"
+        get "/admin/overview", headers: admin_session_headers
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("acc-live")
@@ -118,7 +118,7 @@ RSpec.describe "Admin overview", type: :request do
         expect(live_provider).to receive(:new).and_return(live_instance)
         expect(live_instance).to receive(:call).and_raise(StandardError, "live unavailable")
 
-        get "/admin/overview"
+        get "/admin/overview", headers: admin_session_headers
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("acc-artifact")
@@ -174,5 +174,9 @@ RSpec.describe "Admin overview", type: :request do
         }
       ]
     }
+  end
+
+  def admin_session_headers
+    { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
   end
 end

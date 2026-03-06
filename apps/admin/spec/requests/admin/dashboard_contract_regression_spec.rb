@@ -110,6 +110,20 @@ RSpec.describe "Dashboard contract regression", type: :request do
     expect(parsed.fetch("legacy").keys).to include(*OVERVIEW_LEGACY_REQUIRED_KEYS)
   end
 
+  it "enforces mixed gate split between admin html session paths and dashboard machine paths" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/overview", headers: { "X-Admin-Token" => "ui-secret" }
+    expect(response).to have_http_status(:forbidden)
+
+    get "/admin/overview", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
+    expect(response).to have_http_status(:ok)
+
+    get "/dashboard/overview", headers: { "X-Admin-Token" => "ui-secret" }, as: :json
+    expect(response).to have_http_status(:ok)
+  end
+
   def get_json(path)
     get path, as: :json
     expect(response).to have_http_status(:ok)
