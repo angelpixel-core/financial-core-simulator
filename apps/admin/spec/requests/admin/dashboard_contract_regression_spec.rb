@@ -80,6 +80,36 @@ RSpec.describe "Dashboard contract regression", type: :request do
     end
   end
 
+  it "denies unauthenticated dashboard access when ADMIN_UI_TOKEN is configured" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    [
+      "/dashboard/overview",
+      "/dashboard/top-accounts",
+      "/dashboard/ingestion-validation-errors",
+      "/dashboard/risk",
+      "/dashboard/trend",
+      "/dashboard/latest-run"
+    ].each do |path|
+      get path, as: :json
+      expect(response).to have_http_status(:forbidden), "Expected #{path} to require auth when ADMIN_UI_TOKEN is configured"
+    end
+  end
+
+  it "keeps dashboard contract keys stable for authenticated requests when ADMIN_UI_TOKEN is configured" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/dashboard/overview", headers: { "Authorization" => "Bearer ui-secret" }, as: :json
+
+    expect(response).to have_http_status(:ok)
+    parsed = JSON.parse(response.body)
+    expect(parsed.keys).to include(*OVERVIEW_REQUIRED_KEYS)
+    expect(parsed.fetch("contractVersion")).to eq("v1")
+    expect(parsed.fetch("legacy").keys).to include(*OVERVIEW_LEGACY_REQUIRED_KEYS)
+  end
+
   def get_json(path)
     get path, as: :json
     expect(response).to have_http_status(:ok)
