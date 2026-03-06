@@ -21,7 +21,7 @@ Avo.configure do |config|
   # config.current_user_method = :current_user
   config.authenticate_with do
     auth = Admin::Authorization.new(request: request)
-    allowed = auth.allow?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")
+    allowed = auth.allow_admin_session?(required_role: "viewer")
     head :forbidden unless allowed
   end
 

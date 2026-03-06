@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Admin component comparison", type: :request do
   it "renders both ViewComponent and Phlex cards" do
-    get "/admin/component-comparison"
+    get "/admin/component-comparison", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Component Comparison: ViewComponent vs Phlex")
@@ -30,7 +30,7 @@ RSpec.describe "Admin component comparison", type: :request do
   end
 
   it "renders drilldown table and empty-state variants for default/loading/empty/error" do
-    get "/admin/component-comparison"
+    get "/admin/component-comparison", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("DataTable: default")
