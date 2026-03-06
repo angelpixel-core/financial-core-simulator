@@ -19,6 +19,7 @@ RSpec.describe "Run artifacts", type: :request do
     get "/runs/#{run.id}/result"
 
     expect(response).to have_http_status(:ok)
+    expect(response.media_type).to eq("application/json")
     expect(JSON.parse(response.body)).to eq({ "ok" => true })
   ensure
     FileUtils.rm_f(path) if defined?(path)
@@ -89,6 +90,7 @@ RSpec.describe "Run artifacts", type: :request do
     get "/runs/#{run.id}/result", headers: { "Authorization" => "Bearer secret-token" }
 
     expect(response).to have_http_status(:ok)
+    expect(response.media_type).to eq("application/json")
     expect(JSON.parse(response.body)).to eq({ "ok" => true })
   ensure
     FileUtils.rm_f(path) if defined?(path)
@@ -112,6 +114,7 @@ RSpec.describe "Run artifacts", type: :request do
     get "/runs/#{run.id}/result", headers: { "X-Admin-Artifact-Token" => "secret-token" }
 
     expect(response).to have_http_status(:ok)
+    expect(response.media_type).to eq("application/json")
     expect(JSON.parse(response.body)).to eq({ "ok" => true })
   ensure
     FileUtils.rm_f(path) if defined?(path)
@@ -133,6 +136,29 @@ RSpec.describe "Run artifacts", type: :request do
     )
 
     get "/runs/#{run.id}/result", headers: { "X-Admin-Token" => "secret-token" }
+
+    expect(response).to have_http_status(:forbidden)
+    expect(response.body).to include("Forbidden")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
+  it "returns forbidden when bearer token value does not match ADMIN_ARTIFACTS_TOKEN" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("artifact-secret")
+
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-token-mismatch.json")
+    File.write(path, JSON.generate({ ok: true }))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/result", headers: { "Authorization" => "Bearer ui-secret" }
 
     expect(response).to have_http_status(:forbidden)
     expect(response.body).to include("Forbidden")
