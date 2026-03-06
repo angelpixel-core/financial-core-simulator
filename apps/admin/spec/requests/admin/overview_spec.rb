@@ -8,6 +8,10 @@ RSpec.describe "Admin overview", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Financial Overview")
+    expect(response.body).to include("SYSTEM")
+    expect(response.body).to include("LATEST RUN")
+    expect(response.body).to include("FINANCIAL")
+    expect(response.body).to include("DATA QUALITY")
     expect(response.body).to include("No succeeded runs yet.")
     expect(response.body).to include("Run trend (14d)")
     expect(response.body).to include("Status mix (30d)")
