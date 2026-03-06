@@ -5,9 +5,15 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ADMIN_DIR="$ROOT_DIR/apps/admin"
 BASE_URL="${BASE_URL:-http://localhost:3000}"
 ADMIN_UI_TOKEN="${ADMIN_UI_TOKEN:-}"
+ADMIN_ARTIFACTS_TOKEN="${ADMIN_ARTIFACTS_TOKEN:-}"
 
 if [[ -z "$ADMIN_UI_TOKEN" ]]; then
 	echo "ERROR: ADMIN_UI_TOKEN is required for protected /dashboard/* smoke checks" >&2
+	exit 1
+fi
+
+if [[ -z "$ADMIN_ARTIFACTS_TOKEN" ]]; then
+	echo "ERROR: ADMIN_ARTIFACTS_TOKEN is required for artifact mechanism checks" >&2
 	exit 1
 fi
 
@@ -19,13 +25,19 @@ echo "1) Verificando healthcheck del admin..."
 curl -fsS "$BASE_URL/up" >/dev/null && echo "OK /up"
 
 echo
-echo "1.1) Verificando guard de auth en dashboard (sin token debe rechazar)..."
+echo "1.1) Verificando guard de auth en dashboard/admin (sin auth debe rechazar)..."
 DASHBOARD_GUARD_STATUS="$(curl -sS -o /dev/null -w "%{http_code}" "$BASE_URL/dashboard/overview")"
+ADMIN_GUARD_STATUS="$(curl -sS -o /dev/null -w "%{http_code}" "$BASE_URL/admin/overview")"
 if [[ "$DASHBOARD_GUARD_STATUS" != "401" && "$DASHBOARD_GUARD_STATUS" != "403" ]]; then
 	echo "ERROR: expected 401/403 for unauthenticated dashboard overview, got $DASHBOARD_GUARD_STATUS" >&2
 	exit 1
 fi
+if [[ "$ADMIN_GUARD_STATUS" != "401" && "$ADMIN_GUARD_STATUS" != "403" ]]; then
+	echo "ERROR: expected 401/403 for unauthenticated admin overview, got $ADMIN_GUARD_STATUS" >&2
+	exit 1
+fi
 echo "OK unauth dashboard guard ($DASHBOARD_GUARD_STATUS)"
+echo "OK unauth admin guard ($ADMIN_GUARD_STATUS)"
 
 echo
 echo "2) Ejecutando run demo para poblar artifacts..."
@@ -47,10 +59,22 @@ curl -fsS -H "Authorization: Bearer $ADMIN_UI_TOKEN" "$BASE_URL/dashboard/top-ac
 curl -fsS -H "Authorization: Bearer $ADMIN_UI_TOKEN" "$BASE_URL/dashboard/ingestion-validation-errors" >/dev/null && echo "OK dashboard ingestion-validation-errors"
 
 echo
+echo "4.1) Verificando /admin/* via identidad de operador..."
+curl -fsS -H "X-Admin-User: ops" -H "X-Admin-Role: operator" "$BASE_URL/admin/overview" >/dev/null && echo "OK admin overview"
+curl -fsS -H "X-Admin-User: ops" -H "X-Admin-Role: operator" "$BASE_URL/admin/overview/top-accounts" >/dev/null && echo "OK admin top-accounts"
+
+echo
 echo "5) Verificando endpoints de artifacts..."
-curl -fsS "$BASE_URL/runs/$RUN_ID/result" >/dev/null && echo "OK result.json"
-curl -fsS "$BASE_URL/runs/$RUN_ID/positions" >/dev/null && echo "OK positions.csv"
-curl -fsS "$BASE_URL/runs/$RUN_ID/pnl" >/dev/null && echo "OK pnl.csv"
+ARTIFACT_WRONG_MECH_STATUS="$(curl -sS -o /dev/null -w "%{http_code}" -H "X-Admin-Token: $ADMIN_UI_TOKEN" "$BASE_URL/runs/$RUN_ID/result")"
+if [[ "$ARTIFACT_WRONG_MECH_STATUS" != "401" && "$ARTIFACT_WRONG_MECH_STATUS" != "403" ]]; then
+	echo "ERROR: expected 401/403 for artifact access with unsupported X-Admin-Token, got $ARTIFACT_WRONG_MECH_STATUS" >&2
+	exit 1
+fi
+echo "OK artifact rejects unsupported X-Admin-Token ($ARTIFACT_WRONG_MECH_STATUS)"
+
+curl -fsS -H "Authorization: Bearer $ADMIN_ARTIFACTS_TOKEN" "$BASE_URL/runs/$RUN_ID/result" >/dev/null && echo "OK result.json via artifact token"
+curl -fsS -H "Authorization: Bearer $ADMIN_ARTIFACTS_TOKEN" "$BASE_URL/runs/$RUN_ID/positions" >/dev/null && echo "OK positions.csv via artifact token"
+curl -fsS -H "Authorization: Bearer $ADMIN_ARTIFACTS_TOKEN" "$BASE_URL/runs/$RUN_ID/pnl" >/dev/null && echo "OK pnl.csv via artifact token"
 
 echo
 echo "6) Verificando redirects de compatibilidad..."
