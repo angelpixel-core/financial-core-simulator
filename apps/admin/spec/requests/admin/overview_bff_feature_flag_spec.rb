@@ -14,7 +14,7 @@ RSpec.describe "Admin overview BFF feature flag", type: :request do
       bff_instance = instance_double("Admin::Dashboard::BffReadMetrics", call: bff_metrics_for(account_id: "acc-bff"))
       allow(Admin::Dashboard::BffReadMetrics).to receive(:new).and_return(bff_instance)
 
-      get "/admin/overview"
+      get "/admin/overview", headers: admin_session_headers
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("acc-bff")
@@ -30,7 +30,7 @@ RSpec.describe "Admin overview BFF feature flag", type: :request do
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("ADMIN_DASHBOARD_BFF_READ_ENABLED").and_return("0")
 
-      get "/admin/overview"
+      get "/admin/overview", headers: admin_session_headers
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("acc-artifact")
@@ -90,5 +90,9 @@ RSpec.describe "Admin overview BFF feature flag", type: :request do
         }
       ]
     }
+  end
+
+  def admin_session_headers
+    { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
   end
 end

@@ -15,7 +15,7 @@ RSpec.describe "Admin overview BFF fallback", type: :request do
       allow(failing_bff).to receive(:call).and_raise(StandardError, "bff unavailable")
       allow(Admin::Dashboard::BffReadMetrics).to receive(:new).and_return(failing_bff)
 
-      get "/admin/overview"
+      get "/admin/overview", headers: admin_session_headers
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("acc-fallback-artifact")
@@ -85,5 +85,9 @@ RSpec.describe "Admin overview BFF fallback", type: :request do
         }
       ]
     }
+  end
+
+  def admin_session_headers
+    { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
   end
 end

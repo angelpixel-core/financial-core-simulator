@@ -23,7 +23,7 @@ RSpec.describe "Admin top accounts", type: :request do
     )
     allow(Admin::DashboardMetrics).to receive(:new).and_return(dashboard)
 
-    get "/admin/overview/top-accounts"
+    get "/admin/overview/top-accounts", headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
     expect(response.body.index("acc-high")).to be < response.body.index("acc-low")
@@ -33,9 +33,13 @@ RSpec.describe "Admin top accounts", type: :request do
     dashboard = instance_double("Admin::DashboardMetrics", call: { top_accounts: nil })
     allow(Admin::DashboardMetrics).to receive(:new).and_return(dashboard)
 
-    get "/admin/overview/top-accounts", headers: { "X-Requested-With" => "XMLHttpRequest" }
+    get "/admin/overview/top-accounts", headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("No account totals available.")
+  end
+
+  def admin_session_headers
+    { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
   end
 end
