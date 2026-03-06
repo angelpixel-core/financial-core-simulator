@@ -10,9 +10,41 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_02_113000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_06_054552) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "account_login_change_keys", force: :cascade do |t|
+    t.datetime "deadline", null: false
+    t.string "key", null: false
+    t.string "login", null: false
+  end
+
+  create_table "account_password_reset_keys", force: :cascade do |t|
+    t.datetime "deadline", null: false
+    t.datetime "email_last_sent", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "key", null: false
+  end
+
+  create_table "account_remember_keys", force: :cascade do |t|
+    t.datetime "deadline", null: false
+    t.string "key", null: false
+  end
+
+  create_table "account_verification_keys", force: :cascade do |t|
+    t.datetime "email_last_sent", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "key", null: false
+    t.datetime "requested_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+  end
+
+  create_table "accounts", force: :cascade do |t|
+    t.citext "email", null: false
+    t.string "password_hash"
+    t.integer "status", default: 1, null: false
+    t.index ["email"], name: "index_accounts_on_email", unique: true, where: "(status = ANY (ARRAY[1, 2]))"
+    t.check_constraint "email ~ '^[^,;@ \r\n]+@[^,@; \r\n]+.[^,@; \r\n]+$'::citext", name: "valid_email"
+  end
 
   create_table "runs", force: :cascade do |t|
     t.json "artifacts"
@@ -38,4 +70,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_02_113000) do
     t.index ["status"], name: "index_runs_on_status"
     t.index ["verification_status"], name: "index_runs_on_verification_status"
   end
+
+  add_foreign_key "account_login_change_keys", "accounts", column: "id"
+  add_foreign_key "account_password_reset_keys", "accounts", column: "id"
+  add_foreign_key "account_remember_keys", "accounts", column: "id"
+  add_foreign_key "account_verification_keys", "accounts", column: "id"
 end
