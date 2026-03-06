@@ -1,6 +1,4 @@
 Rails.application.routes.draw do
-  mount RodauthApp => "/"
-
   get "/admin/overview", to: "admin/overview#show", as: :admin_overview
   get "/admin/overview/top-accounts", to: "admin/overview#top_accounts", as: :admin_overview_top_accounts
   get "/admin/overview/ingestion-validation-errors", to: "admin/overview#ingestion_validation_errors_panel", as: :admin_overview_ingestion_validation_errors
