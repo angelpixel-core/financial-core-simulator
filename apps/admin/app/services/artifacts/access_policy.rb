@@ -7,7 +7,12 @@ module Artifacts
     end
 
     def allowed?
-      @run.succeeded? && authorization.allow?(required_role: "viewer", token_key: "ADMIN_ARTIFACTS_TOKEN")
+      return false unless @run.succeeded?
+
+      operator_session_allowed = authorization.allow_admin_session?(required_role: "operator")
+      artifact_token_allowed = authorization.allow_machine_artifact_token?(required_role: "viewer")
+
+      operator_session_allowed || artifact_token_allowed
     end
 
     private
