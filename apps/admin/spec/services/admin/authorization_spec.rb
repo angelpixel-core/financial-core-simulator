@@ -63,4 +63,34 @@ RSpec.describe Admin::Authorization do
 
     expect(auth.allow?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")).to be(false)
   end
+
+  describe "explicit gate split contract" do
+    it "enforces role thresholds for session-only gate" do
+      request.headers["X-Admin-User"] = "ops-session"
+      request.headers["X-Admin-Role"] = "operator"
+
+      auth = described_class.new(request: request)
+
+      expect(auth.allow_admin_session?(required_role: "viewer")).to be(true)
+      expect(auth.allow_admin_session?(required_role: "operator")).to be(true)
+      expect(auth.allow_admin_session?(required_role: "admin")).to be(false)
+    end
+
+    it "allows machine-or-session gate with valid machine token" do
+      allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+      request.headers["X-Admin-Token"] = "ui-secret"
+
+      auth = described_class.new(request: request)
+
+      expect(auth.allow_machine_or_session?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")).to be(true)
+    end
+
+    it "denies machine-or-session gate when no valid session or machine token exists" do
+      allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+      auth = described_class.new(request: request)
+
+      expect(auth.allow_machine_or_session?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")).to be(false)
+    end
+  end
 end
