@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help setup setup-root setup-admin db-up db-down db-logs test test-root test-admin test-perf smoke-manual quality lint-admin docs-check status
+.PHONY: help setup setup-root setup-admin db-up db-down db-logs test test-root test-admin test-perf smoke-manual seed-dashboard quality lint-admin docs-check status
 
 help: ## Mostrar tareas disponibles
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "%-18s %s\n", $$1, $$2}'
@@ -35,6 +35,9 @@ test-perf: ## Ejecutar tests de performance (tag :perf)
 
 smoke-manual: ## Ejecutar smoke manual asistido (requiere server en :3000)
 	bash scripts/smoke_manual.sh
+
+seed-dashboard: ## Poblar datos demo para dashboard admin
+	BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rails runner apps/admin/script/seed_dashboard_demo.rb
 
 lint-admin: ## Ejecutar RuboCop en apps/admin
 	BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rubocop apps/admin
