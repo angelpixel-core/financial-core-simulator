@@ -1,4 +1,5 @@
 require "rails_helper"
+require "bcrypt"
 
 RSpec.describe "Admin routing compatibility", type: :request do
   it "redirects legacy /avo root to /admin" do
@@ -55,5 +56,55 @@ RSpec.describe "Admin routing compatibility", type: :request do
     get "/dashboard/overview", as: :json
 
     expect(response).to have_http_status(:forbidden)
+  end
+
+  it "creates session through admin login with valid credentials" do
+    Account.create!(
+      email: "ops@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "ops@example.com", password: "secret-pass" }
+
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/admin/overview")
+    expect(response.headers["Set-Cookie"].to_s).to include("admin_session")
+  end
+
+  it "rejects admin login with invalid credentials" do
+    Account.create!(
+      email: "ops2@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "ops2@example.com", password: "wrong-pass" }
+
+    expect(response).not_to have_http_status(:ok)
+    expect(response).not_to have_http_status(:found)
+  end
+
+  it "logs out admin session and redirects to login" do
+    Account.create!(
+      email: "ops3@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "ops3@example.com", password: "secret-pass" }
+    expect(response).to have_http_status(:found)
+
+    post "/admin/logout"
+
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/admin/login")
+  end
+
+  it "redirects unauthenticated remember route access to admin login" do
+    get "/admin/remember"
+
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/admin/login")
   end
 end
