@@ -62,7 +62,13 @@ class Admin::OverviewController < ApplicationController
     @selected_source = normalize_filter_value(params[:source])
     @selected_field = normalize_filter_value(params[:field])
     @errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
-    if request.xhr?
+    if turbo_frame_request?
+      render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
+        errors: @errors,
+        selected_source: @selected_source,
+        selected_field: @selected_field
+      }
+    elsif request.xhr?
       render partial: "admin/overview/ingestion_validation_errors", locals: {
         errors: @errors,
         selected_source: @selected_source,

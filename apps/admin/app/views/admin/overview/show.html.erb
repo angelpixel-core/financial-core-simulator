@@ -10,7 +10,6 @@
       <a class="overview__link" href="<%= admin_component_comparison_path %>">VC vs Phlex</a>
     </nav>
   </header>
-
   <section class="overview__grid overview__grid--kpi">
     <%= render Admin::Dashboard::KpiCardComponent.new(
       title: "Total runs (7d)",
@@ -33,7 +32,6 @@
       subtitle: "Execution latency trend"
     ) %>
   </section>
-
   <section class="dashboard-card">
     <h2>Run trend (14d)</h2>
     <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
@@ -49,7 +47,6 @@
       <% end %>
     </div>
   </section>
-
   <section class="dashboard-card">
     <h2>Status mix (30d)</h2>
     <ul class="detail-list">
@@ -59,7 +56,6 @@
       <li><span>Failed</span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
     </ul>
   </section>
-
   <section class="dashboard-card">
     <h2>Latest succeeded run</h2>
     <% if @metrics[:latest_run].nil? %>
@@ -74,7 +70,6 @@
       </ul>
     <% end %>
   </section>
-
   <section class="dashboard-card">
     <h2>Global PnL (latest succeeded run)</h2>
     <% if @metrics[:latest_global].nil? %>
@@ -88,7 +83,6 @@
       </ul>
     <% end %>
   </section>
-
   <section
     class="overview__live"
     data-controller="poll"
@@ -99,19 +93,16 @@
       <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics } %>
     </div>
   </section>
-
   <section
     class="overview__live"
     data-controller="poll"
     data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path(source: @selected_source, field: @selected_field) %>"
     data-poll-interval-value="12000"
   >
-    <div data-poll-target="container">
-      <%= render partial: "admin/overview/ingestion_validation_errors", locals: {
-        errors: @ingestion_validation_errors,
-        selected_source: @selected_source,
-        selected_field: @selected_field
-      } %>
-    </div>
+    <%= render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
+      errors: @ingestion_validation_errors,
+      selected_source: @selected_source,
+      selected_field: @selected_field
+    } %>
   </section>
 </main>

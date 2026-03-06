@@ -7,10 +7,11 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Ingestion validation errors")
     expect(response.body).to include("/admin/overview/ingestion-validation-errors")
-    expect(response.body).to include("submit->poll#applyFilters")
-    expect(response.body).to include("click->poll#resetFilters")
-    expect(response.body).to include("input->poll#scheduleFilters")
-    expect(response.body).to include("blur->poll#applyFilters")
+    expect(response.body).to include("data-turbo-frame=\"overview-ingestion-validation-errors-panel\"")
+    expect(response.body).to include("submit->ingestion-filters#syncPollUrl")
+    expect(response.body).to include("click->ingestion-filters#reset")
+    expect(response.body).to include("input->ingestion-filters#scheduleSubmit")
+    expect(response.body).to include("blur->ingestion-filters#submitNow")
   end
 
   it "keeps selected filters in panel polling url on overview" do
@@ -24,6 +25,14 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     get "/admin/overview/ingestion-validation-errors", headers: { "X-Requested-With" => "XMLHttpRequest" }
 
     expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Ingestion validation errors")
+  end
+
+  it "renders turbo-frame response for hotwire filter submit" do
+    get "/admin/overview/ingestion-validation-errors", headers: { "Turbo-Frame" => "overview-ingestion-validation-errors-panel" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("<turbo-frame id=\"overview-ingestion-validation-errors-panel\"")
     expect(response.body).to include("Ingestion validation errors")
   end
 
