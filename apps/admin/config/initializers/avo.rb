@@ -22,7 +22,14 @@ Avo.configure do |config|
   config.authenticate_with do
     auth = Admin::Authorization.new(request: request)
     allowed = auth.allow_admin_session?(required_role: "viewer")
-    head :forbidden unless allowed
+
+    next if allowed
+
+    if request.get? && request.format.html?
+      redirect_to main_app.root_path
+    else
+      head :forbidden
+    end
   end
 
   ## == Authorization ==

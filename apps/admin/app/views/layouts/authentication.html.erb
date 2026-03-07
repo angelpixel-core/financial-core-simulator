@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Admin Login" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Admin">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="auth-page">
+    <main class="auth-shell" aria-label="Admin login">
+      <section class="auth-hero" aria-hidden="true">
+        <p class="auth-hero__eyebrow">Financial Core Simulator</p>
+        <h1>Operational control for runs, risk and ingestion health.</h1>
+        <p>Secure access for the admin workspace. Sign in with your provisioned account to continue.</p>
+      </section>
+      <section class="auth-card">
+        <header class="auth-card__header">
+          <p class="auth-card__eyebrow">Admin Workspace</p>
+          <h2>Sign in</h2>
+        </header>
+        <div class="auth-card__content">
+          <%= yield %>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

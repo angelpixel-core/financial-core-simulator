@@ -61,7 +61,11 @@ class RunArtifactsController < ApplicationController
   def authorize_artifact_access!
     return if artifact_access_policy.allowed?
 
-    render plain: "Forbidden", status: :forbidden
+    if request.format.html?
+      redirect_to root_path
+    else
+      render plain: "Forbidden", status: :forbidden
+    end
   end
 
   def artifact_access_policy

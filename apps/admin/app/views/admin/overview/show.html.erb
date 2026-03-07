@@ -39,17 +39,24 @@
         <h2>Run trend (14d)</h2>
         <a class="overview__link" href="<%= admin_overview_runs_trend_path %>">View runs trend</a>
       </header>
-      <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
-      <div class="trend-bars">
-        <% @metrics[:runs_trend_14d].each do |point| %>
-          <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
-          <div class="trend-bars__item">
-            <div class="trend-bars__bar-wrap">
-              <div class="trend-bars__bar" style="height: <%= height %>%"></div>
+      <div data-controller="run-trend-chart" data-run-trend-chart-points-value="<%= @metrics[:runs_trend_14d].to_json %>">
+        <div
+          class="trend-chart"
+          data-run-trend-chart-target="chart"
+          aria-label="Run trend chart for the last 14 days"
+        ></div>
+        <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
+        <div class="trend-bars" data-run-trend-chart-target="fallback">
+          <% @metrics[:runs_trend_14d].each do |point| %>
+            <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
+            <div class="trend-bars__item">
+              <div class="trend-bars__bar-wrap">
+                <div class="trend-bars__bar" style="height: <%= height %>%"></div>
+              </div>
+              <span><%= point[:day] %></span>
             </div>
-            <span><%= point[:day] %></span>
-          </div>
-        <% end %>
+          <% end %>
+        </div>
       </div>
     </section>
     <section class="dashboard-card">

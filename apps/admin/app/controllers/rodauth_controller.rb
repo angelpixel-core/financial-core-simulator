@@ -17,4 +17,13 @@ class RodauthController < ApplicationController
   #     "application"
   #   end
   # end
+  layout :rodauth_layout
+
+  private
+
+  def rodauth_layout
+    return "authentication" if rodauth.current_route == :login
+
+    "application"
+  end
 end

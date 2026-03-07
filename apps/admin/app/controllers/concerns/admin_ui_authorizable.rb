@@ -9,14 +9,14 @@ module AdminUiAuthorizable
     auth = Admin::Authorization.new(request: request)
     return if allow_admin_session_gate?(auth, required_role: required_role)
 
-    render plain: "Forbidden", status: :forbidden
+    handle_unauthorized_access!
   end
 
   def authorize_machine_or_session!(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")
     auth = Admin::Authorization.new(request: request)
     return if allow_machine_or_session_gate?(auth, required_role: required_role, token_key: token_key)
 
-    render plain: "Forbidden", status: :forbidden
+    handle_unauthorized_access!
   end
 
   def authorize_admin_session_viewer!
@@ -53,5 +53,13 @@ module AdminUiAuthorizable
     return auth.allow_machine_or_session?(required_role: required_role, token_key: token_key) if auth.respond_to?(:allow_machine_or_session?)
 
     auth.allow?(required_role: required_role, token_key: token_key)
+  end
+
+  def handle_unauthorized_access!
+    if request.get? && request.format.html?
+      redirect_to root_path
+    else
+      render plain: "Forbidden", status: :forbidden
+    end
   end
 end

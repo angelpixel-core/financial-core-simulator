@@ -1,0 +1,29 @@
+<% login_param = rodauth.login_param %>
+<% password_param = rodauth.password_param %>
+<% if flash["error"].present? || flash["notice"].present? %>
+  <p class="error"><%= flash["error"].presence || flash["notice"] %></p>
+<% end %>
+<%= form_with url: rodauth.login_path, method: :post, local: true do %>
+  <div>
+    <label for="admin-login-email">Email</label>
+    <input
+      id="admin-login-email"
+      type="email"
+      name="<%= login_param %>"
+      value="<%= params[login_param] %>"
+      autocomplete="username"
+      required
+    >
+    </div>
+    <div>
+      <label for="admin-login-password">Password</label>
+      <input
+      id="admin-login-password"
+      type="password"
+      name="<%= password_param %>"
+      autocomplete="current-password"
+      required
+    >
+      </div>
+      <input type="submit" value="Sign in to admin">
+    <% end %>
