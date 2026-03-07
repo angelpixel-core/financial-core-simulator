@@ -115,7 +115,8 @@ RSpec.describe "Dashboard contract regression", type: :request do
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
     get "/admin/overview", headers: { "X-Admin-Token" => "ui-secret" }
-    expect(response).to have_http_status(:forbidden)
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
 
     get "/admin/overview", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
     expect(response).to have_http_status(:ok)

@@ -11,13 +11,14 @@ RSpec.describe "Admin component comparison", type: :request do
     expect(response.body).to include("Success rate (last 50)")
   end
 
-  it "returns forbidden when ADMIN_UI_TOKEN is set and token is missing" do
+  it "redirects to root when ADMIN_UI_TOKEN is set and token is missing" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
     get "/admin/component-comparison"
 
-    expect(response).to have_http_status(:forbidden)
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   end
 
   it "allows access via role-based policy when ADMIN_UI_TOKEN is set" do

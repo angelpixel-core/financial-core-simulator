@@ -31,13 +31,30 @@ RSpec.describe "Admin routing compatibility", type: :request do
     expect(response).not_to have_http_status(:ok)
   end
 
-  it "forbids Avo resources access when ADMIN_UI_TOKEN is set and missing" do
+  it "routes root to admin login" do
+    get "/"
+
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/admin/login")
+  end
+
+  it "renders admin login page with authentication layout shell" do
+    get "/admin/login"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("auth-shell")
+    expect(response.body).to include("Sign in")
+    expect(response.body).to include("Sign in to admin")
+  end
+
+  it "redirects unauthenticated Avo resources access to root when ADMIN_UI_TOKEN is set" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
     get "/admin/resources/runs"
 
-    expect(response).to have_http_status(:forbidden)
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   end
 
   it "allows Avo resources access when admin identity headers are provided" do

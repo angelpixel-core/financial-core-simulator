@@ -72,31 +72,34 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).not_to include("Back to overview")
   end
 
-  it "returns forbidden when ADMIN_UI_TOKEN is set and token is missing" do
+  it "redirects unauthenticated html overview to root when ADMIN_UI_TOKEN is set" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
     get "/admin/overview"
 
-    expect(response).to have_http_status(:forbidden)
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   end
 
-  it "returns forbidden for top accounts endpoint when ADMIN_UI_TOKEN is set and token is missing" do
+  it "redirects unauthenticated html top accounts endpoint to root when ADMIN_UI_TOKEN is set" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
     get "/admin/overview/top-accounts"
 
-    expect(response).to have_http_status(:forbidden)
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   end
 
-  it "returns forbidden for top accounts xhr endpoint when ADMIN_UI_TOKEN is set and token is missing" do
+  it "redirects unauthenticated top accounts xhr endpoint to root when ADMIN_UI_TOKEN is set" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
     get "/admin/overview/top-accounts", headers: { "X-Requested-With" => "XMLHttpRequest" }
 
-    expect(response).to have_http_status(:forbidden)
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   end
 
   it "denies unauthenticated access across overview and dashboard protected surfaces when ADMIN_UI_TOKEN is set" do
@@ -116,13 +119,14 @@ RSpec.describe "Admin overview", type: :request do
     end
   end
 
-  it "keeps admin html overview on session gate when ADMIN_UI_TOKEN is provided" do
+  it "keeps admin html overview on session gate when ADMIN_UI_TOKEN is provided and redirects to root" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
     get "/admin/overview", headers: { "X-Admin-Token" => "ui-secret" }
 
-    expect(response).to have_http_status(:forbidden)
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   end
 
   it "allows access via role-based policy when ADMIN_UI_TOKEN is set" do

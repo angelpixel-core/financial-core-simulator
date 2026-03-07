@@ -40,16 +40,16 @@ RSpec.describe "Run artifacts", type: :request do
     end
   end
 
-  it "returns forbidden when run status is not succeeded" do
+  it "redirects to root when run status is not succeeded" do
     run = Run.create!(status: :running, input_json: { "schemaVersion" => "1.0" })
 
     get "/runs/#{run.id}/result"
 
-    expect(response).to have_http_status(:forbidden)
-    expect(response.body).to include("Forbidden")
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   end
 
-  it "returns forbidden when token is configured and not provided" do
+  it "redirects to root when token is configured and not provided" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
 
@@ -66,8 +66,8 @@ RSpec.describe "Run artifacts", type: :request do
 
     get "/runs/#{run.id}/result"
 
-    expect(response).to have_http_status(:forbidden)
-    expect(response.body).to include("Forbidden")
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
@@ -120,7 +120,7 @@ RSpec.describe "Run artifacts", type: :request do
     FileUtils.rm_f(path) if defined?(path)
   end
 
-  it "returns forbidden when only X-Admin-Token is provided for artifact access" do
+  it "redirects to root when only X-Admin-Token is provided for artifact access" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
 
@@ -137,13 +137,13 @@ RSpec.describe "Run artifacts", type: :request do
 
     get "/runs/#{run.id}/result", headers: { "X-Admin-Token" => "secret-token" }
 
-    expect(response).to have_http_status(:forbidden)
-    expect(response.body).to include("Forbidden")
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
 
-  it "returns forbidden when bearer token value does not match ADMIN_ARTIFACTS_TOKEN" do
+  it "redirects to root when bearer token value does not match ADMIN_ARTIFACTS_TOKEN" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("artifact-secret")
 
@@ -160,8 +160,8 @@ RSpec.describe "Run artifacts", type: :request do
 
     get "/runs/#{run.id}/result", headers: { "Authorization" => "Bearer ui-secret" }
 
-    expect(response).to have_http_status(:forbidden)
-    expect(response.body).to include("Forbidden")
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
@@ -189,7 +189,7 @@ RSpec.describe "Run artifacts", type: :request do
     FileUtils.rm_f(path) if defined?(path)
   end
 
-  it "returns forbidden when only viewer role header is provided" do
+  it "redirects to root when only viewer role header is provided" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
 
@@ -206,13 +206,13 @@ RSpec.describe "Run artifacts", type: :request do
 
     get "/runs/#{run.id}/result", headers: { "X-Admin-User" => "viewer", "X-Admin-Role" => "viewer" }
 
-    expect(response).to have_http_status(:forbidden)
-    expect(response.body).to include("Forbidden")
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
 
-  it "returns forbidden for unsupported basic authorization mechanism" do
+  it "redirects to root for unsupported basic authorization mechanism" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
 
@@ -229,8 +229,8 @@ RSpec.describe "Run artifacts", type: :request do
 
     get "/runs/#{run.id}/result", headers: { "Authorization" => "Basic c2VjcmV0LXRva2Vu" }
 
-    expect(response).to have_http_status(:forbidden)
-    expect(response.body).to include("Forbidden")
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
