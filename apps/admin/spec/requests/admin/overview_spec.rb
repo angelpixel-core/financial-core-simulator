@@ -48,12 +48,30 @@ RSpec.describe "Admin overview", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Runs Trend (14d)")
     expect(response.body).to include("Run trend (14d)")
+    expect(response.body).to include('data-controller="run-trend-chart"')
+    expect(response.body).to include('data-run-trend-chart-target="chart"')
+    expect(response.body).to include('data-run-trend-chart-target="fallback"')
+    expect(response.body).to include('data-run-trend-chart-animation-mode-value="proportional"')
+    expect(response.body).to include('data-run-trend-chart-base-duration-value="260"')
+    expect(response.body).to include('data-run-trend-chart-max-extra-duration-value="540"')
 
     get admin_overview_status_mix_path, headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Status Mix (30d)")
     expect(response.body).to include("Status mix (30d)")
+  end
+
+  it "keeps trend chart hook and fallback nodes coexisting in overview" do
+    get "/admin/overview", headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include('data-controller="run-trend-chart"')
+    expect(response.body).to include('data-run-trend-chart-target="chart"')
+    expect(response.body).to include('data-run-trend-chart-target="fallback"')
+    expect(response.body).to include('data-run-trend-chart-animation-mode-value="proportional"')
+    expect(response.body).to include('data-run-trend-chart-base-duration-value="260"')
+    expect(response.body).to include('data-run-trend-chart-max-extra-duration-value="540"')
   end
 
   it "renders count-up data hooks for all system KPI cards with numeric values" do

@@ -93,6 +93,27 @@ RSpec.describe "Admin routing compatibility", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
+  it "renders trend detail with chart hook and fallback nodes under authenticated session" do
+    Account.create!(
+      email: "ops4@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "ops4@example.com", password: "secret-pass" }
+    expect(response).to have_http_status(:found)
+
+    get "/admin/overview/runs-trend"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include('data-controller="run-trend-chart"')
+    expect(response.body).to include('data-run-trend-chart-target="chart"')
+    expect(response.body).to include('data-run-trend-chart-target="fallback"')
+    expect(response.body).to include('data-run-trend-chart-animation-mode-value="proportional"')
+    expect(response.body).to include('data-run-trend-chart-base-duration-value="260"')
+    expect(response.body).to include('data-run-trend-chart-max-extra-duration-value="540"')
+  end
+
   it "rejects admin login with invalid credentials" do
     Account.create!(
       email: "ops2@example.com",
