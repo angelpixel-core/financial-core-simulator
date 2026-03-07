@@ -5,7 +5,10 @@ export default class extends Controller {
   static targets = ["chart", "fallback"]
   static values = {
     points: Array,
-    title: { type: String, default: "Run trend (14d)" }
+    title: { type: String, default: "Run trend (14d)" },
+    animationMode: { type: String, default: "proportional" },
+    baseDuration: { type: Number, default: 260 },
+    maxExtraDuration: { type: Number, default: 540 }
   }
 
   connect() {
@@ -33,6 +36,8 @@ export default class extends Controller {
     const points = this.pointsValue || []
     const labels = points.map((point) => point.day)
     const values = points.map((point) => Number(point.count || 0))
+    const reduceMotion = this.prefersReducedMotion()
+    const maxValue = Math.max(...values, 1)
 
     this.chart.setOption({
       aria: {
@@ -70,6 +75,11 @@ export default class extends Controller {
           data: values,
           smooth: true,
           showSymbol: false,
+          animation: !reduceMotion,
+          animationDuration: (dataIndex) => this.animationDurationFor(values[dataIndex], maxValue, reduceMotion),
+          animationDurationUpdate: (dataIndex) => this.animationDurationFor(values[dataIndex], maxValue, reduceMotion),
+          animationEasing: "cubicOut",
+          animationEasingUpdate: "cubicOut",
           lineStyle: { width: 3, color: "#0f766e" },
           areaStyle: {
             color: {
@@ -92,5 +102,19 @@ export default class extends Controller {
   showFallback() {
     if (this.hasChartTarget) this.chartTarget.classList.remove("is-ready")
     if (this.hasFallbackTarget) this.fallbackTarget.hidden = false
+  }
+
+  animationDurationFor(value, maxValue, reduceMotion)
+  {
+    if (reduceMotion) return 0
+    if (this.animationModeValue !== "proportional") return this.baseDurationValue
+
+    const safeValue = Number(value || 0)
+    const ratio = Math.max(0, Math.min(safeValue / maxValue, 1))
+    return Math.round(this.baseDurationValue + (this.maxExtraDurationValue * ratio))
+  }
+
+  prefersReducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches
   }
 }

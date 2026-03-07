@@ -43,7 +43,13 @@
         <h2>Run trend (14d)</h2>
         <a class="overview__link" href="<%= admin_overview_runs_trend_path %>">View runs trend</a>
       </header>
-      <div data-controller="run-trend-chart" data-run-trend-chart-points-value="<%= @metrics[:runs_trend_14d].to_json %>">
+      <div
+        data-controller="run-trend-chart"
+        data-run-trend-chart-points-value="<%= @metrics[:runs_trend_14d].to_json %>"
+        data-run-trend-chart-animation-mode-value="proportional"
+        data-run-trend-chart-base-duration-value="260"
+        data-run-trend-chart-max-extra-duration-value="540"
+      >
         <div
           class="trend-chart"
           data-run-trend-chart-target="chart"
