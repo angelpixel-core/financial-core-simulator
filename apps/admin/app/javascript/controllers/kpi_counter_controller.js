@@ -8,13 +8,16 @@ export default class extends Controller {
     final: Number,
     kind: { type: String, default: "integer" },
     precision: { type: Number, default: 0 },
-    duration: { type: Number, default: 700 }
+    duration: Number
   }
 
   connect() {
     if (!this.hasValueTarget || !this.hasFinalValue) return
 
-    if (this.prefersReducedMotion() || this.durationValue <= 0) {
+    this.durationMs = this.resolveDurationMs()
+    this.easing = this.resolveEasingName()
+
+    if (this.prefersReducedMotion() || this.durationMs <= 0) {
       this.renderValue(this.finalValue)
       return
     }
@@ -32,8 +35,8 @@ export default class extends Controller {
 
   animate(timestamp) {
     const elapsed = timestamp - this.startTime
-    const progress = Math.min(elapsed / this.durationValue, 1)
-    const easedProgress = 1 - Math.pow(1 - progress, 3)
+    const progress = Math.min(elapsed / this.durationMs, 1)
+    const easedProgress = this.easingProgress(progress)
     const nextValue = this.finalValue * easedProgress
     this.renderValue(nextValue)
 
@@ -67,5 +70,30 @@ export default class extends Controller {
 
   prefersReducedMotion() {
     return window.matchMedia(REDUCED_MOTION_QUERY).matches
+  }
+
+  resolveDurationMs() {
+    if (this.hasDurationValue) return this.durationValue
+
+    const cssValue = this.readMotionToken("--motion-kpi-counter-duration-ms")
+    const parsed = Number.parseFloat(cssValue)
+    return Number.isFinite(parsed) ? parsed : 700
+  }
+
+  resolveEasingName() {
+    const cssValue = this.readMotionToken("--motion-kpi-counter-ease")
+    if (!cssValue) return "cubic"
+
+    return cssValue.includes("linear") ? "linear" : "cubic"
+  }
+
+  easingProgress(progress) {
+    if (this.easing === "linear") return progress
+
+    return 1 - Math.pow(1 - progress, 3)
+  }
+
+  readMotionToken(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
   }
 }
