@@ -56,6 +56,23 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("Status mix (30d)")
   end
 
+  it "renders count-up data hooks for all system KPI cards with numeric values" do
+    run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+    run.update!(duration_ms: 123)
+
+    get "/admin/overview", headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body.scan('data-controller="kpi-counter"').size).to eq(4)
+    expect(response.body.scan('data-kpi-counter-target="value"').size).to eq(4)
+    expect(response.body).to include('data-kpi-counter-kind-value="integer"')
+    expect(response.body).to include('data-kpi-counter-kind-value="percent"')
+    expect(response.body).to include('data-kpi-counter-kind-value="milliseconds"')
+    expect(response.body).to include('data-kpi-counter-final-value="1"')
+    expect(response.body).to include('data-kpi-counter-final-value="100"')
+    expect(response.body).to include('data-kpi-counter-final-value="123.0"')
+  end
+
   it "renders top accounts partial endpoint" do
     get "/admin/overview/top-accounts", headers: admin_session_headers
 
