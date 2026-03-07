@@ -369,6 +369,18 @@ select:focus-visible {
   background: var(--surface-soft);
 }
 
+.top-accounts-table.table--striped tbody tr:nth-child(odd) {
+  background: #f7fafc;
+}
+
+.top-accounts-table.table--striped tbody tr:nth-child(even) {
+  background: var(--surface);
+}
+
+.ingestion-errors-table.table--striped tbody tr:nth-child(odd) {
+  background: #f4f8ff;
+}
+
 .ui-empty-state {
   border: 1px dashed var(--border);
   border-radius: 12px;

@@ -25,7 +25,7 @@ class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
       if accounts.empty?
         p(class: "empty-state") { "No account totals available." }
       else
-        table(class: "top-accounts-table") do
+        table(class: "top-accounts-table table--striped") do
           thead do
             tr do
               th { "Account" }
