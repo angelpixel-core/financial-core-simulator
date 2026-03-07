@@ -6,6 +6,10 @@
   --muted: #5d6679;
   --border: #d9e0eb;
   --accent: #0f766e;
+  --table-stripe-odd: #f7fafc;
+  --table-stripe-even: #ffffff;
+  --table-stripe-ingestion-odd: #f4f8ff;
+  --table-row-separator: #dfe6f0;
   --motion-kpi-counter-duration-ms: 700;
   --motion-kpi-counter-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -370,15 +374,23 @@ select:focus-visible {
 }
 
 .top-accounts-table.table--striped tbody tr:nth-child(odd) {
-  background: #f7fafc;
+  background: var(--table-stripe-odd);
 }
 
 .top-accounts-table.table--striped tbody tr:nth-child(even) {
-  background: var(--surface);
+  background: var(--table-stripe-even);
 }
 
 .ingestion-errors-table.table--striped tbody tr:nth-child(odd) {
-  background: #f4f8ff;
+  background: var(--table-stripe-ingestion-odd);
+}
+
+.top-accounts-table.table--striped tbody td {
+  border-bottom-color: var(--table-row-separator);
+}
+
+.top-accounts-table.table--striped tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 .ui-empty-state {
