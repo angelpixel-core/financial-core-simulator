@@ -13,16 +13,23 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     expect(response.body).to include("input->ingestion-filters#scheduleSubmit")
     expect(response.body).not_to include("blur->ingestion-filters#submitNow")
     expect(response.body).to include("aria-label=\"Ingestion validation errors actions\"")
+    expect(response.body).to include("id=\"ingestion-errors-filters-form\"")
 
     cta_index = response.body.index(">View ingestion errors<")
+    form_index = response.body.index("id=\"ingestion-errors-filters-form\"")
     source_index = response.body.index("id=\"source-filter\"")
     field_index = response.body.index("id=\"field-filter\"")
     apply_index = response.body.index(">Apply<")
     reset_index = response.body.index(">Reset<")
-    expect(cta_index).to be < source_index
+    expect(cta_index).to be < form_index
+    expect(form_index).to be < source_index
     expect(source_index).to be < field_index
     expect(field_index).to be < apply_index
     expect(apply_index).to be < reset_index
+
+    form_end_index = response.body.index("</form>", form_index)
+    form_html = response.body[form_index..form_end_index]
+    expect(form_html).not_to include("View ingestion errors")
   end
 
   it "keeps selected filters in panel polling url on overview" do
