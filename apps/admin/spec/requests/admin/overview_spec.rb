@@ -18,6 +18,29 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("data-controller=\"poll\"")
   end
 
+  it "renders drilldown links for runs activity, latest run, top accounts, and ingestion errors" do
+    run = Run.create!(
+      status: :succeeded,
+      input_hash: "abc123",
+      schema_version: "1.0",
+      engine_version: "1.0"
+    )
+
+    get "/admin/overview", headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("View runs trend")
+    expect(response.body).to include("View status details")
+    expect(response.body).to include("View latest run")
+    expect(response.body).to include("View top accounts")
+    expect(response.body).to include("View ingestion errors")
+
+    expect(response.body).to include(%(href="/admin/resources/runs"))
+    expect(response.body).to include(%(href="#{run_result_path(id: run.id)}"))
+    expect(response.body).to include(%(href="#{admin_overview_top_accounts_path}"))
+    expect(response.body).to include(%(href="#{admin_overview_ingestion_validation_errors_path}"))
+  end
+
   it "renders top accounts partial endpoint" do
     get "/admin/overview/top-accounts", headers: admin_session_headers
 
