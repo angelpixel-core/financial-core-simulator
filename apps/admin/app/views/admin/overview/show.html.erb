@@ -35,7 +35,10 @@
       ) %>
     </section>
     <section class="dashboard-card">
-      <h2>Run trend (14d)</h2>
+      <header class="dashboard-card__header">
+        <h2>Run trend (14d)</h2>
+        <a class="overview__link" href="/admin/resources/runs">View runs trend</a>
+      </header>
       <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
       <div class="trend-bars">
         <% @metrics[:runs_trend_14d].each do |point| %>
@@ -50,7 +53,10 @@
       </div>
     </section>
     <section class="dashboard-card">
-      <h2>Status mix (30d)</h2>
+      <header class="dashboard-card__header">
+        <h2>Status mix (30d)</h2>
+        <a class="overview__link" href="/admin/resources/runs">View status details</a>
+      </header>
       <ul class="detail-list">
         <li><span>Queued</span><strong><%= @metrics[:status_mix_30d][:queued] %></strong></li>
         <li><span>Running</span><strong><%= @metrics[:status_mix_30d][:running] %></strong></li>
@@ -62,7 +68,12 @@
   <section class="overview__domain" aria-label="LATEST RUN">
     <h2 class="overview__domain-title">LATEST RUN</h2>
     <section class="dashboard-card">
-      <h2>Latest succeeded run</h2>
+      <header class="dashboard-card__header">
+        <h2>Latest succeeded run</h2>
+        <% if @metrics[:latest_run].present? %>
+          <a class="overview__link" href="<%= run_result_path(id: @metrics[:latest_run][:id]) %>">View latest run</a>
+        <% end %>
+      </header>
       <% if @metrics[:latest_run].nil? %>
         <p class="empty-state">No succeeded runs yet.</p>
       <% else %>
@@ -78,6 +89,7 @@
   </section>
   <section class="overview__domain" aria-label="FINANCIAL">
     <h2 class="overview__domain-title">FINANCIAL</h2>
+    <p><a class="overview__link" href="<%= admin_overview_top_accounts_path %>">View top accounts</a></p>
     <section class="dashboard-card">
       <h2>Global PnL (latest succeeded run)</h2>
       <% if @metrics[:latest_global].nil? %>
@@ -104,6 +116,7 @@
   </section>
   <section class="overview__domain" aria-label="DATA QUALITY">
     <h2 class="overview__domain-title">DATA QUALITY</h2>
+    <p><a class="overview__link" href="<%= admin_overview_ingestion_validation_errors_path %>">View ingestion errors</a></p>
     <section
       class="overview__live"
       data-controller="poll"
