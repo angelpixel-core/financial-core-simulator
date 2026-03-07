@@ -142,6 +142,15 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     expect(response.body).to include("No ingestion validation errors.")
   end
 
+  it "renders striped table markup when ingestion errors are present" do
+    create_validation_failed_run(source: "source.agent.internal", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK, message: "risk invalid")
+
+    get "/admin/overview/ingestion-validation-errors", headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("table--striped")
+  end
+
   def create_validation_failed_run(source:, error_code:, message:)
     Run.create!(
       status: :failed,

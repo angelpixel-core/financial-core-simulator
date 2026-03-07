@@ -27,6 +27,7 @@ RSpec.describe "Admin top accounts", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("aria-label=\"Top accounts actions\"")
+    expect(response.body).to include("table--striped")
     expect(response.body.index("acc-high")).to be < response.body.index("acc-low")
   end
 
