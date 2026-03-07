@@ -25,14 +25,28 @@ module Admin
 
     def call
       live_state = live_state_metrics
+      total_runs_7d = runs_since(WINDOW_7_DAYS).count
+      total_runs_30d = runs_since(WINDOW_30_DAYS).count
+      success_rate = success_rate_last_50
+      avg_duration = avg_duration_ms_last_50
+      previous_total_runs_7d = runs_between(WINDOW_7_DAYS * 2, WINDOW_7_DAYS).count
+      previous_total_runs_30d = runs_between(WINDOW_30_DAYS * 2, WINDOW_30_DAYS).count
+      previous_success_rate = success_rate_for_scope(previous_recent_scope)
+      previous_avg_duration = avg_duration_for_scope(previous_recent_scope)
 
       {
-        total_runs_7d: runs_since(WINDOW_7_DAYS).count,
-        total_runs_30d: runs_since(WINDOW_30_DAYS).count,
-        success_rate_last_50: success_rate_last_50,
-        avg_duration_ms_last_50: avg_duration_ms_last_50,
+        total_runs_7d: total_runs_7d,
+        total_runs_30d: total_runs_30d,
+        success_rate_last_50: success_rate,
+        avg_duration_ms_last_50: avg_duration,
         runs_trend_14d: runs_trend_14d,
         status_mix_30d: status_mix_30d,
+        kpi_deltas: {
+          total_runs_7d: delta_metadata(total_runs_7d, previous_total_runs_7d),
+          total_runs_30d: delta_metadata(total_runs_30d, previous_total_runs_30d),
+          success_rate_last_50: delta_metadata(success_rate, previous_success_rate),
+          avg_duration_ms_last_50: delta_metadata(avg_duration, previous_avg_duration)
+        },
         latest_run: latest_run_data,
         latest_global: latest_global_data(live_state),
         top_accounts: top_accounts_data(live_state)
@@ -93,21 +107,49 @@ module Admin
       Run.where(created_at: window.ago..Time.current)
     end
 
+    def runs_between(older_window, newer_window)
+      Run.where(created_at: older_window.ago...newer_window.ago)
+    end
+
     def recent_scope
       Run.order(id: :desc).limit(RECENT_RUNS_LIMIT)
     end
 
-    def success_rate_last_50
-      total = recent_scope.count
-      return 0 if total.zero?
+    def previous_recent_scope
+      Run.order(id: :desc).offset(RECENT_RUNS_LIMIT).limit(RECENT_RUNS_LIMIT)
+    end
 
-      ok = recent_scope.where(status: Run.statuses.fetch("succeeded")).count
-      ((ok.to_f / total) * 100).round(0)
+    def success_rate_last_50
+      success_rate_for_scope(recent_scope)
     end
 
     def avg_duration_ms_last_50
-      average = recent_scope.where(status: Run.statuses.fetch("succeeded")).where.not(duration_ms: nil).average(:duration_ms)
+      avg_duration_for_scope(recent_scope)
+    end
+
+    def success_rate_for_scope(scope)
+      total = scope.count
+      return 0 if total.zero?
+
+      ok = scope.where(status: Run.statuses.fetch("succeeded")).count
+      ((ok.to_f / total) * 100).round(0)
+    end
+
+    def avg_duration_for_scope(scope)
+      average = scope.where(status: Run.statuses.fetch("succeeded")).where.not(duration_ms: nil).average(:duration_ms)
       average&.to_f&.round(1)
+    end
+
+    def delta_metadata(current_value, previous_value)
+      return { direction: "unknown", delta_abs: nil, delta_pct: nil } if previous_value.nil?
+      return { direction: "unknown", delta_abs: nil, delta_pct: nil } if previous_value.to_f.zero?
+
+      difference = current_value.to_f - previous_value.to_f
+      {
+        direction: difference.positive? ? "up" : difference.negative? ? "down" : "flat",
+        delta_abs: difference.abs.round(1),
+        delta_pct: ((difference / previous_value.to_f) * 100).abs.round(1)
+      }
     end
 
     def latest_run
