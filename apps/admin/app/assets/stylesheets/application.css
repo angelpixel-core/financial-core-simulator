@@ -63,6 +63,14 @@ body {
   font-size: 14px;
 }
 
+.overview__link:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
+}
+
 .overview__grid--kpi {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

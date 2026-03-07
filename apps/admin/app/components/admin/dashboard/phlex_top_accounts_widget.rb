@@ -12,7 +12,7 @@ class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
     article(class: "dashboard-card") do
       header(class: "dashboard-card__header") do
         h3 { "Top accounts (live)" }
-        div(class: "dashboard-card__meta-actions") do
+        nav(class: "dashboard-card__meta-actions", aria: { label: "Top accounts actions" }) do
           p(class: "dashboard-card__meta") { "Updated #{@updated_at}" }
           if @drilldown_path.present?
             a(href: @drilldown_path, class: "overview__link") { @drilldown_label || "View details" }

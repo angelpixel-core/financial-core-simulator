@@ -2,12 +2,12 @@
   <% show_drilldown = local_assigns.fetch(:show_drilldown, false) %>
   <header class="dashboard-card__header">
     <h3>Ingestion validation errors</h3>
-    <div class="dashboard-card__meta-actions">
+    <nav class="dashboard-card__meta-actions" aria-label="Ingestion validation errors actions">
       <p class="dashboard-card__meta">Updated <%= Time.current.strftime("%H:%M:%S") %></p>
       <% if show_drilldown %>
         <a class="overview__link" href="<%= admin_overview_ingestion_validation_errors_path %>" data-turbo-frame="_top">View ingestion errors</a>
       <% end %>
-    </div>
+    </nav>
   </header>
   <form method="get" action="<%= admin_overview_ingestion_validation_errors_path %>" data-controller="ingestion-filters" data-turbo-frame="overview-ingestion-validation-errors-panel" data-action="submit->ingestion-filters#syncPollUrl" style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
     <label for="source-filter" style="font-weight: 600;">Source</label>
