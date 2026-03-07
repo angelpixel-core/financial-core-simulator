@@ -1,16 +1,23 @@
 require "bigdecimal"
 
 class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
-  def initialize(accounts:, updated_at:)
+  def initialize(accounts:, updated_at:, drilldown_path: nil, drilldown_label: nil)
     @accounts = Array(accounts)
     @updated_at = updated_at
+    @drilldown_path = drilldown_path
+    @drilldown_label = drilldown_label
   end
 
   def view_template
     article(class: "dashboard-card") do
       header(class: "dashboard-card__header") do
         h3 { "Top accounts (live)" }
-        p(class: "dashboard-card__meta") { "Updated #{@updated_at}" }
+        div(class: "dashboard-card__meta-actions") do
+          p(class: "dashboard-card__meta") { "Updated #{@updated_at}" }
+          if @drilldown_path.present?
+            a(href: @drilldown_path, class: "overview__link") { @drilldown_label || "View details" }
+          end
+        end
       end
 
       accounts = sorted_accounts

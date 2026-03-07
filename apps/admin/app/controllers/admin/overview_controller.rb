@@ -28,7 +28,7 @@ class Admin::OverviewController < ApplicationController
   def top_accounts
     @metrics = dashboard_metrics
     if request.xhr?
-      render partial: "admin/overview/top_accounts", locals: { metrics: @metrics }
+      render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: true }
     else
       render :top_accounts
     end
@@ -88,13 +88,15 @@ class Admin::OverviewController < ApplicationController
       render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
         errors: @errors,
         selected_source: @selected_source,
-        selected_field: @selected_field
+        selected_field: @selected_field,
+        show_drilldown: true
       }
     elsif request.xhr?
       render partial: "admin/overview/ingestion_validation_errors", locals: {
         errors: @errors,
         selected_source: @selected_source,
-        selected_field: @selected_field
+        selected_field: @selected_field,
+        show_drilldown: true
       }
     else
       render :ingestion_validation_errors

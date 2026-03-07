@@ -34,6 +34,8 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Ingestion validation errors")
+    expect(response.body).to include("View ingestion errors")
+    expect(response.body).to include("data-turbo-frame=\"_top\"")
   end
 
   it "renders turbo-frame response for hotwire filter submit" do
@@ -42,6 +44,14 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("<turbo-frame id=\"overview-ingestion-validation-errors-panel\"")
     expect(response.body).to include("Ingestion validation errors")
+    expect(response.body).to include("View ingestion errors")
+  end
+
+  it "does not render self drilldown CTA on standalone ingestion errors page" do
+    get "/admin/overview/ingestion-validation-errors", headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("View ingestion errors")
   end
 
   it "filters by source in the ingestion validation errors panel" do

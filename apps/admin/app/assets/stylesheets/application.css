@@ -123,6 +123,14 @@ body {
   margin-bottom: 10px;
 }
 
+.dashboard-card__meta-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .detail-list {
   list-style: none;
   margin: 0;

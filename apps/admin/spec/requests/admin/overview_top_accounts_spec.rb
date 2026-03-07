@@ -37,6 +37,17 @@ RSpec.describe "Admin top accounts", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("No account totals available.")
+    expect(response.body).to include("View top accounts")
+  end
+
+  it "does not render self drilldown CTA on standalone top accounts page" do
+    dashboard = instance_double("Admin::DashboardMetrics", call: { top_accounts: [] })
+    allow(Admin::DashboardMetrics).to receive(:new).and_return(dashboard)
+
+    get "/admin/overview/top-accounts", headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("View top accounts")
   end
 
   def admin_session_headers

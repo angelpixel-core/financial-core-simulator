@@ -1,4 +1,8 @@
+<% show_drilldown = local_assigns.fetch(:show_drilldown, false) %>
+<% drilldown_path = show_drilldown ? admin_overview_top_accounts_path : nil %>
 <%= render Admin::Dashboard::PhlexTopAccountsWidget.new(
   accounts: metrics[:top_accounts],
-  updated_at: Time.current.strftime("%H:%M:%S")
+  updated_at: Time.current.strftime("%H:%M:%S"),
+  drilldown_path: drilldown_path,
+  drilldown_label: "View top accounts"
 ) %>
