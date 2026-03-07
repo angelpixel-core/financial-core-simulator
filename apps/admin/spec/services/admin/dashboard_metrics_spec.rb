@@ -16,6 +16,12 @@ RSpec.describe Admin::DashboardMetrics do
       expect(metrics[:latest_run]).to be_nil
       expect(metrics[:latest_global]).to be_nil
       expect(metrics[:top_accounts]).to eq([])
+      expect(metrics[:kpi_deltas]).to eq(
+        total_runs_7d: { direction: "unknown", delta_abs: nil, delta_pct: nil },
+        total_runs_30d: { direction: "unknown", delta_abs: nil, delta_pct: nil },
+        success_rate_last_50: { direction: "unknown", delta_abs: nil, delta_pct: nil },
+        avg_duration_ms_last_50: { direction: "unknown", delta_abs: nil, delta_pct: nil }
+      )
     end
 
     it "computes run KPIs and top accounts from latest succeeded result" do
@@ -57,6 +63,16 @@ RSpec.describe Admin::DashboardMetrics do
         expect(metrics[:latest_run][:id]).to eq(run.id)
         expect(metrics[:latest_global]["totalPnLQuote"]).to eq("10.5")
         expect(metrics[:top_accounts].first[:account_id]).to eq("acc-2")
+        expect(metrics[:kpi_deltas].keys).to contain_exactly(
+          :total_runs_7d,
+          :total_runs_30d,
+          :success_rate_last_50,
+          :avg_duration_ms_last_50
+        )
+
+        metrics[:kpi_deltas].each_value do |entry|
+          expect(entry.keys).to contain_exactly(:direction, :delta_abs, :delta_pct)
+        end
       end
     end
 
