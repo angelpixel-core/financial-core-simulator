@@ -45,7 +45,7 @@ module Admin
           total_runs_7d: delta_metadata(total_runs_7d, previous_total_runs_7d),
           total_runs_30d: delta_metadata(total_runs_30d, previous_total_runs_30d),
           success_rate_last_50: delta_metadata(success_rate, previous_success_rate),
-          avg_duration_ms_last_50: delta_metadata(avg_duration, previous_avg_duration)
+          avg_duration_ms_last_50: delta_metadata(avg_duration, previous_avg_duration, inverse_good: true)
         },
         latest_run: latest_run_data,
         latest_global: latest_global_data(live_state),
@@ -112,11 +112,16 @@ module Admin
     end
 
     def recent_scope
-      Run.order(id: :desc).limit(RECENT_RUNS_LIMIT)
+      sample_scope(offset: 0)
     end
 
     def previous_recent_scope
-      Run.order(id: :desc).offset(RECENT_RUNS_LIMIT).limit(RECENT_RUNS_LIMIT)
+      sample_scope(offset: RECENT_RUNS_LIMIT)
+    end
+
+    def sample_scope(offset:)
+      sample_ids = Run.order(id: :desc).offset(offset).limit(RECENT_RUNS_LIMIT).pluck(:id)
+      Run.where(id: sample_ids)
     end
 
     def success_rate_last_50
@@ -140,16 +145,30 @@ module Admin
       average&.to_f&.round(1)
     end
 
-    def delta_metadata(current_value, previous_value)
+    def delta_metadata(current_value, previous_value, inverse_good: false)
       return { direction: "unknown", delta_abs: nil, delta_pct: nil } if previous_value.nil?
       return { direction: "unknown", delta_abs: nil, delta_pct: nil } if previous_value.to_f.zero?
 
       difference = current_value.to_f - previous_value.to_f
       {
-        direction: difference.positive? ? "up" : difference.negative? ? "down" : "flat",
+        direction: normalized_direction(difference, inverse_good: inverse_good),
         delta_abs: difference.abs.round(1),
         delta_pct: ((difference / previous_value.to_f) * 100).abs.round(1)
       }
+    end
+
+    def normalized_direction(difference, inverse_good: false)
+      return "flat" if difference.zero?
+
+      raw_direction = if difference.positive?
+        "up"
+      else
+        "down"
+      end
+
+      return raw_direction unless inverse_good
+
+      raw_direction == "up" ? "down" : "up"
     end
 
     def latest_run

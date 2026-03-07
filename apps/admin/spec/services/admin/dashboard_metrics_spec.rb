@@ -184,5 +184,23 @@ RSpec.describe Admin::DashboardMetrics do
         expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq([ "acc-fallback" ])
       end
     end
+
+    it "reports avg duration delta direction with inverse-good semantics" do
+      50.times do
+        run = Run.create!(status: :succeeded, created_at: 80.days.ago, input_json: { "schemaVersion" => "1.0" })
+        run.update!(duration_ms: 200)
+      end
+
+      50.times do
+        run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+        run.update!(duration_ms: 100)
+      end
+
+      metrics = described_class.new.call
+      expect(metrics[:avg_duration_ms_last_50]).to eq(100.0)
+      expect(metrics[:kpi_deltas][:avg_duration_ms_last_50][:direction]).to eq("up")
+      expect(metrics[:kpi_deltas][:avg_duration_ms_last_50][:delta_abs]).to eq(100.0)
+      expect(metrics[:kpi_deltas][:avg_duration_ms_last_50][:delta_pct]).to eq(50.0)
+    end
   end
 end
