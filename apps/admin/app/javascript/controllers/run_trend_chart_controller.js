@@ -14,11 +14,12 @@ export default class extends Controller {
   connect() {
     if (!this.hasChartTarget) return
 
+    this.showFallback()
+
     try {
       this.chart = echarts.init(this.chartTarget, null, { renderer: "svg" })
       this.renderChart()
-      this.chartTarget.classList.add("is-ready")
-      if (this.hasFallbackTarget) this.fallbackTarget.hidden = true
+      this.showChart()
 
       this.resizeObserver = new ResizeObserver(() => this.chart.resize())
       this.resizeObserver.observe(this.chartTarget)
@@ -30,6 +31,7 @@ export default class extends Controller {
   disconnect() {
     if (this.resizeObserver) this.resizeObserver.disconnect()
     if (this.chart) this.chart.dispose()
+    this.chart = null
   }
 
   renderChart() {
@@ -104,8 +106,7 @@ export default class extends Controller {
     if (this.hasFallbackTarget) this.fallbackTarget.hidden = false
   }
 
-  animationDurationFor(value, maxValue, reduceMotion)
-  {
+  animationDurationFor(value, maxValue, reduceMotion) {
     if (reduceMotion) return 0
     if (this.animationModeValue !== "proportional") return this.baseDurationValue
 
@@ -116,5 +117,10 @@ export default class extends Controller {
 
   prefersReducedMotion() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  }
+
+  showChart() {
+    if (this.hasChartTarget) this.chartTarget.classList.add("is-ready")
+    if (this.hasFallbackTarget) this.fallbackTarget.hidden = true
   }
 }

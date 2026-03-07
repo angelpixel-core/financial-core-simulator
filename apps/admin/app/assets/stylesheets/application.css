@@ -338,6 +338,14 @@ select:focus-visible {
   display: block;
 }
 
+.trend-bars[hidden] {
+  display: none;
+}
+
+.trend-chart.is-ready + .trend-bars {
+  display: none;
+}
+
 .trend-chart--detail {
   min-height: 420px;
 }
