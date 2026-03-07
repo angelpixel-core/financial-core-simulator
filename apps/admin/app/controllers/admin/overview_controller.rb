@@ -3,6 +3,8 @@ class Admin::OverviewController < ApplicationController
 
   before_action :authorize_overview_session_viewer!, only: %i[
     show
+    runs_trend
+    status_mix
     top_accounts
     ingestion_validation_errors_panel
   ]
@@ -30,6 +32,14 @@ class Admin::OverviewController < ApplicationController
     else
       render :top_accounts
     end
+  end
+
+  def runs_trend
+    @metrics = dashboard_metrics
+  end
+
+  def status_mix
+    @metrics = dashboard_metrics
   end
 
   def ingestion_validation_errors

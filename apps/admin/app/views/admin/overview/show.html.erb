@@ -37,7 +37,7 @@
     <section class="dashboard-card">
       <header class="dashboard-card__header">
         <h2>Run trend (14d)</h2>
-        <a class="overview__link" href="<%= avo.resources_runs_path %>">View runs trend</a>
+        <a class="overview__link" href="<%= admin_overview_runs_trend_path %>">View runs trend</a>
       </header>
       <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
       <div class="trend-bars">
@@ -55,7 +55,7 @@
     <section class="dashboard-card">
       <header class="dashboard-card__header">
         <h2>Status mix (30d)</h2>
-        <a class="overview__link" href="<%= avo.resources_runs_path %>">View status details</a>
+        <a class="overview__link" href="<%= admin_overview_status_mix_path %>">View status details</a>
       </header>
       <ul class="detail-list">
         <li><span>Queued</span><strong><%= @metrics[:status_mix_30d][:queued] %></strong></li>

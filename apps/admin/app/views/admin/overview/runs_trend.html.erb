@@ -1,0 +1,28 @@
+<main class="overview">
+  <header class="overview__header">
+    <div>
+      <p class="overview__eyebrow">Admin</p>
+      <h1>Runs Trend (14d)</h1>
+      <p class="overview__subtitle">Daily execution volume trend for the last 14 days.</p>
+    </div>
+    <nav class="overview__nav">
+      <a class="overview__link" href="<%= admin_overview_path %>">Back to overview</a>
+      <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
+    </nav>
+  </header>
+  <section class="dashboard-card">
+    <h2>Run trend (14d)</h2>
+    <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
+    <div class="trend-bars">
+      <% @metrics[:runs_trend_14d].each do |point| %>
+        <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
+        <div class="trend-bars__item">
+          <div class="trend-bars__bar-wrap">
+            <div class="trend-bars__bar" style="height: <%= height %>%"></div>
+          </div>
+          <span><%= point[:day] %></span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</main>

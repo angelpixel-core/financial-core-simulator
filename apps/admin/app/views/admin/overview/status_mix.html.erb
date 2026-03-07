@@ -1,0 +1,22 @@
+<main class="overview">
+  <header class="overview__header">
+    <div>
+      <p class="overview__eyebrow">Admin</p>
+      <h1>Status Mix (30d)</h1>
+      <p class="overview__subtitle">Distribution of run states over the last 30 days.</p>
+    </div>
+    <nav class="overview__nav">
+      <a class="overview__link" href="<%= admin_overview_path %>">Back to overview</a>
+      <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
+    </nav>
+  </header>
+  <section class="dashboard-card">
+    <h2>Status mix (30d)</h2>
+    <ul class="detail-list">
+      <li><span>Queued</span><strong><%= @metrics[:status_mix_30d][:queued] %></strong></li>
+      <li><span>Running</span><strong><%= @metrics[:status_mix_30d][:running] %></strong></li>
+      <li><span>Succeeded</span><strong><%= @metrics[:status_mix_30d][:succeeded] %></strong></li>
+      <li><span>Failed</span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
+    </ul>
+  </section>
+</main>

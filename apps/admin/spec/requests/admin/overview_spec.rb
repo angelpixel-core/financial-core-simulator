@@ -35,10 +35,25 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("View top accounts")
     expect(response.body).to include("View ingestion errors")
 
-    expect(response.body).to include(%(href="/admin/resources/runs"))
+    expect(response.body).to include(%(href="#{admin_overview_runs_trend_path}"))
+    expect(response.body).to include(%(href="#{admin_overview_status_mix_path}"))
     expect(response.body).to include(%(href="#{run_result_path(id: run.id)}"))
     expect(response.body).to include(%(href="#{admin_overview_top_accounts_path}"))
     expect(response.body).to include(%(href="#{admin_overview_ingestion_validation_errors_path}"))
+  end
+
+  it "renders dedicated runs trend and status mix pages" do
+    get admin_overview_runs_trend_path, headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Runs Trend (14d)")
+    expect(response.body).to include("Run trend (14d)")
+
+    get admin_overview_status_mix_path, headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Status Mix (30d)")
+    expect(response.body).to include("Status mix (30d)")
   end
 
   it "renders top accounts partial endpoint" do

@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   get "/admin/overview", to: "admin/overview#show", as: :admin_overview
+  get "/admin/overview/runs-trend", to: "admin/overview#runs_trend", as: :admin_overview_runs_trend
+  get "/admin/overview/status-mix", to: "admin/overview#status_mix", as: :admin_overview_status_mix
   get "/admin/overview/top-accounts", to: "admin/overview#top_accounts", as: :admin_overview_top_accounts
   get "/admin/overview/ingestion-validation-errors", to: "admin/overview#ingestion_validation_errors_panel", as: :admin_overview_ingestion_validation_errors
   get "/dashboard/overview", to: "admin/overview#dashboard_overview", as: :dashboard_overview
