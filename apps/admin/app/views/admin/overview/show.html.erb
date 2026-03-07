@@ -16,22 +16,26 @@
       <%= render Admin::Dashboard::KpiCardComponent.new(
         title: "Total runs (7d)",
         value: @metrics[:total_runs_7d],
-        subtitle: "Recent execution volume"
+        subtitle: "Recent execution volume",
+        counter: { final: @metrics[:total_runs_7d], kind: "integer", precision: 0 }
       ) %>
       <%= render Admin::Dashboard::KpiCardComponent.new(
         title: "Total runs (30d)",
         value: @metrics[:total_runs_30d],
-        subtitle: "Monthly execution volume"
+        subtitle: "Monthly execution volume",
+        counter: { final: @metrics[:total_runs_30d], kind: "integer", precision: 0 }
       ) %>
       <%= render Admin::Dashboard::KpiCardComponent.new(
         title: "Success rate (last 50)",
         value: "#{@metrics[:success_rate_last_50]}%",
-        subtitle: "Succeeded vs total runs"
+        subtitle: "Succeeded vs total runs",
+        counter: { final: @metrics[:success_rate_last_50], kind: "percent", precision: 0 }
       ) %>
       <%= render Admin::Dashboard::KpiCardComponent.new(
         title: "Avg duration (last 50 succeeded)",
         value: @metrics[:avg_duration_ms_last_50].nil? ? "N/A" : "#{@metrics[:avg_duration_ms_last_50]} ms",
-        subtitle: "Execution latency trend"
+        subtitle: "Execution latency trend",
+        counter: @metrics[:avg_duration_ms_last_50].nil? ? nil : { final: @metrics[:avg_duration_ms_last_50], kind: "milliseconds", precision: 1 }
       ) %>
     </section>
     <section class="dashboard-card">

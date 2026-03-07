@@ -1,6 +1,20 @@
-<article class="kpi-card">
+<article
+  class="kpi-card"
+  <% if @counter.present? %>
+    data-controller="kpi-counter"
+    data-kpi-counter-final-value="<%= @counter[:final] %>"
+    data-kpi-counter-kind-value="<%= @counter[:kind] %>"
+    data-kpi-counter-precision-value="<%= @counter.fetch(:precision, 0) %>"
+    data-kpi-counter-duration-value="700"
+  <% end %>
+>
   <p class="kpi-card__title"><%= @title %></p>
-  <p class="kpi-card__value"><%= @value %></p>
+  <p
+    class="kpi-card__value"
+    <% if @counter.present? %>
+      data-kpi-counter-target="value"
+    <% end %>
+  ><%= @value %></p>
   <% if @subtitle.present? %>
     <p class="kpi-card__subtitle"><%= @subtitle %></p>
   <% end %>
