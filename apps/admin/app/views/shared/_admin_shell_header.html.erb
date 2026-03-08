@@ -1,0 +1,9 @@
+<header class="admin-shell-header" aria-label="Admin shell">
+  <div class="admin-shell-header__inner">
+    <p class="admin-shell-header__brand">Admin Workspace</p>
+    <div class="admin-shell-header__actions">
+      <p class="admin-shell-header__identity"><%= account_email %></p>
+      <%= button_to "Sign out", logout_path, method: :post, class: "admin-shell-header__logout" %>
+    </div>
+  </div>
+</header>
