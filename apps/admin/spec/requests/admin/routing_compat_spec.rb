@@ -63,6 +63,22 @@ RSpec.describe "Admin routing compatibility", type: :request do
     expect(response.headers["Location"]).to end_with("/")
   end
 
+  it "keeps unauthenticated Avo resources redirecting to public root even without ADMIN_UI_TOKEN" do
+    get "/admin/resources/runs"
+
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
+  end
+
+  it "forbids non-html unauthenticated Avo resources access when ADMIN_UI_TOKEN is set" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/resources/runs", as: :json
+
+    expect(response).to have_http_status(:forbidden)
+  end
+
   it "allows Avo resources access when admin identity headers are provided" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
