@@ -20,6 +20,10 @@ class RodauthMain < Rodauth::Rails::Auth
     after_login { remember_login }
     extend_remember_deadline? true
 
+    before_logout_route do
+      redirect login_path if request.get?
+    end
+
     login_redirect "/admin/overview"
     logout_redirect { login_path }
   end
