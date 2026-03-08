@@ -1,0 +1,12 @@
+<% if _current_user&.email.present? %>
+  <div class="px-4 py-3 border-t border-gray-200 text-xs text-gray-700">
+    Signed in as <strong><%= _current_user.email %></strong>
+  </div>
+<% end %>
+<div class="border-t border-gray-200">
+  <%= form_with url: "/admin/logout", method: :post, class: "flex-1" do |form| %>
+    <%= form.button class: "flex-1 flex items-center justify-center bg-white text-left cursor-pointer text-red-600 font-semibold hover:bg-red-100 block px-4 py-1 w-full py-3 text-center rounded w-full" do %>
+      Sign out
+    <% end %>
+  <% end %>
+</div>

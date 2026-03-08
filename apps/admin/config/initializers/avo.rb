@@ -18,7 +18,16 @@ Avo.configure do |config|
   end
 
   ## == Authentication ==
-  # config.current_user_method = :current_user
+  config.current_user_method do
+    account_id = session["admin_account_id"] ||
+      session[:admin_account_id] ||
+      session["account_id"] ||
+      session[:account_id]
+
+    next if account_id.blank?
+
+    Account.find_by(id: account_id)
+  end
   config.authenticate_with do
     auth = Admin::Authorization.new(request: request)
     allowed = auth.allow_admin_session?(required_role: "viewer")
