@@ -18,8 +18,15 @@ class RodauthController < ApplicationController
   #   end
   # end
   layout :rodauth_layout
+  before_action :redirect_logout_get_request
 
   private
+
+  def redirect_logout_get_request
+    return unless request.get? && rodauth.current_route == :logout
+
+    redirect_to rodauth.login_path
+  end
 
   def rodauth_layout
     return "authentication" if rodauth.current_route == :login
