@@ -1,4 +1,5 @@
 require "rails_helper"
+require "bcrypt"
 require "json"
 require "tmpdir"
 
@@ -16,6 +17,35 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("Run trend (14d)")
     expect(response.body).to include("Status mix (30d)")
     expect(response.body).to include("data-controller=\"poll\"")
+  end
+
+  it "renders authenticated shell identity and logout affordance on overview" do
+    Account.create!(
+      email: "ops-shell@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "ops-shell@example.com", password: "secret-pass" }
+    expect(response).to have_http_status(:found)
+
+    get "/admin/overview"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("ops-shell@example.com")
+    expect(response.body).to include("/admin/logout")
+  end
+
+  it "does not expose authenticated shell controls on landing and login" do
+    get "/"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("/admin/logout")
+
+    get "/admin/login"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("/admin/logout")
   end
 
   it "renders drilldown links for runs activity, latest run, top accounts, and ingestion errors" do
