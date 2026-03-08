@@ -436,6 +436,10 @@ select:focus-visible {
   padding: 30px 18px 56px;
 }
 
+.landing-page-body {
+  background: radial-gradient(circle at 10% 6%, rgba(15, 118, 110, 0.12), transparent 34%), radial-gradient(circle at 86% 12%, rgba(29, 78, 216, 0.12), transparent 40%), radial-gradient(circle at top right, #ecf4ff, var(--bg) 50%);
+}
+
 .landing-page__hero,
 .landing-page__section {
   background: var(--surface);
@@ -464,16 +468,33 @@ select:focus-visible {
 
 .landing-page h1 {
   margin: 8px 0 0;
+  max-width: 22ch;
+  line-height: 1.18;
+  font-size: clamp(30px, 4.8vw, 46px);
 }
 
 .landing-page h2 {
   margin: 0 0 8px;
-  font-size: 19px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .landing-page p {
   color: var(--muted);
   line-height: 1.55;
+}
+
+.landing-page__subtitle {
+  margin: 14px 0 0;
+  max-width: 64ch;
+}
+
+.landing-page__copy {
+  margin: 0;
+  max-width: 72ch;
 }
 
 .landing-page ul {
@@ -501,6 +522,9 @@ select:focus-visible {
   background: var(--surface);
   font-size: 14px;
   font-weight: 600;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .landing-page__cta--primary {
@@ -522,6 +546,14 @@ select:focus-visible {
 @media (max-width: 900px) {
   .landing-page {
     padding: 22px 12px 40px;
+  }
+
+  .landing-page__cta-group {
+    flex-direction: column;
+  }
+
+  .landing-page__cta {
+    justify-content: center;
   }
 }
 
