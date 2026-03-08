@@ -8,10 +8,11 @@
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%= yield :head %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body class="auth-page">
+  <body class="<%= content_for?(:body_class) ? content_for(:body_class) : "auth-page" %>">
     <main class="auth-shell" aria-label="Admin login">
       <section class="auth-hero" aria-hidden="true">
         <p class="auth-hero__eyebrow">Financial Core Simulator</p>
