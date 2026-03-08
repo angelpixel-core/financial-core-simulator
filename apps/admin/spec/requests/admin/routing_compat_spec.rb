@@ -171,4 +171,14 @@ RSpec.describe "Admin routing compatibility", type: :request do
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/admin/login")
   end
+
+  it "keeps remember route redirecting to admin login when ADMIN_UI_TOKEN is set" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/remember"
+
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/admin/login")
+  end
 end

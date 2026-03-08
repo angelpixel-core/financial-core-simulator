@@ -127,6 +127,22 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.headers["Location"]).to end_with("/")
   end
 
+  it "redirects unauthenticated html overview detail endpoints to root when ADMIN_UI_TOKEN is set" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    [
+      "/admin/overview/runs-trend",
+      "/admin/overview/status-mix",
+      "/admin/overview/ingestion-validation-errors"
+    ].each do |path|
+      get path
+
+      expect(response).to have_http_status(:found), "Expected #{path} to redirect"
+      expect(response.headers["Location"]).to end_with("/"), "Expected #{path} to redirect to root"
+    end
+  end
+
   it "redirects unauthenticated top accounts xhr endpoint to root when ADMIN_UI_TOKEN is set" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
