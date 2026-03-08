@@ -31,11 +31,17 @@ RSpec.describe "Admin routing compatibility", type: :request do
     expect(response).not_to have_http_status(:ok)
   end
 
-  it "routes root to admin login" do
+  it "renders a public landing at root and keeps login path explicit" do
     get "/"
 
-    expect(response).to have_http_status(:found)
-    expect(response.headers["Location"]).to end_with("/admin/login")
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Financial Core Simulator")
+    expect(response.body).to include("View Demo")
+
+    get "/admin/login"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Sign in")
   end
 
   it "renders admin login page with authentication layout shell" do
