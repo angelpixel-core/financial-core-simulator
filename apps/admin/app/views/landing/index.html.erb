@@ -7,9 +7,9 @@
       Built for reproducible financial infrastructure experiments.
     </p>
     <div class="landing-page__cta-group">
-      <a class="landing-page__cta landing-page__cta--primary" href="/admin/login">View Demo</a>
-      <a class="landing-page__cta" href="https://github.com">GitHub</a>
-      <a class="landing-page__cta" href="https://docs.example.com">Documentation</a>
+      <a class="landing-page__cta landing-page__cta--primary" href="<%= @demo_path %>">View Demo</a>
+      <a class="landing-page__cta" href="<%= @source_url %>">GitHub</a>
+      <a class="landing-page__cta" href="<%= @documentation_url %>">Documentation</a>
     </div>
   </section>
   <section class="landing-page__section">
@@ -55,6 +55,6 @@ pnl_total: 51.00</code></pre>
   <section class="landing-page__section">
     <h2>Open Source</h2>
     <p>Built for research and experimentation in financial infrastructure systems.</p>
-    <a class="landing-page__cta" href="https://github.com">View source</a>
+    <a class="landing-page__cta" href="<%= @source_url %>">View source</a>
   </section>
 </main>

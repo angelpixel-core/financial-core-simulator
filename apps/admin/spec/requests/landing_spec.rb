@@ -27,6 +27,8 @@ RSpec.describe "Public landing", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include('href="/admin/login"')
+    expect(response.body).to include('href="https://github.com"')
+    expect(response.body).to include('href="https://docs.ruby-lang.org"')
     expect(response.body).to include("View source")
     expect(response.body).to include("Documentation")
   end
