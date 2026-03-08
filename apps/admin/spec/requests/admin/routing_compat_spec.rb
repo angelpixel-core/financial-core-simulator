@@ -163,6 +163,27 @@ RSpec.describe "Admin routing compatibility", type: :request do
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/admin/login")
+
+    get "/admin/overview"
+
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
+  end
+
+  it "does not expose a standalone logout page via GET" do
+    Account.create!(
+      email: "ops5@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "ops5@example.com", password: "secret-pass" }
+    expect(response).to have_http_status(:found)
+
+    get "/admin/logout"
+
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/admin/login")
   end
 
   it "redirects unauthenticated remember route access to admin login" do
