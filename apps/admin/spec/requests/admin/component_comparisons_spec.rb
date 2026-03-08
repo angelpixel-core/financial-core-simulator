@@ -1,4 +1,5 @@
 require "rails_helper"
+require "bcrypt"
 
 RSpec.describe "Admin component comparison", type: :request do
   it "renders both ViewComponent and Phlex cards" do
@@ -9,6 +10,23 @@ RSpec.describe "Admin component comparison", type: :request do
     expect(response.body).to include("ViewComponent")
     expect(response.body).to include("Phlex")
     expect(response.body).to include("Success rate (last 50)")
+  end
+
+  it "renders shared shell identity and logout affordance on non-overview admin page" do
+    Account.create!(
+      email: "ops-component@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "ops-component@example.com", password: "secret-pass" }
+    expect(response).to have_http_status(:found)
+
+    get "/admin/component-comparison"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("ops-component@example.com")
+    expect(response.body).to include("/admin/logout")
   end
 
   it "redirects to root when ADMIN_UI_TOKEN is set and token is missing" do
