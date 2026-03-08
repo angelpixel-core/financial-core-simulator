@@ -19,6 +19,9 @@
     <%= javascript_importmap_tags %>
   </head>
   <body class="<%= content_for(:body_class) %>">
+    <% if admin_shell_account_email.present? %>
+      <%= render "shared/admin_shell_header", account_email: admin_shell_account_email, logout_path: "/admin/logout" %>
+    <% end %>
     <%= yield %>
   </body>
 </html>
