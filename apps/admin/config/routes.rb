@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  root to: redirect("/admin/login", status: 302)
+  root to: "landing#index"
 
   get "/admin/overview", to: "admin/overview#show", as: :admin_overview
   get "/admin/overview/runs-trend", to: "admin/overview#runs_trend", as: :admin_overview_runs_trend
