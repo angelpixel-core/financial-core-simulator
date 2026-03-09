@@ -50,6 +50,20 @@ RSpec.describe Release::GateDecision do
       expect(decision.fetch(:blockers)).to include("lint_debt_policy_metadata_missing")
     end
 
+    it "returns NO-GO when lint fails and no lint debt policy is provided" do
+      decision = described_class.evaluate(
+        gate_type: :pre_production,
+        command_results: {
+          test_admin: :pass,
+          lint_admin: :fail,
+          security: :pass
+        }
+      )
+
+      expect(decision.fetch(:decision)).to eq("NO-GO")
+      expect(decision.fetch(:blockers)).to include("lint_admin")
+    end
+
     it "allows accepted lint debt only when owner, expiry, and scope are present" do
       decision = described_class.evaluate(
         gate_type: :pre_production,
