@@ -19,6 +19,11 @@ if ENV["ADMIN_COVERAGE"] == "1"
   SimpleCov.start "rails" do
     coverage_dir ENV.fetch("ADMIN_COVERAGE_DIR", "coverage/admin")
     add_filter "/spec/"
+
+    if ENV.fetch("ADMIN_COVERAGE_MODE", "report") == "enforce"
+      minimum = ENV.fetch("ADMIN_COVERAGE_MIN", "80").to_i
+      minimum_coverage line: minimum
+    end
   end
 end
 
