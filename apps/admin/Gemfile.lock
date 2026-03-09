@@ -397,6 +397,12 @@ GEM
     sequel-activerecord_connection (2.0.1)
       activerecord (>= 5.1)
       sequel (~> 5.38)
+    simplecov (0.22.0)
+      docile (~> 1.1)
+      simplecov-html (~> 0.11)
+      simplecov_json_formatter (~> 0.1)
+    simplecov-html (0.13.2)
+    simplecov_json_formatter (0.1.4)
     solid_cable (3.0.12)
       actioncable (>= 7.2)
       activejob (>= 7.2)
@@ -485,6 +491,7 @@ DEPENDENCIES
   rspec-rails (~> 8.0)
   rubocop-rails-omakase
   sequel-activerecord_connection (~> 2.0)
+  simplecov
   solid_cable
   solid_cache
   solid_queue
@@ -634,6 +641,9 @@ CHECKSUMS
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
   sequel (5.102.0) sha256=c25bb85a44ae59b3ed41ca7c32c33316cf81a6fcaeabedb4036ba141dde70919
   sequel-activerecord_connection (2.0.1) sha256=8a13dc466520788459af18bb267f5e57d37b8764daaa3f6e8bc2932ce2642e15
+  simplecov (0.22.0) sha256=fe2622c7834ff23b98066bb0a854284b2729a569ac659f82621fc22ef36213a5
+  simplecov-html (0.13.2) sha256=bd0b8e54e7c2d7685927e8d6286466359b6f16b18cb0df47b508e8d73c777246
+  simplecov_json_formatter (0.1.4) sha256=529418fbe8de1713ac2b2d612aa3daa56d316975d307244399fa4838c601b428
   solid_cable (3.0.12) sha256=a168a54731a455d5627af48d8441ea3b554b8c1f6e6cd6074109de493e6b0460
   solid_cache (1.0.10) sha256=bc05a2fb3ac78a6f43cbb5946679cf9db67dd30d22939ededc385cb93e120d41
   solid_queue (1.3.2) sha256=44a53047be4255f616ff13fa5d35980e7b3eee6e31d957eadb88fbe8e0db4509
