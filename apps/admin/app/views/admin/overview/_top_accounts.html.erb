@@ -1,9 +1,32 @@
 <% show_drilldown = local_assigns.fetch(:show_drilldown, false) %>
 <% navigation_context = local_assigns.fetch(:navigation_context, {}) %>
 <% drilldown_path = show_drilldown ? admin_overview_top_accounts_path(navigation_context) : nil %>
-<%= render Admin::Dashboard::PhlexTopAccountsWidget.new(
-  accounts: metrics[:top_accounts],
+<% accounts = Array(metrics[:top_accounts]).sort_by { |account| -account[:total_pnl_quote].to_f } %>
+<% rows = accounts.map do |account|
+  {
+    account: account[:account_id],
+    total_pnl_quote: account[:total_pnl_quote].to_s("F"),
+    realized_net: account[:realized_net_pnl_quote].to_s("F"),
+    unrealized: account[:unrealized_pnl_quote].to_s("F")
+  }
+end %>
+<%= render Admin::Ui::WorkspaceWidgetComponent.new(
+  title: "Top accounts (live)",
+  cta_path: drilldown_path,
+  cta_label: "View top accounts",
   updated_at: Time.current.strftime("%H:%M:%S"),
-  drilldown_path: drilldown_path,
-  drilldown_label: "View top accounts"
-) %>
+  actions_label: "Top accounts actions",
+  state: accounts.empty? ? :empty : :default,
+  empty_message: "No account totals available."
+) do %>
+  <%= render Admin::Ui::WorkspaceTableAdapterComponent.new(
+    columns: [
+      { key: :account, label: "Account" },
+      { key: :total_pnl_quote, label: "Total PnL Quote" },
+      { key: :realized_net, label: "Realized Net" },
+      { key: :unrealized, label: "Unrealized" }
+    ],
+    rows: rows,
+    table_class: "top-accounts-table table--striped"
+  ) %>
+<% end %>

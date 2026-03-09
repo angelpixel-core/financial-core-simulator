@@ -159,6 +159,7 @@ message: "risk invalid")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("No ingestion validation errors.")
+    expect(response.body).to include("workspace-widget")
   end
 
   it "renders striped table markup when ingestion errors are present" do

@@ -18,6 +18,7 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("ACTIVITY")
     expect(response.body).to include("FINANCIAL RESULTS")
     expect(response.body).to include("DATA QUALITY")
+    expect(response.body).to include("Expone errores de validacion de ingesta")
     expect(response.body).to include("No succeeded runs yet.")
     expect(response.body).to include("No PnL trend data available yet.")
     expect(response.body).to include("No simulation context available yet.")
@@ -26,7 +27,6 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("Run trend (14d)")
     expect(response.body).to include("Status mix (30d)")
     expect(response.body).to include("data-controller=\"poll\"")
-
     control_index = response.body.index("CONTROL")
     state_index = response.body.index("SYSTEM STATE")
     simulation_context_index = response.body.index("SIMULATION CONTEXT")
@@ -172,6 +172,8 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include('data-run-trend-chart-animation-mode-value="proportional"')
     expect(response.body).to include('data-run-trend-chart-base-duration-value="260"')
     expect(response.body).to include('data-run-trend-chart-max-extra-duration-value="540"')
+    expect(response.body).to include('title="')
+    expect(response.body).to include('runs"')
 
     get admin_overview_status_mix_path, headers: admin_session_headers
 
@@ -296,7 +298,7 @@ RSpec.describe "Admin overview", type: :request do
 
   it "keeps run trend chart and fallback markup across mobile and desktop detail views" do
     [ 375, 1280 ].each do |viewport_width|
-      get admin_overview_runs_trend_path, 
+      get admin_overview_runs_trend_path,
 headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
 
       expect(response).to have_http_status(:ok)
@@ -479,7 +481,7 @@ headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
         run_with_accounts_json(dir: dir, account_id: "acc-artifact", total_pnl_quote: "3.0")
 
         live_provider = class_double("Admin::LiveStateMetrics").as_stubbed_const
-        live_instance = instance_double("Admin::LiveStateMetrics", 
+        live_instance = instance_double("Admin::LiveStateMetrics",
 call: live_metrics_for(account_id: "acc-live", total_pnl_quote: "77.0"))
         expect(live_provider).to receive(:new).and_return(live_instance)
 

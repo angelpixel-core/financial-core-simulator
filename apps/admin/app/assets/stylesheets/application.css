@@ -1449,6 +1449,13 @@ body {
   align-items: start;
 }
 
+.overview__domain-description {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  max-width: 78ch;
+}
 .kpi-card,
 .dashboard-card {
   background: var(--surface);
@@ -1482,6 +1489,24 @@ body {
 
 .dashboard-card {
   margin: 12px 0;
+}
+
+.workspace-widget {
+  border-radius: 16px;
+}
+
+.workspace-widget__header {
+  align-items: flex-start;
+}
+
+.workspace-widget__title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.workspace-widget__body {
+  display: grid;
+  gap: 10px;
 }
 
 .dashboard-card__header {
@@ -1711,6 +1736,38 @@ body {
 
 .top-accounts-table.table--striped tbody tr:hover {
   background: rgba(148, 163, 184, 0.14);
+}
+
+.ingestion-filters {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ingestion-filters__label {
+  font-weight: 600;
+}
+
+.ingestion-filters__input {
+  padding: 4px 8px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+}
+
+.ingestion-filters__button {
+  padding: 4px 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  color: #1a202c;
+  background: #fff;
+}
+
+.ingestion-filters__button--primary {
+  border-color: #1a202c;
+  background: #1a202c;
+  color: #fff;
 }
 
 .ui-empty-state {
