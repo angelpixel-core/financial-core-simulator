@@ -21,7 +21,7 @@
       <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
       <div class="trend-bars__item">
         <div class="trend-bars__bar-wrap">
-          <div class="trend-bars__bar" style="height: <%= height %>%" title="<%= point[:day] %>: <%= point[:count] %> runs" aria-label="<%= point[:day] %>: <%= point[:count] %> runs"></div>
+          <div class="trend-bars__bar" style="height: <%= height %>%" title="<%= point[:day] %>: <%= point[:count] %> runs" data-tooltip="<%= point[:day] %>: <%= point[:count] %> runs" aria-label="<%= point[:day] %>: <%= point[:count] %> runs" tabindex="0"></div>
         </div>
         <span><%= point[:day] %></span>
       </div>

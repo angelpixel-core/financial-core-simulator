@@ -1430,7 +1430,7 @@ body {
 }
 
 .overview__domain {
-  margin: 14px 0;
+  margin: 22px 0 30px;
 }
 
 .overview__domain-title {
@@ -1450,7 +1450,7 @@ body {
 }
 
 .overview__domain-description {
-  margin: 0 0 10px;
+  margin: 0 0 16px;
   color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
@@ -1572,6 +1572,31 @@ body {
   min-height: 4px;
   border-radius: 6px 6px 0 0;
   background: linear-gradient(180deg, #0f766e, #155e75);
+  position: relative;
+}
+
+.trend-bars__bar:hover::after,
+.trend-bars__bar:focus-visible::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  background: #0f172a;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.26);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.trend-bars__bar:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
 }
 
 .trend-bars__item span {
