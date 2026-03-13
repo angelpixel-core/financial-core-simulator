@@ -674,4 +674,64 @@ RSpec.describe 'bin/fcs run' do
       expect(payload1.fetch('inputHash')).to eq(payload2.fetch('inputHash'))
     end
   end
+
+  it 'fails deterministically when timeline payload is provided but timeline mode is disabled' do
+    previous = ENV['FCS_TIMELINE_ENABLED']
+    ENV['FCS_TIMELINE_ENABLED'] = '0'
+
+    Dir.mktmpdir do |tmp|
+      timeline_input = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'trades' => [],
+        'timeline' => {
+          'events' => [
+            {
+              'eventType' => 'TRADE_APPLIED',
+              'timelineSeq' => 1,
+              'timestamp' => '2026-03-03T12:00:01Z',
+              'source' => 'sim.core',
+              'externalId' => 'tr-1',
+              'trade' => {
+                'tradeId' => 't-1',
+                'accountId' => 'acc-1',
+                'marketId' => 'ETH-USD',
+                'seq' => 1,
+                'side' => 'BUY',
+                'quantityBase' => '1',
+                'priceQuotePerBase' => '100'
+              }
+            }
+          ]
+        },
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '100' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_path = File.join(tmp, 'timeline.json')
+      File.write(input_path, JSON.pretty_generate(timeline_input))
+
+      _stdout, stderr, status = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', input_path,
+        '--output-dir', File.join(tmp, 'out'),
+        chdir: root
+      )
+
+      expect(status.success?).to be(false)
+      expect(status.exitstatus).to eq(2)
+
+      payload = JSON.parse(stderr)
+      expect(payload).to include('code' => FCS::Errors::ERR_VALIDATION)
+      expect(payload.fetch('what_happened')).to include('timeline input requires FCS_TIMELINE_ENABLED=1')
+    end
+  ensure
+    ENV['FCS_TIMELINE_ENABLED'] = previous
+  end
 end

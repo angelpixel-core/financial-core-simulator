@@ -94,7 +94,7 @@ RSpec.describe FCS::Application::Runner do
     ENV['FCS_TIMELINE_ENABLED'] = previous
   end
 
-  it 'uses batch sorter path when timeline feature flag is disabled' do
+  it 'fails fast when timeline payload is provided but feature flag is disabled' do
     ENV['FCS_TIMELINE_ENABLED'] = '0'
 
     runner = described_class.new(
@@ -107,9 +107,10 @@ RSpec.describe FCS::Application::Runner do
       logger: logger
     )
 
-    runner.run!(input_path: 'input.json', output_dir: 'output', fee_enabled: false)
-
-    expect(sorter).to have_received(:sort).with([])
+    expect do
+      runner.run!(input_path: 'input.json', output_dir: 'output', fee_enabled: false)
+    end.to raise_error(FCS::Error) { |error| expect(error.code).to eq(FCS::Errors::ERR_VALIDATION) }
+    expect(sorter).not_to have_received(:sort)
   end
 
   it 'routes through timeline events when feature flag is enabled' do
@@ -133,5 +134,45 @@ RSpec.describe FCS::Application::Runner do
       expect(trade_ids).to eq(%w[t-1 t-2])
       expect(kwargs).to include(checkpoint_store: kind_of(FCS::Application::CheckpointStore))
     end
+  end
+
+  it 'normalizes timeline events before hashing for deterministic inputHash' do
+    ENV['FCS_TIMELINE_ENABLED'] = '1'
+
+    parser_a = instance_double(FCS::Ingestion::Parser, parse_file: base_input)
+    parser_b = instance_double(FCS::Ingestion::Parser,
+                               parse_file: base_input.merge('timeline' => { 'events' => timeline_events.reverse }))
+
+    input_hashes = []
+    simulate_spy = lambda do |_input_arg, **kwargs|
+      input_hashes << kwargs.fetch(:input_hash)
+      result
+    end
+
+    runner_a = described_class.new(
+      parser: parser_a,
+      validator: validator,
+      sorter: sorter,
+      simulate: simulate_spy,
+      artifacts_writer: artifacts_writer,
+      cli: cli,
+      logger: logger
+    )
+
+    runner_b = described_class.new(
+      parser: parser_b,
+      validator: validator,
+      sorter: sorter,
+      simulate: simulate_spy,
+      artifacts_writer: artifacts_writer,
+      cli: cli,
+      logger: logger
+    )
+
+    runner_a.run!(input_path: 'input_a.json', output_dir: 'output_a', fee_enabled: false)
+    runner_b.run!(input_path: 'input_b.json', output_dir: 'output_b', fee_enabled: false)
+
+    expect(input_hashes.size).to eq(2)
+    expect(input_hashes.first).to eq(input_hashes.last)
   end
 end

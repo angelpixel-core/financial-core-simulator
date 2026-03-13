@@ -81,15 +81,30 @@ module FCS
       private
 
       def prepare_execution_input(input)
-        return prepare_batch_input(input) unless timeline_mode_enabled?(input)
+        return prepare_batch_input(input) unless timeline_present?(input)
 
-        input['trades'] = extract_timeline_trades(input)
-        input
+        if timeline_feature_enabled?
+          prepare_timeline_input(input)
+        else
+          raise FCS::Error.new(
+            FCS::Errors::ERR_VALIDATION,
+            'timeline input requires FCS_TIMELINE_ENABLED=1',
+            details: { field: 'timeline' }
+          )
+        end
       end
 
       def prepare_batch_input(input)
         input.delete('timeline')
         input['trades'] = @sorter.sort(input.fetch('trades'))
+        input
+      end
+
+      def prepare_timeline_input(input)
+        events = input.fetch('timeline').fetch('events').sort_by { |event| event.fetch('timelineSeq') }
+        input['timeline']['events'] = events
+        input['trades'] = events.select { |event| event.fetch('eventType') == 'TRADE_APPLIED' }
+                                .map { |event| event.fetch('trade') }
         input
       end
 
@@ -113,17 +128,8 @@ module FCS
         Marshal.load(Marshal.dump(value))
       end
 
-      def timeline_mode_enabled?(input)
-        ENV['FCS_TIMELINE_ENABLED'] == '1' && input['timeline'].is_a?(Hash) && input['timeline']['events'].is_a?(Array)
-      end
-
-      def extract_timeline_trades(input)
-        input
-          .fetch('timeline')
-          .fetch('events')
-          .sort_by { |event| event.fetch('timelineSeq') }
-          .select { |event| event.fetch('eventType') == 'TRADE_APPLIED' }
-          .map { |event| event.fetch('trade') }
+      def timeline_present?(input)
+        input['timeline'].is_a?(Hash) && input['timeline']['events'].is_a?(Array)
       end
 
       def build_checkpoint_store(output_dir:, schema_version:)
