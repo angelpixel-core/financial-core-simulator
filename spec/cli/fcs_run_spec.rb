@@ -343,4 +343,69 @@ RSpec.describe 'bin/fcs run' do
       end
     end
   end
+
+  it 'emits stable error envelope for long-only sell overflow' do
+    Dir.mktmpdir do |tmp|
+      oversell_input = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'feeModel' => { 'enabled' => false },
+        'trades' => [
+          {
+            'tradeId' => 'b1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 1,
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          },
+          {
+            'tradeId' => 's1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 2,
+            'seq' => 2,
+            'side' => 'SELL',
+            'quantityBase' => '2',
+            'priceQuotePerBase' => '100'
+          }
+        ],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '100' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_path = File.join(tmp, 'oversell.json')
+      File.write(input_path, JSON.pretty_generate(oversell_input))
+
+      _stdout, stderr, status = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', input_path,
+        '--output-dir', File.join(tmp, 'out'),
+        chdir: root
+      )
+
+      expect(status.success?).to be(false)
+      expect(status.exitstatus).to eq(2)
+
+      payload = JSON.parse(stderr)
+      expect(payload).to include('code' => FCS::Errors::ERR_POSITION_NEGATIVE)
+      expect(payload.fetch('what_happened')).to include('position negative')
+      expect(payload.fetch('impact')).to include('canonical artifacts')
+      expect(payload.fetch('next_action')).to include('re-run')
+      expect(payload.fetch('details')).to include(
+        'accountId' => 'acc-1',
+        'marketId' => 'ETH-USD',
+        'qty' => '1.0',
+        'sellQty' => '2.0'
+      )
+    end
+  end
 end
