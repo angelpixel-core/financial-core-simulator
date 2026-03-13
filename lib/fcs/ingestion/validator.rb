@@ -390,6 +390,14 @@ module FCS
 
       def validate_snapshot!(h, market_ids)
         snap = h['priceSnapshot']
+        unless non_empty_string?(snap['valuationTimestamp'])
+          raise FCS::Error.new(
+            FCS::Errors::ERR_MISSING_SNAPSHOT,
+            'Missing snapshot valuation timestamp',
+            details: { missingField: 'priceSnapshot.valuationTimestamp' }
+          )
+        end
+
         prices = snap['prices']
         unless prices.is_a?(Array)
           raise FCS::Error.new(FCS::Errors::ERR_MISSING_SNAPSHOT, 'Missing snapshot prices',

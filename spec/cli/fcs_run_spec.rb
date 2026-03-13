@@ -445,6 +445,40 @@ RSpec.describe 'bin/fcs run' do
     end
   end
 
+  it 'emits deterministic ERR_MISSING_SNAPSHOT when valuationTimestamp is missing' do
+    Dir.mktmpdir do |tmp|
+      missing_ts_input = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'trades' => [],
+        'priceSnapshot' => {
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '100' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_path = File.join(tmp, 'missing-ts.json')
+      File.write(input_path, JSON.pretty_generate(missing_ts_input))
+
+      _stdout, stderr, status = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', input_path,
+        '--output-dir', File.join(tmp, 'out'),
+        chdir: root
+      )
+
+      expect(status.success?).to be(false)
+      expect(status.exitstatus).to eq(2)
+
+      payload = JSON.parse(stderr)
+      expect(payload).to include('code' => FCS::Errors::ERR_MISSING_SNAPSHOT)
+      expect(payload.fetch('details')).to include('missingField' => 'priceSnapshot.valuationTimestamp')
+    end
+  end
+
   it 'emits deterministic ERR_MISSING_SNAPSHOT when fx payload is malformed' do
     Dir.mktmpdir do |tmp|
       malformed_fx_input = {

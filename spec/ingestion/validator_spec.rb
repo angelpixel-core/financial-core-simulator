@@ -33,6 +33,17 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla con ERR_MISSING_SNAPSHOT si falta valuationTimestamp' do
+    input = base_input
+    input['priceSnapshot'].delete('valuationTimestamp')
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_MISSING_SNAPSHOT)
+        expect(e.details).to include(missingField: 'priceSnapshot.valuationTimestamp')
+      }
+  end
+
   it 'falla si falta precio para un market' do
     input = base_input
     input['markets'] = [{ 'marketId' => 'ETH-USD' }, { 'marketId' => 'BTC-USD' }]
