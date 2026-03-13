@@ -29,6 +29,16 @@ Prerequisites:
 - Ruby 3.3+
 - Bundler 2.5+
 
+Environment configuration (clean machine):
+
+```bash
+ruby -v
+bundle -v
+bundle config set path "vendor/bundle"
+```
+
+No `.env` setup is required for the canonical demo run.
+
 Bootstrap and first canonical run:
 
 ```bash
