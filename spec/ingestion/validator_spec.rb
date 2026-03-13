@@ -664,4 +664,32 @@ RSpec.describe FCS::Ingestion::Validator do
         expect(e.details).to include(accountId: 'acc-1', marketId: 'ETH-USD', seq: 7)
       }
   end
+
+  it 'ignora trades top-level cuando timeline define trades aplicables' do
+    input = base_input
+    input['trades'] = ['invalid-top-level-trade']
+    input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'TRADE_APPLIED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'sim.core',
+          'externalId' => 'tr-1',
+          'trade' => {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 1,
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          }
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }.not_to raise_error
+  end
 end

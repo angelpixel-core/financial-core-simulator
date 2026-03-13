@@ -26,8 +26,9 @@ module FCS
         validate_snapshot!(h, market_ids)
         validate_timeline!(h, account_ids: account_ids, market_ids: market_ids)
 
-        validate_trades!(trades, account_ids, market_ids, fee_enabled?(h))
-        validate_seq_uniqueness!(trades)
+        effective_trades = timeline_mode_payload?(h) ? timeline_trade_payloads(h) : trades
+        validate_trades!(effective_trades, account_ids, market_ids, fee_enabled?(h))
+        validate_seq_uniqueness!(effective_trades)
 
         true
       end
@@ -558,6 +559,17 @@ module FCS
           end
           seen[key] = true
         end
+      end
+
+      def timeline_mode_payload?(h)
+        h['timeline'].is_a?(Hash) && h.dig('timeline', 'events').is_a?(Array)
+      end
+
+      def timeline_trade_payloads(h)
+        h.fetch('timeline')
+         .fetch('events')
+         .select { |event| event.is_a?(Hash) && event['eventType'] == 'TRADE_APPLIED' }
+         .map { |event| event['trade'] }
       end
 
       def fee_enabled?(h)
