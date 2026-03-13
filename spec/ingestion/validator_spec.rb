@@ -55,6 +55,45 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla si falta trades cuando no hay timeline' do
+    input = base_input
+    input.delete('trades')
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'trades')
+      }
+  end
+
+  it 'acepta payload timeline sin trades top-level' do
+    input = base_input
+    input.delete('trades')
+    input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'TRADE_APPLIED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'sim.core',
+          'externalId' => 'tr-1',
+          'trade' => {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 1,
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          }
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }.not_to raise_error
+  end
+
   it 'falla si falta precio para un market' do
     input = base_input
     input['markets'] = [{ 'marketId' => 'ETH-USD' }, { 'marketId' => 'BTC-USD' }]

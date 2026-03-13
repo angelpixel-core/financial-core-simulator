@@ -17,7 +17,7 @@ module FCS
 
         accounts = h.fetch('accounts')
         markets  = h.fetch('markets')
-        trades   = h.fetch('trades')
+        trades   = h['trades'] || []
 
         account_ids = extract_unique_ids!(accounts, 'accountId', code: FCS::Errors::ERR_DUPLICATE_ID)
         market_ids  = extract_unique_ids!(markets, 'marketId', code: FCS::Errors::ERR_DUPLICATE_ID)
@@ -47,23 +47,29 @@ module FCS
       end
 
       def validate_shape!(h)
-        %w[accounts markets trades priceSnapshot].each do |k|
+        %w[accounts markets priceSnapshot].each do |k|
           raise_invalid!('Missing required field', field: k) unless h.key?(k)
         end
 
         raise_invalid!('accounts must be an array', field: 'accounts') unless h['accounts'].is_a?(Array)
         raise_invalid!('markets must be an array', field: 'markets')   unless h['markets'].is_a?(Array)
-        raise_invalid!('trades must be an array', field: 'trades')     unless h['trades'].is_a?(Array)
         raise_invalid!('priceSnapshot must be an object', field: 'priceSnapshot') unless h['priceSnapshot'].is_a?(Hash)
 
         timeline = h['timeline']
-        return if timeline.nil?
+        unless timeline.nil?
+          raise_invalid!('timeline must be an object', field: 'timeline') unless timeline.is_a?(Hash)
+          unless timeline['events'].is_a?(Array)
+            raise_invalid!('timeline.events must be an array',
+                           field: 'timeline.events')
+          end
+        end
 
-        raise_invalid!('timeline must be an object', field: 'timeline') unless timeline.is_a?(Hash)
-        return if timeline['events'].is_a?(Array)
-
-        raise_invalid!('timeline.events must be an array',
-                       field: 'timeline.events')
+        if timeline.nil?
+          raise_invalid!('Missing required field', field: 'trades') unless h.key?('trades')
+          raise_invalid!('trades must be an array', field: 'trades') unless h['trades'].is_a?(Array)
+        elsif h.key?('trades') && !h['trades'].is_a?(Array)
+          raise_invalid!('trades must be an array', field: 'trades')
+        end
       end
 
       def validate_timeline!(h, account_ids:, market_ids:)
