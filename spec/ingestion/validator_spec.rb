@@ -121,6 +121,14 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'acepta fx incompleto cuando usdModel.enabled es false' do
+    input = base_input
+    input['usdModel'] = { 'enabled' => false }
+    input['priceSnapshot']['fx'] = {}
+
+    expect { validator.validate!(input) }.not_to raise_error
+  end
+
   it 'falla con diagnostico accionable cuando usdModel.enabled requiere FX y quoteUsd no existe' do
     input = base_input
     input['usdModel'] = { 'enabled' => true }

@@ -494,6 +494,7 @@ module FCS
         end
 
         return if fx.nil?
+        return if usd_model_explicitly_disabled?(h)
 
         unless fx.is_a?(Hash)
           raise FCS::Error.new(
@@ -536,6 +537,11 @@ module FCS
 
         fx = h.dig('priceSnapshot', 'fx')
         fx.is_a?(Hash) && fx.key?('quoteUsd') && !fx['quoteUsd'].nil?
+      end
+
+      def usd_model_explicitly_disabled?(h)
+        model = h['usdModel']
+        model.is_a?(Hash) && model['enabled'] == false
       end
 
       def raise_missing_fx_for_usd_enabled!
