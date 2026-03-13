@@ -60,6 +60,20 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla si snapshot prices contiene marketId duplicado' do
+    input = base_input
+    input['priceSnapshot']['prices'] = [
+      { 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '2500' },
+      { 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '2550' }
+    ]
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'priceSnapshot.prices.marketId', marketId: 'ETH-USD')
+      }
+  end
+
   it 'falla con ERR_MISSING_SNAPSHOT si fx no es un objeto' do
     input = base_input
     input['priceSnapshot']['fx'] = 'invalid-fx'

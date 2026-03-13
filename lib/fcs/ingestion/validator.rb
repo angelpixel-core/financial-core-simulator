@@ -387,8 +387,19 @@ module FCS
         end
 
         price_map = {}
+        seen_snapshot_markets = {}
         prices.each do |p|
           mid = p['marketId']
+          unless non_empty_string?(mid)
+            raise_invalid!('Missing or invalid snapshot marketId', field: 'priceSnapshot.prices.marketId')
+          end
+
+          if seen_snapshot_markets[mid]
+            raise_invalid!('Duplicate snapshot marketId', field: 'priceSnapshot.prices.marketId',
+                                                          details: { marketId: mid })
+          end
+
+          seen_snapshot_markets[mid] = true
           price = p['priceQuotePerBase']
           price_map[mid] = price
         end
