@@ -47,6 +47,37 @@ RSpec.describe 'bin/fcs run' do
     end
   end
 
+  it 'prints identical CLI summary across repeated verbose runs' do
+    Dir.mktmpdir do |tmp|
+      out_dir = File.join(tmp, 'out')
+
+      stdout1, _stderr1, status1 = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', fixture,
+        '--output-dir', out_dir,
+        '--verbose',
+        chdir: root
+      )
+
+      stdout2, _stderr2, status2 = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', fixture,
+        '--output-dir', out_dir,
+        '--verbose',
+        chdir: root
+      )
+
+      expect(status1.success?).to be(true)
+      expect(status2.success?).to be(true)
+      expect(stdout1).to include('=== fcs_summary ===')
+      expect(stdout1).to eq(stdout2)
+    end
+  end
+
   it 'fails deterministically when --input is missing' do
     stdout, stderr, status = Open3.capture3(
       ruby,
