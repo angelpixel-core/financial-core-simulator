@@ -531,7 +531,9 @@ module FCS
         unless v.is_a?(String) && v.match?(/\A\d+(\.\d+)?\z/)
           raise_invalid!('Invalid decimal string', field: field, details: context.merge(value: v))
         end
-        return unless !allow_zero && v == '0'
+
+        parsed = FCS::Types::Decimal18.from_string(v)
+        return unless !allow_zero && parsed.zero?
 
         raise_invalid!('Must be > 0', field: field, details: context.merge(value: v))
       end

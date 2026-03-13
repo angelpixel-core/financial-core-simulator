@@ -172,6 +172,39 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla si quantityBase usa cero equivalente decimal' do
+    input = base_input
+    input['trades'] = [
+      {
+        'tradeId' => 't-1',
+        'accountId' => 'acc-1',
+        'marketId' => 'ETH-USD',
+        'timestamp' => 1,
+        'seq' => 1,
+        'side' => 'BUY',
+        'quantityBase' => '0.0',
+        'priceQuotePerBase' => '100'
+      }
+    ]
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'quantityBase', value: '0.0')
+      }
+  end
+
+  it 'falla si fx quoteUsd usa cero equivalente con leading zeros' do
+    input = base_input
+    input['priceSnapshot']['fx'] = { 'quoteUsd' => '000' }
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'priceSnapshot.fx.quoteUsd', value: '000')
+      }
+  end
+
   it 'falla si trade incluye timestamp string en batch' do
     input = base_input
     input['trades'] = [
