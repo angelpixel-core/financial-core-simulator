@@ -269,4 +269,70 @@ RSpec.describe 'bin/fcs run' do
       expect(payload_a.fetch('inputHash')).to eq(payload_b.fetch('inputHash'))
     end
   end
+
+  it 'emits stable error envelope for invalid schema and broken references' do
+    Dir.mktmpdir do |tmp|
+      bad_schema = {
+        'schemaVersion' => '9.9',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'trades' => [],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '2500' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      broken_refs = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'trades' => [
+          {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'BTC-USD',
+            'timestamp' => 1,
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          }
+        ],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '2500' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      schema_path = File.join(tmp, 'bad_schema.json')
+      refs_path = File.join(tmp, 'broken_refs.json')
+      File.write(schema_path, JSON.pretty_generate(bad_schema))
+      File.write(refs_path, JSON.pretty_generate(broken_refs))
+
+      [
+        [schema_path, FCS::Errors::ERR_UNSUPPORTED_SCHEMA],
+        [refs_path, FCS::Errors::ERR_UNKNOWN_REFERENCE]
+      ].each do |input_path, expected_code|
+        _stdout, stderr, status = Open3.capture3(
+          ruby,
+          File.join(root, 'bin/fcs'),
+          'run',
+          '--input', input_path,
+          '--output-dir', File.join(tmp, "out-#{expected_code}"),
+          chdir: root
+        )
+
+        expect(status.success?).to be(false)
+        expect(status.exitstatus).to eq(2)
+
+        payload = JSON.parse(stderr)
+        expect(payload).to include('what_happened', 'impact', 'next_action', 'details')
+        expect(payload.fetch('error')).to include('code' => expected_code)
+        expect(payload.fetch('error')).to have_key('message')
+      end
+    end
+  end
 end

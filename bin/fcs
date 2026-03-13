@@ -7,6 +7,10 @@ require "json"
 
 def print_diagnostic_error(code:, what_happened:, impact:, next_action:, details: {})
   payload = {
+    "error" => {
+      "code" => code,
+      "message" => what_happened
+    },
     "code" => code,
     "what_happened" => what_happened,
     "impact" => impact,
