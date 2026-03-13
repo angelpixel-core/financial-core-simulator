@@ -3,6 +3,7 @@
 require 'digest'
 require 'fileutils'
 require 'tmpdir'
+require 'json'
 
 RSpec.describe 'Deterministic benchmark runner', :perf do
   let(:fixture_path) do
@@ -10,7 +11,7 @@ RSpec.describe 'Deterministic benchmark runner', :perf do
   end
 
   it 'writes a benchmark report with deterministic metadata' do
-    runner = FCS::Benchmarking::BenchmarkRunner.new
+    runner = FCS::Benchmarking::BenchmarkRunner.new(gate_seconds: 9_999.0)
 
     Dir.mktmpdir do |dir|
       result = runner.run!(
@@ -34,7 +35,7 @@ RSpec.describe 'Deterministic benchmark runner', :perf do
   end
 
   it 'produces the same input_hash and artifacts across runs' do
-    runner = FCS::Benchmarking::BenchmarkRunner.new
+    runner = FCS::Benchmarking::BenchmarkRunner.new(gate_seconds: 9_999.0)
 
     first_dir = Dir.mktmpdir
     second_dir = Dir.mktmpdir
@@ -68,5 +69,59 @@ RSpec.describe 'Deterministic benchmark runner', :perf do
   ensure
     FileUtils.remove_entry(first_dir) if first_dir
     FileUtils.remove_entry(second_dir) if second_dir
+  end
+
+  it 'fails when p95 exceeds the deterministic gate' do
+    fake_runner = Class.new do
+      def run_from_input!(input:, output_dir:, **_kwargs)
+        FileUtils.mkdir_p(output_dir)
+        json = File.join(output_dir, 'result.json')
+        positions = File.join(output_dir, 'positions.csv')
+        pnl = File.join(output_dir, 'pnl.csv')
+        File.write(json, JSON.dump(input))
+        File.write(positions, "account_id,market_id,quantity,avg_cost\n")
+        File.write(pnl,
+                   "account_id,market_id,realized_pnl_quote,fees_quote,realized_net_pnl_quote,unrealized_pnl_quote,total_pnl_quote,total_pnl_usd\n")
+
+        {
+          json_path: json,
+          input_hash: 'hash-123',
+          run_id: 'run-123',
+          schema_version: input.fetch('schemaVersion'),
+          valuation_timestamp: input.dig('priceSnapshot', 'valuationTimestamp'),
+          artifacts: {
+            json_path: json,
+            positions_csv_path: positions,
+            pnl_csv_path: pnl
+          }
+        }
+      end
+    end.new
+
+    generator = instance_double(FCS::Benchmarking::InputGenerator)
+    allow(generator).to receive(:generate).and_return({})
+
+    runner = FCS::Benchmarking::BenchmarkRunner.new(
+      generator: generator,
+      runner: fake_runner,
+      gate_seconds: 2.0
+    )
+
+    allow(Process).to receive(:clock_gettime).and_return(0.0, 2.5)
+
+    Dir.mktmpdir do |dir|
+      expect do
+        runner.run!(
+          fixture_path: fixture_path,
+          output_dir: dir,
+          runs: 1,
+          command: 'spec bench'
+        )
+      end.to raise_error(FCS::Error) { |error|
+        expect(error.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(error.details.fetch('p95_gate_seconds')).to eq(2.0)
+        expect(error.details.fetch('p95_seconds')).to be >= 2.0
+      }
+    end
   end
 end

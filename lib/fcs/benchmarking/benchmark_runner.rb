@@ -7,17 +7,20 @@ module FCS
   module Benchmarking
     class BenchmarkRunner
       DEFAULT_RUNS = 5
+      P95_GATE_SECONDS = 2.0
 
       def initialize(
         generator: FCS::Benchmarking::InputGenerator.new,
         runner: FCS::Application::Runner.new,
         logger: FCS.logger,
-        clock: Time
+        clock: Time,
+        gate_seconds: P95_GATE_SECONDS
       )
         @generator = generator
         @runner = runner
         @logger = logger
         @clock = clock
+        @gate_seconds = gate_seconds
       end
 
       def run!(fixture_path:, output_dir:, runs:, command:)
@@ -72,6 +75,8 @@ module FCS
 
         report_path = write_report(output_dir: output_dir, report: report, completed_at: completed_at)
 
+        enforce_p95_gate!(report: report, report_path: report_path, fixture_path: fixture_path, command: command)
+
         { report_path: report_path, report: report }
       end
 
@@ -115,6 +120,7 @@ module FCS
           'completed_at' => completed_at.iso8601,
           'timings_seconds' => timings,
           'p95_seconds' => percentile(timings, 0.95),
+          'p95_gate_seconds' => @gate_seconds,
           'input_hash' => metadata.fetch(:input_hash),
           'run_id' => metadata.fetch(:run_id),
           'engine_version' => FCS::VERSION,
@@ -130,6 +136,23 @@ module FCS
         sorted = values.sort
         index = (percentile * (sorted.length - 1)).ceil
         sorted[index]
+      end
+
+      def enforce_p95_gate!(report:, report_path:, fixture_path:, command:)
+        p95 = report.fetch('p95_seconds')
+        return if p95 < @gate_seconds
+
+        raise FCS::Error.new(
+          FCS::Errors::ERR_VALIDATION,
+          'Benchmark p95 exceeded deterministic gate',
+          details: {
+            'p95_seconds' => p95,
+            'p95_gate_seconds' => @gate_seconds,
+            'report_path' => report_path,
+            'fixture_path' => fixture_path,
+            'command' => command
+          }
+        )
       end
 
       def write_report(output_dir:, report:, completed_at:)
