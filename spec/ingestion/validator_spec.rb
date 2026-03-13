@@ -542,4 +542,80 @@ RSpec.describe FCS::Ingestion::Validator do
         expect(e.details).to include(field: 'timeline.events.externalId')
       }
   end
+
+  it 'falla si TRADE_APPLIED referencia account inexistente en timeline' do
+    input = base_input
+    input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'TRADE_APPLIED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'sim.core',
+          'externalId' => 'tr-1',
+          'trade' => {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-missing',
+            'marketId' => 'ETH-USD',
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          }
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_UNKNOWN_REFERENCE)
+        expect(e.details).to include(accountId: 'acc-missing')
+      }
+  end
+
+  it 'falla con ERR_DUPLICATE_SEQ si timeline repite seq por account+market' do
+    input = base_input
+    input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'TRADE_APPLIED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'sim.core',
+          'externalId' => 'tr-1',
+          'trade' => {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'seq' => 7,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          }
+        },
+        {
+          'eventType' => 'TRADE_APPLIED',
+          'timelineSeq' => 102,
+          'timestamp' => '2026-03-03T12:00:02Z',
+          'source' => 'sim.core',
+          'externalId' => 'tr-2',
+          'trade' => {
+            'tradeId' => 't-2',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'seq' => 7,
+            'side' => 'SELL',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '110'
+          }
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_DUPLICATE_SEQ)
+        expect(e.details).to include(accountId: 'acc-1', marketId: 'ETH-USD', seq: 7)
+      }
+  end
 end

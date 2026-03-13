@@ -24,7 +24,7 @@ module FCS
         validate_account_collateral!(accounts)
 
         validate_snapshot!(h, market_ids)
-        validate_timeline!(h)
+        validate_timeline!(h, account_ids: account_ids, market_ids: market_ids)
 
         validate_trades!(trades, account_ids, market_ids, fee_enabled?(h))
         validate_seq_uniqueness!(trades)
@@ -65,13 +65,14 @@ module FCS
                        field: 'timeline.events')
       end
 
-      def validate_timeline!(h)
+      def validate_timeline!(h, account_ids:, market_ids:)
         timeline = h['timeline']
         return if timeline.nil?
 
         previous_seq = nil
         seen_full_idempotency = {}
         seen_source_external = {}
+        seen_trade_seq = {}
         timeline.fetch('events').each do |event|
           raise_invalid!('timeline.events item must be an object', field: 'timeline.events') unless event.is_a?(Hash)
 
@@ -106,7 +107,10 @@ module FCS
           when 'PRICE_UPDATED'
             validate_timeline_price_updated!(event)
           when 'TRADE_APPLIED'
-            validate_timeline_trade_applied!(event)
+            validate_timeline_trade_applied!(event,
+                                             account_ids: account_ids,
+                                             market_ids: market_ids,
+                                             seen_trade_seq: seen_trade_seq)
           else
             raise_invalid!('Unsupported timeline eventType',
                            field: 'timeline.events.eventType',
@@ -244,7 +248,7 @@ module FCS
         )
       end
 
-      def validate_timeline_trade_applied!(event)
+      def validate_timeline_trade_applied!(event, account_ids:, market_ids:, seen_trade_seq:)
         trade = event['trade']
         unless trade.is_a?(Hash)
           raise_invalid!('timeline TRADE_APPLIED trade is required',
@@ -266,14 +270,35 @@ module FCS
           raise_invalid!('timeline.events.trade.accountId must be a non-empty string',
                          field: 'timeline.events.trade.accountId')
         end
+        unless account_ids.include?(trade['accountId'])
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
+                               'Unknown accountId',
+                               details: { accountId: trade['accountId'] })
+        end
         unless non_empty_string?(trade['marketId'])
           raise_invalid!('timeline.events.trade.marketId must be a non-empty string',
                          field: 'timeline.events.trade.marketId')
+        end
+        unless market_ids.include?(trade['marketId'])
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
+                               'Unknown marketId',
+                               details: { marketId: trade['marketId'] })
         end
         unless trade['seq'].is_a?(Integer)
           raise_invalid!('timeline.events.trade.seq must be an integer',
                          field: 'timeline.events.trade.seq')
         end
+
+        trade_seq_key = [trade['accountId'], trade['marketId'], trade['seq']]
+        if seen_trade_seq[trade_seq_key]
+          raise FCS::Error.new(
+            FCS::Errors::ERR_DUPLICATE_SEQ,
+            'Duplicate seq for account+market',
+            details: { accountId: trade['accountId'], marketId: trade['marketId'], seq: trade['seq'] }
+          )
+        end
+        seen_trade_seq[trade_seq_key] = true
+
         raise_invalid!('Invalid side', field: 'timeline.events.trade.side', details: { side: trade['side'] }) unless %w[
           BUY SELL
         ].include?(trade['side'])
