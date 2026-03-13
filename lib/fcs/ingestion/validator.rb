@@ -264,7 +264,7 @@ module FCS
                          field: 'timeline.events.trade')
         end
 
-        %w[tradeId accountId marketId seq side quantityBase priceQuotePerBase].each do |field|
+        %w[tradeId accountId marketId timestamp seq side quantityBase priceQuotePerBase].each do |field|
           unless trade.key?(field)
             raise_invalid!("timeline TRADE_APPLIED trade.#{field} is required",
                            field: "timeline.events.trade.#{field}")
@@ -296,6 +296,10 @@ module FCS
         unless trade['seq'].is_a?(Integer)
           raise_invalid!('timeline.events.trade.seq must be an integer',
                          field: 'timeline.events.trade.seq')
+        end
+        unless trade['timestamp'].is_a?(Integer)
+          raise_invalid!('timeline.events.trade.timestamp must be an integer',
+                         field: 'timeline.events.trade.timestamp')
         end
 
         trade_seq_key = [trade['accountId'], trade['marketId'], trade['seq']]
