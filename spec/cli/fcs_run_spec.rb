@@ -790,4 +790,81 @@ RSpec.describe 'bin/fcs run' do
   ensure
     ENV['FCS_TIMELINE_ENABLED'] = previous
   end
+
+  it 'applies timeline trades by timelineSeq order in end-to-end CLI flow' do
+    previous = ENV['FCS_TIMELINE_ENABLED']
+    ENV['FCS_TIMELINE_ENABLED'] = '1'
+
+    Dir.mktmpdir do |tmp|
+      timeline_input = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'trades' => [],
+        'timeline' => {
+          'events' => [
+            {
+              'eventType' => 'TRADE_APPLIED',
+              'timelineSeq' => 1,
+              'timestamp' => '2026-03-03T12:00:02Z',
+              'source' => 'sim.core',
+              'externalId' => 'tr-buy',
+              'trade' => {
+                'tradeId' => 't-buy',
+                'accountId' => 'acc-1',
+                'marketId' => 'ETH-USD',
+                'timestamp' => 2,
+                'seq' => 1,
+                'side' => 'BUY',
+                'quantityBase' => '1',
+                'priceQuotePerBase' => '100'
+              }
+            },
+            {
+              'eventType' => 'TRADE_APPLIED',
+              'timelineSeq' => 2,
+              'timestamp' => '2026-03-03T12:00:01Z',
+              'source' => 'sim.core',
+              'externalId' => 'tr-sell',
+              'trade' => {
+                'tradeId' => 't-sell',
+                'accountId' => 'acc-1',
+                'marketId' => 'ETH-USD',
+                'timestamp' => 1,
+                'seq' => 2,
+                'side' => 'SELL',
+                'quantityBase' => '1',
+                'priceQuotePerBase' => '110'
+              }
+            }
+          ]
+        },
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '110' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_path = File.join(tmp, 'timeline-order.json')
+      output_dir = File.join(tmp, 'out')
+      File.write(input_path, JSON.pretty_generate(timeline_input))
+
+      _stdout, _stderr, status = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', input_path,
+        '--output-dir', output_dir,
+        chdir: root
+      )
+
+      expect(status.success?).to be(true)
+      payload = JSON.parse(File.read(File.join(output_dir, 'result.json')))
+      market = payload.fetch('accounts').first.fetch('markets').first
+      expect(market.fetch('quantity')).to eq('0.0')
+    end
+  ensure
+    ENV['FCS_TIMELINE_ENABLED'] = previous
+  end
 end
