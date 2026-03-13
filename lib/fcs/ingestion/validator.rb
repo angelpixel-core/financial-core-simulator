@@ -442,6 +442,11 @@ module FCS
             validate_non_negative_decimal_string!(v, field: 'fee.amountQuote', context: { tradeId: t['tradeId'] })
           end
 
+          timestamp = t['timestamp']
+          unless timestamp.is_a?(Integer) || non_empty_string?(timestamp)
+            raise_invalid!('Missing or invalid timestamp', field: 'timestamp', details: { tradeId: t['tradeId'] })
+          end
+
           seq = t['seq']
           raise_invalid!('Missing seq', field: 'seq', details: { tradeId: t['tradeId'] }) unless seq.is_a?(Integer)
         end
