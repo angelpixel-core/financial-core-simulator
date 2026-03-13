@@ -470,7 +470,7 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
-  it 'falla si timelineSeq no es monotono creciente' do
+  it 'acepta timelineSeq no monotono cuando cada valor es unico' do
     input = base_input
     input['timeline'] = {
       'events' => [
@@ -495,11 +495,7 @@ RSpec.describe FCS::Ingestion::Validator do
       ]
     }
 
-    expect { validator.validate!(input) }
-      .to raise_error(FCS::Error) { |e|
-        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
-        expect(e.details).to include(field: 'timeline.events.timelineSeq')
-      }
+    expect { validator.validate!(input) }.not_to raise_error
   end
 
   it 'falla si hay duplicado exacto de clave idempotente en timeline' do

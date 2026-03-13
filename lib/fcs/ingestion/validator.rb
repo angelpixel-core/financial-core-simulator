@@ -70,10 +70,10 @@ module FCS
         timeline = h['timeline']
         return if timeline.nil?
 
-        previous_seq = nil
         seen_full_idempotency = {}
         seen_source_external = {}
         seen_trade_seq = {}
+        seen_timeline_seq = {}
         timeline.fetch('events').each do |event|
           raise_invalid!('timeline.events item must be an object', field: 'timeline.events') unless event.is_a?(Hash)
 
@@ -101,8 +101,13 @@ module FCS
           seen_full_idempotency[idempotency_key] = event
           seen_source_external[source_external_key] = event.fetch('timelineSeq')
 
-          validate_timeline_monotonic_seq!(event.fetch('timelineSeq'), previous_seq)
-          previous_seq = event.fetch('timelineSeq')
+          current_seq = event.fetch('timelineSeq')
+          if seen_timeline_seq[current_seq]
+            raise_invalid!('timeline timelineSeq must be unique',
+                           field: 'timeline.events.timelineSeq',
+                           details: { timelineSeq: current_seq })
+          end
+          seen_timeline_seq[current_seq] = true
 
           case event.fetch('eventType')
           when 'PRICE_UPDATED'
@@ -173,17 +178,6 @@ module FCS
             previousSeq: previous_seq,
             currentSeq: event.fetch('timelineSeq')
           }
-        )
-      end
-
-      def validate_timeline_monotonic_seq!(current_seq, previous_seq)
-        return if previous_seq.nil?
-        return if current_seq > previous_seq
-
-        raise_invalid!(
-          'timeline timelineSeq must be strictly increasing',
-          field: 'timeline.events.timelineSeq',
-          details: { previousSeq: previous_seq, currentSeq: current_seq }
         )
       end
 
