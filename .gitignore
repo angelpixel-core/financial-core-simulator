@@ -5,6 +5,10 @@
 output/
 apps/admin/storage/
 
+# BMAD generated planning/runtime artifacts
+.bmad/output/planning-artifacts/
+.bmad/output/workflow-status.yaml
+
 .opencode
 .codex
 .cursor
