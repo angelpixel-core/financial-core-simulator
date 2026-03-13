@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'securerandom'
-
 module FCS
   module Application
     class Runner
@@ -42,7 +40,7 @@ module FCS
         schema_version = input.fetch('schemaVersion')
         valuation_ts = input.dig('priceSnapshot', 'valuationTimestamp')
 
-        run_id = SecureRandom.uuid
+        run_id = deterministic_run_id(input_hash)
 
         checkpoint_store = build_checkpoint_store(output_dir: output_dir, schema_version: schema_version)
         checkpoint = checkpoint_store&.latest_checkpoint
@@ -136,6 +134,15 @@ module FCS
             checkpoint['timelineSeq']
         end
         metadata
+      end
+
+      def deterministic_run_id(input_hash)
+        hex = FCS::Hashing::SHA256.hex("run:#{input_hash}")
+        versioned = "5#{hex[13, 3]}"
+        variant = ((hex[16].hex & 0x3) | 0x8).to_s(16)
+        varianted = "#{variant}#{hex[17, 3]}"
+
+        "#{hex[0, 8]}-#{hex[8, 4]}-#{versioned}-#{varianted}-#{hex[20, 12]}"
       end
     end
   end

@@ -43,4 +43,36 @@ RSpec.describe 'bin/fcs run' do
       expect(stdout).to include('OK: wrote')
     end
   end
+
+  it 'produces identical artifacts across repeated runs with same input' do
+    Dir.mktmpdir do |tmp|
+      out1 = File.join(tmp, 'run1')
+      out2 = File.join(tmp, 'run2')
+
+      _stdout1, _stderr1, status1 = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', fixture,
+        '--output-dir', out1,
+        chdir: root
+      )
+
+      _stdout2, _stderr2, status2 = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', fixture,
+        '--output-dir', out2,
+        chdir: root
+      )
+
+      expect(status1.success?).to be(true)
+      expect(status2.success?).to be(true)
+
+      %w[result.json positions.csv pnl.csv].each do |name|
+        expect(File.read(File.join(out1, name))).to eq(File.read(File.join(out2, name)))
+      end
+    end
+  end
 end

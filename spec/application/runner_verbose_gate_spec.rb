@@ -60,7 +60,20 @@ RSpec.describe FCS::Application::Runner do
   end
 
   it 'reuses the same runId for reporter payload and CLI summary' do
-    allow(SecureRandom).to receive(:uuid).and_return('run-123')
+    writer_payload = nil
+    cli_payload = nil
+
+    allow(artifacts_writer).to receive(:write_all!) do |args|
+      writer_payload = args.fetch(:payload)
+      {
+        json_path: 'output/result.json',
+        positions_csv_path: 'output/positions.csv',
+        pnl_csv_path: 'output/pnl.csv'
+      }
+    end
+    allow(cli).to receive(:print) do |payload|
+      cli_payload = payload
+    end
 
     runner = described_class.new(
       parser: parser,
@@ -74,8 +87,7 @@ RSpec.describe FCS::Application::Runner do
 
     runner.run!(input_path: 'input.json', output_dir: 'output', fee_enabled: false, verbose: true)
 
-    expect(artifacts_writer).to have_received(:write_all!).with(hash_including(payload: hash_including('runId' => 'run-123')))
-    expect(cli).to have_received(:print).with(hash_including('runId' => 'run-123'))
+    expect(writer_payload.fetch('runId')).to eq(cli_payload.fetch('runId'))
     expect(logger).to have_received(:info).at_least(:once)
   end
 end
