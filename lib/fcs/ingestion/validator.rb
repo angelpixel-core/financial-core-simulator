@@ -474,7 +474,7 @@ module FCS
       def validate_seq_uniqueness!(trades)
         seen = {}
         trades.each do |t|
-          key = "#{t['accountId']}|#{t['marketId']}|#{t['seq']}"
+          key = [t['accountId'], t['marketId'], t['seq']]
           if seen[key]
             raise FCS::Error.new(
               FCS::Errors::ERR_DUPLICATE_SEQ,

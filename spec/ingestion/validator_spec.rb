@@ -212,6 +212,40 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'no colisiona seq uniqueness cuando ids contienen separadores' do
+    input = base_input
+    input['accounts'] = [{ 'accountId' => 'a|b' }, { 'accountId' => 'a' }]
+    input['markets'] = [{ 'marketId' => 'c' }, { 'marketId' => 'b|c' }]
+    input['priceSnapshot']['prices'] = [
+      { 'marketId' => 'c', 'priceQuotePerBase' => '100' },
+      { 'marketId' => 'b|c', 'priceQuotePerBase' => '200' }
+    ]
+    input['trades'] = [
+      {
+        'tradeId' => 't-1',
+        'accountId' => 'a|b',
+        'marketId' => 'c',
+        'timestamp' => 1,
+        'seq' => 1,
+        'side' => 'BUY',
+        'quantityBase' => '1',
+        'priceQuotePerBase' => '100'
+      },
+      {
+        'tradeId' => 't-2',
+        'accountId' => 'a',
+        'marketId' => 'b|c',
+        'timestamp' => 2,
+        'seq' => 1,
+        'side' => 'BUY',
+        'quantityBase' => '1',
+        'priceQuotePerBase' => '200'
+      }
+    ]
+
+    expect { validator.validate!(input) }.not_to raise_error
+  end
+
   it 'falla si evento timeline no incluye eventType' do
     input = base_input
     input['timeline'] = {
