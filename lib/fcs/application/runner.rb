@@ -33,6 +33,7 @@ module FCS
         @validator.validate!(input)
 
         input = prepare_execution_input(input)
+        normalize_collections_for_determinism!(input)
 
         canonical = FCS::Hashing::CanonicalJSON.dump(input)
         input_hash = FCS::Hashing::SHA256.hex(canonical)
@@ -91,6 +92,22 @@ module FCS
         input.delete('timeline')
         input['trades'] = @sorter.sort(input.fetch('trades'))
         input
+      end
+
+      def normalize_collections_for_determinism!(input)
+        input['accounts'] = sort_collection(input['accounts']) { |item| item.fetch('accountId') }
+        input['markets'] = sort_collection(input['markets']) { |item| item.fetch('marketId') }
+
+        prices = input.dig('priceSnapshot', 'prices')
+        return unless prices.is_a?(Array)
+
+        input['priceSnapshot']['prices'] = sort_collection(prices) { |item| item.fetch('marketId') }
+      end
+
+      def sort_collection(collection, &block)
+        return collection unless collection.is_a?(Array)
+
+        collection.sort_by(&block)
       end
 
       def timeline_mode_enabled?(input)

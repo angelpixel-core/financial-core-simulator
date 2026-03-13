@@ -160,4 +160,113 @@ RSpec.describe 'bin/fcs run' do
       end
     end
   end
+
+  it 'keeps the same inputHash for semantically equivalent but reordered input' do
+    Dir.mktmpdir do |tmp|
+      input_a = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-2' }, { 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'BTC-USD' }, { 'marketId' => 'ETH-USD' }],
+        'trades' => [
+          {
+            'tradeId' => 't-2',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 2,
+            'seq' => 2,
+            'side' => 'SELL',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '120'
+          },
+          {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 1,
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          }
+        ],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [
+            { 'marketId' => 'BTC-USD', 'priceQuotePerBase' => '50000' },
+            { 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '150' }
+          ],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_b = {
+        'markets' => [{ 'marketId' => 'ETH-USD' }, { 'marketId' => 'BTC-USD' }],
+        'priceSnapshot' => {
+          'fx' => { 'quoteUsd' => '1' },
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [
+            { 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '150' },
+            { 'marketId' => 'BTC-USD', 'priceQuotePerBase' => '50000' }
+          ]
+        },
+        'schemaVersion' => '1.0',
+        'trades' => [
+          {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 1,
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          },
+          {
+            'tradeId' => 't-2',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 2,
+            'seq' => 2,
+            'side' => 'SELL',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '120'
+          }
+        ],
+        'accounts' => [{ 'accountId' => 'acc-1' }, { 'accountId' => 'acc-2' }]
+      }
+
+      path_a = File.join(tmp, 'input_a.json')
+      path_b = File.join(tmp, 'input_b.json')
+      File.write(path_a, JSON.pretty_generate(input_a))
+      File.write(path_b, JSON.pretty_generate(input_b))
+
+      out_a = File.join(tmp, 'out-a')
+      out_b = File.join(tmp, 'out-b')
+
+      _stdout_a, _stderr_a, status_a = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', path_a,
+        '--output-dir', out_a,
+        chdir: root
+      )
+
+      _stdout_b, _stderr_b, status_b = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', path_b,
+        '--output-dir', out_b,
+        chdir: root
+      )
+
+      expect(status_a.success?).to be(true)
+      expect(status_b.success?).to be(true)
+
+      payload_a = JSON.parse(File.read(File.join(out_a, 'result.json')))
+      payload_b = JSON.parse(File.read(File.join(out_b, 'result.json')))
+      expect(payload_a.fetch('inputHash')).to eq(payload_b.fetch('inputHash'))
+    end
+  end
 end
