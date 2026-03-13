@@ -80,7 +80,7 @@ bin/fcs run --input tmp/bad.json --output-dir output
 Benchmark fixture definition:
 
 - `lib/fcs/fixtures/benchmark_fixture.json`
-- 100,000 trades, deterministic accounts/markets, fixed valuation timestamp
+- 100,000 trades, 10 accounts, 5 markets, fixed valuation timestamp
 
 Run the deterministic benchmark and persist evidence artifacts:
 
@@ -96,6 +96,11 @@ Expected outputs:
 - `output/benchmarks/benchmark_report_*.json`
 
 The report includes the command, timestamps, p95 runtime, input hash, run id, and artifact paths.
+
+Gate criteria:
+
+- Benchmark passes only when `p95_seconds < 2.0` for the fixture above.
+- If the gate fails, the benchmark command exits with a deterministic validation error and preserves the report.
 
 Perf gate isolation:
 
