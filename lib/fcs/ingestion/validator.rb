@@ -407,6 +407,11 @@ module FCS
         price_map = {}
         seen_snapshot_markets = {}
         prices.each do |p|
+          unless p.is_a?(Hash)
+            raise_invalid!('priceSnapshot.prices item must be an object',
+                           field: 'priceSnapshot.prices')
+          end
+
           mid = p['marketId']
           unless non_empty_string?(mid)
             raise_invalid!('Missing or invalid snapshot marketId', field: 'priceSnapshot.prices.marketId')
@@ -464,6 +469,8 @@ module FCS
 
       def validate_trades!(trades, account_ids, market_ids, fee_enabled)
         trades.each do |t|
+          raise_invalid!('trades item must be an object', field: 'trades') unless t.is_a?(Hash)
+
           trade_id = t['tradeId']
           raise_invalid!('Missing tradeId', field: 'tradeId') unless non_empty_string?(trade_id)
 

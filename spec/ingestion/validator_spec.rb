@@ -118,6 +118,28 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla con ERR_VALIDATION si trades contiene item no objeto' do
+    input = base_input
+    input['trades'] = ['invalid-trade-item']
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'trades')
+      }
+  end
+
+  it 'falla con ERR_VALIDATION si priceSnapshot.prices contiene item no objeto' do
+    input = base_input
+    input['priceSnapshot']['prices'] = ['invalid-price-item']
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'priceSnapshot.prices')
+      }
+  end
+
   it 'falla si hay float en quantityBase' do
     input = base_input
     input['trades'] = [
