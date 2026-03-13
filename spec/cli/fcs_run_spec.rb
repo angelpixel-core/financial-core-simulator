@@ -87,6 +87,25 @@ RSpec.describe 'bin/fcs run' do
     end
   end
 
+  it 'emits deterministic diagnostic payload for invalid flags' do
+    _stdout, stderr, status = Open3.capture3(
+      ruby,
+      File.join(root, 'bin/fcs'),
+      'run',
+      '--unknown-flag',
+      chdir: root
+    )
+
+    expect(status.success?).to be(false)
+    expect(status.exitstatus).to eq(2)
+
+    payload = JSON.parse(stderr)
+    expect(payload).to include('code' => FCS::Errors::ERR_VALIDATION)
+    expect(payload.fetch('what_happened')).to include('invalid option')
+    expect(payload).to have_key('impact')
+    expect(payload).to have_key('next_action')
+  end
+
   it 'produces identical artifacts across repeated runs with same input' do
     Dir.mktmpdir do |tmp|
       out1 = File.join(tmp, 'run1')

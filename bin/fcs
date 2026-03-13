@@ -49,7 +49,18 @@ when "run"
     opts.on("-h", "--help", "Print help") { puts opts; exit(0) }
   end
 
-  parser.parse!(ARGV)
+  begin
+    parser.parse!(ARGV)
+  rescue OptionParser::ParseError => e
+    print_diagnostic_error(
+      code: FCS::Errors::ERR_VALIDATION,
+      what_happened: e.message,
+      impact: "The run command arguments are invalid; execution did not start.",
+      next_action: "Fix the CLI flags and re-run `bin/fcs run --help` for valid options.",
+      details: { "errorClass" => e.class.name }
+    )
+    exit(2)
+  end
 
   if options[:input].nil? || options[:input].strip.empty?
     warn "ERR: --input is required"
