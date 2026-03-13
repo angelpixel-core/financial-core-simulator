@@ -8,3 +8,7 @@ gem "zeitwerk"
 gem "bigdecimal", "~> 4.0"
 
 gem "csv", "~> 3.3"
+
+group :development do
+  gem "rails-mcp-server", "~> 1.5"
+end
