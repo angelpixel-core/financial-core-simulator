@@ -4,14 +4,18 @@ module FCS
       def initialize(
         reporter: FCS::Reporting::JsonReport.new,
         positions_csv: FCS::Reporting::CsvPositions.new,
-        pnl_csv: FCS::Reporting::CsvPnL.new
+        pnl_csv: FCS::Reporting::CsvPnL.new,
+        account_market_contract_validator: FCS::Reporting::AccountMarketContractValidator.new
       )
         @reporter = reporter
         @positions_csv = positions_csv
         @pnl_csv = pnl_csv
+        @account_market_contract_validator = account_market_contract_validator
       end
 
       def write_all!(output_dir:, payload:)
+        @account_market_contract_validator.validate!(accounts: payload.fetch('accounts'))
+
         json_path = @reporter.write!(output_dir: output_dir, payload: payload)
         positions_path = @positions_csv.write!(output_dir: output_dir, accounts: payload.fetch('accounts'))
         pnl_path = @pnl_csv.write!(output_dir: output_dir, accounts: payload.fetch('accounts'))

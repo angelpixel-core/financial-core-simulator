@@ -49,8 +49,9 @@ RSpec.describe 'result.json schema contract' do
 
     m = acc['markets'][0]
     expect(m.keys).to include(
-      'marketId', 'quantity', 'avgCost', 'realizedPnLQuote', 'feesQuote',
-      'realizedNetPnLQuote', 'unrealizedPnLQuote', 'totalPnLQuote'
+      'marketId', 'quantity', 'avgCost', 'realizedPnL', 'unrealizedPnL',
+      'realizedPnLQuote', 'feesQuote', 'realizedNetPnLQuote',
+      'unrealizedPnLQuote', 'totalPnLQuote'
     )
     expect(m).not_to have_key('explain')
 

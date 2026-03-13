@@ -23,4 +23,39 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
       pnl_csv_path: 'out/pnl.csv'
     )
   end
+
+  it 'fails with deterministic contract diagnostics when an account-market row misses required metrics' do
+    writer = described_class.new(reporter: reporter, positions_csv: positions_csv, pnl_csv: pnl_csv)
+    payload = {
+      'accounts' => [
+        {
+          'accountId' => 'acc-1',
+          'markets' => [
+            {
+              'marketId' => 'ETH-USD',
+              'quantity' => '1.0',
+              'avgCost' => '100.0',
+              'realizedPnL' => '0.0'
+            }
+          ]
+        }
+      ],
+      'global' => {}
+    }
+
+    expect do
+      writer.write_all!(output_dir: 'out', payload: payload)
+    end.to raise_error(FCS::Error) do |error|
+      expect(error.code).to eq(FCS::Errors::ERR_VALIDATION)
+      expect(error.details).to include(
+        'missingField' => 'accounts[0].markets[0].unrealizedPnL',
+        'impact' => 'Canonical account-market artifacts cannot be trusted for this run.',
+        'nextAction' => 'Ensure quantity, avgCost, realizedPnL, and unrealizedPnL are present for every account-market row.'
+      )
+    end
+
+    expect(reporter).not_to have_received(:write!)
+    expect(positions_csv).not_to have_received(:write!)
+    expect(pnl_csv).not_to have_received(:write!)
+  end
 end

@@ -64,6 +64,8 @@ module FCS
               'marketId' => market_id,
               'quantity' => pos.qty.to_s,
               'avgCost' => pos.avg_cost.to_s,
+              'realizedPnL' => realized.to_s,
+              'unrealizedPnL' => unreal.to_s,
               'realizedPnLQuote' => realized.to_s,
               'feesQuote' => fees.to_s,
               'realizedNetPnLQuote' => realized_net.to_s,

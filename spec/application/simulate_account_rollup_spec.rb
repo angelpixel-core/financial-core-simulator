@@ -61,14 +61,18 @@ RSpec.describe FCS::Application::Simulate do
       expect(market_a.fetch('quantity')).to eq('1.0')
       expect(market_a.fetch('avgCost')).to eq('100.0')
       expect(market_a.fetch('feesQuote')).to eq('0.0')
+      expect(market_a.fetch('realizedPnL')).to eq('20.0')
       expect(market_a.fetch('realizedPnLQuote')).to eq('20.0')
+      expect(market_a.fetch('unrealizedPnL')).to eq('50.0')
       expect(market_a.fetch('unrealizedPnLQuote')).to eq('50.0')
       expect(market_a.fetch('totalPnLQuote')).to eq('70.0')
 
       expect(market_b.fetch('quantity')).to eq('1.0')
       expect(market_b.fetch('avgCost')).to eq('200.0')
       expect(market_b.fetch('feesQuote')).to eq('0.0')
+      expect(market_b.fetch('realizedPnL')).to eq('0.0')
       expect(market_b.fetch('realizedPnLQuote')).to eq('0.0')
+      expect(market_b.fetch('unrealizedPnL')).to eq('-50.0')
       expect(market_b.fetch('unrealizedPnLQuote')).to eq('-50.0')
       expect(market_b.fetch('totalPnLQuote')).to eq('-50.0')
     end
