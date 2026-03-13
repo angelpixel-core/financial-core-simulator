@@ -58,35 +58,39 @@ RSpec.describe FCS::Engine::RiskEngine do
   end
 
   it 'returns deterministic liquidation candidates ordered by severity' do
-    state = FCS::Engine::LedgerState.new
-    state.position_for(account_id: 'acc-b', market_id: 'ETH-USD').apply_sell!(
-      sell_qty: FCS::Types::Decimal18.from_string('3'),
-      sell_price: FCS::Types::Decimal18.from_string('100')
-    )
-    state.position_for(account_id: 'acc-a', market_id: 'ETH-USD').apply_sell!(
-      sell_qty: FCS::Types::Decimal18.from_string('1'),
-      sell_price: FCS::Types::Decimal18.from_string('100')
-    )
-
-    valuation = FCS::Engine::ValuationEngine.new(
-      price_snapshot: {
-        'prices' => [
-          { 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '120' }
-        ]
-      }
-    )
-
     engine = described_class.new(
-      account_collateral: {
-        'acc-a' => FCS::Types::Decimal18.new(0),
-        'acc-b' => FCS::Types::Decimal18.new(0)
-      },
+      account_collateral: {},
       risk_config: { maintenanceMarginRatio: FCS::Types::Decimal18.from_string('0.25') }
     )
 
-    health = engine.evaluate_accounts!(state: state, valuation: valuation)
-    expect(health.fetch('acc-a')[:status]).to eq(FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE)
-    expect(health.fetch('acc-b')[:status]).to eq(FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE)
+    health = {
+      'acc-b' => {
+        status: FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE,
+        candidates: [
+          {
+            account_id: 'acc-b',
+            market_id: 'ETH-USD',
+            severity: FCS::Types::Decimal18.from_string('360'),
+            seq: 0
+          }
+        ]
+      },
+      'acc-a' => {
+        status: FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE,
+        candidates: [
+          {
+            account_id: 'acc-a',
+            market_id: 'ETH-USD',
+            severity: FCS::Types::Decimal18.from_string('120'),
+            seq: 0
+          }
+        ]
+      },
+      'acc-c' => {
+        status: FCS::Engine::RiskEngine::STATUS_HEALTHY,
+        candidates: []
+      }
+    }
 
     candidates = engine.liquidation_candidates(health)
 

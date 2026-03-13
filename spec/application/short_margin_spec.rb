@@ -1,7 +1,7 @@
 require_relative '../../lib/fcs'
 
-RSpec.describe 'Short + margin integration' do
-  it 'simulates short flow with risk model and collateral' do
+RSpec.describe 'Long-only integration guardrails' do
+  it 'rejects short opening attempts even when risk model and collateral are provided' do
     input = {
       'schemaVersion' => '1.0',
       'accounts' => [{ 'accountId' => 'acc-1', 'collateralQuote' => '100' }],
@@ -18,16 +18,6 @@ RSpec.describe 'Short + margin integration' do
           'side' => 'SELL',
           'quantityBase' => '1',
           'priceQuotePerBase' => '100'
-        },
-        {
-          'tradeId' => 'b1',
-          'accountId' => 'acc-1',
-          'marketId' => 'ETH-USD',
-          'timestamp' => 2,
-          'seq' => 2,
-          'side' => 'BUY',
-          'quantityBase' => '1',
-          'priceQuotePerBase' => '80'
         }
       ],
       'priceSnapshot' => {
@@ -36,55 +26,44 @@ RSpec.describe 'Short + margin integration' do
       }
     }
 
-    result = FCS::Application::Simulate.new.call(input)
-    account = result['accounts'][0]
-    market = account['markets'][0]
-    expect(market['realizedPnLQuote']).to eq('20.0')
-    expect(market['quantity']).to eq('0.0')
-    expect(account['risk']).to include(
-      'status' => FCS::Engine::RiskEngine::STATUS_HEALTHY,
-      'maintenanceMarginQuote' => '0.0'
-    )
-    expect(account['riskEvents']).to eq([])
+    expect do
+      FCS::Application::Simulate.new.call(input)
+    end.to raise_error(FCS::Error) { |error| expect(error.code).to eq(FCS::Errors::ERR_POSITION_NEGATIVE) }
   end
 
-  it 'exposes liquidation candidate event when account is underwater' do
+  it 'keeps risk events empty on regular long-only flow' do
     input = {
       'schemaVersion' => '1.0',
-      'accounts' => [{ 'accountId' => 'acc-1', 'collateralQuote' => '10' }],
+      'accounts' => [{ 'accountId' => 'acc-1', 'collateralQuote' => '100' }],
       'markets' => [{ 'marketId' => 'ETH-USD' }],
       'feeModel' => { 'enabled' => false },
       'riskModel' => {
-        'maxLeverage' => '20',
+        'maxLeverage' => '2',
         'maintenanceMarginRatio' => '0.25',
         'liquidation' => { 'enabled' => true, 'closeFactor' => '0.5' }
       },
       'trades' => [
         {
-          'tradeId' => 's1',
+          'tradeId' => 'b1',
           'accountId' => 'acc-1',
           'marketId' => 'ETH-USD',
           'timestamp' => 1,
           'seq' => 1,
-          'side' => 'SELL',
+          'side' => 'BUY',
           'quantityBase' => '1',
           'priceQuotePerBase' => '100'
         }
       ],
       'priceSnapshot' => {
         'valuationTimestamp' => '2026-02-25T03:00:00Z',
-        'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '200' }]
+        'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '90' }]
       }
     }
 
     result = FCS::Application::Simulate.new.call(input)
     account = result['accounts'][0]
 
-    expect(account['risk']['status']).to eq(FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE)
-    expect(account['riskEvents'].first).to include(
-      'reasonCode' => FCS::Errors::ERR_RISK_LIQUIDATABLE,
-      'accountId' => 'acc-1',
-      'marketId' => 'ETH-USD'
-    )
+    expect(account['risk']['status']).to eq(FCS::Engine::RiskEngine::STATUS_HEALTHY)
+    expect(account['riskEvents']).to eq([])
   end
 end

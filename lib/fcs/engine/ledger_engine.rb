@@ -27,6 +27,8 @@ module FCS
 
       def apply_trade!(trade)
         pos = @state.position_for(account_id: trade.fetch('accountId'), market_id: trade.fetch('marketId'))
+        validate_long_only_sell!(pos: pos, trade: trade)
+
         @risk_engine.pre_trade_check!(
           account_id: trade.fetch('accountId'),
           market_id: trade.fetch('marketId'),
@@ -83,6 +85,25 @@ module FCS
         qty = FCS::Types::Decimal18.from_string(t.fetch('quantityBase'))
         price = FCS::Types::Decimal18.from_string(t.fetch('priceQuotePerBase'))
         pos.apply_sell!(sell_qty: qty, sell_price: price)
+      end
+
+      def validate_long_only_sell!(pos:, trade:)
+        return unless trade.fetch('side') == 'SELL'
+
+        sell_qty = FCS::Types::Decimal18.from_string(trade.fetch('quantityBase'))
+        return if sell_qty.atoms <= pos.qty.atoms
+
+        raise FCS::Error.new(
+          FCS::Errors::ERR_POSITION_NEGATIVE,
+          'SELL would make position negative',
+          details: {
+            accountId: trade.fetch('accountId'),
+            marketId: trade.fetch('marketId'),
+            tradeId: trade.fetch('tradeId'),
+            qty: pos.qty.to_s,
+            sellQty: sell_qty.to_s
+          }
+        )
       end
 
       def extract_fee_quote(trade)
