@@ -278,6 +278,69 @@ RSpec.describe 'bin/fcs run' do
     end
   end
 
+  it 'keeps inputHash stable regardless of fee CLI override' do
+    Dir.mktmpdir do |tmp|
+      input = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'feeModel' => { 'enabled' => true },
+        'trades' => [
+          {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 1,
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100',
+            'fee' => { 'amountQuote' => '1' }
+          }
+        ],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '100' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_path = File.join(tmp, 'fee-input.json')
+      File.write(input_path, JSON.pretty_generate(input))
+
+      out_fee_on = File.join(tmp, 'out-fee-on')
+      out_fee_off = File.join(tmp, 'out-fee-off')
+
+      _stdout_on, _stderr_on, status_on = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', input_path,
+        '--output-dir', out_fee_on,
+        chdir: root
+      )
+
+      _stdout_off, _stderr_off, status_off = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', input_path,
+        '--output-dir', out_fee_off,
+        '--no-fee',
+        chdir: root
+      )
+
+      expect(status_on.success?).to be(true)
+      expect(status_off.success?).to be(true)
+
+      payload_on = JSON.parse(File.read(File.join(out_fee_on, 'result.json')))
+      payload_off = JSON.parse(File.read(File.join(out_fee_off, 'result.json')))
+
+      expect(payload_on.fetch('inputHash')).to eq(payload_off.fetch('inputHash'))
+      expect(payload_on.fetch('global').fetch('feesQuote')).not_to eq(payload_off.fetch('global').fetch('feesQuote'))
+    end
+  end
+
   it 'emits stable error envelope for invalid schema and broken references' do
     Dir.mktmpdir do |tmp|
       bad_schema = {

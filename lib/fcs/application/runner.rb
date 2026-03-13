@@ -24,19 +24,18 @@ module FCS
       def run!(input_path:, output_dir:, fee_enabled:, explain: false, verbose: false)
         @logger.info("fcs.run.start input=#{input_path} output=#{output_dir}")
 
-        input = @parser.parse_file(input_path)
+        raw_input = @parser.parse_file(input_path)
+        @validator.validate!(raw_input)
 
-        # CLI flag tiene precedencia (y además deja el input normalizado)
+        hash_input = prepare_execution_input(deep_copy(raw_input))
+        normalize_collections_for_determinism!(hash_input)
+        canonical = FCS::Hashing::CanonicalJSON.dump(hash_input)
+        input_hash = FCS::Hashing::SHA256.hex(canonical)
+
+        input = prepare_execution_input(raw_input)
         input['feeModel'] ||= {}
         input['feeModel']['enabled'] = !!fee_enabled
-
-        @validator.validate!(input)
-
-        input = prepare_execution_input(input)
         normalize_collections_for_determinism!(input)
-
-        canonical = FCS::Hashing::CanonicalJSON.dump(input)
-        input_hash = FCS::Hashing::SHA256.hex(canonical)
 
         schema_version = input.fetch('schemaVersion')
         valuation_ts = input.dig('priceSnapshot', 'valuationTimestamp')
@@ -108,6 +107,10 @@ module FCS
         return collection unless collection.is_a?(Array)
 
         collection.sort_by(&block)
+      end
+
+      def deep_copy(value)
+        Marshal.load(Marshal.dump(value))
       end
 
       def timeline_mode_enabled?(input)
