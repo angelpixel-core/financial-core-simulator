@@ -131,10 +131,20 @@ module FCS
       end
 
       def validate_timeline_exact_duplicate!(event, stored_event:, idempotency_key:)
-        return if stored_event == event
+        if stored_event != event
+          raise_invalid!(
+            'timeline idempotency key conflict for duplicate event',
+            field: 'timeline.events.idempotencyKey',
+            details: {
+              source: idempotency_key[0],
+              externalId: idempotency_key[1],
+              timelineSeq: idempotency_key[2]
+            }
+          )
+        end
 
         raise_invalid!(
-          'timeline idempotency key conflict for duplicate event',
+          'timeline duplicate event is not allowed',
           field: 'timeline.events.idempotencyKey',
           details: {
             source: idempotency_key[0],

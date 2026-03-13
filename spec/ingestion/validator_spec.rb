@@ -435,7 +435,7 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
-  it 'acepta reintento con duplicado exacto de clave idempotente en timeline' do
+  it 'falla si hay duplicado exacto de clave idempotente en timeline' do
     input = base_input
     input['timeline'] = {
       'events' => [
@@ -460,7 +460,11 @@ RSpec.describe FCS::Ingestion::Validator do
       ]
     }
 
-    expect { validator.validate!(input) }.not_to raise_error
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'timeline.events.idempotencyKey')
+      }
   end
 
   it 'falla si hay colision parcial de clave idempotente en timeline' do
