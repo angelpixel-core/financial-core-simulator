@@ -60,6 +60,8 @@ bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/run2
 shasum -a 256 output/run1/result.json output/run2/result.json output/run1/positions.csv output/run2/positions.csv output/run1/pnl.csv output/run2/pnl.csv
 ```
 
+Acceptance criterion: each run1/run2 pair above must produce identical SHA-256 values.
+
 Error-path sanity checks:
 
 ```bash
