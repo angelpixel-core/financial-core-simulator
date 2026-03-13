@@ -9,6 +9,7 @@ RSpec.describe 'result.json schema contract' do
     Dir.mktmpdir do |dir|
       input = {
         'schemaVersion' => '1.0',
+        'usdModel' => { 'enabled' => true },
         'accounts' => [{ 'accountId' => 'acc-1' }],
         'markets' => [{ 'marketId' => 'ETH-USD' }],
         'feeModel' => { 'enabled' => true },
@@ -51,7 +52,7 @@ RSpec.describe 'result.json schema contract' do
     expect(m.keys).to include(
       'marketId', 'quantity', 'avgCost', 'realizedPnL', 'unrealizedPnL',
       'realizedPnLQuote', 'feesQuote', 'realizedNetPnLQuote',
-      'unrealizedPnLQuote', 'totalPnLQuote'
+      'unrealizedPnLQuote', 'totalPnLQuote', 'totalPnLUsd'
     )
     expect(m).not_to have_key('explain')
 

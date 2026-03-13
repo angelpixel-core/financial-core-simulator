@@ -4,7 +4,10 @@ module FCS
   module Application
     class Simulate
       def call(input, explain: false, checkpoint_store: nil, input_hash: nil)
-        fx = FCS::Engine::FXConverter.new(price_snapshot: input.fetch('priceSnapshot'))
+        fx = FCS::Engine::FXConverter.new(
+          price_snapshot: input.fetch('priceSnapshot'),
+          usd_enabled: usd_conversion_enabled?(input)
+        )
 
         fee_enabled = input.dig('feeModel', 'enabled')
         accounting_method = input.dig('accountingModel', 'method') || FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
@@ -70,7 +73,8 @@ module FCS
               'feesQuote' => fees.to_s,
               'realizedNetPnLQuote' => realized_net.to_s,
               'unrealizedPnLQuote' => unreal.to_s,
-              'totalPnLQuote' => total.to_s
+              'totalPnLQuote' => total.to_s,
+              'totalPnLUsd' => fx.enabled? ? fx.quote_to_usd(total).to_s : nil
             }
 
             if explain
@@ -228,6 +232,14 @@ module FCS
             'severity' => candidate.fetch(:severity).to_s
           }
         end
+      end
+
+      def usd_conversion_enabled?(input)
+        usd_model = input['usdModel']
+        return usd_model['enabled'] == true if usd_model.is_a?(Hash)
+
+        fx = input.dig('priceSnapshot', 'fx')
+        fx.is_a?(Hash) && fx.key?('quoteUsd') && !fx['quoteUsd'].nil?
       end
     end
   end

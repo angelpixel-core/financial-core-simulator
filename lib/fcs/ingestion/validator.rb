@@ -13,6 +13,7 @@ module FCS
         validate_schema_version!(h)
         validate_shape!(h)
         validate_accounting_model!(h)
+        validate_usd_model!(h)
         validate_risk_model!(h)
 
         accounts = h.fetch('accounts')
@@ -488,6 +489,10 @@ module FCS
         end
 
         fx = snap['fx']
+        if usd_conversion_enabled?(h) && (fx.nil? || !fx.is_a?(Hash) || !fx.key?('quoteUsd') || fx['quoteUsd'].nil?)
+          raise_missing_fx_for_usd_enabled!
+        end
+
         return if fx.nil?
 
         unless fx.is_a?(Hash)
@@ -508,6 +513,42 @@ module FCS
 
         q = fx['quoteUsd']
         validate_positive_decimal_string!(q, field: 'priceSnapshot.fx.quoteUsd', context: {})
+      end
+
+      def validate_usd_model!(h)
+        model = h['usdModel']
+        return if model.nil?
+
+        raise_invalid!('usdModel must be an object', field: 'usdModel') unless model.is_a?(Hash)
+        unless model.key?('enabled')
+          raise_invalid!('usdModel.enabled is required when usdModel is provided', field: 'usdModel.enabled')
+        end
+
+        enabled = model['enabled']
+        return if [true, false].include?(enabled)
+
+        raise_invalid!('usdModel.enabled must be boolean', field: 'usdModel.enabled')
+      end
+
+      def usd_conversion_enabled?(h)
+        model = h['usdModel']
+        return model.is_a?(Hash) && model['enabled'] == true if h.key?('usdModel')
+
+        fx = h.dig('priceSnapshot', 'fx')
+        fx.is_a?(Hash) && fx.key?('quoteUsd') && !fx['quoteUsd'].nil?
+      end
+
+      def raise_missing_fx_for_usd_enabled!
+        raise FCS::Error.new(
+          FCS::Errors::ERR_MISSING_SNAPSHOT,
+          'Missing required snapshot FX rate',
+          details: {
+            missingField: 'priceSnapshot.fx.quoteUsd',
+            what_happened: 'USD conversion is enabled but quoteUsd FX rate is missing from snapshot.',
+            impact: 'Account and global USD totals cannot be calculated deterministically.',
+            next_action: 'Provide priceSnapshot.fx.quoteUsd as a positive decimal string, or disable usdModel.enabled.'
+          }
+        )
       end
 
       def validate_trades!(trades, account_ids, market_ids, fee_enabled)

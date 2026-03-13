@@ -121,6 +121,23 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla con diagnostico accionable cuando usdModel.enabled requiere FX y quoteUsd no existe' do
+    input = base_input
+    input['usdModel'] = { 'enabled' => true }
+    input['priceSnapshot'].delete('fx')
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_MISSING_SNAPSHOT)
+        expect(e.details).to include(
+          missingField: 'priceSnapshot.fx.quoteUsd',
+          what_happened: 'USD conversion is enabled but quoteUsd FX rate is missing from snapshot.',
+          impact: 'Account and global USD totals cannot be calculated deterministically.',
+          next_action: 'Provide priceSnapshot.fx.quoteUsd as a positive decimal string, or disable usdModel.enabled.'
+        )
+      }
+  end
+
   it 'falla si snapshot prices contiene marketId duplicado' do
     input = base_input
     input['priceSnapshot']['prices'] = [

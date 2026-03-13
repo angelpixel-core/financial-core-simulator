@@ -14,6 +14,7 @@ module FCS
         realizedNetPnLQuote
         unrealizedPnLQuote
         totalPnLQuote
+        totalPnLUsd
       ].freeze
 
       def write!(output_dir:, accounts:)
@@ -30,7 +31,8 @@ module FCS
                 m.fetch('feesQuote'),
                 m.fetch('realizedNetPnLQuote'),
                 m.fetch('unrealizedPnLQuote'),
-                m.fetch('totalPnLQuote')
+                m.fetch('totalPnLQuote'),
+                m['totalPnLUsd']
               ]
             end
           end

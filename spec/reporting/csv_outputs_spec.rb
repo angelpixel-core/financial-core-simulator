@@ -119,7 +119,8 @@ RSpec.describe 'CSV outputs' do
 
       expect(positions_rows.headers).to eq(%w[accountId marketId quantity avgCost])
       expect(pnl_rows.headers).to eq(
-        %w[accountId marketId realizedPnLQuote feesQuote realizedNetPnLQuote unrealizedPnLQuote totalPnLQuote]
+        %w[accountId marketId realizedPnLQuote feesQuote realizedNetPnLQuote unrealizedPnLQuote totalPnLQuote
+           totalPnLUsd]
       )
       expect(positions_rows.size).to eq(4)
       expect(pnl_rows.size).to eq(4)
@@ -151,12 +152,14 @@ RSpec.describe 'CSV outputs' do
       expect(pnl_by_key.fetch(%w[acc-a ETH-USD])).to include(
         'feesQuote' => '1.0',
         'unrealizedPnLQuote' => '100.0',
-        'totalPnLQuote' => '99.0'
+        'totalPnLQuote' => '99.0',
+        'totalPnLUsd' => '99.0'
       )
       expect(pnl_by_key.fetch(%w[acc-b ETH-USD])).to include(
         'feesQuote' => '2.0',
         'unrealizedPnLQuote' => '-50.0',
-        'totalPnLQuote' => '-52.0'
+        'totalPnLQuote' => '-52.0',
+        'totalPnLUsd' => '-52.0'
       )
     end
   ensure
