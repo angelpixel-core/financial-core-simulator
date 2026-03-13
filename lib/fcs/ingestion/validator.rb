@@ -419,6 +419,9 @@ module FCS
 
       def validate_trades!(trades, account_ids, market_ids, fee_enabled)
         trades.each do |t|
+          trade_id = t['tradeId']
+          raise_invalid!('Missing tradeId', field: 'tradeId') unless non_empty_string?(trade_id)
+
           aid = t['accountId']
           mid = t['marketId']
 

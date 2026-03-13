@@ -115,6 +115,27 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla si trade no incluye tradeId valido' do
+    input = base_input
+    input['trades'] = [
+      {
+        'accountId' => 'acc-1',
+        'marketId' => 'ETH-USD',
+        'timestamp' => 1,
+        'seq' => 1,
+        'side' => 'BUY',
+        'quantityBase' => '1',
+        'priceQuotePerBase' => '100'
+      }
+    ]
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'tradeId')
+      }
+  end
+
   it 'falla si trade incluye timestamp string en batch' do
     input = base_input
     input['trades'] = [
