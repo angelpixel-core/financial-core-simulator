@@ -1,6 +1,7 @@
 require 'open3'
 require 'tmpdir'
 require 'rbconfig'
+require 'json'
 
 RSpec.describe 'bin/fcs run' do
   let(:root) { File.expand_path('../..', __dir__) }
@@ -41,6 +42,48 @@ RSpec.describe 'bin/fcs run' do
       expect(stderr).to include('[INFO] fcs.run.done')
       expect(stdout).to include('FCS Summary')
       expect(stdout).to include('OK: wrote')
+    end
+  end
+
+  it 'fails deterministically when --input is missing' do
+    stdout, stderr, status = Open3.capture3(
+      ruby,
+      File.join(root, 'bin/fcs'),
+      'run',
+      chdir: root
+    )
+
+    expect(status.success?).to be(false)
+    expect(status.exitstatus).to eq(2)
+    expect(stderr).to include('ERR: --input is required')
+    expect(stdout).to include('Usage: fcs run')
+  end
+
+  it 'emits diagnostic payload for invalid input json' do
+    Dir.mktmpdir do |tmp|
+      bad_input = File.join(tmp, 'bad.json')
+      File.write(bad_input, '{ invalid-json')
+
+      _stdout, stderr, status = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', bad_input,
+        '--output-dir', File.join(tmp, 'out'),
+        chdir: root
+      )
+
+      expect(status.success?).to be(false)
+      expect(status.exitstatus).to eq(2)
+
+      payload = JSON.parse(stderr)
+      expect(payload).to include(
+        'code' => FCS::Errors::ERR_INVALID_INPUT,
+        'what_happened' => 'Invalid JSON'
+      )
+      expect(payload).to have_key('impact')
+      expect(payload).to have_key('next_action')
+      expect(payload).to have_key('details')
     end
   end
 

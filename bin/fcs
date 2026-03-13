@@ -3,6 +3,19 @@
 
 require_relative "../lib/fcs"
 require "optparse"
+require "json"
+
+def print_diagnostic_error(code:, what_happened:, impact:, next_action:, details: {})
+  payload = {
+    "code" => code,
+    "what_happened" => what_happened,
+    "impact" => impact,
+    "next_action" => next_action,
+    "details" => details
+  }
+
+  $stderr.puts(JSON.pretty_generate(payload))
+end
 
 subcommand = ARGV.shift
 
@@ -55,16 +68,36 @@ when "run"
 
   FCS.logger.level = options[:verbose] ? FCS::Logging::SimpleLogger::INFO : FCS::Logging::SimpleLogger::WARN
 
-  runner = FCS::Application::Runner.new
-  path = runner.run!(
-    input_path: options[:input],
-    output_dir: options[:output_dir],
-    fee_enabled: options[:fee_enabled],
-    explain: options[:explain],
-    verbose: options[:verbose]
-  )
+  begin
+    runner = FCS::Application::Runner.new
+    path = runner.run!(
+      input_path: options[:input],
+      output_dir: options[:output_dir],
+      fee_enabled: options[:fee_enabled],
+      explain: options[:explain],
+      verbose: options[:verbose]
+    )
 
-  puts "OK: wrote #{path}" unless options[:quiet]
+    puts "OK: wrote #{path}" unless options[:quiet]
+  rescue FCS::Error => e
+    print_diagnostic_error(
+      code: e.code,
+      what_happened: e.message,
+      impact: "The run stopped before canonical artifacts were fully produced.",
+      next_action: "Fix the input/config issue and re-run `bin/fcs run --input <file> --output-dir <dir>`.",
+      details: e.details
+    )
+    exit(2)
+  rescue StandardError => e
+    print_diagnostic_error(
+      code: "ERR_INTERNAL",
+      what_happened: "Unexpected runtime error: #{e.class}",
+      impact: "The run failed unexpectedly and artifacts may be missing or incomplete.",
+      next_action: "Retry with `--verbose`; if it persists, open an issue with this error payload.",
+      details: { "message" => e.message }
+    )
+    exit(1)
+  end
 
 when "bench"
   require "benchmark"
