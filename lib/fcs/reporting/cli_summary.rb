@@ -70,10 +70,11 @@ module FCS
       def validate_artifacts!(artifacts)
         missing = REQUIRED_ARTIFACT_KEYS.filter_map do |key, label|
           path = artifacts[key]
-          next if path.nil?
-          next if File.exist?(path)
-
-          [label, path]
+          if path.nil?
+            [label, nil]
+          elsif !File.exist?(path)
+            [label, path]
+          end
         end
 
         return if missing.empty?

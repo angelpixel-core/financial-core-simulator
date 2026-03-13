@@ -147,4 +147,28 @@ RSpec.describe FCS::Reporting::CliSummary do
       }
     end
   end
+
+  it 'fails when required artifact paths are nil' do
+    io = StringIO.new
+    summary = described_class.new(io: io)
+
+    expect do
+      summary.print(
+        payload,
+        artifacts: {
+          json_path: nil,
+          positions_csv_path: nil,
+          pnl_csv_path: nil
+        },
+        status: 'success'
+      )
+    end.to raise_error(FCS::Error) { |error|
+      expect(error.code).to eq(FCS::Errors::ERR_VALIDATION)
+      expect(error.details.fetch('missing_artifacts')).to include(
+        'result_json' => nil,
+        'positions_csv' => nil,
+        'pnl_csv' => nil
+      )
+    }
+  end
 end
