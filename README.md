@@ -96,3 +96,9 @@ Expected outputs:
 - `output/benchmarks/benchmark_report_*.json`
 
 The report includes the command, timestamps, p95 runtime, input hash, run id, and artifact paths.
+
+Perf gate isolation:
+
+- Benchmark specs are tagged `:perf` and should run as a separate job to avoid flakiness in the main suite.
+- Run locally or in CI with: `bundle exec rspec --tag perf`.
+- Exclude from the default suite with: `bundle exec rspec --tag ~perf`.
