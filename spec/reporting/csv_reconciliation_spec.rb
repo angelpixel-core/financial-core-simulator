@@ -110,6 +110,47 @@ RSpec.describe 'CSV reconciliation' do
     end
   end
 
+  it 'fails when CSV has partial USD totals across rows' do
+    input = base_input
+    input['markets'] = [{ 'marketId' => 'ETH-USD' }, { 'marketId' => 'BTC-USD' }]
+    input['priceSnapshot']['prices'] = [
+      { 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '150' },
+      { 'marketId' => 'BTC-USD', 'priceQuotePerBase' => '60' }
+    ]
+
+    run_with(input: input) do |paths|
+      json_payload = JSON.parse(File.read(paths.fetch(:json_path)))
+      json_payload['global']['totalPnLUsd'] = nil
+      json_payload['accounts'][0]['markets'].each do |market|
+        next unless market['marketId'] == 'BTC-USD'
+
+        market['totalPnLUsd'] = nil
+      end
+      File.write(paths.fetch(:json_path), JSON.pretty_generate(json_payload))
+
+      rows = CSV.read(paths.fetch(:pnl_path), headers: true)
+      rows.each do |row|
+        row['total_pnl_usd'] = '' if row['market_id'] == 'BTC-USD'
+      end
+
+      CSV.open(paths.fetch(:pnl_path), 'w', write_headers: true, headers: rows.headers) do |csv|
+        rows.each { |row| csv << row }
+      end
+
+      validator = FCS::Reporting::CsvArtifactReconciler.new
+      expect do
+        validator.validate!(
+          json_path: paths.fetch(:json_path),
+          positions_path: paths.fetch(:positions_path),
+          pnl_path: paths.fetch(:pnl_path)
+        )
+      end.to raise_error(FCS::Error) { |error|
+        expect(error.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(error.details.fetch('mismatch')).to eq('csv_global_total_usd_partial')
+      }
+    end
+  end
+
   it 'produces deterministic CSV artifacts for identical runs' do
     Dir.mktmpdir do |dir|
       input_path = File.join(dir, 'input.json')

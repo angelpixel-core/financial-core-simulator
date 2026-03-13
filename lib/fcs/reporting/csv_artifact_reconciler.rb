@@ -205,14 +205,35 @@ module FCS
         end
 
         expected_total_usd = global['totalPnLUsd']
-        if total_usd_values.any?(&:nil?)
-          return if expected_total_usd.nil?
+        nil_count = total_usd_values.count(&:nil?)
+        if nil_count.positive?
+          if nil_count == total_usd_values.size
+            return if expected_total_usd.nil?
+
+            raise_validation_error!(
+              message: 'CSV USD totals missing while result.json has USD totals',
+              mismatch: 'csv_global_total_usd_missing',
+              details: {
+                'expected' => serialize_decimal(expected_total_usd)
+              }
+            )
+          end
 
           raise_validation_error!(
-            message: 'CSV USD totals missing while result.json has USD totals',
-            mismatch: 'csv_global_total_usd_missing',
+            message: 'CSV USD totals are partially missing across rows',
+            mismatch: 'csv_global_total_usd_partial',
             details: {
               'expected' => serialize_decimal(expected_total_usd)
+            }
+          )
+        end
+
+        if expected_total_usd.nil?
+          raise_validation_error!(
+            message: 'CSV USD totals present while result.json has no USD totals',
+            mismatch: 'csv_global_total_usd_unexpected',
+            details: {
+              'actual' => total_usd_values.map { |value| serialize_decimal(value) }
             }
           )
         end
