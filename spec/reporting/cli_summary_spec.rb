@@ -31,10 +31,10 @@ RSpec.describe FCS::Reporting::CliSummary do
     }
 
     out = StringIO.new
-    described_class.new(io: out).print(payload)
+    described_class.new(io: out).print(payload, validate_artifacts: false)
 
-    expect(out.string).to include('FCS Summary')
-    expect(out.string).to include('Global')
-    expect(out.string).to include('Accounts')
+    expect(out.string).to include('fcs_summary')
+    expect(out.string).to include('metrics:')
+    expect(out.string).to include('artifacts:')
   end
 end

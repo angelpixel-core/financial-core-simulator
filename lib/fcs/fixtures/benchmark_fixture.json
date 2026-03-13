@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0",
+  "fixtureVersion": "1.0",
+  "trades": 100000,
+  "accounts": 10,
+  "markets": 5,
+  "valuationTimestamp": "2026-02-25T03:00:00Z"
+}

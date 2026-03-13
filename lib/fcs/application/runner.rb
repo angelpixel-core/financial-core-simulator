@@ -22,34 +22,49 @@ module FCS
       end
 
       def run!(input_path:, output_dir:, fee_enabled:, explain: false, verbose: false)
-        @logger.info("fcs.run.start input=#{input_path} output=#{output_dir}")
-
         raw_input = @parser.parse_file(input_path)
 
-        input = deep_copy(raw_input)
-        input['feeModel'] ||= {}
-        input['feeModel']['enabled'] = !!fee_enabled
-        @validator.validate!(input)
+        result = run_from_input!(
+          input: raw_input,
+          output_dir: output_dir,
+          fee_enabled: fee_enabled,
+          explain: explain,
+          verbose: verbose,
+          input_source: input_path
+        )
 
-        hash_input = prepare_execution_input(deep_copy(input))
+        result.fetch(:json_path)
+      end
+
+      def run_from_input!(input:, output_dir:, fee_enabled:, explain: false, verbose: false, input_source: 'input')
+        @logger.info("fcs.run.start input=#{input_source} output=#{output_dir}")
+
+        raw_input = deep_copy(input)
+
+        normalized_input = deep_copy(raw_input)
+        normalized_input['feeModel'] ||= {}
+        normalized_input['feeModel']['enabled'] = !!fee_enabled
+        @validator.validate!(normalized_input)
+
+        hash_input = prepare_execution_input(deep_copy(normalized_input))
         normalize_collections_for_determinism!(hash_input)
         canonical = FCS::Hashing::CanonicalJSON.dump(hash_input)
         input_hash = FCS::Hashing::SHA256.hex(canonical)
 
-        normalize_collections_for_determinism!(input)
-        input = prepare_execution_input(input)
+        normalize_collections_for_determinism!(normalized_input)
+        normalized_input = prepare_execution_input(normalized_input)
 
-        schema_version = input.fetch('schemaVersion')
-        valuation_ts = input.dig('priceSnapshot', 'valuationTimestamp')
+        schema_version = normalized_input.fetch('schemaVersion')
+        valuation_ts = normalized_input.dig('priceSnapshot', 'valuationTimestamp')
 
         run_id = deterministic_run_id(input_hash)
 
         checkpoint_store = build_checkpoint_store(output_dir: output_dir, schema_version: schema_version)
         checkpoint = checkpoint_store&.latest_checkpoint
-        input['checkpoint'] ||= checkpoint unless checkpoint.nil?
+        normalized_input['checkpoint'] ||= checkpoint unless checkpoint.nil?
 
         result = @simulate.call(
-          input,
+          normalized_input,
           explain: explain,
           checkpoint_store: checkpoint_store,
           input_hash: input_hash
@@ -63,7 +78,7 @@ module FCS
           valuation_timestamp: valuation_ts,
           accounts: result.fetch('accounts'),
           global: result.fetch('global'),
-          replay: build_replay_metadata(input: input, checkpoint: checkpoint)
+          replay: build_replay_metadata(input: normalized_input, checkpoint: checkpoint)
         )
 
         artifacts = @artifacts_writer.write_all!(
@@ -77,7 +92,14 @@ module FCS
 
         @logger.info("fcs.run.done run_id=#{run_id} output=#{json_path}")
 
-        json_path
+        {
+          json_path: json_path,
+          input_hash: input_hash,
+          run_id: run_id,
+          schema_version: schema_version,
+          valuation_timestamp: valuation_ts,
+          artifacts: artifacts
+        }
       end
 
       private

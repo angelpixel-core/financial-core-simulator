@@ -74,3 +74,25 @@ mkdir -p tmp
 printf '{ invalid-json\n' > tmp/bad.json
 bin/fcs run --input tmp/bad.json --output-dir output
 ```
+
+## Deterministic Performance Benchmark (NFR4)
+
+Benchmark fixture definition:
+
+- `lib/fcs/fixtures/benchmark_fixture.json`
+- 100,000 trades, deterministic accounts/markets, fixed valuation timestamp
+
+Run the deterministic benchmark and persist evidence artifacts:
+
+```bash
+bin/fcs bench --runs 5 --output-dir output/benchmarks
+```
+
+Expected outputs:
+
+- `output/benchmarks/artifacts/result.json`
+- `output/benchmarks/artifacts/positions.csv`
+- `output/benchmarks/artifacts/pnl.csv`
+- `output/benchmarks/benchmark_report_*.json`
+
+The report includes the command, timestamps, p95 runtime, input hash, run id, and artifact paths.

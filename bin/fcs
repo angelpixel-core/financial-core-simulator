@@ -205,53 +205,85 @@ when "run"
   end
 
 when "bench"
-  require "benchmark"
-
-  bench = {
-    trades: 100_000,
-    accounts: 10,
-    markets: 5
+  options = {
+    fixture: 'lib/fcs/fixtures/benchmark_fixture.json',
+    runs: FCS::Benchmarking::BenchmarkRunner::DEFAULT_RUNS,
+    output_dir: 'output/benchmarks'
   }
 
   parser = OptionParser.new do |opts|
-    opts.banner = "Usage: fcs bench [--trades N] [--accounts N] [--markets N]"
+    opts.banner = "Usage: fcs bench [--fixture PATH] [--runs N] [--output-dir DIR]"
 
-    opts.on("--trades N", Integer, "Number of trades (default: 100000)") { |v| bench[:trades] = v }
-    opts.on("--accounts N", Integer, "Number of accounts (default: 10)") { |v| bench[:accounts] = v }
-    opts.on("--markets N", Integer, "Number of markets (default: 5)") { |v| bench[:markets] = v }
+    opts.on("--fixture PATH", "Path to benchmark fixture definition") { |v| options[:fixture] = v }
+    opts.on("--runs N", Integer, "Number of runs for p95 (default: #{options[:runs]})") { |v| options[:runs] = v }
+    opts.on("--output-dir DIR", "Benchmark output directory (default: output/benchmarks)") do |v|
+      options[:output_dir] = v
+    end
     opts.on("-v", "--version", "Print version") { puts FCS::VERSION; exit(0) }
     opts.on("-h", "--help", "Print help") { puts opts; exit(0) }
   end
 
-  parser.parse!(ARGV)
-
-  input = FCS::Benchmarking::InputGenerator.new.generate(
-    trades: bench[:trades],
-    accounts: bench[:accounts],
-    markets: bench[:markets]
-  )
-
-  simulate = FCS::Application::Simulate.new
-
-  elapsed = Benchmark.realtime do
-    simulate.call(input)
+  begin
+    parser.parse!(ARGV)
+  rescue OptionParser::ParseError => e
+    print_diagnostic_error(
+      code: FCS::Errors::ERR_VALIDATION,
+      what_happened: 'Invalid CLI option',
+      impact: 'The bench command arguments are invalid; execution did not start.',
+      next_action: 'Fix the CLI flags and re-run `bin/fcs bench --help` for valid options.',
+      details: { 'errorClass' => e.class.name, 'errorMessage' => e.message }
+    )
+    exit(2)
   end
 
-  puts "Bench:"
-  puts "  trades=#{bench[:trades]} accounts=#{bench[:accounts]} markets=#{bench[:markets]}"
-  puts format("  elapsed=%.3fs", elapsed)
+  command = "bin/fcs bench --fixture #{options[:fixture]} --runs #{options[:runs]} --output-dir #{options[:output_dir]}"
+
+  begin
+    result = FCS::Benchmarking::BenchmarkRunner.new.run!(
+      fixture_path: options[:fixture],
+      output_dir: options[:output_dir],
+      runs: options[:runs],
+      command: command
+    )
+
+    report = result.fetch(:report)
+
+    puts "Bench:"
+    puts "  runs=#{report.fetch('runs')} p95=#{format('%.3f', report.fetch('p95_seconds'))}s"
+    puts "  input_hash=#{report.fetch('input_hash')} run_id=#{report.fetch('run_id')}"
+    puts "  report=#{result.fetch(:report_path)}"
+    puts "  artifacts=#{report.dig('artifacts', 'result_json')}"
+  rescue FCS::Error => e
+    print_diagnostic_error(
+      code: e.code,
+      what_happened: e.message,
+      impact: 'The benchmark did not complete with valid evidence artifacts.',
+      next_action: 'Review the fixture definition and output paths, then retry.',
+      details: e.details
+    )
+    exit(2)
+  rescue StandardError => e
+    print_diagnostic_error(
+      code: 'ERR_INTERNAL',
+      what_happened: "Unexpected runtime error: #{e.class}",
+      impact: 'The benchmark failed unexpectedly and outputs may be incomplete.',
+      next_action: 'Retry with the same command; if it persists, open an issue with this error payload.',
+      details: { 'message' => e.message, 'output_dir' => options[:output_dir] }
+    )
+    exit(1)
+  end
 
 else
   puts <<~TXT
     Usage:
       fcs run   --input path/to/input.json [--output-dir output] [--no-fee] [--explain] [--verbose|--quiet]
-      fcs bench [--trades N] [--accounts N] [--markets N]
+      fcs bench [--fixture PATH] [--runs N] [--output-dir DIR]
 
     Examples:
       fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output
       fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output --explain --verbose
       fcs bench
-      fcs bench --trades 200000 --accounts 20 --markets 10
+      fcs bench --runs 7 --output-dir output/benchmarks
   TXT
   exit(1)
 end
