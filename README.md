@@ -57,5 +57,7 @@ Error-path sanity checks:
 bin/fcs run
 
 # Invalid input payload (deterministic diagnostic JSON)
+mkdir -p tmp
+printf '{ invalid-json\n' > tmp/bad.json
 bin/fcs run --input tmp/bad.json --output-dir output
 ```
