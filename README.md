@@ -61,6 +61,7 @@ shasum -a 256 output/run1/result.json output/run2/result.json output/run1/positi
 ```
 
 Acceptance criterion: each run1/run2 pair above must produce identical SHA-256 values.
+If any pair differs, the determinism check fails.
 
 Error-path sanity checks:
 
