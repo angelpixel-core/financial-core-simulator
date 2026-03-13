@@ -125,4 +125,56 @@ RSpec.describe 'result.json schema contract' do
   ensure
     ENV['FCS_TIMELINE_ENABLED'] = previous
   end
+
+  it 'keeps contract-level inputHash stable for reordered equivalent collections' do
+    Dir.mktmpdir do |dir|
+      input_a = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-2' }, { 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'BTC-USD' }, { 'marketId' => 'ETH-USD' }],
+        'trades' => [],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [
+            { 'marketId' => 'BTC-USD', 'priceQuotePerBase' => '50000' },
+            { 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '150' }
+          ],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_b = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }, { 'accountId' => 'acc-2' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }, { 'marketId' => 'BTC-USD' }],
+        'trades' => [],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [
+            { 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '150' },
+            { 'marketId' => 'BTC-USD', 'priceQuotePerBase' => '50000' }
+          ],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_a_path = File.join(dir, 'input_a.json')
+      input_b_path = File.join(dir, 'input_b.json')
+      File.write(input_a_path, JSON.pretty_generate(input_a))
+      File.write(input_b_path, JSON.pretty_generate(input_b))
+
+      runner = FCS::Application::Runner.new
+      out_a = File.join(dir, 'out_a')
+      out_b = File.join(dir, 'out_b')
+      json_a = runner.run!(input_path: input_a_path, output_dir: out_a, fee_enabled: true, explain: false,
+                           verbose: false)
+      json_b = runner.run!(input_path: input_b_path, output_dir: out_b, fee_enabled: true, explain: false,
+                           verbose: false)
+
+      payload_a = JSON.parse(File.read(json_a))
+      payload_b = JSON.parse(File.read(json_b))
+
+      expect(payload_a.fetch('inputHash')).to eq(payload_b.fetch('inputHash'))
+    end
+  end
 end
