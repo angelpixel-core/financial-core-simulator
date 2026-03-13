@@ -480,4 +480,98 @@ RSpec.describe 'bin/fcs run' do
       expect(payload).to include('what_happened', 'impact', 'next_action')
     end
   end
+
+  it 'enforces strict positivity while preserving reproducible hash for minimal positive values' do
+    Dir.mktmpdir do |tmp|
+      invalid_zero_equivalent = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'trades' => [
+          {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 1,
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '0.0',
+            'priceQuotePerBase' => '100'
+          }
+        ],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '100' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      valid_min_positive = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'trades' => [
+          {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 1,
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '0.000000000000000001',
+            'priceQuotePerBase' => '100'
+          }
+        ],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '100' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      invalid_path = File.join(tmp, 'invalid_zero_equivalent.json')
+      valid_path = File.join(tmp, 'valid_min_positive.json')
+      File.write(invalid_path, JSON.pretty_generate(invalid_zero_equivalent))
+      File.write(valid_path, JSON.pretty_generate(valid_min_positive))
+
+      _invalid_stdout, invalid_stderr, invalid_status = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', invalid_path,
+        '--output-dir', File.join(tmp, 'out-invalid'),
+        chdir: root
+      )
+
+      expect(invalid_status.success?).to be(false)
+      expect(invalid_status.exitstatus).to eq(2)
+      invalid_payload = JSON.parse(invalid_stderr)
+      expect(invalid_payload).to include('code' => FCS::Errors::ERR_VALIDATION)
+
+      _valid_stdout1, _valid_stderr1, valid_status1 = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', valid_path,
+        '--output-dir', File.join(tmp, 'out-valid-1'),
+        chdir: root
+      )
+
+      _valid_stdout2, _valid_stderr2, valid_status2 = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', valid_path,
+        '--output-dir', File.join(tmp, 'out-valid-2'),
+        chdir: root
+      )
+
+      expect(valid_status1.success?).to be(true)
+      expect(valid_status2.success?).to be(true)
+
+      payload1 = JSON.parse(File.read(File.join(tmp, 'out-valid-1', 'result.json')))
+      payload2 = JSON.parse(File.read(File.join(tmp, 'out-valid-2', 'result.json')))
+      expect(payload1.fetch('inputHash')).to eq(payload2.fetch('inputHash'))
+    end
+  end
 end
