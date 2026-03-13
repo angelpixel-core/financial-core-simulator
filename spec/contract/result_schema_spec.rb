@@ -62,6 +62,16 @@ RSpec.describe 'result.json schema contract' do
     expect(payload).not_to have_key('replay')
   end
 
+  it 'includes required metadata with ISO-8601 UTC timestamp' do
+    payload = run_with(explain: false)
+
+    expect(payload.fetch('engineVersion')).to be_a(String)
+    expect(payload.fetch('schemaVersion')).to be_a(String)
+    expect(payload.fetch('inputHash')).to match(/\A[0-9a-f]{64}\z/)
+    expect(payload.fetch('runId')).to match(/\A[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\z/)
+    expect(payload.fetch('valuationTimestamp')).to match(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\z/)
+  end
+
   it 'includes explain block when explain is enabled' do
     payload = run_with(explain: true)
     m = payload['accounts'][0]['markets'][0]
@@ -179,5 +189,47 @@ RSpec.describe 'result.json schema contract' do
 
       expect(payload_a.fetch('inputHash')).to eq(payload_b.fetch('inputHash'))
     end
+  end
+
+  it 'produces deterministic result.json for identical runs' do
+    Dir.mktmpdir do |dir|
+      input = {
+        'schemaVersion' => '1.0',
+        'usdModel' => { 'enabled' => true },
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'feeModel' => { 'enabled' => true },
+        'trades' => [],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '150' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_path = File.join(dir, 'input.json')
+      File.write(input_path, JSON.pretty_generate(input))
+
+      runner = FCS::Application::Runner.new
+      out_a = File.join(dir, 'out_a')
+      out_b = File.join(dir, 'out_b')
+      json_a = runner.run!(input_path: input_path, output_dir: out_a, fee_enabled: true, explain: false,
+                           verbose: false)
+      json_b = runner.run!(input_path: input_path, output_dir: out_b, fee_enabled: true, explain: false,
+                           verbose: false)
+
+      expect(File.read(json_a)).to eq(File.read(json_b))
+    end
+  end
+
+  it 'raises diagnostic error when required metadata is missing' do
+    validator = FCS::Reporting::ResultMetadataContractValidator.new
+
+    expect do
+      validator.validate!(payload: { 'schemaVersion' => '1.0' })
+    end.to raise_error(FCS::Error) { |error|
+      expect(error.code).to eq(FCS::Errors::ERR_VALIDATION)
+      expect(error.details).to include('impact', 'next_action')
+    }
   end
 end

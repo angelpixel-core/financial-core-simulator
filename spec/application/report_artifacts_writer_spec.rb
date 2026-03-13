@@ -4,13 +4,22 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
   let(:reporter) { instance_double(FCS::Reporting::JsonReport, write!: 'out/result.json') }
   let(:positions_csv) { instance_double(FCS::Reporting::CsvPositions, write!: 'out/positions.csv') }
   let(:pnl_csv) { instance_double(FCS::Reporting::CsvPnL, write!: 'out/pnl.csv') }
+  let(:metadata) do
+    {
+      'engineVersion' => '0.1.0',
+      'schemaVersion' => '1.0',
+      'inputHash' => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      'runId' => '123e4567-e89b-5d3a-a456-426614174000',
+      'valuationTimestamp' => '2026-02-25T03:00:00Z'
+    }
+  end
 
   it 'writes json and csv artifacts through reporting ports' do
     writer = described_class.new(reporter: reporter, positions_csv: positions_csv, pnl_csv: pnl_csv)
-    payload = {
+    payload = metadata.merge(
       'accounts' => [{ 'accountId' => 'acc-1', 'markets' => [] }],
       'global' => {}
-    }
+    )
 
     paths = writer.write_all!(output_dir: 'out', payload: payload)
 
@@ -26,7 +35,7 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
 
   it 'fails with deterministic contract diagnostics when an account-market row misses required metrics' do
     writer = described_class.new(reporter: reporter, positions_csv: positions_csv, pnl_csv: pnl_csv)
-    payload = {
+    payload = metadata.merge(
       'accounts' => [
         {
           'accountId' => 'acc-1',
@@ -41,7 +50,7 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
         }
       ],
       'global' => {}
-    }
+    )
 
     expect do
       writer.write_all!(output_dir: 'out', payload: payload)
@@ -63,7 +72,7 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
 
   it 'fails when a required account-market metric is empty or malformed' do
     writer = described_class.new(reporter: reporter, positions_csv: positions_csv, pnl_csv: pnl_csv)
-    payload = {
+    payload = metadata.merge(
       'accounts' => [
         {
           'accountId' => 'acc-1',
@@ -79,7 +88,7 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
         }
       ],
       'global' => {}
-    }
+    )
 
     expect do
       writer.write_all!(output_dir: 'out', payload: payload)

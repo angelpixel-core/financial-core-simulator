@@ -5,15 +5,18 @@ module FCS
         reporter: FCS::Reporting::JsonReport.new,
         positions_csv: FCS::Reporting::CsvPositions.new,
         pnl_csv: FCS::Reporting::CsvPnL.new,
-        account_market_contract_validator: FCS::Reporting::AccountMarketContractValidator.new
+        account_market_contract_validator: FCS::Reporting::AccountMarketContractValidator.new,
+        result_metadata_contract_validator: FCS::Reporting::ResultMetadataContractValidator.new
       )
         @reporter = reporter
         @positions_csv = positions_csv
         @pnl_csv = pnl_csv
         @account_market_contract_validator = account_market_contract_validator
+        @result_metadata_contract_validator = result_metadata_contract_validator
       end
 
       def write_all!(output_dir:, payload:)
+        @result_metadata_contract_validator.validate!(payload: payload)
         @account_market_contract_validator.validate!(accounts: payload.fetch('accounts'))
 
         json_path = @reporter.write!(output_dir: output_dir, payload: payload)
