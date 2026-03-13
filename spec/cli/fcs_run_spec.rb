@@ -55,8 +55,16 @@ RSpec.describe 'bin/fcs run' do
 
     expect(status.success?).to be(false)
     expect(status.exitstatus).to eq(2)
-    expect(stderr).to include('ERR: --input is required')
-    expect(stdout).to include('Usage: fcs run')
+    expect(stdout).to eq('')
+
+    payload = JSON.parse(stderr)
+    expect(payload).to include(
+      'code' => FCS::Errors::ERR_VALIDATION,
+      'what_happened' => '--input is required'
+    )
+    expect(payload).to have_key('impact')
+    expect(payload).to have_key('next_action')
+    expect(payload.fetch('details')).to have_key('usage')
   end
 
   it 'emits diagnostic payload for invalid input json' do

@@ -67,8 +67,13 @@ when "run"
   end
 
   if options[:input].nil? || options[:input].strip.empty?
-    warn "ERR: --input is required"
-    puts parser
+    print_diagnostic_error(
+      code: FCS::Errors::ERR_VALIDATION,
+      what_happened: '--input is required',
+      impact: 'The run did not start because required input path is missing.',
+      next_action: 'Provide `--input <path>` and retry.',
+      details: { 'usage' => parser.banner }
+    )
     exit(2)
   end
 
