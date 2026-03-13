@@ -21,3 +21,41 @@ The project is designed as a technical portfolio piece to demonstrate production
 
 This repository represents the public demo track.
 The engine is intentionally simplified and deterministic.
+
+## Reproducible Bootstrap (Story 1.1)
+
+Prerequisites:
+
+- Ruby 3.3+
+- Bundler 2.5+
+
+Bootstrap and first canonical run:
+
+```bash
+bundle install
+bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output --verbose
+```
+
+Expected canonical artifacts:
+
+- `output/result.json`
+- `output/positions.csv`
+- `output/pnl.csv`
+
+Determinism check (same input + same config -> identical artifacts):
+
+```bash
+bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/run1
+bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/run2
+shasum -a 256 output/run1/result.json output/run2/result.json output/run1/positions.csv output/run2/positions.csv output/run1/pnl.csv output/run2/pnl.csv
+```
+
+Error-path sanity checks:
+
+```bash
+# Missing input (deterministic exit code 2)
+bin/fcs run
+
+# Invalid input payload (deterministic diagnostic JSON)
+bin/fcs run --input tmp/bad.json --output-dir output
+```
