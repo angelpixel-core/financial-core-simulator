@@ -221,10 +221,13 @@ module FCS
           raise_invalid!('timeline externalId must be a non-empty string',
                          field: 'timeline.events.externalId')
         end
-        return if non_empty_string?(event['timestamp'])
+        unless non_empty_string?(event['timestamp'])
+          raise_invalid!('timeline timestamp must be a non-empty string', field: 'timeline.events.timestamp')
+        end
 
-        raise_invalid!('timeline timestamp must be a non-empty string',
-                       field: 'timeline.events.timestamp')
+        return if event['timestamp'].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\z/)
+
+        raise_invalid!('timeline timestamp must use ISO-8601 UTC format', field: 'timeline.events.timestamp')
       end
 
       def validate_timeline_price_updated!(event, market_ids:)
