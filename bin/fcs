@@ -21,6 +21,18 @@ def print_diagnostic_error(code:, what_happened:, impact:, next_action:, details
   $stderr.puts(JSON.pretty_generate(payload))
 end
 
+def required_artifact_paths(output_dir)
+  {
+    'result_json' => File.join(output_dir, 'result.json'),
+    'positions_csv' => File.join(output_dir, 'positions.csv'),
+    'pnl_csv' => File.join(output_dir, 'pnl.csv')
+  }
+end
+
+def available_artifacts(expected)
+  expected.select { |_key, path| File.exist?(path) }.keys.sort
+end
+
 subcommand = ARGV.shift
 
 case subcommand
@@ -98,23 +110,53 @@ when "run"
       verbose: options[:verbose]
     )
 
+    expected_artifacts = required_artifact_paths(options[:output_dir])
+    missing_artifacts = expected_artifacts.select { |_key, path| !File.exist?(path) }
+    if missing_artifacts.any?
+      print_diagnostic_error(
+        code: FCS::Errors::ERR_VALIDATION,
+        what_happened: 'Missing required artifacts after run',
+        impact: 'The run completed but required artifacts are missing for reproducibility checks.',
+        next_action: 'Inspect the output directory and re-run the command to regenerate artifacts.',
+        details: {
+          'missing_artifacts' => missing_artifacts,
+          'expected_artifacts' => expected_artifacts
+        }
+      )
+      exit(2)
+    end
+
     puts "OK: wrote #{path}" unless options[:quiet]
   rescue FCS::Error => e
+    expected_artifacts = required_artifact_paths(options[:output_dir])
+    details = (e.details || {}).merge(
+      'run_status' => 'failure',
+      'output_dir' => options[:output_dir],
+      'expected_artifacts' => expected_artifacts,
+      'available_artifacts' => available_artifacts(expected_artifacts)
+    )
     print_diagnostic_error(
       code: e.code,
       what_happened: e.message,
       impact: "The run stopped before canonical artifacts were fully produced.",
       next_action: "Fix the input/config issue and re-run `bin/fcs run --input <file> --output-dir <dir>`.",
-      details: e.details
+      details: details
     )
     exit(2)
   rescue StandardError => e
+    expected_artifacts = required_artifact_paths(options[:output_dir])
     print_diagnostic_error(
       code: "ERR_INTERNAL",
       what_happened: "Unexpected runtime error: #{e.class}",
       impact: "The run failed unexpectedly and artifacts may be missing or incomplete.",
       next_action: "Retry with `--verbose`; if it persists, open an issue with this error payload.",
-      details: { "message" => e.message }
+      details: {
+        'message' => e.message,
+        'run_status' => 'failure',
+        'output_dir' => options[:output_dir],
+        'expected_artifacts' => expected_artifacts,
+        'available_artifacts' => available_artifacts(expected_artifacts)
+      }
     )
     exit(1)
   end

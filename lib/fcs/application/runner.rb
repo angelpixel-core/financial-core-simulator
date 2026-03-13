@@ -73,7 +73,7 @@ module FCS
 
         json_path = artifacts.fetch(:json_path)
 
-        @cli.print(payload) if verbose
+        @cli.print(payload, artifacts: artifacts, status: 'success') if verbose
 
         @logger.info("fcs.run.done run_id=#{run_id} output=#{json_path}")
 

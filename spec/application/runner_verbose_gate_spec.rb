@@ -62,6 +62,8 @@ RSpec.describe FCS::Application::Runner do
   it 'reuses the same runId for reporter payload and CLI summary' do
     writer_payload = nil
     cli_payload = nil
+    cli_artifacts = nil
+    cli_status = nil
 
     allow(artifacts_writer).to receive(:write_all!) do |args|
       writer_payload = args.fetch(:payload)
@@ -71,8 +73,10 @@ RSpec.describe FCS::Application::Runner do
         pnl_csv_path: 'output/pnl.csv'
       }
     end
-    allow(cli).to receive(:print) do |payload|
+    allow(cli).to receive(:print) do |payload, artifacts:, status:|
       cli_payload = payload
+      cli_artifacts = artifacts
+      cli_status = status
     end
 
     runner = described_class.new(
@@ -88,6 +92,8 @@ RSpec.describe FCS::Application::Runner do
     runner.run!(input_path: 'input.json', output_dir: 'output', fee_enabled: false, verbose: true)
 
     expect(writer_payload.fetch('runId')).to eq(cli_payload.fetch('runId'))
+    expect(cli_artifacts.fetch(:json_path)).to eq('output/result.json')
+    expect(cli_status).to eq('success')
     expect(logger).to have_received(:info).at_least(:once)
   end
 end

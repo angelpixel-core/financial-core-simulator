@@ -40,7 +40,9 @@ RSpec.describe 'bin/fcs run' do
       expect(status.success?).to be(true), "exit=#{status.exitstatus} stdout=#{stdout.inspect} stderr=#{stderr.inspect}"
       expect(stderr).to include('[INFO] fcs.run.start')
       expect(stderr).to include('[INFO] fcs.run.done')
-      expect(stdout).to include('FCS Summary')
+      expect(stdout).to include('=== fcs_summary ===')
+      expect(stdout).to include('status: success')
+      expect(stdout).to include('artifacts:')
       expect(stdout).to include('OK: wrote')
     end
   end

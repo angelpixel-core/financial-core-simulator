@@ -3,50 +3,93 @@
 module FCS
   module Reporting
     class CliSummary
+      REQUIRED_ARTIFACT_KEYS = [
+        [:json_path, 'result_json'],
+        [:positions_csv_path, 'positions_csv'],
+        [:pnl_csv_path, 'pnl_csv']
+      ].freeze
+
       def initialize(io: $stdout)
         @io = io
       end
 
-      def print(result_json_payload)
-        @io.puts
-        @io.puts '=== FCS Summary ==='
+      def print(result_json_payload, artifacts: {}, status: 'success')
+        validate_artifacts!(artifacts)
 
-        @io.puts "Engine: #{result_json_payload.fetch('engineVersion')}"
-        @io.puts "Schema: #{result_json_payload.fetch('schemaVersion')}"
-        @io.puts "Run: #{result_json_payload.fetch('runId')}"
-        @io.puts "Valuation: #{result_json_payload.fetch('valuationTimestamp')}"
-        @io.puts "InputHash: #{result_json_payload.fetch('inputHash')}"
+        lines = []
+        lines << '=== fcs_summary ==='
+        lines << "status: #{status}"
+        lines << "run_id: #{result_json_payload.fetch('runId')}"
+        lines << "input_hash: #{result_json_payload.fetch('inputHash')}"
+        lines << "schema_version: #{result_json_payload.fetch('schemaVersion')}"
+        lines << "engine_version: #{result_json_payload.fetch('engineVersion')}"
+        lines << "valuation_timestamp: #{result_json_payload.fetch('valuationTimestamp')}"
+        lines.concat(metric_lines(result_json_payload.fetch('global')))
+        lines.concat(artifact_lines(artifacts))
 
-        @io.puts
-        print_global(result_json_payload.fetch('global'))
-
-        @io.puts
-        print_accounts(result_json_payload.fetch('accounts'))
-        @io.puts
+        @io.puts(lines.join("\n"))
       end
 
       private
 
-      def print_global(g)
-        @io.puts '-- Global --'
-        @io.puts "Realized (quote):     #{g.fetch('realizedPnLQuote')}"
-        @io.puts "Fees (quote):         #{g.fetch('feesQuote')}"
-        @io.puts "Realized Net (quote): #{g.fetch('realizedNetPnLQuote')}"
-        @io.puts "Unrealized (quote):   #{g.fetch('unrealizedPnLQuote')}"
-        @io.puts "Total (quote):        #{g.fetch('totalPnLQuote')}"
-
-        usd = g['totalPnLUsd']
-        @io.puts "Total (USD):          #{usd.nil? ? 'n/a' : usd}"
+      def metric_lines(global)
+        lines = []
+        lines << 'metrics:'
+        lines << "  realized_pnl_quote: #{format_value(global.fetch('realizedPnLQuote'))}"
+        lines << "  fees_quote: #{format_value(global.fetch('feesQuote'))}"
+        lines << "  realized_net_pnl_quote: #{format_value(global.fetch('realizedNetPnLQuote'))}"
+        lines << "  unrealized_pnl_quote: #{format_value(global.fetch('unrealizedPnLQuote'))}"
+        lines << "  total_pnl_quote: #{format_value(global.fetch('totalPnLQuote'))}"
+        lines << "  total_pnl_usd: #{format_value(global['totalPnLUsd'])}"
+        lines
       end
 
-      def print_accounts(accounts)
-        @io.puts '-- Accounts --'
-        accounts.each do |a|
-          t = a.fetch('totals')
-          line = "• #{a.fetch('accountId')}: totalQuote=#{t.fetch('totalPnLQuote')}"
-          line += " totalUsd=#{t['totalPnLUsd']}" if t['totalPnLUsd']
-          @io.puts line
+      def artifact_lines(artifacts)
+        lines = []
+        lines << 'artifacts:'
+
+        REQUIRED_ARTIFACT_KEYS.each do |key, label|
+          path = artifacts[key]
+          lines << "  #{label}: #{format_value(path)}"
         end
+
+        extra_keys = artifacts.keys.map(&:to_s)
+                              .sort
+                              .reject { |key| REQUIRED_ARTIFACT_KEYS.any? { |required, _| required.to_s == key } }
+        extra_keys.each do |key|
+          lines << "  #{key}: #{format_value(artifacts[key.to_sym] || artifacts[key])}"
+        end
+
+        lines
+      end
+
+      def format_value(value)
+        value.nil? ? 'n/a' : value
+      end
+
+      def validate_artifacts!(artifacts)
+        missing = REQUIRED_ARTIFACT_KEYS.filter_map do |key, label|
+          path = artifacts[key]
+          next if path.nil?
+          next if File.exist?(path)
+
+          [label, path]
+        end
+
+        return if missing.empty?
+
+        details = {
+          'missing_artifacts' => missing.to_h,
+          'expected_artifacts' => REQUIRED_ARTIFACT_KEYS.each_with_object({}) do |(key, label), acc|
+            acc[label] = artifacts[key]
+          end
+        }
+
+        raise FCS::Error.new(
+          FCS::Errors::ERR_VALIDATION,
+          'Missing required artifacts for CLI summary',
+          details: details
+        )
       end
     end
   end
