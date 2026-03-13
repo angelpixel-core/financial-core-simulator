@@ -413,6 +413,22 @@ module FCS
         fx = snap['fx']
         return if fx.nil?
 
+        unless fx.is_a?(Hash)
+          raise FCS::Error.new(
+            FCS::Errors::ERR_MISSING_SNAPSHOT,
+            'Missing required snapshot FX payload',
+            details: { missingField: 'priceSnapshot.fx.quoteUsd' }
+          )
+        end
+
+        unless fx.key?('quoteUsd') && !fx['quoteUsd'].nil?
+          raise FCS::Error.new(
+            FCS::Errors::ERR_MISSING_SNAPSHOT,
+            'Missing required snapshot FX rate',
+            details: { missingField: 'priceSnapshot.fx.quoteUsd' }
+          )
+        end
+
         q = fx['quoteUsd']
         validate_positive_decimal_string!(q, field: 'priceSnapshot.fx.quoteUsd', context: {})
       end

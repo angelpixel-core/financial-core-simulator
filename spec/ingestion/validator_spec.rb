@@ -49,6 +49,28 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla con ERR_MISSING_SNAPSHOT si fx existe pero falta quoteUsd' do
+    input = base_input
+    input['priceSnapshot']['fx'] = {}
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_MISSING_SNAPSHOT)
+        expect(e.details).to include(missingField: 'priceSnapshot.fx.quoteUsd')
+      }
+  end
+
+  it 'falla con ERR_MISSING_SNAPSHOT si fx no es un objeto' do
+    input = base_input
+    input['priceSnapshot']['fx'] = 'invalid-fx'
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_MISSING_SNAPSHOT)
+        expect(e.details).to include(missingField: 'priceSnapshot.fx.quoteUsd')
+      }
+  end
+
   it 'falla si trade referencia market inexistente' do
     input = base_input
     input['trades'] = [
