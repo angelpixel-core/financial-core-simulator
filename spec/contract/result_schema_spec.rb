@@ -93,6 +93,7 @@ RSpec.describe 'result.json schema contract' do
                 'tradeId' => 't-1',
                 'accountId' => 'acc-1',
                 'marketId' => 'ETH-USD',
+                'timestamp' => 1,
                 'seq' => 1,
                 'side' => 'BUY',
                 'quantityBase' => '1',
