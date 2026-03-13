@@ -58,10 +58,10 @@ when "run"
   rescue OptionParser::ParseError => e
     print_diagnostic_error(
       code: FCS::Errors::ERR_VALIDATION,
-      what_happened: e.message,
+      what_happened: 'Invalid CLI option',
       impact: "The run command arguments are invalid; execution did not start.",
       next_action: "Fix the CLI flags and re-run `bin/fcs run --help` for valid options.",
-      details: { "errorClass" => e.class.name }
+      details: { "errorClass" => e.class.name, "errorMessage" => e.message }
     )
     exit(2)
   end

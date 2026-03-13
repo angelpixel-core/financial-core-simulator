@@ -112,9 +112,10 @@ RSpec.describe 'bin/fcs run' do
 
     payload = JSON.parse(stderr)
     expect(payload).to include('code' => FCS::Errors::ERR_VALIDATION)
-    expect(payload.fetch('what_happened')).to include('invalid option')
+    expect(payload.fetch('what_happened')).to eq('Invalid CLI option')
     expect(payload).to have_key('impact')
     expect(payload).to have_key('next_action')
+    expect(payload.fetch('details')).to include('errorClass' => 'OptionParser::InvalidOption')
   end
 
   it 'classifies missing input file as invalid user input' do
@@ -753,6 +754,7 @@ RSpec.describe 'bin/fcs run' do
                 'tradeId' => 't-1',
                 'accountId' => 'acc-1',
                 'marketId' => 'ETH-USD',
+                'timestamp' => 1,
                 'seq' => 1,
                 'side' => 'BUY',
                 'quantityBase' => '1',
