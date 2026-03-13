@@ -1,4 +1,6 @@
 require_relative '../../lib/fcs'
+require 'json'
+require 'tmpdir'
 
 RSpec.describe FCS::Application::Runner do
   let(:result) do
@@ -174,5 +176,76 @@ RSpec.describe FCS::Application::Runner do
 
     expect(input_hashes.size).to eq(2)
     expect(input_hashes.first).to eq(input_hashes.last)
+  end
+
+  it 'accepts non-monotonic timeline input and applies trades by timelineSeq in real run' do
+    ENV['FCS_TIMELINE_ENABLED'] = '1'
+
+    Dir.mktmpdir do |tmp|
+      input = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'trades' => [],
+        'timeline' => {
+          'events' => [
+            {
+              'eventType' => 'TRADE_APPLIED',
+              'timelineSeq' => 2,
+              'timestamp' => '2026-03-03T12:00:02Z',
+              'source' => 'sim.core',
+              'externalId' => 'tr-sell',
+              'trade' => {
+                'tradeId' => 't-sell',
+                'accountId' => 'acc-1',
+                'marketId' => 'ETH-USD',
+                'timestamp' => 2,
+                'seq' => 2,
+                'side' => 'SELL',
+                'quantityBase' => '1',
+                'priceQuotePerBase' => '110'
+              }
+            },
+            {
+              'eventType' => 'TRADE_APPLIED',
+              'timelineSeq' => 1,
+              'timestamp' => '2026-03-03T12:00:01Z',
+              'source' => 'sim.core',
+              'externalId' => 'tr-buy',
+              'trade' => {
+                'tradeId' => 't-buy',
+                'accountId' => 'acc-1',
+                'marketId' => 'ETH-USD',
+                'timestamp' => 1,
+                'seq' => 1,
+                'side' => 'BUY',
+                'quantityBase' => '1',
+                'priceQuotePerBase' => '100'
+              }
+            }
+          ]
+        },
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-03-03T12:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '110' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_path = File.join(tmp, 'input.json')
+      output_dir = File.join(tmp, 'out')
+      File.write(input_path, JSON.pretty_generate(input))
+
+      result_path = described_class.new.run!(
+        input_path: input_path,
+        output_dir: output_dir,
+        fee_enabled: false,
+        verbose: false
+      )
+
+      payload = JSON.parse(File.read(result_path))
+      market = payload.fetch('accounts').first.fetch('markets').first
+      expect(market.fetch('quantity')).to eq('0.0')
+    end
   end
 end
