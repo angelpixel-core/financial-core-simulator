@@ -2,12 +2,11 @@
 /apps/admin/config/credentials/*.key
 
 # FCS runtime artifacts
-# output/
+output/
 apps/admin/storage/
 
 # BMAD generated planning/runtime artifacts
-# .bmad/output/planning-artifacts/
-# .bmad/output/workflow-status.yaml
+.bmad/output
 
 .opencode
 .codex
