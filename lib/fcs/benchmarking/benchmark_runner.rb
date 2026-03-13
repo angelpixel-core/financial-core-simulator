@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'digest'
 require 'fileutils'
 require 'time'
 
@@ -44,12 +45,14 @@ module FCS
         started_at = @clock.now.utc
         timings = []
         metadata = nil
+        samples = []
 
-        run_count.times do
+        run_count.times do |index|
           t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          run_dir = File.join(artifacts_dir, "run_#{index + 1}")
           run_metadata = @runner.run_from_input!(
             input: input,
-            output_dir: artifacts_dir,
+            output_dir: run_dir,
             fee_enabled: true,
             explain: false,
             verbose: false,
@@ -59,6 +62,7 @@ module FCS
 
           timings << (t1 - t0)
           metadata = track_metadata!(metadata, run_metadata, fixture_path)
+          samples << sample_for_run(index: index, metadata: run_metadata)
         end
 
         completed_at = @clock.now.utc
@@ -70,7 +74,8 @@ module FCS
           timings: timings,
           started_at: started_at,
           completed_at: completed_at,
-          metadata: metadata
+          metadata: metadata,
+          samples: samples
         )
 
         report_path = write_report(output_dir: output_dir, report: report, completed_at: completed_at)
@@ -109,7 +114,7 @@ module FCS
         base
       end
 
-      def build_report(command:, fixture_path:, fixture:, timings:, started_at:, completed_at:, metadata:)
+      def build_report(command:, fixture_path:, fixture:, timings:, started_at:, completed_at:, metadata:, samples:)
         {
           'report_schema_version' => '1.0',
           'command' => command,
@@ -124,12 +129,34 @@ module FCS
           'input_hash' => metadata.fetch(:input_hash),
           'run_id' => metadata.fetch(:run_id),
           'engine_version' => FCS::VERSION,
+          'samples' => samples,
           'artifacts' => {
             'result_json' => metadata.fetch(:artifacts).fetch(:json_path),
             'positions_csv' => metadata.fetch(:artifacts).fetch(:positions_csv_path),
             'pnl_csv' => metadata.fetch(:artifacts).fetch(:pnl_csv_path)
           }
         }
+      end
+
+      def sample_for_run(index:, metadata:)
+        artifacts = metadata.fetch(:artifacts)
+        {
+          'run_index' => index + 1,
+          'artifacts' => {
+            'result_json' => artifacts.fetch(:json_path),
+            'positions_csv' => artifacts.fetch(:positions_csv_path),
+            'pnl_csv' => artifacts.fetch(:pnl_csv_path)
+          },
+          'artifact_sha256' => {
+            'result_json' => sha256(artifacts.fetch(:json_path)),
+            'positions_csv' => sha256(artifacts.fetch(:positions_csv_path)),
+            'pnl_csv' => sha256(artifacts.fetch(:pnl_csv_path))
+          }
+        }
+      end
+
+      def sha256(path)
+        Digest::SHA256.file(path).hexdigest
       end
 
       def percentile(values, percentile)

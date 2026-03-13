@@ -31,6 +31,9 @@ RSpec.describe 'Deterministic benchmark runner', :perf do
       expect(report.dig('artifacts', 'result_json')).to end_with('result.json')
       expect(report.dig('artifacts', 'positions_csv')).to end_with('positions.csv')
       expect(report.dig('artifacts', 'pnl_csv')).to end_with('pnl.csv')
+      expect(report.fetch('samples').size).to eq(1)
+      expect(report.dig('samples', 0, 'artifacts', 'result_json')).to include('/artifacts/run_1/result.json')
+      expect(report.dig('samples', 0, 'artifact_sha256', 'result_json')).to be_a(String)
     end
   end
 
@@ -60,8 +63,8 @@ RSpec.describe 'Deterministic benchmark runner', :perf do
     expect(first_report.fetch('input_hash')).to eq(second_report.fetch('input_hash'))
 
     %w[result_json positions_csv pnl_csv].each do |key|
-      first_path = first_report.dig('artifacts', key)
-      second_path = second_report.dig('artifacts', key)
+      first_path = first_report.dig('samples', 0, 'artifacts', key)
+      second_path = second_report.dig('samples', 0, 'artifacts', key)
 
       expect(Digest::SHA256.file(first_path).hexdigest)
         .to eq(Digest::SHA256.file(second_path).hexdigest)
