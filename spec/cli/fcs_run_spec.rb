@@ -408,4 +408,76 @@ RSpec.describe 'bin/fcs run' do
       )
     end
   end
+
+  it 'emits deterministic ERR_MISSING_SNAPSHOT when fx quoteUsd is missing' do
+    Dir.mktmpdir do |tmp|
+      missing_fx_input = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'trades' => [],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '100' }],
+          'fx' => {}
+        }
+      }
+
+      input_path = File.join(tmp, 'missing-fx.json')
+      File.write(input_path, JSON.pretty_generate(missing_fx_input))
+
+      _stdout, stderr, status = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', input_path,
+        '--output-dir', File.join(tmp, 'out'),
+        chdir: root
+      )
+
+      expect(status.success?).to be(false)
+      expect(status.exitstatus).to eq(2)
+
+      payload = JSON.parse(stderr)
+      expect(payload).to include('code' => FCS::Errors::ERR_MISSING_SNAPSHOT)
+      expect(payload.fetch('details')).to include('missingField' => 'priceSnapshot.fx.quoteUsd')
+      expect(payload).to include('what_happened', 'impact', 'next_action')
+    end
+  end
+
+  it 'emits deterministic ERR_MISSING_SNAPSHOT when fx payload is malformed' do
+    Dir.mktmpdir do |tmp|
+      malformed_fx_input = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'trades' => [],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '100' }],
+          'fx' => 'invalid-fx'
+        }
+      }
+
+      input_path = File.join(tmp, 'malformed-fx.json')
+      File.write(input_path, JSON.pretty_generate(malformed_fx_input))
+
+      _stdout, stderr, status = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', input_path,
+        '--output-dir', File.join(tmp, 'out'),
+        chdir: root
+      )
+
+      expect(status.success?).to be(false)
+      expect(status.exitstatus).to eq(2)
+
+      payload = JSON.parse(stderr)
+      expect(payload).to include('code' => FCS::Errors::ERR_MISSING_SNAPSHOT)
+      expect(payload.fetch('details')).to include('missingField' => 'priceSnapshot.fx.quoteUsd')
+      expect(payload).to include('what_happened', 'impact', 'next_action')
+    end
+  end
 end
