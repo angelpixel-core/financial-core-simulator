@@ -1,149 +1,209 @@
-<main class="overview">
-  <header class="overview__header">
-    <div>
-      <p class="overview__eyebrow">Admin</p>
-      <h1>Financial Overview</h1>
-      <p class="overview__subtitle">Minimal operational dashboard for run health and PnL signals.</p>
-    </div>
-    <nav class="overview__nav">
-      <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
-      <a class="overview__link" href="<%= admin_component_comparison_path %>">VC vs Phlex</a>
-    </nav>
-  </header>
-  <section class="overview__domain" aria-label="SYSTEM">
-    <h2 class="overview__domain-title">SYSTEM</h2>
-    <section class="overview__grid overview__grid--kpi">
-      <%= render Admin::Dashboard::KpiCardComponent.new(
-        title: "Total runs (7d)",
-        value: @metrics[:total_runs_7d],
-        subtitle: "Recent execution volume",
-        counter: { final: @metrics[:total_runs_7d], kind: "integer", precision: 0 }
-      ) %>
-      <%= render Admin::Dashboard::KpiCardComponent.new(
-        title: "Total runs (30d)",
-        value: @metrics[:total_runs_30d],
-        subtitle: "Monthly execution volume",
-        counter: { final: @metrics[:total_runs_30d], kind: "integer", precision: 0 }
-      ) %>
-      <%= render Admin::Dashboard::KpiCardComponent.new(
-        title: "Success rate (last 50)",
-        value: "#{@metrics[:success_rate_last_50]}%",
-        subtitle: "Succeeded vs total runs",
-        counter: { final: @metrics[:success_rate_last_50], kind: "percent", precision: 0 }
-      ) %>
-      <%= render Admin::Dashboard::KpiCardComponent.new(
-        title: "Avg duration (last 50 succeeded)",
-        value: @metrics[:avg_duration_ms_last_50].nil? ? "N/A" : "#{@metrics[:avg_duration_ms_last_50]} ms",
-        subtitle: "Execution latency trend",
-        counter: @metrics[:avg_duration_ms_last_50].nil? ? nil : { final: @metrics[:avg_duration_ms_last_50], kind: "milliseconds", precision: 1 }
-      ) %>
-    </section>
-    <section class="dashboard-card">
-      <header class="dashboard-card__header">
-        <h2>Run trend (14d)</h2>
-        <a class="overview__link" href="<%= admin_overview_runs_trend_path %>">View runs trend</a>
-      </header>
-      <div
-        data-controller="run-trend-chart"
-        data-run-trend-chart-points-value="<%= @metrics[:runs_trend_14d].to_json %>"
-        data-run-trend-chart-animation-mode-value="proportional"
-        data-run-trend-chart-base-duration-value="260"
-        data-run-trend-chart-max-extra-duration-value="540"
-      >
-        <div
-          class="trend-chart"
-          data-run-trend-chart-target="chart"
-          aria-label="Run trend chart for the last 14 days"
-        ></div>
-        <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
-        <div class="trend-bars" data-run-trend-chart-target="fallback">
-          <% @metrics[:runs_trend_14d].each do |point| %>
-            <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
-            <div class="trend-bars__item">
-              <div class="trend-bars__bar-wrap">
-                <div class="trend-bars__bar" style="height: <%= height %>%"></div>
-              </div>
-              <span><%= point[:day] %></span>
-            </div>
+<% reliable_run = @reliable_selection.reliable_run %>
+<% candidate_run = @reliable_selection.candidate_run %>
+<% primary_cta = {
+  label: "Open Latest Reliable Run",
+  path: reliable_run.nil? ? "#" : run_result_path(id: reliable_run.id),
+  disabled: reliable_run.nil?
+} %>
+<%= render Admin::Shell::AppShellComponent.new(
+  sidebar_items: [
+    { label: "Overview", path: admin_overview_path, active: true },
+    { label: "Runs", path: avo.resources_runs_path },
+    { label: "Validation", path: admin_overview_ingestion_validation_errors_path },
+    { label: "Artifacts", path: avo.resources_runs_path },
+    { label: "Docs", path: "#", disabled: true },
+    { label: "GitHub", path: "#", disabled: true }
+  ],
+  breadcrumb: [
+    { label: "Workspace", path: admin_overview_path },
+    { label: "Overview" }
+  ],
+  environment: Rails.env,
+  primary_action: primary_cta,
+  secondary_action: { label: "Open Runs", path: avo.resources_runs_path }
+) do %>
+  <main class="workspace">
+    <section class="workspace__hero">
+      <div class="workspace__intro">
+        <p class="workspace__eyebrow">Workspace</p>
+        <h1>Financial Overview</h1>
+        <p class="workspace__subtitle">Estado operativo del sistema y seleccion guiada del ultimo run confiable.</p>
+        <div class="workspace__cta-group">
+          <% if reliable_run.present? %>
+            <a class="workspace__cta" href="<%= run_result_path(id: reliable_run.id) %>">Open Latest Reliable Run</a>
+          <% else %>
+            <span class="workspace__cta workspace__cta--disabled" aria-disabled="true">Open Latest Reliable Run</span>
           <% end %>
+          <a class="workspace__cta workspace__cta--ghost" href="<%= admin_component_comparison_path %>">VC vs Phlex</a>
         </div>
       </div>
-    </section>
-    <section class="dashboard-card">
-      <header class="dashboard-card__header">
-        <h2>Status mix (30d)</h2>
-        <a class="overview__link" href="<%= admin_overview_status_mix_path %>">View status details</a>
-      </header>
-      <ul class="detail-list">
-        <li><span>Queued</span><strong><%= @metrics[:status_mix_30d][:queued] %></strong></li>
-        <li><span>Running</span><strong><%= @metrics[:status_mix_30d][:running] %></strong></li>
-        <li><span>Succeeded</span><strong><%= @metrics[:status_mix_30d][:succeeded] %></strong></li>
-        <li><span>Failed</span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
-      </ul>
-    </section>
-  </section>
-  <section class="overview__domain" aria-label="LATEST RUN">
-    <h2 class="overview__domain-title">LATEST RUN</h2>
-    <section class="dashboard-card">
-      <header class="dashboard-card__header">
-        <h2>Latest succeeded run</h2>
-        <% if @metrics[:latest_run].present? %>
-          <a class="overview__link" href="<%= run_result_path(id: @metrics[:latest_run][:id]) %>">View latest run</a>
+      <div class="workspace__focus">
+        <%= render Admin::Runs::RunReliabilityBannerComponent.new(
+          state: @reliable_selection.state,
+          title: "Reliability status",
+          diagnostic: @reliable_selection.diagnostic
+        ) %>
+        <% if reliable_run.present? %>
+          <%= render Admin::Runs::RunSelectionCardComponent.new(
+            run: reliable_run,
+            title: "Latest reliable run",
+            cta_label: "Open Latest Reliable Run",
+            cta_path: run_result_path(id: reliable_run.id),
+            highlight: true
+          ) %>
+        <% elsif candidate_run.present? %>
+          <%= render Admin::Runs::RunSelectionCardComponent.new(
+            run: candidate_run,
+            title: "Latest successful run",
+            cta_label: "Open Run Details",
+            cta_path: run_result_path(id: candidate_run.id)
+          ) %>
+        <% else %>
+          <%= render Admin::Ui::EmptyStateComponent.new(
+            title: "Sin runs",
+            message: "Aun no hay ejecuciones disponibles para inspeccionar.",
+            tone: :loading
+          ) %>
         <% end %>
-      </header>
-      <% if @metrics[:latest_run].nil? %>
-        <p class="empty-state">No succeeded runs yet.</p>
-      <% else %>
-        <ul class="detail-list">
-          <li><span>Run</span><strong>#<%= @metrics[:latest_run][:id] %></strong></li>
-          <li><span>Input hash</span><code><%= @metrics[:latest_run][:input_hash] %></code></li>
-          <li><span>Duration</span><strong><%= @metrics[:latest_run][:duration_ms] %> ms</strong></li>
-          <li><span>Schema</span><strong><%= @metrics[:latest_run][:schema_version] %></strong></li>
-          <li><span>Engine</span><strong><%= @metrics[:latest_run][:engine_version] %></strong></li>
-        </ul>
-      <% end %>
-    </section>
-  </section>
-  <section class="overview__domain" aria-label="FINANCIAL">
-    <h2 class="overview__domain-title">FINANCIAL</h2>
-    <section class="dashboard-card">
-      <h2>Global PnL (latest succeeded run)</h2>
-      <% if @metrics[:latest_global].nil? %>
-        <p class="empty-state">Global totals unavailable (missing or invalid result.json).</p>
-      <% else %>
-        <ul class="detail-list">
-          <li><span>Total</span><strong><%= @metrics[:latest_global]["totalPnLQuote"] %></strong></li>
-          <li><span>Realized net</span><strong><%= @metrics[:latest_global]["realizedNetPnLQuote"] %></strong></li>
-          <li><span>Unrealized</span><strong><%= @metrics[:latest_global]["unrealizedPnLQuote"] %></strong></li>
-          <li><span>Total USD</span><strong><%= @metrics[:latest_global]["totalPnLUsd"] || "N/A" %></strong></li>
-        </ul>
-      <% end %>
-    </section>
-    <section
-      class="overview__live"
-      data-controller="poll"
-      data-poll-url-value="<%= admin_overview_top_accounts_path %>"
-      data-poll-interval-value="12000"
-    >
-      <div data-poll-target="container">
-        <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: true } %>
       </div>
     </section>
-  </section>
-  <section class="overview__domain" aria-label="DATA QUALITY">
-    <h2 class="overview__domain-title">DATA QUALITY</h2>
-    <section
-      class="overview__live"
-      data-controller="poll"
-      data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path(source: @selected_source, field: @selected_field) %>"
-      data-poll-interval-value="12000"
-    >
-      <%= render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
-        errors: @ingestion_validation_errors,
-        selected_source: @selected_source,
-        selected_field: @selected_field,
-        show_drilldown: true
-      } %>
+    <section class="workspace__overview">
+      <section class="overview__domain" aria-label="SYSTEM">
+        <h2 class="overview__domain-title">SYSTEM</h2>
+        <section class="overview__grid overview__grid--kpi">
+          <%= render Admin::Dashboard::KpiCardComponent.new(
+            title: "Total runs (7d)",
+            value: @metrics[:total_runs_7d],
+            subtitle: "Recent execution volume",
+            counter: { final: @metrics[:total_runs_7d], kind: "integer", precision: 0 }
+          ) %>
+          <%= render Admin::Dashboard::KpiCardComponent.new(
+            title: "Total runs (30d)",
+            value: @metrics[:total_runs_30d],
+            subtitle: "Monthly execution volume",
+            counter: { final: @metrics[:total_runs_30d], kind: "integer", precision: 0 }
+          ) %>
+          <%= render Admin::Dashboard::KpiCardComponent.new(
+            title: "Success rate (last 50)",
+            value: "#{@metrics[:success_rate_last_50]}%",
+            subtitle: "Succeeded vs total runs",
+            counter: { final: @metrics[:success_rate_last_50], kind: "percent", precision: 0 }
+          ) %>
+          <%= render Admin::Dashboard::KpiCardComponent.new(
+            title: "Avg duration (last 50 succeeded)",
+            value: @metrics[:avg_duration_ms_last_50].nil? ? "N/A" : "#{@metrics[:avg_duration_ms_last_50]} ms",
+            subtitle: "Execution latency trend",
+            counter: @metrics[:avg_duration_ms_last_50].nil? ? nil : { final: @metrics[:avg_duration_ms_last_50], kind: "milliseconds", precision: 1 }
+          ) %>
+        </section>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Run trend (14d)</h2>
+            <a class="overview__link" href="<%= admin_overview_runs_trend_path %>">View runs trend</a>
+          </header>
+          <div
+            data-controller="run-trend-chart"
+            data-run-trend-chart-points-value="<%= @metrics[:runs_trend_14d].to_json %>"
+            data-run-trend-chart-animation-mode-value="proportional"
+            data-run-trend-chart-base-duration-value="260"
+            data-run-trend-chart-max-extra-duration-value="540"
+          >
+            <div
+              class="trend-chart"
+              data-run-trend-chart-target="chart"
+              aria-label="Run trend chart for the last 14 days"
+            ></div>
+            <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
+            <div class="trend-bars" data-run-trend-chart-target="fallback">
+              <% @metrics[:runs_trend_14d].each do |point| %>
+                <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
+                <div class="trend-bars__item">
+                  <div class="trend-bars__bar-wrap">
+                    <div class="trend-bars__bar" style="height: <%= height %>%"></div>
+                  </div>
+                  <span><%= point[:day] %></span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </section>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Status mix (30d)</h2>
+            <a class="overview__link" href="<%= admin_overview_status_mix_path %>">View status details</a>
+          </header>
+          <ul class="detail-list">
+            <li><span>Queued</span><strong><%= @metrics[:status_mix_30d][:queued] %></strong></li>
+            <li><span>Running</span><strong><%= @metrics[:status_mix_30d][:running] %></strong></li>
+            <li><span>Succeeded</span><strong><%= @metrics[:status_mix_30d][:succeeded] %></strong></li>
+            <li><span>Failed</span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
+          </ul>
+        </section>
+      </section>
+      <section class="overview__domain" aria-label="LATEST RUN">
+        <h2 class="overview__domain-title">LATEST RUN</h2>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Latest succeeded run</h2>
+            <% if @metrics[:latest_run].present? %>
+              <a class="overview__link" href="<%= run_result_path(id: @metrics[:latest_run][:id]) %>">View latest run</a>
+            <% end %>
+          </header>
+          <% if @metrics[:latest_run].nil? %>
+            <p class="empty-state">No succeeded runs yet.</p>
+          <% else %>
+            <ul class="detail-list">
+              <li><span>Run</span><strong>#<%= @metrics[:latest_run][:id] %></strong></li>
+              <li><span>Input hash</span><code><%= @metrics[:latest_run][:input_hash] %></code></li>
+              <li><span>Duration</span><strong><%= @metrics[:latest_run][:duration_ms] %> ms</strong></li>
+              <li><span>Schema</span><strong><%= @metrics[:latest_run][:schema_version] %></strong></li>
+              <li><span>Engine</span><strong><%= @metrics[:latest_run][:engine_version] %></strong></li>
+            </ul>
+          <% end %>
+        </section>
+      </section>
+      <section class="overview__domain" aria-label="FINANCIAL">
+        <h2 class="overview__domain-title">FINANCIAL</h2>
+        <section class="dashboard-card">
+          <h2>Global PnL (latest succeeded run)</h2>
+          <% if @metrics[:latest_global].nil? %>
+            <p class="empty-state">Global totals unavailable (missing or invalid result.json).</p>
+          <% else %>
+            <ul class="detail-list">
+              <li><span>Total</span><strong><%= @metrics[:latest_global]["totalPnLQuote"] %></strong></li>
+              <li><span>Realized net</span><strong><%= @metrics[:latest_global]["realizedNetPnLQuote"] %></strong></li>
+              <li><span>Unrealized</span><strong><%= @metrics[:latest_global]["unrealizedPnLQuote"] %></strong></li>
+              <li><span>Total USD</span><strong><%= @metrics[:latest_global]["totalPnLUsd"] || "N/A" %></strong></li>
+            </ul>
+          <% end %>
+        </section>
+        <section
+          class="overview__live"
+          data-controller="poll"
+          data-poll-url-value="<%= admin_overview_top_accounts_path %>"
+          data-poll-interval-value="12000"
+        >
+          <div data-poll-target="container">
+            <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: true } %>
+          </div>
+        </section>
+      </section>
+      <section class="overview__domain" aria-label="DATA QUALITY">
+        <h2 class="overview__domain-title">DATA QUALITY</h2>
+        <section
+          class="overview__live"
+          data-controller="poll"
+          data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path(source: @selected_source, field: @selected_field) %>"
+          data-poll-interval-value="12000"
+        >
+          <%= render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
+            errors: @ingestion_validation_errors,
+            selected_source: @selected_source,
+            selected_field: @selected_field,
+            show_drilldown: true
+          } %>
+        </section>
+      </section>
     </section>
-  </section>
-</main>
+  </main>
+<% end %>

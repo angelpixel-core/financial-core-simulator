@@ -23,6 +23,7 @@ class Admin::OverviewController < ApplicationController
     @selected_source = normalize_filter_value(params[:source])
     @selected_field = normalize_filter_value(params[:field])
     @ingestion_validation_errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
+    @reliable_selection = Admin::Runs::ReliableRunSelector.new.call
   end
 
   def top_accounts

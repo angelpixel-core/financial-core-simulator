@@ -1,0 +1,51 @@
+<div class="app-shell">
+  <aside class="app-shell__sidebar" aria-label="Workspace navigation">
+    <div class="app-shell__brand">
+      <span class="app-shell__brand-title">FCS Workspace</span>
+      <span class="app-shell__brand-subtitle">Ops Console</span>
+    </div>
+    <nav class="app-shell__nav">
+      <% @sidebar_items.each do |item| %>
+        <% classes = ["app-shell__nav-link"] %>
+        <% classes << "app-shell__nav-link--active" if item[:active] %>
+        <% classes << "app-shell__nav-link--disabled" if item[:disabled] %>
+        <% if item[:disabled] %>
+          <span class="<%= classes.join(" ") %>" aria-disabled="true"><%= item[:label] %></span>
+        <% else %>
+          <a class="<%= classes.join(" ") %>" href="<%= item[:path] %>"><%= item[:label] %></a>
+        <% end %>
+      <% end %>
+    </nav>
+  </aside>
+  <div class="app-shell__content">
+    <header class="app-shell__topbar" aria-label="Workspace topbar">
+      <nav class="app-shell__breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <% @breadcrumb.each do |crumb| %>
+            <li>
+              <% if crumb[:path].present? %>
+                <a href="<%= crumb[:path] %>"><%= crumb[:label] %></a>
+              <% else %>
+                <span><%= crumb[:label] %></span>
+              <% end %>
+            </li>
+          <% end %>
+        </ol>
+      </nav>
+      <div class="app-shell__topbar-actions">
+        <span class="app-shell__env-badge">Env: <%= @environment %></span>
+        <% if @secondary_action.present? %>
+          <a class="app-shell__cta app-shell__cta--ghost" href="<%= @secondary_action[:path] %>"><%= @secondary_action[:label] %></a>
+        <% end %>
+        <% if @primary_action[:disabled] %>
+          <span class="app-shell__cta app-shell__cta--disabled" aria-disabled="true"><%= @primary_action[:label] %></span>
+        <% else %>
+          <a class="app-shell__cta" href="<%= @primary_action[:path] %>"><%= @primary_action[:label] %></a>
+        <% end %>
+      </div>
+    </header>
+    <div class="app-shell__main">
+      <%= content %>
+    </div>
+  </div>
+</div>

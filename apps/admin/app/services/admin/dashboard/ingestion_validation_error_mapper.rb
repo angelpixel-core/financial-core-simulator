@@ -23,19 +23,19 @@ module Admin
 
       def field_for(error_code)
         case error_code
-        when Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING
+        when ::Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING
           "accountingModel.method"
-        when Runs::ErrorCodeMapper::VALIDATION_RISK
+        when ::Runs::ErrorCodeMapper::VALIDATION_RISK
           "riskModel"
-        when Runs::ErrorCodeMapper::VALIDATION_COLLATERAL
+        when ::Runs::ErrorCodeMapper::VALIDATION_COLLATERAL
           "accounts.collateralQuote"
-        when Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL
+        when ::Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL
           "trade.decimal"
-        when Runs::ErrorCodeMapper::VALIDATION_UNKNOWN_REFERENCE
+        when ::Runs::ErrorCodeMapper::VALIDATION_UNKNOWN_REFERENCE
           "reference"
-        when Runs::ErrorCodeMapper::VALIDATION_DUPLICATE_SEQ
+        when ::Runs::ErrorCodeMapper::VALIDATION_DUPLICATE_SEQ
           "trades.seq"
-        when Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
+        when ::Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
           "number"
         else
           "sourceEvent"

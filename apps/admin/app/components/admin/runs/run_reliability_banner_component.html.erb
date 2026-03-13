@@ -1,0 +1,19 @@
+<section class="run-reliability-banner <%= state_class %>" role="status" aria-live="polite">
+  <header>
+    <p class="run-reliability-banner__eyebrow"><%= @title %></p>
+  </header>
+  <div class="run-reliability-banner__body">
+    <div>
+      <p class="run-reliability-banner__label">Que paso</p>
+      <p class="run-reliability-banner__value"><%= @diagnostic[:what_happened] %></p>
+    </div>
+    <div>
+      <p class="run-reliability-banner__label">Impacto</p>
+      <p class="run-reliability-banner__value"><%= @diagnostic[:impact] %></p>
+    </div>
+    <div>
+      <p class="run-reliability-banner__label">Siguiente accion</p>
+      <p class="run-reliability-banner__value"><%= @diagnostic[:next_action] %></p>
+    </div>
+  </div>
+</section>

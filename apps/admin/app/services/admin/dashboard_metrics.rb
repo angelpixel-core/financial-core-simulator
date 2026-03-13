@@ -9,14 +9,14 @@ module Admin
     TOP_ACCOUNTS_LIMIT = 5
     INGESTION_ERRORS_LIMIT = 50
     VALIDATION_ERROR_CODES = [
-      Runs::ErrorCodeMapper::VALIDATION_GENERAL,
-      Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING,
-      Runs::ErrorCodeMapper::VALIDATION_RISK,
-      Runs::ErrorCodeMapper::VALIDATION_COLLATERAL,
-      Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL,
-      Runs::ErrorCodeMapper::VALIDATION_UNKNOWN_REFERENCE,
-      Runs::ErrorCodeMapper::VALIDATION_DUPLICATE_SEQ,
-      Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
+      ::Runs::ErrorCodeMapper::VALIDATION_GENERAL,
+      ::Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING,
+      ::Runs::ErrorCodeMapper::VALIDATION_RISK,
+      ::Runs::ErrorCodeMapper::VALIDATION_COLLATERAL,
+      ::Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL,
+      ::Runs::ErrorCodeMapper::VALIDATION_UNKNOWN_REFERENCE,
+      ::Runs::ErrorCodeMapper::VALIDATION_DUPLICATE_SEQ,
+      ::Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
     ].freeze
 
     def initialize(ingestion_validation_error_mapper: Admin::Dashboard::IngestionValidationErrorMapper.new)
