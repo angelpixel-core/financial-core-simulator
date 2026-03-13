@@ -53,8 +53,8 @@ RSpec.describe 'CSV outputs' do
     Dir.mktmpdir do |dir|
       input = {
         'schemaVersion' => '1.0',
-        'accounts' => [{ 'accountId' => 'acc-1' }],
-        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'accounts' => [{ 'accountId' => 'acc-a' }, { 'accountId' => 'acc-b' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }, { 'marketId' => 'BTC-USD' }],
         'feeModel' => { 'enabled' => true },
         'trades' => [],
         'timeline' => {
@@ -64,23 +64,45 @@ RSpec.describe 'CSV outputs' do
               'timelineSeq' => 1,
               'timestamp' => '2026-03-03T12:00:01Z',
               'source' => 'sim.core',
-              'externalId' => 'tr-1',
+              'externalId' => 'tr-a-eth-buy',
               'trade' => {
-                'tradeId' => 't-1',
-                'accountId' => 'acc-1',
+                'tradeId' => 't-a-eth-buy',
+                'accountId' => 'acc-a',
                 'marketId' => 'ETH-USD',
+                'timestamp' => 1,
                 'seq' => 1,
                 'side' => 'BUY',
                 'quantityBase' => '2',
                 'priceQuotePerBase' => '100',
                 'fee' => { 'amountQuote' => '1' }
               }
+            },
+            {
+              'eventType' => 'TRADE_APPLIED',
+              'timelineSeq' => 2,
+              'timestamp' => '2026-03-03T12:00:02Z',
+              'source' => 'sim.core',
+              'externalId' => 'tr-b-eth-buy',
+              'trade' => {
+                'tradeId' => 't-b-eth-buy',
+                'accountId' => 'acc-b',
+                'marketId' => 'ETH-USD',
+                'timestamp' => 2,
+                'seq' => 2,
+                'side' => 'BUY',
+                'quantityBase' => '1',
+                'priceQuotePerBase' => '200',
+                'fee' => { 'amountQuote' => '2' }
+              }
             }
           ]
         },
         'priceSnapshot' => {
           'valuationTimestamp' => '2026-02-25T03:00:00Z',
-          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '150' }],
+          'prices' => [
+            { 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '150' },
+            { 'marketId' => 'BTC-USD', 'priceQuotePerBase' => '60' }
+          ],
           'fx' => { 'quoteUsd' => '1' }
         }
       }
@@ -99,8 +121,43 @@ RSpec.describe 'CSV outputs' do
       expect(pnl_rows.headers).to eq(
         %w[accountId marketId realizedPnLQuote feesQuote realizedNetPnLQuote unrealizedPnLQuote totalPnLQuote]
       )
-      expect(positions_rows.size).to eq(1)
-      expect(pnl_rows.size).to eq(1)
+      expect(positions_rows.size).to eq(4)
+      expect(pnl_rows.size).to eq(4)
+
+      positions_by_key = positions_rows.each_with_object({}) do |row, acc|
+        acc[[row['accountId'], row['marketId']]] = row.to_h
+      end
+      pnl_by_key = pnl_rows.each_with_object({}) do |row, acc|
+        acc[[row['accountId'], row['marketId']]] = row.to_h
+      end
+
+      expect(positions_by_key.fetch(%w[acc-a ETH-USD])).to include(
+        'quantity' => '2.0',
+        'avgCost' => '100.0'
+      )
+      expect(positions_by_key.fetch(%w[acc-b ETH-USD])).to include(
+        'quantity' => '1.0',
+        'avgCost' => '200.0'
+      )
+      expect(positions_by_key.fetch(%w[acc-a BTC-USD])).to include(
+        'quantity' => '0.0',
+        'avgCost' => '0.0'
+      )
+      expect(positions_by_key.fetch(%w[acc-b BTC-USD])).to include(
+        'quantity' => '0.0',
+        'avgCost' => '0.0'
+      )
+
+      expect(pnl_by_key.fetch(%w[acc-a ETH-USD])).to include(
+        'feesQuote' => '1.0',
+        'unrealizedPnLQuote' => '100.0',
+        'totalPnLQuote' => '99.0'
+      )
+      expect(pnl_by_key.fetch(%w[acc-b ETH-USD])).to include(
+        'feesQuote' => '2.0',
+        'unrealizedPnLQuote' => '-50.0',
+        'totalPnLQuote' => '-52.0'
+      )
     end
   ensure
     ENV['FCS_TIMELINE_ENABLED'] = previous

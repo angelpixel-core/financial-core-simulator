@@ -47,8 +47,8 @@ module FCS
       private
 
       def build_accounts(input, state, valuation, fx, risk_health:, risk_events_by_account:, explain:)
-        account_ids = input.fetch('accounts').map { |a| a.fetch('accountId') }
-        market_ids = input.fetch('markets').map { |m| m.fetch('marketId') }
+        account_ids = input.fetch('accounts').map { |a| a.fetch('accountId') }.uniq.sort
+        market_ids = input.fetch('markets').map { |m| m.fetch('marketId') }.uniq.sort
 
         account_ids.map do |account_id|
           markets = market_ids.map do |market_id|
@@ -125,7 +125,11 @@ module FCS
           return
         end
 
-        input.fetch('trades').each { |trade| ledger.apply_trade!(trade) }
+        deterministic_batch_trades(input.fetch('trades')).each { |trade| ledger.apply_trade!(trade) }
+      end
+
+      def deterministic_batch_trades(trades)
+        FCS::Engine::TradeSorter.new.sort(trades)
       end
 
       def sum_market_fields(markets, fx)
