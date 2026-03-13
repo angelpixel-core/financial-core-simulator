@@ -25,17 +25,19 @@ module FCS
         @logger.info("fcs.run.start input=#{input_path} output=#{output_dir}")
 
         raw_input = @parser.parse_file(input_path)
-        @validator.validate!(raw_input)
+
+        input = deep_copy(raw_input)
+        input['feeModel'] ||= {}
+        input['feeModel']['enabled'] = !!fee_enabled
+        @validator.validate!(input)
 
         hash_input = prepare_execution_input(deep_copy(raw_input))
         normalize_collections_for_determinism!(hash_input)
         canonical = FCS::Hashing::CanonicalJSON.dump(hash_input)
         input_hash = FCS::Hashing::SHA256.hex(canonical)
 
-        input = prepare_execution_input(raw_input)
-        input['feeModel'] ||= {}
-        input['feeModel']['enabled'] = !!fee_enabled
         normalize_collections_for_determinism!(input)
+        input = prepare_execution_input(input)
 
         schema_version = input.fetch('schemaVersion')
         valuation_ts = input.dig('priceSnapshot', 'valuationTimestamp')

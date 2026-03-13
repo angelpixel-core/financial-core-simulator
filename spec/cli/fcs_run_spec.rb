@@ -344,6 +344,62 @@ RSpec.describe 'bin/fcs run' do
     end
   end
 
+  it 'allows invalid fee payload when --no-fee disables fee validation path' do
+    Dir.mktmpdir do |tmp|
+      input = {
+        'schemaVersion' => '1.0',
+        'accounts' => [{ 'accountId' => 'acc-1' }],
+        'markets' => [{ 'marketId' => 'ETH-USD' }],
+        'feeModel' => { 'enabled' => true },
+        'trades' => [
+          {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => 1,
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100',
+            'fee' => { 'amountQuote' => 'invalid-fee' }
+          }
+        ],
+        'priceSnapshot' => {
+          'valuationTimestamp' => '2026-02-25T03:00:00Z',
+          'prices' => [{ 'marketId' => 'ETH-USD', 'priceQuotePerBase' => '100' }],
+          'fx' => { 'quoteUsd' => '1' }
+        }
+      }
+
+      input_path = File.join(tmp, 'invalid-fee.json')
+      File.write(input_path, JSON.pretty_generate(input))
+
+      _stdout_fail, stderr_fail, status_fail = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', input_path,
+        '--output-dir', File.join(tmp, 'out-fee-on'),
+        chdir: root
+      )
+
+      expect(status_fail.success?).to be(false)
+      expect(JSON.parse(stderr_fail)).to include('code' => FCS::Errors::ERR_VALIDATION)
+
+      _stdout_ok, _stderr_ok, status_ok = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', input_path,
+        '--output-dir', File.join(tmp, 'out-fee-off'),
+        '--no-fee',
+        chdir: root
+      )
+
+      expect(status_ok.success?).to be(true)
+    end
+  end
+
   it 'emits stable error envelope for invalid schema and broken references' do
     Dir.mktmpdir do |tmp|
       bad_schema = {
