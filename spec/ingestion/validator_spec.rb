@@ -573,6 +573,29 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla si PRICE_UPDATED referencia market inexistente en timeline' do
+    input = base_input
+    input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'PRICE_UPDATED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'feed.binance',
+          'externalId' => 'px-unknown-1',
+          'marketId' => 'BTC-USD',
+          'priceQuotePerBase' => '3151.00'
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_UNKNOWN_REFERENCE)
+        expect(e.details).to include(marketId: 'BTC-USD')
+      }
+  end
+
   it 'falla con ERR_DUPLICATE_SEQ si timeline repite seq por account+market' do
     input = base_input
     input['timeline'] = {

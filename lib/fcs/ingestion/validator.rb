@@ -105,7 +105,7 @@ module FCS
 
           case event.fetch('eventType')
           when 'PRICE_UPDATED'
-            validate_timeline_price_updated!(event)
+            validate_timeline_price_updated!(event, market_ids: market_ids)
           when 'TRADE_APPLIED'
             validate_timeline_trade_applied!(event,
                                              account_ids: account_ids,
@@ -227,7 +227,7 @@ module FCS
                        field: 'timeline.events.timestamp')
       end
 
-      def validate_timeline_price_updated!(event)
+      def validate_timeline_price_updated!(event, market_ids:)
         unless event.key?('marketId')
           raise_invalid!('timeline PRICE_UPDATED marketId is required',
                          field: 'timeline.events.marketId')
@@ -240,6 +240,11 @@ module FCS
         unless non_empty_string?(event['marketId'])
           raise_invalid!('timeline PRICE_UPDATED marketId must be a non-empty string',
                          field: 'timeline.events.marketId')
+        end
+        unless market_ids.include?(event['marketId'])
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
+                               'Unknown marketId',
+                               details: { marketId: event['marketId'] })
         end
         validate_positive_decimal_string!(
           event['priceQuotePerBase'],
