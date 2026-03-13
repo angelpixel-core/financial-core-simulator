@@ -31,7 +31,7 @@ module FCS
         input['feeModel']['enabled'] = !!fee_enabled
         @validator.validate!(input)
 
-        hash_input = prepare_execution_input(deep_copy(raw_input))
+        hash_input = prepare_execution_input(deep_copy(input))
         normalize_collections_for_determinism!(hash_input)
         canonical = FCS::Hashing::CanonicalJSON.dump(hash_input)
         input_hash = FCS::Hashing::SHA256.hex(canonical)

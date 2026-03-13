@@ -281,7 +281,7 @@ RSpec.describe 'bin/fcs run' do
     end
   end
 
-  it 'keeps inputHash stable regardless of fee CLI override' do
+  it 'changes inputHash when fee CLI override changes effective execution config' do
     Dir.mktmpdir do |tmp|
       input = {
         'schemaVersion' => '1.0',
@@ -339,7 +339,7 @@ RSpec.describe 'bin/fcs run' do
       payload_on = JSON.parse(File.read(File.join(out_fee_on, 'result.json')))
       payload_off = JSON.parse(File.read(File.join(out_fee_off, 'result.json')))
 
-      expect(payload_on.fetch('inputHash')).to eq(payload_off.fetch('inputHash'))
+      expect(payload_on.fetch('inputHash')).not_to eq(payload_off.fetch('inputHash'))
       expect(payload_on.fetch('global').fetch('feesQuote')).not_to eq(payload_off.fetch('global').fetch('feesQuote'))
     end
   end
