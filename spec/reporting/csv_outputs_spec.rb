@@ -117,49 +117,49 @@ RSpec.describe 'CSV outputs' do
       positions_rows = CSV.read(File.join(out_dir, 'positions.csv'), headers: true)
       pnl_rows = CSV.read(File.join(out_dir, 'pnl.csv'), headers: true)
 
-      expect(positions_rows.headers).to eq(%w[accountId marketId quantity avgCost])
+      expect(positions_rows.headers).to eq(%w[account_id market_id quantity avg_cost])
       expect(pnl_rows.headers).to eq(
-        %w[accountId marketId realizedPnLQuote feesQuote realizedNetPnLQuote unrealizedPnLQuote totalPnLQuote
-           totalPnLUsd]
+        %w[account_id market_id realized_pnl_quote fees_quote realized_net_pnl_quote unrealized_pnl_quote total_pnl_quote
+           total_pnl_usd]
       )
       expect(positions_rows.size).to eq(4)
       expect(pnl_rows.size).to eq(4)
 
       positions_by_key = positions_rows.each_with_object({}) do |row, acc|
-        acc[[row['accountId'], row['marketId']]] = row.to_h
+        acc[[row['account_id'], row['market_id']]] = row.to_h
       end
       pnl_by_key = pnl_rows.each_with_object({}) do |row, acc|
-        acc[[row['accountId'], row['marketId']]] = row.to_h
+        acc[[row['account_id'], row['market_id']]] = row.to_h
       end
 
       expect(positions_by_key.fetch(%w[acc-a ETH-USD])).to include(
         'quantity' => '2.0',
-        'avgCost' => '100.0'
+        'avg_cost' => '100.0'
       )
       expect(positions_by_key.fetch(%w[acc-b ETH-USD])).to include(
         'quantity' => '1.0',
-        'avgCost' => '200.0'
+        'avg_cost' => '200.0'
       )
       expect(positions_by_key.fetch(%w[acc-a BTC-USD])).to include(
         'quantity' => '0.0',
-        'avgCost' => '0.0'
+        'avg_cost' => '0.0'
       )
       expect(positions_by_key.fetch(%w[acc-b BTC-USD])).to include(
         'quantity' => '0.0',
-        'avgCost' => '0.0'
+        'avg_cost' => '0.0'
       )
 
       expect(pnl_by_key.fetch(%w[acc-a ETH-USD])).to include(
-        'feesQuote' => '1.0',
-        'unrealizedPnLQuote' => '100.0',
-        'totalPnLQuote' => '99.0',
-        'totalPnLUsd' => '99.0'
+        'fees_quote' => '1.0',
+        'unrealized_pnl_quote' => '100.0',
+        'total_pnl_quote' => '99.0',
+        'total_pnl_usd' => '99.0'
       )
       expect(pnl_by_key.fetch(%w[acc-b ETH-USD])).to include(
-        'feesQuote' => '2.0',
-        'unrealizedPnLQuote' => '-50.0',
-        'totalPnLQuote' => '-52.0',
-        'totalPnLUsd' => '-52.0'
+        'fees_quote' => '2.0',
+        'unrealized_pnl_quote' => '-50.0',
+        'total_pnl_quote' => '-52.0',
+        'total_pnl_usd' => '-52.0'
       )
     end
   ensure
@@ -227,10 +227,10 @@ RSpec.describe 'CSV outputs' do
       positions_rows = CSV.read(positions_path, headers: true)
       pnl_rows = CSV.read(pnl_path, headers: true)
 
-      expect(positions_rows.map { |r| [r['accountId'], r['marketId']] }).to eq(
+      expect(positions_rows.map { |r| [r['account_id'], r['market_id']] }).to eq(
         [%w[acc-a BTC-USD], %w[acc-a ETH-USD], %w[acc-b BTC-USD], %w[acc-b ETH-USD]]
       )
-      expect(pnl_rows.map { |r| [r['accountId'], r['marketId']] }).to eq(
+      expect(pnl_rows.map { |r| [r['account_id'], r['market_id']] }).to eq(
         [%w[acc-a BTC-USD], %w[acc-a ETH-USD], %w[acc-b BTC-USD], %w[acc-b ETH-USD]]
       )
     end

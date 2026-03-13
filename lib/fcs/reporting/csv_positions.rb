@@ -7,10 +7,10 @@ module FCS
   module Reporting
     class CsvPositions
       HEADER = %w[
-        accountId
-        marketId
+        account_id
+        market_id
         quantity
-        avgCost
+        avg_cost
       ].freeze
 
       def write!(output_dir:, accounts:)
@@ -23,14 +23,22 @@ module FCS
               csv << [
                 acc.fetch('accountId'),
                 m.fetch('marketId'),
-                m.fetch('quantity'),
-                m.fetch('avgCost')
+                serialize_decimal(m.fetch('quantity')),
+                serialize_decimal(m.fetch('avgCost'))
               ]
             end
           end
         end
 
         path
+      end
+
+      private
+
+      def serialize_decimal(value)
+        return nil if value.nil?
+
+        FCS::Types::Decimal18.from_string(value.to_s).to_s
       end
     end
   end

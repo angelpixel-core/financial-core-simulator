@@ -4,6 +4,7 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
   let(:reporter) { instance_double(FCS::Reporting::JsonReport, write!: 'out/result.json') }
   let(:positions_csv) { instance_double(FCS::Reporting::CsvPositions, write!: 'out/positions.csv') }
   let(:pnl_csv) { instance_double(FCS::Reporting::CsvPnL, write!: 'out/pnl.csv') }
+  let(:csv_reconciler) { instance_double(FCS::Reporting::CsvArtifactReconciler, validate!: true) }
   let(:metadata) do
     {
       'engineVersion' => '0.1.0',
@@ -15,7 +16,12 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
   end
 
   it 'writes json and csv artifacts through reporting ports' do
-    writer = described_class.new(reporter: reporter, positions_csv: positions_csv, pnl_csv: pnl_csv)
+    writer = described_class.new(
+      reporter: reporter,
+      positions_csv: positions_csv,
+      pnl_csv: pnl_csv,
+      csv_reconciler: csv_reconciler
+    )
     payload = metadata.merge(
       'accounts' => [{ 'accountId' => 'acc-1', 'markets' => [] }],
       'global' => {}
@@ -26,6 +32,11 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
     expect(reporter).to have_received(:write!).with(output_dir: 'out', payload: payload)
     expect(positions_csv).to have_received(:write!).with(output_dir: 'out', accounts: payload.fetch('accounts'))
     expect(pnl_csv).to have_received(:write!).with(output_dir: 'out', accounts: payload.fetch('accounts'))
+    expect(csv_reconciler).to have_received(:validate!).with(
+      json_path: 'out/result.json',
+      positions_path: 'out/positions.csv',
+      pnl_path: 'out/pnl.csv'
+    )
     expect(paths).to eq(
       json_path: 'out/result.json',
       positions_csv_path: 'out/positions.csv',
@@ -34,7 +45,12 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
   end
 
   it 'fails with deterministic contract diagnostics when an account-market row misses required metrics' do
-    writer = described_class.new(reporter: reporter, positions_csv: positions_csv, pnl_csv: pnl_csv)
+    writer = described_class.new(
+      reporter: reporter,
+      positions_csv: positions_csv,
+      pnl_csv: pnl_csv,
+      csv_reconciler: csv_reconciler
+    )
     payload = metadata.merge(
       'accounts' => [
         {
@@ -68,10 +84,16 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
     expect(reporter).not_to have_received(:write!)
     expect(positions_csv).not_to have_received(:write!)
     expect(pnl_csv).not_to have_received(:write!)
+    expect(csv_reconciler).not_to have_received(:validate!)
   end
 
   it 'fails when a required account-market metric is empty or malformed' do
-    writer = described_class.new(reporter: reporter, positions_csv: positions_csv, pnl_csv: pnl_csv)
+    writer = described_class.new(
+      reporter: reporter,
+      positions_csv: positions_csv,
+      pnl_csv: pnl_csv,
+      csv_reconciler: csv_reconciler
+    )
     payload = metadata.merge(
       'accounts' => [
         {
