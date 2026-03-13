@@ -91,7 +91,10 @@ RSpec.describe 'bin/fcs run' do
       )
       expect(payload).to have_key('impact')
       expect(payload).to have_key('next_action')
-      expect(payload).to have_key('details')
+      expect(payload.fetch('details')).to include(
+        'errorClass' => 'JSON::ParserError',
+        'errorCode' => 'INVALID_JSON_SYNTAX'
+      )
     end
   end
 
