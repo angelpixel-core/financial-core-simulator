@@ -703,6 +703,67 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla si TRADE_APPLIED no incluye trade.timestamp' do
+    input = base_input
+    input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'TRADE_APPLIED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'sim.core',
+          'externalId' => 'tr-1',
+          'trade' => {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          }
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'timeline.events.trade.timestamp')
+      }
+  end
+
+  it 'falla si TRADE_APPLIED incluye trade.timestamp no entero' do
+    input = base_input
+    input['timeline'] = {
+      'events' => [
+        {
+          'eventType' => 'TRADE_APPLIED',
+          'timelineSeq' => 101,
+          'timestamp' => '2026-03-03T12:00:01Z',
+          'source' => 'sim.core',
+          'externalId' => 'tr-1',
+          'trade' => {
+            'tradeId' => 't-1',
+            'accountId' => 'acc-1',
+            'marketId' => 'ETH-USD',
+            'timestamp' => '2026-03-03T12:00:01Z',
+            'seq' => 1,
+            'side' => 'BUY',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '100'
+          }
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'timeline.events.trade.timestamp')
+      }
+  end
+
   it 'ignora trades top-level cuando timeline define trades aplicables' do
     input = base_input
     input['trades'] = ['invalid-top-level-trade']
