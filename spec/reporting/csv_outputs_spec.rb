@@ -162,4 +162,74 @@ RSpec.describe 'CSV outputs' do
   ensure
     ENV['FCS_TIMELINE_ENABLED'] = previous
   end
+
+  it 'writes CSV rows in deterministic account and market order' do
+    Dir.mktmpdir do |dir|
+      accounts = [
+        {
+          'accountId' => 'acc-b',
+          'markets' => [
+            {
+              'marketId' => 'ETH-USD',
+              'quantity' => '1.0',
+              'avgCost' => '200.0',
+              'realizedPnLQuote' => '0.0',
+              'feesQuote' => '2.0',
+              'realizedNetPnLQuote' => '-2.0',
+              'unrealizedPnLQuote' => '-50.0',
+              'totalPnLQuote' => '-52.0'
+            },
+            {
+              'marketId' => 'BTC-USD',
+              'quantity' => '0.0',
+              'avgCost' => '0.0',
+              'realizedPnLQuote' => '0.0',
+              'feesQuote' => '0.0',
+              'realizedNetPnLQuote' => '0.0',
+              'unrealizedPnLQuote' => '0.0',
+              'totalPnLQuote' => '0.0'
+            }
+          ]
+        },
+        {
+          'accountId' => 'acc-a',
+          'markets' => [
+            {
+              'marketId' => 'ETH-USD',
+              'quantity' => '2.0',
+              'avgCost' => '100.0',
+              'realizedPnLQuote' => '0.0',
+              'feesQuote' => '1.0',
+              'realizedNetPnLQuote' => '-1.0',
+              'unrealizedPnLQuote' => '100.0',
+              'totalPnLQuote' => '99.0'
+            },
+            {
+              'marketId' => 'BTC-USD',
+              'quantity' => '0.0',
+              'avgCost' => '0.0',
+              'realizedPnLQuote' => '0.0',
+              'feesQuote' => '0.0',
+              'realizedNetPnLQuote' => '0.0',
+              'unrealizedPnLQuote' => '0.0',
+              'totalPnLQuote' => '0.0'
+            }
+          ]
+        }
+      ]
+
+      positions_path = FCS::Reporting::CsvPositions.new.write!(output_dir: dir, accounts: accounts)
+      pnl_path = FCS::Reporting::CsvPnL.new.write!(output_dir: dir, accounts: accounts)
+
+      positions_rows = CSV.read(positions_path, headers: true)
+      pnl_rows = CSV.read(pnl_path, headers: true)
+
+      expect(positions_rows.map { |r| [r['accountId'], r['marketId']] }).to eq(
+        [%w[acc-a BTC-USD], %w[acc-a ETH-USD], %w[acc-b BTC-USD], %w[acc-b ETH-USD]]
+      )
+      expect(pnl_rows.map { |r| [r['accountId'], r['marketId']] }).to eq(
+        [%w[acc-a BTC-USD], %w[acc-a ETH-USD], %w[acc-b BTC-USD], %w[acc-b ETH-USD]]
+      )
+    end
+  end
 end
