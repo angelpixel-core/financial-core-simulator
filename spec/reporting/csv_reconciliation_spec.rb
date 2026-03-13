@@ -87,6 +87,29 @@ RSpec.describe 'CSV reconciliation' do
     end
   end
 
+  it 'fails when CSV contains duplicate account-market rows' do
+    run_with(input: base_input) do |paths|
+      rows = CSV.read(paths.fetch(:positions_path), headers: true)
+      rows << rows[0]
+
+      CSV.open(paths.fetch(:positions_path), 'w', write_headers: true, headers: rows.headers) do |csv|
+        rows.each { |row| csv << row }
+      end
+
+      validator = FCS::Reporting::CsvArtifactReconciler.new
+      expect do
+        validator.validate!(
+          json_path: paths.fetch(:json_path),
+          positions_path: paths.fetch(:positions_path),
+          pnl_path: paths.fetch(:pnl_path)
+        )
+      end.to raise_error(FCS::Error) { |error|
+        expect(error.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(error.details.fetch('mismatch')).to eq('csv_row_duplicate')
+      }
+    end
+  end
+
   it 'produces deterministic CSV artifacts for identical runs' do
     Dir.mktmpdir do |dir|
       input_path = File.join(dir, 'input.json')

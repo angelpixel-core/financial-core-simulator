@@ -97,6 +97,17 @@ module FCS
       def index_rows(rows)
         rows.each_with_object({}) do |row, acc|
           key = [row['account_id'], row['market_id']]
+          if acc.key?(key)
+            raise_validation_error!(
+              message: 'CSV contains duplicate rows for account and market',
+              mismatch: 'csv_row_duplicate',
+              details: {
+                'account_id' => key[0],
+                'market_id' => key[1]
+              }
+            )
+          end
+
           acc[key] = row.to_h
         end
       end
