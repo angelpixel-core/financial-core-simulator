@@ -443,7 +443,7 @@ module FCS
           end
 
           timestamp = t['timestamp']
-          unless timestamp.is_a?(Integer) || non_empty_string?(timestamp)
+          unless timestamp.is_a?(Integer)
             raise_invalid!('Missing or invalid timestamp', field: 'timestamp', details: { tradeId: t['tradeId'] })
           end
 

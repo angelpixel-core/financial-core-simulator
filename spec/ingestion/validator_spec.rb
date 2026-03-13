@@ -115,6 +115,28 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla si trade incluye timestamp string en batch' do
+    input = base_input
+    input['trades'] = [
+      {
+        'tradeId' => 't-1',
+        'accountId' => 'acc-1',
+        'marketId' => 'ETH-USD',
+        'timestamp' => '2026-03-03T12:00:01Z',
+        'seq' => 1,
+        'side' => 'BUY',
+        'quantityBase' => '1',
+        'priceQuotePerBase' => '100'
+      }
+    ]
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'timestamp')
+      }
+  end
+
   it 'falla con codigo determinista si seq se repite por account+market' do
     input = base_input
     input['trades'] = [
