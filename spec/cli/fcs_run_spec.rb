@@ -131,6 +131,31 @@ RSpec.describe 'bin/fcs run' do
     end
   end
 
+  it 'prints failure summary in verbose mode when run fails' do
+    Dir.mktmpdir do |tmp|
+      bad_input = File.join(tmp, 'bad.json')
+      File.write(bad_input, '{ invalid-json')
+
+      stdout, stderr, status = Open3.capture3(
+        ruby,
+        File.join(root, 'bin/fcs'),
+        'run',
+        '--input', bad_input,
+        '--output-dir', File.join(tmp, 'out'),
+        '--verbose',
+        chdir: root
+      )
+
+      expect(status.success?).to be(false)
+      expect(stdout).to include('=== fcs_summary ===')
+      expect(stdout).to include('status: failure')
+      expect(stdout).to include('artifacts:')
+
+      payload = JSON.parse(stderr)
+      expect(payload).to include('code' => FCS::Errors::ERR_INVALID_INPUT)
+    end
+  end
+
   it 'emits deterministic diagnostic payload for invalid flags' do
     _stdout, stderr, status = Open3.capture3(
       ruby,

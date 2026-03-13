@@ -33,6 +33,25 @@ def available_artifacts(expected)
   expected.select { |_key, path| File.exist?(path) }.keys.sort
 end
 
+def failure_summary_payload
+  {
+    'runId' => 'n/a',
+    'inputHash' => 'n/a',
+    'schemaVersion' => 'n/a',
+    'engineVersion' => FCS::VERSION,
+    'valuationTimestamp' => 'n/a',
+    'global' => {
+      'realizedPnLQuote' => nil,
+      'feesQuote' => nil,
+      'realizedNetPnLQuote' => nil,
+      'unrealizedPnLQuote' => nil,
+      'totalPnLQuote' => nil,
+      'totalPnLUsd' => nil
+    },
+    'accounts' => []
+  }
+end
+
 subcommand = ARGV.shift
 
 case subcommand
@@ -129,6 +148,18 @@ when "run"
     puts "OK: wrote #{path}" unless options[:quiet]
   rescue FCS::Error => e
     expected_artifacts = required_artifact_paths(options[:output_dir])
+    if options[:verbose]
+      FCS::Reporting::CliSummary.new.print(
+        failure_summary_payload,
+        artifacts: {
+          json_path: expected_artifacts['result_json'],
+          positions_csv_path: expected_artifacts['positions_csv'],
+          pnl_csv_path: expected_artifacts['pnl_csv']
+        },
+        status: 'failure',
+        validate_artifacts: false
+      )
+    end
     details = (e.details || {}).merge(
       'run_status' => 'failure',
       'output_dir' => options[:output_dir],
@@ -145,6 +176,18 @@ when "run"
     exit(2)
   rescue StandardError => e
     expected_artifacts = required_artifact_paths(options[:output_dir])
+    if options[:verbose]
+      FCS::Reporting::CliSummary.new.print(
+        failure_summary_payload,
+        artifacts: {
+          json_path: expected_artifacts['result_json'],
+          positions_csv_path: expected_artifacts['positions_csv'],
+          pnl_csv_path: expected_artifacts['pnl_csv']
+        },
+        status: 'failure',
+        validate_artifacts: false
+      )
+    end
     print_diagnostic_error(
       code: "ERR_INTERNAL",
       what_happened: "Unexpected runtime error: #{e.class}",

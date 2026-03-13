@@ -13,8 +13,8 @@ module FCS
         @io = io
       end
 
-      def print(result_json_payload, artifacts: {}, status: 'success')
-        validate_artifacts!(artifacts)
+      def print(result_json_payload, artifacts: {}, status: 'success', validate_artifacts: true)
+        validate_artifacts!(artifacts) if validate_artifacts
 
         lines = []
         lines << '=== fcs_summary ==='
