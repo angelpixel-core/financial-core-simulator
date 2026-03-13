@@ -40,9 +40,21 @@ RSpec.describe 'CSV outputs' do
       runner = FCS::Application::Runner.new
       runner.run!(input_path: input_path, output_dir: out_dir, fee_enabled: true)
 
-      expect(File).to exist(File.join(out_dir, 'positions.csv'))
-      expect(File).to exist(File.join(out_dir, 'pnl.csv'))
+      positions_path = File.join(out_dir, 'positions.csv')
+      pnl_path = File.join(out_dir, 'pnl.csv')
+
+      expect(File).to exist(positions_path)
+      expect(File).to exist(pnl_path)
       expect(File).to exist(File.join(out_dir, 'result.json'))
+
+      positions_rows = CSV.read(positions_path, headers: true)
+      pnl_rows = CSV.read(pnl_path, headers: true)
+
+      expect(positions_rows.headers).to eq(%w[account_id market_id quantity avg_cost])
+      expect(pnl_rows.headers).to eq(
+        %w[account_id market_id realized_pnl_quote fees_quote realized_net_pnl_quote unrealized_pnl_quote total_pnl_quote
+           total_pnl_usd]
+      )
     end
   end
 
