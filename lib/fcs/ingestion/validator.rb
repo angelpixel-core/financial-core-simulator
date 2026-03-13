@@ -398,6 +398,11 @@ module FCS
           )
         end
 
+        unless snap['valuationTimestamp'].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\z/)
+          raise_invalid!('Invalid snapshot valuation timestamp format',
+                         field: 'priceSnapshot.valuationTimestamp')
+        end
+
         prices = snap['prices']
         unless prices.is_a?(Array)
           raise FCS::Error.new(FCS::Errors::ERR_MISSING_SNAPSHOT, 'Missing snapshot prices',

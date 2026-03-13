@@ -44,6 +44,17 @@ RSpec.describe FCS::Ingestion::Validator do
       }
   end
 
+  it 'falla con ERR_VALIDATION si valuationTimestamp no es ISO-8601 UTC' do
+    input = base_input
+    input['priceSnapshot']['valuationTimestamp'] = '2026-02-25 03:00:00'
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: 'priceSnapshot.valuationTimestamp')
+      }
+  end
+
   it 'falla si falta precio para un market' do
     input = base_input
     input['markets'] = [{ 'marketId' => 'ETH-USD' }, { 'marketId' => 'BTC-USD' }]
