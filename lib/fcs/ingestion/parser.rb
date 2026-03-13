@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "json"
+require 'json'
 
 module FCS
   module Ingestion
@@ -8,8 +8,12 @@ module FCS
       def parse_file(path)
         raw = File.read(path)
         JSON.parse(raw)
+      rescue Errno::ENOENT
+        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, 'Input file not found', details: { path: path })
+      rescue Errno::EACCES
+        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, 'Input file is not readable', details: { path: path })
       rescue JSON::ParserError => e
-        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "Invalid JSON", details: { error: e.message })
+        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, 'Invalid JSON', details: { error: e.message })
       end
     end
   end

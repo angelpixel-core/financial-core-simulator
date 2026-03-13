@@ -106,6 +106,29 @@ RSpec.describe 'bin/fcs run' do
     expect(payload).to have_key('next_action')
   end
 
+  it 'classifies missing input file as invalid user input' do
+    missing = File.join(root, 'tmp', 'does-not-exist.json')
+
+    _stdout, stderr, status = Open3.capture3(
+      ruby,
+      File.join(root, 'bin/fcs'),
+      'run',
+      '--input', missing,
+      '--output-dir', File.join(root, 'tmp', 'out-missing'),
+      chdir: root
+    )
+
+    expect(status.success?).to be(false)
+    expect(status.exitstatus).to eq(2)
+
+    payload = JSON.parse(stderr)
+    expect(payload).to include(
+      'code' => FCS::Errors::ERR_INVALID_INPUT,
+      'what_happened' => 'Input file not found'
+    )
+    expect(payload.fetch('details')).to include('path' => missing)
+  end
+
   it 'produces identical artifacts across repeated runs with same input' do
     Dir.mktmpdir do |tmp|
       out1 = File.join(tmp, 'run1')
