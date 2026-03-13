@@ -13,7 +13,11 @@ RSpec.describe 'Story 1.1 NFR4 bootstrap timing' do
     Dir.mktmpdir do |tmp|
       started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       _check_out, _check_err, check_status = Open3.capture3('bundle', 'check', chdir: root)
-      skip('bundle check failed; skip bootstrap timing in non-bootstrapped environment') unless check_status.success?
+
+      unless check_status.success?
+        _install_out, install_err, install_status = Open3.capture3('bundle', 'install', chdir: root)
+        expect(install_status.success?).to be(true), install_err
+      end
 
       _stdout, _stderr, status = Open3.capture3(
         ruby,
