@@ -1,47 +1,94 @@
-<div class="app-shell">
+<div class="app-shell" data-controller="sidebar" data-sidebar-storage-key-value="admin.shell.sidebar.collapsed" data-sidebar-collapsed-class="app-shell--sidebar-collapsed">
   <a class="app-shell__skip-link" href="#workspace-main">Saltar al contenido principal</a>
   <aside class="app-shell__sidebar" aria-label="Workspace navigation">
-    <div class="app-shell__brand">
-      <span class="app-shell__brand-title">FCS Workspace</span>
-      <span class="app-shell__brand-subtitle">Ops Console</span>
+    <div class="app-shell__sidebar-header">
+      <div class="app-shell__brand app-shell__brand--panel">
+        <button
+          type="button"
+          class="app-shell__brand-mark app-shell__brand-mark--trigger"
+          data-action="sidebar#expand"
+          aria-label="Expandir sidebar"
+          title="Expandir sidebar"
+        >FCS</button>
+        <div class="app-shell__brand-copy">
+          <span class="app-shell__brand-title">FCS Workspace</span>
+          <span class="app-shell__brand-subtitle">Ops Console</span>
+        </div>
+        <button
+          type="button"
+          class="app-shell__collapse-toggle"
+          data-action="sidebar#toggle"
+          data-sidebar-target="toggle"
+          aria-label="Minimizar sidebar"
+          title="Minimizar sidebar"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+            <path d="M9 4v16"></path>
+          </svg>
+        </button>
+      </div>
     </div>
     <details class="app-shell__mobile-nav">
-      <summary class="app-shell__mobile-nav-toggle" aria-label="Abrir menu de navegacion">Menu</summary>
+      <summary class="app-shell__mobile-nav-toggle" aria-label="Abrir menu de navegacion">
+        <span class="app-shell__mobile-nav-toggle-title">Menu</span>
+        <span class="app-shell__mobile-nav-toggle-copy">Navegacion del workspace</span>
+      </summary>
       <nav class="app-shell__mobile-nav-sheet" aria-label="Workspace navigation mobile">
+        <p class="app-shell__nav-group-label">Navigation</p>
         <% @sidebar_items.each do |item| %>
           <% classes = ["app-shell__nav-link"] %>
           <% classes << "app-shell__nav-link--active" if item[:active] %>
           <% classes << "app-shell__nav-link--disabled" if item[:disabled] %>
           <% if item[:disabled] %>
-            <span class="<%= classes.join(" ") %>" aria-disabled="true"><%= item[:label] %></span>
+            <span class="<%= classes.join(" ") %>" aria-disabled="true" title="<%= item[:label] %>">
+              <span class="app-shell__nav-icon"><%= icon_svg_for(item[:label]) %></span>
+              <span class="app-shell__nav-label"><%= item[:label] %></span>
+            </span>
           <% else %>
             <a
               class="<%= classes.join(" ") %>"
               href="<%= item[:path] %>"
+              title="<%= item[:label] %>"
               <%= item[:active] ? 'aria-current="page"' : "" %>
               <%= item[:external] ? "target=\"_blank\" rel=\"noopener noreferrer\"" : "" %>
-            ><%= item[:label] %></a>
+            >
+              <span class="app-shell__nav-icon"><%= icon_svg_for(item[:label]) %></span>
+              <span class="app-shell__nav-label"><%= item[:label] %></span>
+            </a>
           <% end %>
         <% end %>
       </nav>
     </details>
     <nav class="app-shell__nav app-shell__nav--desktop">
+      <p class="app-shell__nav-group-label">Navigation</p>
       <% @sidebar_items.each do |item| %>
         <% classes = ["app-shell__nav-link"] %>
         <% classes << "app-shell__nav-link--active" if item[:active] %>
         <% classes << "app-shell__nav-link--disabled" if item[:disabled] %>
         <% if item[:disabled] %>
-          <span class="<%= classes.join(" ") %>" aria-disabled="true"><%= item[:label] %></span>
+          <span class="<%= classes.join(" ") %>" aria-disabled="true" title="<%= item[:label] %>">
+            <span class="app-shell__nav-icon"><%= icon_svg_for(item[:label]) %></span>
+            <span class="app-shell__nav-label"><%= item[:label] %></span>
+          </span>
         <% else %>
           <a
             class="<%= classes.join(" ") %>"
             href="<%= item[:path] %>"
+            title="<%= item[:label] %>"
             <%= item[:active] ? 'aria-current="page"' : "" %>
             <%= item[:external] ? "target=\"_blank\" rel=\"noopener noreferrer\"" : "" %>
-          ><%= item[:label] %></a>
+          >
+            <span class="app-shell__nav-icon"><%= icon_svg_for(item[:label]) %></span>
+            <span class="app-shell__nav-label"><%= item[:label] %></span>
+          </a>
         <% end %>
       <% end %>
     </nav>
+    <div class="app-shell__sidebar-footer" aria-hidden="true">
+      <span class="app-shell__sidebar-footer-dot"></span>
+      <span class="app-shell__sidebar-footer-copy">Stable workspace</span>
+    </div>
   </aside>
   <div class="app-shell__content">
     <header class="app-shell__topbar" aria-label="Workspace topbar">

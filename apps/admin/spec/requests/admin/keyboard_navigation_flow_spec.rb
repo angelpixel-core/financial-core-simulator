@@ -31,13 +31,13 @@ RSpec.describe "Admin keyboard navigation flow", type: :request do
     nav = doc.at_css(".app-shell__nav")
     links = nav.css("a")
 
-    labels = links.map(&:text)
+    labels = links.map { |link| link.text.strip }
     expect(labels).to include("Overview", "Runs", "Validation", "Artifacts")
 
-    overview_link = links.find { |node| node.text == "Overview" }
-    runs_link = links.find { |node| node.text == "Runs" }
-    validation_link = links.find { |node| node.text == "Validation" }
-    artifacts_link = links.find { |node| node.text == "Artifacts" }
+    overview_link = links.find { |node| node.text.strip == "Overview" }
+    runs_link = links.find { |node| node.text.strip == "Runs" }
+    validation_link = links.find { |node| node.text.strip == "Validation" }
+    artifacts_link = links.find { |node| node.text.strip == "Artifacts" }
 
     expect(overview_link["aria-current"].delete('"')).to eq("page")
 

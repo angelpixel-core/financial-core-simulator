@@ -34,5 +34,7 @@ RSpec.describe Admin::Shell::AppShellComponent, type: :component do
     expect(rendered_content).to include("id=\"workspace-main\"")
     expect(rendered_content).to include("Menu")
     expect(rendered_content).to include("aria-label=\"Workspace navigation mobile\"")
+    expect(rendered_content).to include("app-shell__collapse-toggle")
+    expect(rendered_content).to include("app-shell__nav-icon")
   end
 end
