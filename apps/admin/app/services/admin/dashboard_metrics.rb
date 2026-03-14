@@ -6,6 +6,8 @@ module Admin
     WINDOW_7_DAYS = 7.days
     WINDOW_30_DAYS = 30.days
     RECENT_RUNS_LIMIT = 50
+    TREND_POINTS_LIMIT = 14
+    PNL_TREND_SCAN_LIMIT = 100
     TOP_ACCOUNTS_LIMIT = 5
     INGESTION_ERRORS_LIMIT = 50
     VALIDATION_ERROR_CODES = [
@@ -40,6 +42,7 @@ module Admin
         success_rate_last_50: success_rate,
         avg_duration_ms_last_50: avg_duration,
         runs_trend_14d: runs_trend_14d,
+        pnl_trend: pnl_trend,
         status_mix_30d: status_mix_30d,
         kpi_deltas: {
           total_runs_7d: delta_metadata(total_runs_7d, previous_total_runs_7d),
@@ -239,12 +242,55 @@ module Admin
 
     def runs_trend_14d
       start_date = 13.days.ago.to_date
-      counts = runs_since(14.days).group("DATE(created_at)").count
+      counts = runs_since(TREND_POINTS_LIMIT.days).group("DATE(created_at)").count
 
       (start_date..Date.current).map do |day|
         count = counts[day] || counts[day.to_s] || 0
         { day: day.strftime("%m-%d"), count: count }
       end
+    end
+
+    def pnl_trend
+      points = Run.succeeded.order(created_at: :desc).limit(PNL_TREND_SCAN_LIMIT).filter_map do |run|
+        pnl_trend_point(run)
+      end
+
+      points.first(TREND_POINTS_LIMIT).sort_by { |point| point[:timestamp] }
+    end
+
+    def pnl_trend_point(run)
+      payload = canonical_result_payload_for(run)
+      return nil if payload.nil?
+
+      total = parse_decimal_or_nil(payload.dig("global", "totalPnLQuote"))
+      return nil if total.nil?
+
+      timestamp = run.valuation_timestamp || run.created_at
+      return nil if timestamp.nil?
+
+      {
+        label: timestamp.utc.strftime("%m-%d %H:%M UTC"),
+        timestamp: timestamp.utc.iso8601,
+        total_pnl_quote: total.to_s("F")
+      }
+    end
+
+    def canonical_result_payload_for(run)
+      path = run.result_json_path
+      return nil if path.blank?
+      return nil unless File.exist?(path)
+
+      JSON.parse(File.read(path))
+    rescue JSON::ParserError
+      nil
+    end
+
+    def parse_decimal_or_nil(value)
+      return nil if value.nil?
+
+      BigDecimal(value.to_s)
+    rescue ArgumentError
+      nil
     end
 
     def status_mix_30d

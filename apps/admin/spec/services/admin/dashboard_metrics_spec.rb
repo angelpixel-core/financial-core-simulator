@@ -16,6 +16,7 @@ RSpec.describe Admin::DashboardMetrics do
       expect(metrics[:latest_run]).to be_nil
       expect(metrics[:latest_global]).to be_nil
       expect(metrics[:top_accounts]).to eq([])
+      expect(metrics[:pnl_trend]).to eq([])
       expect(metrics[:kpi_deltas]).to eq(
         total_runs_7d: { direction: "unknown", delta_abs: nil, delta_pct: nil },
         total_runs_30d: { direction: "unknown", delta_abs: nil, delta_pct: nil },
@@ -63,6 +64,9 @@ RSpec.describe Admin::DashboardMetrics do
         expect(metrics[:latest_run][:id]).to eq(run.id)
         expect(metrics[:latest_global]["totalPnLQuote"]).to eq("10.5")
         expect(metrics[:top_accounts].first[:account_id]).to eq("acc-2")
+        expect(metrics[:pnl_trend].length).to eq(1)
+        expect(metrics[:pnl_trend].first[:total_pnl_quote]).to eq("10.5")
+        expect(metrics[:pnl_trend].first[:timestamp]).to be_a(String)
         expect(metrics[:kpi_deltas].keys).to contain_exactly(
           :total_runs_7d,
           :total_runs_30d,
@@ -201,6 +205,43 @@ RSpec.describe Admin::DashboardMetrics do
       expect(metrics[:kpi_deltas][:avg_duration_ms_last_50][:direction]).to eq("up")
       expect(metrics[:kpi_deltas][:avg_duration_ms_last_50][:delta_abs]).to eq(100.0)
       expect(metrics[:kpi_deltas][:avg_duration_ms_last_50][:delta_pct]).to eq(50.0)
+    end
+
+    it "includes only succeeded runs with canonical result and valid totalPnLQuote in pnl trend" do
+      failed_run = Run.create!(status: :failed, created_at: 3.days.ago, input_json: { "schemaVersion" => "1.0" })
+      failed_run.update!(artifacts: { "result_json_path" => "/tmp/missing.json" })
+
+      missing_artifact_run = Run.create!(status: :succeeded, created_at: 2.days.ago, input_json: { "schemaVersion" => "1.0" })
+      missing_artifact_run.update!(artifacts: { "result_json_path" => "/tmp/missing.json" })
+
+      invalid_pnl_run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+
+      valid_run = Run.create!(
+        status: :succeeded,
+        created_at: Time.zone.parse("2026-03-14T03:00:00Z"),
+        valuation_timestamp: Time.zone.parse("2026-03-14T04:00:00Z"),
+        input_json: { "schemaVersion" => "1.0" }
+      )
+
+      Dir.mktmpdir do |dir|
+        invalid_path = File.join(dir, "invalid.json")
+        valid_path = File.join(dir, "valid.json")
+
+        File.write(invalid_path, JSON.pretty_generate({ "global" => { "totalPnLQuote" => "bad" } }))
+        File.write(valid_path, JSON.pretty_generate({ "global" => { "totalPnLQuote" => "42.25" } }))
+
+        invalid_pnl_run.update!(artifacts: { "result_json_path" => invalid_path })
+        valid_run.update!(artifacts: { "result_json_path" => valid_path })
+
+        metrics = described_class.new.call
+
+        expect(metrics[:pnl_trend].length).to eq(1)
+        expect(metrics[:pnl_trend].first).to include(
+          total_pnl_quote: "42.25",
+          timestamp: "2026-03-14T04:00:00Z",
+          label: "03-14 04:00 UTC"
+        )
+      end
     end
   end
 end
