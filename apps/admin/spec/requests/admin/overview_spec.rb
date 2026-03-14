@@ -14,6 +14,7 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("FINANCIAL")
     expect(response.body).to include("DATA QUALITY")
     expect(response.body).to include("No succeeded runs yet.")
+    expect(response.body).to include("No PnL trend data available yet.")
     expect(response.body).to include("Run trend (14d)")
     expect(response.body).to include("Status mix (30d)")
     expect(response.body).to include("data-controller=\"poll\"")
@@ -123,6 +124,30 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include('data-run-trend-chart-animation-mode-value="proportional"')
     expect(response.body).to include('data-run-trend-chart-base-duration-value="260"')
     expect(response.body).to include('data-run-trend-chart-max-extra-duration-value="540"')
+    expect(response.body).to include("No PnL trend data available yet.")
+  end
+
+  it "renders pnl trend chart hooks when successful runs include canonical pnl values" do
+    run = Run.create!(
+      status: :succeeded,
+      valuation_timestamp: Time.zone.parse("2026-03-14T04:00:00Z"),
+      input_json: { "schemaVersion" => "1.0" }
+    )
+
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "result.json")
+      File.write(path, JSON.pretty_generate({ "global" => { "totalPnLQuote" => "42.25" }, "accounts" => [] }))
+      run.update!(artifacts: { "result_json_path" => path })
+
+      get "/admin/overview", headers: admin_session_headers
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('data-controller="pnl-trend-chart"')
+      expect(response.body).to include('data-pnl-trend-chart-target="chart"')
+      expect(response.body).to include('data-pnl-trend-chart-target="fallback"')
+      expect(response.body).to include('data-pnl-trend-chart-tooltip-label-value="Total PnL Quote"')
+      expect(response.body).to include("Global total PnL quote over successful runs")
+    end
   end
 
   it "keeps run trend chart and fallback markup across mobile and desktop detail views" do
