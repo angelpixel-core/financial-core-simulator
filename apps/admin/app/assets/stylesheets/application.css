@@ -686,10 +686,11 @@ body {
   font-size: 14px;
 }
 
-.overview__link:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
+.app-shell a:focus-visible,
+.app-shell button:focus-visible,
+.app-shell input:focus-visible,
+.app-shell select:focus-visible,
+.app-shell textarea:focus-visible {
   outline: 2px solid #0d9488;
   outline-offset: 2px;
 }

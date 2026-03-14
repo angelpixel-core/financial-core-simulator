@@ -4,7 +4,11 @@
       <p class="run-selection-card__eyebrow"><%= @title %></p>
       <h2 class="run-selection-card__title">Run #<%= @run.id %></h2>
     </div>
-    <span class="run-selection-card__status" data-status="<%= status_label %>"><%= status_label %></span>
+    <span
+      class="run-selection-card__status"
+      data-status="<%= status_label %>"
+      aria-label="Run status: <%= status_label %>"
+    ><%= status_label %></span>
   </header>
   <div class="run-selection-card__meta">
     <div>

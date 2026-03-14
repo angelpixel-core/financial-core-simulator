@@ -26,5 +26,7 @@ RSpec.describe Admin::Shell::AppShellComponent, type: :component do
     expect(rendered_content).to include("Runs")
     expect(rendered_content).to include("Open Latest Reliable Run")
     expect(rendered_content).to include("Main content")
+    expect(rendered_content).to include("aria-label=\"Workspace navigation\"")
+    expect(rendered_content).to include("aria-label=\"Workspace topbar\"")
   end
 end

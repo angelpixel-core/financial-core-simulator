@@ -20,5 +20,7 @@ RSpec.describe Admin::Runs::RunReliabilityBannerComponent, type: :component do
     expect(rendered_content).to include("No hay un run confiable verificado")
     expect(rendered_content).to include("Impacto")
     expect(rendered_content).to include("Siguiente accion")
+    expect(rendered_content).to include("role=\"status\"")
+    expect(rendered_content).to include("aria-live=\"polite\"")
   end
 end
