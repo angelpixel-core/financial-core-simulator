@@ -64,6 +64,9 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 
+  # Browser auto-reload when ERB/templates change in development
+  gem "rails_live_reload"
+
   # Component catalog and preview UI for ViewComponent/Phlex
   gem "lookbook", "~> 2.3"
 end
