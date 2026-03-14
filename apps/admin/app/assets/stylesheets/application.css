@@ -1,4 +1,5 @@
 :root {
+  --admin-shell-header-height: 56px;
   --bg: #f5f7fa;
   --surface: #ffffff;
   --surface-soft: #f9fafb;
@@ -104,7 +105,7 @@ body {
 .app-shell {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  min-height: 100vh;
+  min-height: calc(100dvh - var(--admin-shell-header-height));
   background: var(--bg);
   transition: grid-template-columns 180ms ease;
 }
@@ -134,8 +135,8 @@ body {
 
 .app-shell__sidebar {
   position: sticky;
-  top: 0;
-  height: 100vh;
+  top: var(--admin-shell-header-height);
+  height: calc(100dvh - var(--admin-shell-header-height));
   background: linear-gradient(180deg, #0f172a 0%, #0b1322 100%);
   border-right: 1px solid var(--border);
   padding: 16px 14px 12px;
@@ -361,6 +362,8 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 40px;
+  transition: border-color 180ms ease, background 180ms ease;
 }
 
 .app-shell__sidebar-footer-dot {
@@ -369,12 +372,57 @@ body {
   border-radius: 999px;
   background: #34d399;
   box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.16);
+  transition: background 200ms ease, box-shadow 200ms ease;
 }
 
 .app-shell__sidebar-footer-copy {
-  color: var(--muted);
+  position: relative;
+  min-height: 16px;
+  flex: 1;
+  display: inline-block;
   font-size: 12px;
   font-weight: 600;
+}
+
+.app-shell__sidebar-footer-text {
+  position: absolute;
+  inset: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.app-shell__sidebar-footer-text--base {
+  color: var(--muted);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.app-shell__sidebar-footer-text--hover {
+  color: #7dd3fc;
+  opacity: 0;
+  transform: translateY(3px);
+}
+
+.app-shell__sidebar-footer.is-hovered {
+  border-color: rgba(125, 211, 252, 0.46);
+  background: rgba(7, 20, 40, 0.9);
+}
+
+.app-shell__sidebar-footer.is-hovered .app-shell__sidebar-footer-dot {
+  background: #38bdf8;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.18);
+}
+
+.app-shell__sidebar-footer.is-hovered .app-shell__sidebar-footer-text--base {
+  opacity: 0;
+  transform: translateY(-3px);
+}
+
+.app-shell__sidebar-footer.is-hovered .app-shell__sidebar-footer-text--hover {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .app-shell--sidebar-collapsed .app-shell__brand {
@@ -388,8 +436,7 @@ body {
 .app-shell--sidebar-collapsed .app-shell__brand-copy,
 .app-shell--sidebar-collapsed .app-shell__nav-group-label,
 .app-shell--sidebar-collapsed .app-shell__nav-label,
-.app-shell--sidebar-collapsed .app-shell__mobile-nav,
-.app-shell--sidebar-collapsed .app-shell__sidebar-footer {
+.app-shell--sidebar-collapsed .app-shell__mobile-nav {
   display: none;
 }
 
@@ -409,6 +456,15 @@ body {
 .app-shell--sidebar-collapsed .app-shell__nav-link--disabled {
   justify-content: center;
   padding: 10px;
+}
+
+.app-shell--sidebar-collapsed .app-shell__sidebar-footer {
+  justify-content: center;
+  padding: 8px;
+}
+
+.app-shell--sidebar-collapsed .app-shell__sidebar-footer-copy {
+  display: none;
 }
 
 .app-shell__content {
@@ -1839,10 +1895,6 @@ body {
   .app-shell__nav-link,
   .app-shell__nav-link--disabled {
     white-space: nowrap;
-  }
-
-  .app-shell__sidebar-footer {
-    display: none;
   }
 
   .app-shell__topbar {

@@ -85,9 +85,17 @@
         <% end %>
       <% end %>
     </nav>
-    <div class="app-shell__sidebar-footer" aria-hidden="true">
-      <span class="app-shell__sidebar-footer-dot"></span>
-      <span class="app-shell__sidebar-footer-copy">Stable workspace</span>
+    <div
+      class="app-shell__sidebar-footer"
+      data-controller="workspace-presence"
+      data-action="mouseenter->workspace-presence#enter mouseleave->workspace-presence#leave focusin->workspace-presence#enter focusout->workspace-presence#leave"
+      tabindex="0"
+      >
+      <span class="app-shell__sidebar-footer-dot" data-workspace-presence-target="dot"></span>
+      <span class="app-shell__sidebar-footer-copy" data-workspace-presence-target="label">
+        <span class="app-shell__sidebar-footer-text app-shell__sidebar-footer-text--base">Stable workspace</span>
+        <span class="app-shell__sidebar-footer-text app-shell__sidebar-footer-text--hover"><%= @presence_email %> online</span>
+      </span>
     </div>
   </aside>
   <div class="app-shell__content">
