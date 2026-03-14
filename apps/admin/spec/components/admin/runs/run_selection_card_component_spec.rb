@@ -23,6 +23,6 @@ RSpec.describe Admin::Runs::RunSelectionCardComponent, type: :component do
     expect(rendered_content).to include("Run ##{run.id}")
     expect(rendered_content).to include("verified")
     expect(rendered_content).to include("Open Latest Reliable Run")
-    expect(rendered_content).to include("aria-label=\"Run status: verified\"")
+    expect(rendered_content).to include("aria-label=\"Run status: succeeded\"")
   end
 end

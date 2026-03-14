@@ -19,6 +19,32 @@ module Admin
           "run-reliability-banner--info"
         end
       end
+
+      def state_label
+        case @state
+        when :reliable
+          "Confiable"
+        when :degraded
+          "Degradado"
+        when :loading
+          "Cargando"
+        else
+          "Info"
+        end
+      end
+
+      def state_icon
+        case @state
+        when :reliable
+          "OK"
+        when :degraded
+          "!"
+        when :loading
+          "..."
+        else
+          "i"
+        end
+      end
     end
   end
 end

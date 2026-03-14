@@ -1,0 +1,62 @@
+<section class="validation-issues-panel <%= state_class %>" role="status" aria-live="polite">
+  <header class="validation-issues-panel__header">
+    <div>
+      <p class="validation-issues-panel__eyebrow">Validacion</p>
+      <h3 class="validation-issues-panel__title"><%= @title %></h3>
+    </div>
+    <span class="validation-issues-panel__status" aria-label="Estado de validacion: <%= state_label %>">
+      <span class="validation-issues-panel__status-icon" aria-hidden="true"><%= state_icon %></span>
+      <span class="validation-issues-panel__status-text"><%= state_label %></span>
+    </span>
+  </header>
+  <div class="validation-issues-panel__diagnostic">
+    <div>
+      <p class="validation-issues-panel__label">Que paso</p>
+      <p class="validation-issues-panel__value"><%= @diagnostic[:what_happened] %></p>
+    </div>
+    <div>
+      <p class="validation-issues-panel__label">Impacto</p>
+      <p class="validation-issues-panel__value"><%= @diagnostic[:impact] %></p>
+    </div>
+    <div>
+      <p class="validation-issues-panel__label">Siguiente accion</p>
+      <p class="validation-issues-panel__value"><%= @diagnostic[:next_action] %></p>
+    </div>
+  </div>
+  <% if issues? %>
+    <table class="validation-issues-panel__table" aria-label="Issues de validacion">
+      <thead>
+        <tr>
+          <th>Severidad</th>
+          <th>Fuente</th>
+          <th>Campo</th>
+          <th>Mensaje</th>
+          <th>Timestamp</th>
+          <th>Correlation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @issues.each do |issue| %>
+          <tr>
+            <td>
+              <span
+                class="validation-issues-panel__severity <%= issue_severity_class(issue) %>"
+                aria-label="Severidad: <%= issue_severity_label(issue) %>"
+              >
+                <span class="validation-issues-panel__severity-icon" aria-hidden="true"><%= issue_severity_label(issue)[0] %></span>
+                <span class="validation-issues-panel__severity-text"><%= issue_severity_label(issue) %></span>
+              </span>
+            </td>
+            <td><%= issue[:source] || "-" %></td>
+            <td><%= issue[:field] || "-" %></td>
+            <td><%= issue[:message] || "-" %></td>
+            <td><%= issue[:occurred_at] || "-" %></td>
+            <td><%= issue[:correlation_id] || "-" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="validation-issues-panel__empty">Sin issues de validacion reportados.</p>
+  <% end %>
+</section>

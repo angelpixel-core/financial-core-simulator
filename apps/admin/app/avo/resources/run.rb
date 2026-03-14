@@ -64,6 +64,12 @@ class Avo::Resources::Run < Avo::BaseResource
       end
     end
 
+    panel "Reliability & Validation" do
+      field :run_diagnostics, as: :text, as_html: true, only_on: :show, name: "diagnostics" do
+        view_context.render(Admin::Runs::RunDiagnosticsPanelComponent.new(run: record))
+      end
+    end
+
     panel "Triage drilldown" do
       field :overview_drilldown, as: :text, as_html: true, only_on: :show, name: "overview" do
         view_context.link_to("Open admin overview", view_context.main_app.admin_overview_path, rel: "noopener")
