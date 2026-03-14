@@ -24,27 +24,29 @@
   <% if errors.blank? %>
     <p class="empty-state">No ingestion validation errors.</p>
   <% else %>
-    <table class="top-accounts-table ingestion-errors-table table--striped">
-      <thead>
-        <tr>
-          <th>Source</th>
-          <th>Field</th>
-          <th>Message</th>
-          <th>Occurred</th>
-          <th>Correlation</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% errors.each do |error| %>
-          <tr>
-            <td><%= error[:source] %></td>
-            <td><%= error[:field] %></td>
-            <td><%= error[:message] %></td>
-            <td><%= error[:occurredAt] || "-" %></td>
-            <td><%= error[:correlationId] || "-" %></td>
+    <div class="shad-table-wrap">
+      <table class="shad-table top-accounts-table ingestion-errors-table table--striped">
+        <thead class="shad-table__head">
+          <tr class="shad-table__row shad-table__row--head">
+            <th class="shad-table__th">Source</th>
+            <th class="shad-table__th">Field</th>
+            <th class="shad-table__th">Message</th>
+            <th class="shad-table__th">Occurred</th>
+            <th class="shad-table__th">Correlation</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="shad-table__body">
+          <% errors.each do |error| %>
+            <tr class="shad-table__row">
+              <td class="shad-table__td"><%= error[:source] %></td>
+              <td class="shad-table__td"><%= error[:field] %></td>
+              <td class="shad-table__td"><%= error[:message] %></td>
+              <td class="shad-table__td"><%= error[:occurred_at] || "-" %></td>
+              <td class="shad-table__td"><%= error[:correlation_id] || "-" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   <% end %>
 </article>

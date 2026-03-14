@@ -24,22 +24,22 @@
     </div>
   </div>
   <% if issues? %>
-    <div class="validation-issues-panel__table-container" tabindex="0" aria-label="Tabla de issues de validacion con scroll horizontal">
-      <table class="validation-issues-panel__table" aria-label="Issues de validacion">
-        <thead>
-          <tr>
-            <th>Severidad</th>
-            <th>Fuente</th>
-            <th>Campo</th>
-            <th>Mensaje</th>
-            <th>Timestamp</th>
-            <th>Correlation</th>
+    <div class="validation-issues-panel__table-container shad-table-wrap" tabindex="0" aria-label="Tabla de issues de validacion con scroll horizontal">
+      <table class="validation-issues-panel__table shad-table" aria-label="Issues de validacion">
+        <thead class="shad-table__head">
+          <tr class="shad-table__row shad-table__row--head">
+            <th class="shad-table__th">Severidad</th>
+            <th class="shad-table__th">Fuente</th>
+            <th class="shad-table__th">Campo</th>
+            <th class="shad-table__th">Mensaje</th>
+            <th class="shad-table__th">Timestamp</th>
+            <th class="shad-table__th">Correlation</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="shad-table__body">
           <% @issues.each do |issue| %>
-            <tr>
-              <td>
+            <tr class="shad-table__row">
+              <td class="shad-table__td">
                 <span
                   class="validation-issues-panel__severity <%= issue_severity_class(issue) %>"
                   aria-label="Severidad: <%= issue_severity_label(issue) %>"
@@ -48,11 +48,11 @@
                   <span class="validation-issues-panel__severity-text"><%= issue_severity_label(issue) %></span>
                 </span>
               </td>
-              <td><%= issue[:source] || "-" %></td>
-              <td><%= issue[:field] || "-" %></td>
-              <td><%= issue[:message] || "-" %></td>
-              <td><%= issue[:occurred_at] || "-" %></td>
-              <td><%= issue[:correlation_id] || "-" %></td>
+              <td class="shad-table__td"><%= issue[:source] || "-" %></td>
+              <td class="shad-table__td"><%= issue[:field] || "-" %></td>
+              <td class="shad-table__td"><%= issue[:message] || "-" %></td>
+              <td class="shad-table__td"><%= issue[:occurred_at] || "-" %></td>
+              <td class="shad-table__td"><%= issue[:correlation_id] || "-" %></td>
             </tr>
           <% end %>
         </tbody>
