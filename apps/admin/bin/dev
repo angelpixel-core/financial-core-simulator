@@ -1,2 +1,22 @@
 #!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+
+require "fileutils"
+
+APP_ROOT = File.expand_path("..", __dir__)
+ENV["PORT"] ||= "3000"
+ENV["BINDING"] ||= "0.0.0.0"
+
+Dir.chdir(APP_ROOT) do
+  if File.exist?("Procfile.dev")
+    if system("which overmind > /dev/null 2>&1")
+      exec "overmind", "start", "-f", "Procfile.dev", *ARGV
+    elsif system("which foreman > /dev/null 2>&1")
+      exec "foreman", "start", "-f", "Procfile.dev", *ARGV
+    end
+
+    warn "Foreman/Overmind no encontrado. Ejecuta: gem install foreman"
+    warn "Fallback: iniciando solo Rails server"
+  end
+
+  exec "./bin/rails", "server", *ARGV
+end
