@@ -204,6 +204,27 @@ body {
   justify-content: flex-end;
 }
 
+.app-shell__topbar-links {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.app-shell__topbar-link {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface);
+}
+
+.app-shell__topbar-link:hover {
+  background: var(--surface-soft);
+}
+
 .app-shell__env-badge {
   border: 1px solid var(--border);
   border-radius: 999px;

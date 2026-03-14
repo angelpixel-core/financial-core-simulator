@@ -12,7 +12,11 @@
         <% if item[:disabled] %>
           <span class="<%= classes.join(" ") %>" aria-disabled="true"><%= item[:label] %></span>
         <% else %>
-          <a class="<%= classes.join(" ") %>" href="<%= item[:path] %>"><%= item[:label] %></a>
+          <a
+            class="<%= classes.join(" ") %>"
+            href="<%= item[:path] %>"
+            <%= item[:external] ? "target=\"_blank\" rel=\"noopener noreferrer\"" : "" %>
+          ><%= item[:label] %></a>
         <% end %>
       <% end %>
     </nav>
@@ -33,6 +37,17 @@
         </ol>
       </nav>
       <div class="app-shell__topbar-actions">
+        <% if @topbar_links.any? %>
+          <div class="app-shell__topbar-links" aria-label="Workspace resources">
+            <% @topbar_links.each do |link| %>
+              <a
+                class="app-shell__topbar-link"
+                href="<%= link[:path] %>"
+                <%= link[:external] ? "target=\"_blank\" rel=\"noopener noreferrer\"" : "" %>
+              ><%= link[:label] %></a>
+            <% end %>
+          </div>
+        <% end %>
         <span class="app-shell__env-badge">Env: <%= @environment %></span>
         <% if @secondary_action.present? %>
           <a class="app-shell__cta app-shell__cta--ghost" href="<%= @secondary_action[:path] %>"><%= @secondary_action[:label] %></a>

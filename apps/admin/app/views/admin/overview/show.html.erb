@@ -11,8 +11,12 @@
     { label: "Runs", path: avo.resources_runs_path },
     { label: "Validation", path: admin_overview_ingestion_validation_errors_path },
     { label: "Artifacts", path: avo.resources_runs_path },
-    { label: "Docs", path: "#", disabled: true },
-    { label: "GitHub", path: "#", disabled: true }
+    { label: "Docs", path: @documentation_url, external: true },
+    { label: "GitHub", path: @source_url, external: true }
+  ],
+  topbar_links: [
+    { label: "Docs", path: @documentation_url, external: true },
+    { label: "GitHub", path: @source_url, external: true }
   ],
   breadcrumb: [
     { label: "Workspace", path: admin_overview_path },
