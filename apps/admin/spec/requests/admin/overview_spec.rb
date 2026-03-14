@@ -129,6 +129,32 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("Back to overview")
   end
 
+  it "preserves selected run and critical filters across drilldown navigation" do
+    get "/admin/overview", params: {
+      selected_run: "run-ops-42",
+      run_status: "succeeded",
+      validation_status: "verified",
+      date_range: "last_24h",
+      correlation_id: "corr-42"
+    }, headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("selected_run=run-ops-42")
+    expect(response.body).to include("run_status=succeeded")
+    expect(response.body).to include("validation_status=verified")
+    expect(response.body).to include("date_range=last_24h")
+    expect(response.body).to include("correlation_id=corr-42")
+
+    get "/admin/overview/top-accounts", headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("selected_run=run-ops-42")
+    expect(response.body).to include("run_status=succeeded")
+    expect(response.body).to include("validation_status=verified")
+    expect(response.body).to include("date_range=last_24h")
+    expect(response.body).to include("correlation_id=corr-42")
+  end
+
   it "renders top accounts fragment for xhr polling" do
     get "/admin/overview/top-accounts", headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 

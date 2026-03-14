@@ -6,6 +6,7 @@ class RunArtifactsController < ApplicationController
   require "csv"
   require "cgi"
   require "json"
+  require "rack/utils"
 
   before_action :load_run
   before_action :authorize_artifact_access!
@@ -94,6 +95,7 @@ class RunArtifactsController < ApplicationController
 
     <<~HTML
       <main style="font-family: 'IBM Plex Sans', 'Inter', sans-serif; padding: 16px;">
+        <p style="margin: 0 0 10px;"><a href="#{h(run_details_path)}">Back to run details</a></p>
         <h1 style="margin-top: 0;">CSV Preview: #{CGI.escapeHTML(File.basename(path))}</h1>
         <table style="width: 100%; border-collapse: collapse;">
           <thead style="background: #f2f4f8;"><tr>#{header_cells}</tr></thead>
@@ -155,11 +157,13 @@ class RunArtifactsController < ApplicationController
 
     <<~HTML
       <main style="font-family: 'IBM Plex Sans', 'Inter', sans-serif; padding: 16px;">
+        <p style="margin: 0 0 10px;"><a href="#{h(run_details_path)}">Back to run details</a></p>
         <h1 style="margin-top: 0;">Risk View</h1>
         <p style="margin-top: 0; color: #4a5568;">Per-account risk status, margin ratio, and emitted risk events.</p>
         <section style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px;">#{summary_chips}</section>
         #{pie_chart}
         <form method="get" style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center;">
+          #{navigation_context_hidden_inputs_html}
           <label for="status" style="font-weight: 600;">Status filter</label>
           <select id="status" name="status" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;">#{option_html}</select>
           <button type="submit" style="padding: 4px 10px; border: 1px solid #1a202c; border-radius: 6px; background: #1a202c; color: #fff;">Apply</button>
@@ -268,5 +272,21 @@ class RunArtifactsController < ApplicationController
 
   def h(value)
     CGI.escapeHTML(value.to_s)
+  end
+
+  def run_details_path
+    query = Rack::Utils.build_query(navigation_context_params)
+    base_path = "/admin/resources/runs/#{@run.id}"
+    query.empty? ? base_path : "#{base_path}?#{query}"
+  end
+
+  def navigation_context_params
+    @navigation_context_params ||= Admin::Runs::NavigationContext.capture(params: params, run: @run)
+  end
+
+  def navigation_context_hidden_inputs_html
+    navigation_context_params.map do |key, value|
+      %(<input type="hidden" name="#{h(key)}" value="#{h(value)}" />)
+    end.join
   end
 end

@@ -356,4 +356,36 @@ RSpec.describe "Run artifacts", type: :request do
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
+
+  it "renders context-preserving return link in risk drilldown" do
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-risk-context.json")
+    File.write(path, JSON.generate({ "accounts" => [] }))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      input_hash: "hash-context",
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/risk", params: {
+      selected_run: run.id,
+      run_status: "succeeded",
+      validation_status: "verified",
+      date_range: "last_7d",
+      correlation_id: "corr-ctx"
+    }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Back to run details")
+    expect(response.body).to include("selected_run=#{run.id}")
+    expect(response.body).to include("run_status=succeeded")
+    expect(response.body).to include("validation_status=verified")
+    expect(response.body).to include("date_range=last_7d")
+    expect(response.body).to include("correlation_id=corr-ctx")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
 end

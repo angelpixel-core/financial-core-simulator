@@ -1,15 +1,16 @@
 <% reliable_run = @reliable_selection.reliable_run %>
 <% candidate_run = @reliable_selection.candidate_run %>
+<% navigation_context = @navigation_context || {} %>
 <% primary_cta = {
   label: "Open Latest Reliable Run",
-  path: reliable_run.nil? ? "#" : run_result_path(id: reliable_run.id),
+  path: reliable_run.nil? ? "#" : run_result_path({ id: reliable_run.id }.merge(navigation_context)),
   disabled: reliable_run.nil?
 } %>
 <%= render Admin::Shell::AppShellComponent.new(
   sidebar_items: [
-    { label: "Overview", path: admin_overview_path, active: true },
+    { label: "Overview", path: admin_overview_path(navigation_context), active: true },
     { label: "Runs", path: avo.resources_runs_path },
-    { label: "Validation", path: admin_overview_ingestion_validation_errors_path },
+    { label: "Validation", path: admin_overview_ingestion_validation_errors_path(navigation_context) },
     { label: "Artifacts", path: avo.resources_runs_path },
     { label: "Docs", path: @documentation_url, external: true },
     { label: "GitHub", path: @source_url, external: true }
@@ -19,7 +20,7 @@
     { label: "GitHub", path: @source_url, external: true }
   ],
   breadcrumb: [
-    { label: "Workspace", path: admin_overview_path },
+    { label: "Workspace", path: admin_overview_path(navigation_context) },
     { label: "Overview" }
   ],
   environment: Rails.env,
@@ -34,7 +35,7 @@
         <p class="workspace__subtitle">Estado operativo del sistema y seleccion guiada del ultimo run confiable.</p>
         <div class="workspace__cta-group">
           <% if reliable_run.present? %>
-            <a class="workspace__cta" href="<%= run_result_path(id: reliable_run.id) %>">Open Latest Reliable Run</a>
+            <a class="workspace__cta" href="<%= run_result_path({ id: reliable_run.id }.merge(navigation_context)) %>">Open Latest Reliable Run</a>
           <% else %>
             <span class="workspace__cta workspace__cta--disabled" aria-disabled="true">Open Latest Reliable Run</span>
           <% end %>
@@ -52,7 +53,7 @@
             run: reliable_run,
             title: "Latest reliable run",
             cta_label: "Open Latest Reliable Run",
-            cta_path: run_result_path(id: reliable_run.id),
+            cta_path: run_result_path({ id: reliable_run.id }.merge(navigation_context)),
             highlight: true
           ) %>
         <% elsif candidate_run.present? %>
@@ -60,7 +61,7 @@
             run: candidate_run,
             title: "Latest successful run",
             cta_label: "Open Run Details",
-            cta_path: run_result_path(id: candidate_run.id)
+            cta_path: run_result_path({ id: candidate_run.id }.merge(navigation_context))
           ) %>
         <% else %>
           <article class="run-selection-card run-selection-card--empty" role="status" aria-live="polite">
@@ -118,7 +119,7 @@
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Run trend (14d)</h2>
-            <a class="overview__link" href="<%= admin_overview_runs_trend_path %>">View runs trend</a>
+            <a class="overview__link" href="<%= admin_overview_runs_trend_path(navigation_context) %>">View runs trend</a>
           </header>
           <div
             data-controller="run-trend-chart"
@@ -149,7 +150,7 @@
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Status mix (30d)</h2>
-            <a class="overview__link" href="<%= admin_overview_status_mix_path %>">View status details</a>
+            <a class="overview__link" href="<%= admin_overview_status_mix_path(navigation_context) %>">View status details</a>
           </header>
           <ul class="detail-list">
             <li><span>Queued</span><strong><%= @metrics[:status_mix_30d][:queued] %></strong></li>
@@ -165,7 +166,7 @@
           <header class="dashboard-card__header">
             <h2>Latest succeeded run</h2>
             <% if @metrics[:latest_run].present? %>
-              <a class="overview__link" href="<%= run_result_path(id: @metrics[:latest_run][:id]) %>">View latest run</a>
+              <a class="overview__link" href="<%= run_result_path({ id: @metrics[:latest_run][:id] }.merge(navigation_context)) %>">View latest run</a>
             <% end %>
           </header>
           <% if @metrics[:latest_run].nil? %>
@@ -199,11 +200,11 @@
         <section
           class="overview__live"
           data-controller="poll"
-          data-poll-url-value="<%= admin_overview_top_accounts_path %>"
+          data-poll-url-value="<%= admin_overview_top_accounts_path(navigation_context) %>"
           data-poll-interval-value="12000"
         >
           <div data-poll-target="container">
-            <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: true } %>
+            <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: true, navigation_context: navigation_context } %>
           </div>
         </section>
       </section>
@@ -212,14 +213,15 @@
         <section
           class="overview__live"
           data-controller="poll"
-          data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path(source: @selected_source, field: @selected_field) %>"
+          data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path(navigation_context.merge(source: @selected_source, field: @selected_field)) %>"
           data-poll-interval-value="12000"
         >
           <%= render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
             errors: @ingestion_validation_errors,
             selected_source: @selected_source,
             selected_field: @selected_field,
-            show_drilldown: true
+            show_drilldown: true,
+            navigation_context: navigation_context
           } %>
         </section>
       </section>

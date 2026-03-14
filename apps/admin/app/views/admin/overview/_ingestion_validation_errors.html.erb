@@ -1,15 +1,19 @@
 <article class="dashboard-card">
   <% show_drilldown = local_assigns.fetch(:show_drilldown, false) %>
+  <% navigation_context = local_assigns.fetch(:navigation_context, {}) %>
   <header class="dashboard-card__header">
     <h3>Ingestion validation errors</h3>
     <nav class="dashboard-card__meta-actions" aria-label="Ingestion validation errors actions">
       <p class="dashboard-card__meta">Updated <%= Time.current.strftime("%H:%M:%S") %></p>
       <% if show_drilldown %>
-        <a class="overview__link" href="<%= admin_overview_ingestion_validation_errors_path %>" data-turbo-frame="_top">View ingestion errors</a>
+        <a class="overview__link" href="<%= admin_overview_ingestion_validation_errors_path(navigation_context) %>" data-turbo-frame="_top">View ingestion errors</a>
       <% end %>
     </nav>
   </header>
-  <form id="ingestion-errors-filters-form" method="get" action="<%= admin_overview_ingestion_validation_errors_path %>" data-controller="ingestion-filters" data-turbo-frame="overview-ingestion-validation-errors-panel" data-action="submit->ingestion-filters#syncPollUrl" style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+  <form id="ingestion-errors-filters-form" method="get" action="<%= admin_overview_ingestion_validation_errors_path(navigation_context) %>" data-controller="ingestion-filters" data-turbo-frame="overview-ingestion-validation-errors-panel" data-action="submit->ingestion-filters#syncPollUrl" style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+    <% navigation_context.each do |key, value| %>
+      <input type="hidden" name="<%= key %>" value="<%= value %>" />
+    <% end %>
     <label for="source-filter" style="font-weight: 600;">Source</label>
     <input id="source-filter" name="source" type="text" value="<%= selected_source %>" placeholder="agente.hft.alpha" data-action="input->ingestion-filters#scheduleSubmit" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;" />
     <label for="field-filter" style="font-weight: 600;">Field</label>
