@@ -18,6 +18,7 @@ RSpec.describe Admin::Runs::ArtifactEvidencePanelComponent, type: :component do
       status: :succeeded,
       verification_status: :verified,
       input_hash: "hash-123",
+      valuation_timestamp: Time.utc(2026, 3, 14, 4, 30, 0),
       artifacts: {
         "result_json_path" => result_path.to_s,
         "positions_csv_path" => positions_path.to_s
@@ -35,6 +36,7 @@ RSpec.describe Admin::Runs::ArtifactEvidencePanelComponent, type: :component do
     expect(rendered_content).to include("<dt>input_hash:</dt>")
     expect(rendered_content).to include("<dd>hash-123</dd>")
     expect(rendered_content).to include("<dt>timestamp_utc:</dt>")
+    expect(rendered_content).to include("<dd>2026-03-14T04:30:00Z</dd>")
     expect(rendered_content).to include("<dt>version:</dt>")
     expect(rendered_content).to include("Estado: complete")
   ensure

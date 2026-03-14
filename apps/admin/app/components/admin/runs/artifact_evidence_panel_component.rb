@@ -86,9 +86,10 @@ module Admin
       end
 
       def timestamp_utc
-        return "n/a" if @run.created_at.blank?
+        timestamp = @run.valuation_timestamp || @run.created_at
+        return "n/a" if timestamp.blank?
 
-        @run.created_at.utc.iso8601
+        timestamp.utc.iso8601
       end
 
       def version_label
