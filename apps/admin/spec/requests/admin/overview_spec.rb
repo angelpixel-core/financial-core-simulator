@@ -2,6 +2,7 @@ require "rails_helper"
 require "bcrypt"
 require "json"
 require "nokogiri"
+require "pathname"
 require "tmpdir"
 
 RSpec.describe "Admin overview", type: :request do
@@ -10,15 +11,36 @@ RSpec.describe "Admin overview", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Financial Overview")
-    expect(response.body).to include("SYSTEM")
-    expect(response.body).to include("LATEST RUN")
-    expect(response.body).to include("FINANCIAL")
+    expect(response.body).to include("CONTROL")
+    expect(response.body).to include("SYSTEM STATE")
+    expect(response.body).to include("SIMULATION CONTEXT")
+    expect(response.body).to include("SYSTEM METRICS")
+    expect(response.body).to include("ACTIVITY")
+    expect(response.body).to include("FINANCIAL RESULTS")
     expect(response.body).to include("DATA QUALITY")
     expect(response.body).to include("No succeeded runs yet.")
     expect(response.body).to include("No PnL trend data available yet.")
+    expect(response.body).to include("No simulation context available yet.")
+    expect(response.body).to include("Comparison unavailable (need at least two succeeded runs).")
+    expect(response.body).to include("No traceability metadata available yet.")
     expect(response.body).to include("Run trend (14d)")
     expect(response.body).to include("Status mix (30d)")
     expect(response.body).to include("data-controller=\"poll\"")
+
+    control_index = response.body.index("CONTROL")
+    state_index = response.body.index("SYSTEM STATE")
+    simulation_context_index = response.body.index("SIMULATION CONTEXT")
+    metrics_index = response.body.index("SYSTEM METRICS")
+    activity_index = response.body.index("ACTIVITY")
+    financial_index = response.body.index("FINANCIAL RESULTS")
+    quality_index = response.body.index("DATA QUALITY")
+
+    expect(control_index).to be < state_index
+    expect(state_index).to be < simulation_context_index
+    expect(simulation_context_index).to be < metrics_index
+    expect(metrics_index).to be < activity_index
+    expect(activity_index).to be < financial_index
+    expect(financial_index).to be < quality_index
   end
 
   it "keeps state-first navigation sequence discoverable in the shell" do
@@ -192,6 +214,83 @@ RSpec.describe "Admin overview", type: :request do
       expect(response.body).to include('data-pnl-trend-chart-target="fallback"')
       expect(response.body).to include('data-pnl-trend-chart-tooltip-label-value="Total PnL Quote"')
       expect(response.body).to include("Global total PnL quote over successful runs")
+    end
+  end
+
+  it "renders derived simulation context, run comparison, and traceability cards when data is available" do
+    previous_run = Run.create!(
+      status: :succeeded,
+      created_at: 2.days.ago,
+      input_hash: "deterministic-hash",
+      input_json: {
+        "schemaVersion" => "1.0",
+        "dataset" => "demo_input.json",
+        "events" => [
+          { "eventId" => "evt-1", "marketId" => "BTC-USD" },
+          { "eventId" => "evt-2", "marketId" => "ETH-USD" }
+        ],
+        "accounts" => [ { "accountId" => "acc-1" }, { "accountId" => "acc-2" } ]
+      }
+    )
+
+    latest_run = Run.create!(
+      status: :succeeded,
+      created_at: 1.day.ago,
+      input_hash: "deterministic-hash",
+      schema_version: "1.0",
+      engine_version: "0.1.0",
+      input_json: {
+        "schemaVersion" => "1.0",
+        "dataset" => "demo_input.json",
+        "events" => [
+          { "eventId" => "evt-1", "marketId" => "BTC-USD" },
+          { "eventId" => "evt-2", "marketId" => "ETH-USD" }
+        ],
+        "accounts" => [ { "accountId" => "acc-1" }, { "accountId" => "acc-2" } ]
+      }
+    )
+
+    Dir.mktmpdir do |dir|
+      previous_path = File.join(dir, "result-previous.json")
+      latest_path = File.join(dir, "result-latest.json")
+      positions_path = File.join(dir, "positions.csv")
+      pnl_path = File.join(dir, "pnl.csv")
+
+      payload = {
+        "global" => {
+          "totalPnLQuote" => "42.25",
+          "realizedNetPnLQuote" => "21.0",
+          "unrealizedPnLQuote" => "21.25"
+        },
+        "accounts" => [
+          { "accountId" => "acc-1", "totals" => { "totalPnLQuote" => "20.0" } },
+          { "accountId" => "acc-2", "totals" => { "totalPnLQuote" => "22.25" } }
+        ]
+      }
+
+      File.write(previous_path, JSON.pretty_generate(payload))
+      File.write(latest_path, JSON.pretty_generate(payload))
+      File.write(positions_path, "account,qty\nacc-1,10\n")
+      File.write(pnl_path, "account,total\nacc-1,42.25\n")
+
+      previous_run.update!(artifacts: { "result_json_path" => previous_path })
+      latest_run.update!(artifacts: {
+        "result_json_path" => latest_path,
+        "positions_csv_path" => positions_path,
+        "pnl_csv_path" => pnl_path
+      })
+
+      get "/admin/overview", headers: admin_session_headers
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("SIMULATION CONTEXT")
+      expect(response.body).to include("demo_input.json")
+      expect(response.body).to include("Run comparison")
+      expect(response.body).to include("Identical output for matching input hash.")
+      expect(response.body).to include("Input traceability")
+      expect(response.body).to include(Pathname(latest_path).relative_path_from(Rails.root).to_s)
+      expect(response.body).to include(Pathname(positions_path).relative_path_from(Rails.root).to_s)
+      expect(response.body).to include(Pathname(pnl_path).relative_path_from(Rails.root).to_s)
     end
   end
 

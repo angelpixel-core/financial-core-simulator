@@ -262,23 +262,41 @@ body {
   color: var(--text);
   background: rgba(15, 23, 42, 0.7);
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.app-shell__mobile-nav-toggle-title {
-  display: block;
-  font-size: 13px;
+.app-shell__mobile-nav-toggle-brand-copy {
+  display: grid;
+  gap: 2px;
 }
 
-.app-shell__mobile-nav-toggle-copy {
-  display: block;
-  margin-top: 3px;
-  font-size: 11px;
+.app-shell__mobile-nav-toggle-icon {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.3);
   color: var(--muted);
-  font-weight: 500;
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.app-shell__mobile-nav-toggle-icon svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 180ms ease;
 }
 
 .app-shell__mobile-nav-toggle::-webkit-details-marker {
   display: none;
+}
+
+.app-shell__mobile-nav[open] .app-shell__mobile-nav-toggle-icon svg {
+  transform: rotate(180deg);
 }
 
 .app-shell__mobile-nav-sheet {
@@ -1424,6 +1442,13 @@ body {
   font-weight: 700;
 }
 
+.overview__state-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
 .kpi-card,
 .dashboard-card {
   background: var(--surface);
@@ -1840,11 +1865,91 @@ body {
     background: #0b1322;
   }
 
+  .app-shell__sidebar-header {
+    display: none;
+  }
+
+  .app-shell__mobile-nav {
+    display: block;
+    position: relative;
+  }
+
+  .app-shell__nav--desktop {
+    display: none;
+  }
+
+  .app-shell__collapse-toggle {
+    display: none;
+  }
+
+  .app-shell__mobile-nav-toggle {
+    width: 100%;
+  }
+
+  .app-shell__mobile-nav-sheet {
+    display: grid;
+    position: static;
+    margin-top: 8px;
+    max-height: 0;
+    overflow: auto;
+    opacity: 0;
+    transform: translateY(-6px);
+    padding: 0 8px;
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgba(2, 6, 23, 0.3);
+    transition: max-height 220ms ease, opacity 200ms ease, transform 200ms ease, padding 200ms ease, border-color 200ms ease;
+  }
+
+  .app-shell__mobile-nav[open] .app-shell__mobile-nav-sheet {
+    max-height: min(60vh, 420px);
+    opacity: 1;
+    transform: translateY(0);
+    padding: 8px;
+    border-color: rgba(148, 163, 184, 0.24);
+  }
+
+  .app-shell__mobile-nav-sheet .app-shell__nav-link,
+  .app-shell__mobile-nav-sheet .app-shell__nav-link--disabled {
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .app-shell--sidebar-collapsed .app-shell__sidebar-header,
+  .app-shell--sidebar-collapsed .app-shell__brand {
+    justify-content: flex-start;
+  }
+
+  .app-shell--sidebar-collapsed .app-shell__brand-copy {
+    display: grid;
+  }
+
+  .app-shell--sidebar-collapsed .app-shell__mobile-nav {
+    display: block;
+  }
+
+  .app-shell--sidebar-collapsed .app-shell__brand--panel {
+    padding: 10px;
+  }
+
+  .app-shell--sidebar-collapsed .app-shell__mobile-nav-sheet .app-shell__nav-link,
+  .app-shell--sidebar-collapsed .app-shell__mobile-nav-sheet .app-shell__nav-link--disabled {
+    justify-content: flex-start;
+    padding: 10px 12px;
+  }
+
+  .app-shell--sidebar-collapsed .app-shell__mobile-nav-sheet .app-shell__nav-label {
+    display: inline;
+  }
+
   .app-shell__topbar {
     position: relative;
   }
 
   .workspace__hero {
+    grid-template-columns: 1fr;
+  }
+
+  .overview__state-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1893,24 +1998,6 @@ body {
   .app-shell__sidebar {
     gap: 12px;
     padding: 14px 12px;
-  }
-
-  .app-shell__mobile-nav {
-    display: block;
-  }
-
-  .app-shell__collapse-toggle {
-    display: none;
-  }
-
-  .app-shell__nav--desktop {
-    display: none;
-  }
-
-  .app-shell__mobile-nav-sheet .app-shell__nav-link,
-  .app-shell__mobile-nav-sheet .app-shell__nav-link--disabled {
-    white-space: nowrap;
-    width: 100%;
   }
 
   .app-shell__nav-link,

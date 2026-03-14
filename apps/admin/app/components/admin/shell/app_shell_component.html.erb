@@ -31,8 +31,16 @@
     </div>
     <details class="app-shell__mobile-nav">
       <summary class="app-shell__mobile-nav-toggle" aria-label="Abrir menu de navegacion">
-        <span class="app-shell__mobile-nav-toggle-title">Menu</span>
-        <span class="app-shell__mobile-nav-toggle-copy">Navegacion del workspace</span>
+        <span class="app-shell__brand-mark" aria-hidden="true">FCS</span>
+        <span class="app-shell__mobile-nav-toggle-brand-copy">
+          <span class="app-shell__brand-title">FCS Workspace</span>
+          <span class="app-shell__brand-subtitle">Ops Console</span>
+        </span>
+        <span class="app-shell__mobile-nav-toggle-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </span>
       </summary>
       <nav class="app-shell__mobile-nav-sheet" aria-label="Workspace navigation mobile">
         <p class="app-shell__nav-group-label">Navigation</p>
@@ -129,14 +137,18 @@
             <% end %>
           </div>
         <% end %>
-        <span class="app-shell__env-badge">Env: <%= @environment %></span>
+        <% if @environment.present? %>
+          <span class="app-shell__env-badge">Env: <%= @environment %></span>
+        <% end %>
         <% if @secondary_action.present? %>
           <a class="app-shell__cta app-shell__cta--ghost" href="<%= @secondary_action[:path] %>"><%= @secondary_action[:label] %></a>
         <% end %>
-        <% if @primary_action[:disabled] %>
-          <span class="app-shell__cta app-shell__cta--disabled" aria-disabled="true"><%= @primary_action[:label] %></span>
-        <% else %>
-          <a class="app-shell__cta" href="<%= @primary_action[:path] %>"><%= @primary_action[:label] %></a>
+        <% if @primary_action.present? %>
+          <% if @primary_action[:disabled] %>
+            <span class="app-shell__cta app-shell__cta--disabled" aria-disabled="true"><%= @primary_action[:label] %></span>
+          <% else %>
+            <a class="app-shell__cta" href="<%= @primary_action[:path] %>"><%= @primary_action[:label] %></a>
+          <% end %>
         <% end %>
       </div>
     </header>

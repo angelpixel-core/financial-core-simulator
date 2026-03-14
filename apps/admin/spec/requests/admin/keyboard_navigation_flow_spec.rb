@@ -55,6 +55,6 @@ RSpec.describe "Admin keyboard navigation flow", type: :request do
   end
 
   def admin_session_headers
-    { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
+    { "X-Admin-User" => "alice", "X-Admin-Role" => "admin" }
   end
 end

@@ -4,11 +4,6 @@
 <% run_details_path = ->(run_id) { avo.resources_run_path({ id: run_id }.merge(navigation_context)) } %>
 <% artifacts_run = reliable_run || candidate_run %>
 <% artifacts_path = artifacts_run.nil? ? avo.resources_runs_path : run_result_path({ id: artifacts_run.id }.merge(navigation_context)) %>
-<% primary_cta = {
-  label: "Open Latest Reliable Run",
-  path: reliable_run.nil? ? "#" : run_details_path.call(reliable_run.id),
-  disabled: reliable_run.nil?
-} %>
 <% shell_role = admin_shell_role %>
 <% secondary_action = shell_role == "operator" ? nil : { label: "Open Runs", path: avo.resources_runs_path } %>
 <% sidebar_items = [
@@ -33,17 +28,17 @@
     { label: "Workspace", path: admin_overview_path(navigation_context) },
     { label: "Overview" }
   ],
-  environment: Rails.env,
+  environment: nil,
   presence_email: admin_shell_account_email,
-  primary_action: primary_cta,
+  primary_action: nil,
   secondary_action: secondary_action
 ) do %>
   <main class="workspace">
     <section class="workspace__hero">
       <div class="workspace__intro">
-        <p class="workspace__eyebrow">Workspace</p>
+        <p class="workspace__eyebrow">CONTROL</p>
         <h1>Financial Overview</h1>
-        <p class="workspace__subtitle">Estado operativo del sistema y seleccion guiada del ultimo run confiable.</p>
+        <p class="workspace__subtitle">Deterministic financial engine workspace.</p>
         <div class="workspace__cta-group">
           <% if reliable_run.present? %>
             <a class="workspace__cta" href="<%= run_details_path.call(reliable_run.id) %>">Open Latest Reliable Run</a>
@@ -53,53 +48,87 @@
         </div>
       </div>
       <div class="workspace__focus">
-        <%= render Admin::Runs::RunReliabilityBannerComponent.new(
-          state: @reliable_selection.state,
-          title: "Reliability status",
-          diagnostic: @reliable_selection.diagnostic
-        ) %>
-        <% if reliable_run.present? %>
-          <%= render Admin::Runs::RunSelectionCardComponent.new(
-            run: reliable_run,
-            title: "Latest reliable run",
-            cta_label: "Open Latest Reliable Run",
-            cta_path: run_details_path.call(reliable_run.id),
-            highlight: true
-          ) %>
-        <% elsif candidate_run.present? %>
-          <%= render Admin::Runs::RunSelectionCardComponent.new(
-            run: candidate_run,
-            title: "Latest successful run",
-            cta_label: "Open Run Details",
-            cta_path: run_details_path.call(candidate_run.id)
-          ) %>
-        <% else %>
-          <article class="run-selection-card run-selection-card--empty" role="status" aria-live="polite">
-            <header>
-              <p class="run-selection-card__eyebrow">Sin run confiable</p>
-              <h2 class="run-selection-card__title">Seleccion degradada</h2>
-            </header>
-            <div class="run-selection-card__diagnostic">
-              <div>
-                <p class="run-selection-card__label">Que paso</p>
-                <p class="run-selection-card__value"><%= @reliable_selection.diagnostic[:what_happened] %></p>
-              </div>
-              <div>
-                <p class="run-selection-card__label">Impacto</p>
-                <p class="run-selection-card__value"><%= @reliable_selection.diagnostic[:impact] %></p>
-              </div>
-              <div>
-                <p class="run-selection-card__label">Siguiente accion</p>
-                <p class="run-selection-card__value"><%= @reliable_selection.diagnostic[:next_action] %></p>
-              </div>
-            </div>
-          </article>
-        <% end %>
+        <section class="dashboard-card" aria-label="Engine context">
+          <header class="dashboard-card__header">
+            <h2>Engine</h2>
+            <p class="dashboard-card__meta">Environment: <%= Rails.env %></p>
+          </header>
+          <ul class="detail-list">
+            <li><span>Engine version</span><strong><%= @metrics.dig(:latest_run, :engine_version) || "N/A" %></strong></li>
+            <li><span>Schema version</span><strong><%= @metrics.dig(:latest_run, :schema_version) || "N/A" %></strong></li>
+            <li><span>Input hash</span><strong><%= @metrics.dig(:latest_run, :input_hash).presence || "N/A" %></strong></li>
+          </ul>
+        </section>
       </div>
     </section>
     <section class="workspace__overview">
-      <section class="overview__domain" aria-label="SYSTEM">
-        <h2 class="overview__domain-title">SYSTEM</h2>
+      <section class="overview__domain" aria-label="SYSTEM STATE">
+        <h2 class="overview__domain-title">SYSTEM STATE</h2>
+        <div class="overview__state-grid">
+          <%= render Admin::Runs::RunReliabilityBannerComponent.new(
+            state: @reliable_selection.state,
+            title: "Reliability status",
+            diagnostic: @reliable_selection.diagnostic
+          ) %>
+          <% if reliable_run.present? %>
+            <%= render Admin::Runs::RunSelectionCardComponent.new(
+              run: reliable_run,
+              title: "Latest reliable run",
+              cta_label: "Open Latest Reliable Run",
+              cta_path: run_details_path.call(reliable_run.id),
+              highlight: true
+            ) %>
+          <% elsif candidate_run.present? %>
+            <%= render Admin::Runs::RunSelectionCardComponent.new(
+              run: candidate_run,
+              title: "Latest successful run",
+              cta_label: "Open Run Details",
+              cta_path: run_details_path.call(candidate_run.id)
+            ) %>
+          <% else %>
+            <article class="run-selection-card run-selection-card--empty" role="status" aria-live="polite">
+              <header>
+                <p class="run-selection-card__eyebrow">No reliable run</p>
+                <h2 class="run-selection-card__title">Degraded selection</h2>
+              </header>
+              <div class="run-selection-card__diagnostic">
+                <div>
+                  <p class="run-selection-card__label">What happened</p>
+                  <p class="run-selection-card__value"><%= @reliable_selection.diagnostic[:what_happened] %></p>
+                </div>
+                <div>
+                  <p class="run-selection-card__label">Impact</p>
+                  <p class="run-selection-card__value"><%= @reliable_selection.diagnostic[:impact] %></p>
+                </div>
+                <div>
+                  <p class="run-selection-card__label">Next action</p>
+                  <p class="run-selection-card__value"><%= @reliable_selection.diagnostic[:next_action] %></p>
+                </div>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      </section>
+      <section class="overview__domain" aria-label="SIMULATION CONTEXT">
+        <h2 class="overview__domain-title">SIMULATION CONTEXT</h2>
+        <section class="dashboard-card">
+          <% if @metrics[:simulation_context].nil? %>
+            <p class="empty-state">No simulation context available yet.</p>
+          <% else %>
+            <% simulation_context = @metrics[:simulation_context] %>
+            <ul class="detail-list">
+              <li><span>Dataset</span><strong><%= simulation_context[:dataset] || "N/A" %></strong></li>
+              <li><span>Accounts</span><strong><%= simulation_context[:accounts_count] || "N/A" %></strong></li>
+              <li><span>Events</span><strong><%= simulation_context[:events_count] || "N/A" %></strong></li>
+              <li><span>Markets</span><strong><%= simulation_context[:markets] || "N/A" %></strong></li>
+              <li><span>Input hash</span><strong><%= simulation_context[:input_hash].presence || "N/A" %></strong></li>
+              <li><span>Deterministic</span><strong><%= simulation_context[:deterministic] || "N/A" %></strong></li>
+            </ul>
+          <% end %>
+        </section>
+      </section>
+      <section class="overview__domain" aria-label="SYSTEM METRICS">
+        <h2 class="overview__domain-title">SYSTEM METRICS</h2>
         <section class="overview__grid overview__grid--kpi">
           <%= render Admin::Dashboard::KpiCardComponent.new(
             title: "Total runs (7d)",
@@ -126,6 +155,9 @@
             counter: @metrics[:avg_duration_ms_last_50].nil? ? nil : { final: @metrics[:avg_duration_ms_last_50], kind: "milliseconds", precision: 1 }
           ) %>
         </section>
+      </section>
+      <section class="overview__domain" aria-label="ACTIVITY">
+        <h2 class="overview__domain-title">ACTIVITY</h2>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Run trend (14d)</h2>
@@ -172,6 +204,9 @@
             <li><span>Failed</span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
           </ul>
         </section>
+      </section>
+      <section class="overview__domain" aria-label="FINANCIAL RESULTS">
+        <h2 class="overview__domain-title">FINANCIAL RESULTS</h2>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>PnL trend</h2>
@@ -205,9 +240,6 @@
             </div>
           <% end %>
         </section>
-      </section>
-      <section class="overview__domain" aria-label="LATEST RUN">
-        <h2 class="overview__domain-title">LATEST RUN</h2>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Latest succeeded run</h2>
@@ -227,9 +259,6 @@
             </ul>
           <% end %>
         </section>
-      </section>
-      <section class="overview__domain" aria-label="FINANCIAL">
-        <h2 class="overview__domain-title">FINANCIAL</h2>
         <section class="dashboard-card">
           <h2>Global PnL (latest succeeded run)</h2>
           <% if @metrics[:latest_global].nil? %>
@@ -252,6 +281,41 @@
           <div data-poll-target="container">
             <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: true, navigation_context: navigation_context } %>
           </div>
+        </section>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Run comparison</h2>
+          </header>
+          <% run_comparison = @metrics[:run_comparison] %>
+          <% if run_comparison.nil? || run_comparison[:previous_run_id].nil? %>
+            <p class="empty-state">Comparison unavailable (need at least two succeeded runs).</p>
+          <% else %>
+            <ul class="detail-list">
+              <li><span>Current run</span><strong>#<%= run_comparison[:current_run_id] %></strong></li>
+              <li><span>Previous run</span><strong>#<%= run_comparison[:previous_run_id] %></strong></li>
+              <li><span>PnL delta</span><strong><%= run_comparison[:total_pnl_delta] || "N/A" %></strong></li>
+              <li><span>Realized delta</span><strong><%= run_comparison[:realized_delta] || "N/A" %></strong></li>
+              <li><span>Unrealized delta</span><strong><%= run_comparison[:unrealized_delta] || "N/A" %></strong></li>
+            </ul>
+            <p class="dashboard-card__meta"><%= run_comparison[:deterministic_result] %></p>
+          <% end %>
+        </section>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Input traceability</h2>
+          </header>
+          <% traceability = @metrics[:input_traceability] %>
+          <% if traceability.nil? %>
+            <p class="empty-state">No traceability metadata available yet.</p>
+          <% else %>
+            <ul class="detail-list">
+              <li><span>Dataset</span><strong><%= traceability[:dataset] || "N/A" %></strong></li>
+              <li><span>Input hash</span><strong><%= traceability[:input_hash].presence || "N/A" %></strong></li>
+              <li><span>result.json</span><strong><%= traceability.dig(:artifacts, :result_json_path).presence || "N/A" %></strong></li>
+              <li><span>positions.csv</span><strong><%= traceability.dig(:artifacts, :positions_csv_path).presence || "N/A" %></strong></li>
+              <li><span>pnl.csv</span><strong><%= traceability.dig(:artifacts, :pnl_csv_path).presence || "N/A" %></strong></li>
+            </ul>
+          <% end %>
         </section>
       </section>
       <section class="overview__domain" aria-label="DATA QUALITY">

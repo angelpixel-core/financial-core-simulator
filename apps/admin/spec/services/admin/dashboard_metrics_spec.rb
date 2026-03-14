@@ -1,5 +1,6 @@
 require "rails_helper"
 require "json"
+require "pathname"
 require "tmpdir"
 
 RSpec.describe Admin::DashboardMetrics do
@@ -14,6 +15,9 @@ RSpec.describe Admin::DashboardMetrics do
       expect(metrics[:runs_trend_14d].length).to eq(14)
       expect(metrics[:status_mix_30d]).to eq(queued: 0, running: 0, succeeded: 0, failed: 0)
       expect(metrics[:latest_run]).to be_nil
+      expect(metrics[:simulation_context]).to be_nil
+      expect(metrics[:run_comparison]).to be_nil
+      expect(metrics[:input_traceability]).to be_nil
       expect(metrics[:latest_global]).to be_nil
       expect(metrics[:top_accounts]).to eq([])
       expect(metrics[:pnl_trend]).to eq([])
@@ -62,6 +66,27 @@ RSpec.describe Admin::DashboardMetrics do
         expect(metrics[:runs_trend_14d].map { |point| point[:count] }.sum).to eq(1)
         expect(metrics[:status_mix_30d]).to eq(queued: 0, running: 0, succeeded: 1, failed: 0)
         expect(metrics[:latest_run][:id]).to eq(run.id)
+        expect(metrics[:simulation_context]).to include(
+          dataset: "N/A",
+          accounts_count: 2,
+          events_count: nil,
+          markets: nil,
+          deterministic: "YES"
+        )
+        expect(metrics[:run_comparison]).to include(
+          current_run_id: run.id,
+          previous_run_id: nil,
+          deterministic_result: "Comparison unavailable (need at least two succeeded runs)."
+        )
+        expect(metrics[:input_traceability]).to include(
+          dataset: "N/A",
+          input_hash: "abc123"
+        )
+        expect(metrics[:input_traceability][:artifacts]).to include(
+          result_json_path: Pathname(json_path).relative_path_from(Rails.root).to_s,
+          positions_csv_path: nil,
+          pnl_csv_path: nil
+        )
         expect(metrics[:latest_global]["totalPnLQuote"]).to eq("10.5")
         expect(metrics[:top_accounts].first[:account_id]).to eq("acc-2")
         expect(metrics[:pnl_trend].length).to eq(1)
@@ -240,6 +265,90 @@ RSpec.describe Admin::DashboardMetrics do
           total_pnl_quote: "42.25",
           timestamp: "2026-03-14T04:00:00Z",
           label: "03-14 04:00 UTC"
+        )
+      end
+    end
+
+    it "computes run comparison deltas and traceability fields from latest and previous succeeded runs" do
+      previous_run = Run.create!(
+        status: :succeeded,
+        created_at: 2.days.ago,
+        input_hash: "same-hash",
+        input_json: {
+          "dataset" => "demo_input.json",
+          "events" => [ { "marketId" => "BTC-USD" }, { "marketId" => "ETH-USD" } ],
+          "accounts" => [ { "accountId" => "acc-1" }, { "accountId" => "acc-2" } ]
+        }
+      )
+      latest_run = Run.create!(
+        status: :succeeded,
+        created_at: 1.day.ago,
+        input_hash: "same-hash",
+        input_json: {
+          "dataset" => "demo_input.json",
+          "events" => [ { "marketId" => "BTC-USD" }, { "marketId" => "ETH-USD" } ],
+          "accounts" => [ { "accountId" => "acc-1" }, { "accountId" => "acc-2" } ]
+        }
+      )
+
+      Dir.mktmpdir do |dir|
+        previous_path = File.join(dir, "previous.json")
+        latest_path = File.join(dir, "latest.json")
+        positions_path = File.join(dir, "positions.csv")
+        pnl_path = File.join(dir, "pnl.csv")
+
+        File.write(previous_path, JSON.pretty_generate({
+          "global" => {
+            "totalPnLQuote" => "40.00",
+            "realizedNetPnLQuote" => "20.00",
+            "unrealizedPnLQuote" => "20.00"
+          }
+        }))
+        File.write(latest_path, JSON.pretty_generate({
+          "global" => {
+            "totalPnLQuote" => "42.25",
+            "realizedNetPnLQuote" => "21.00",
+            "unrealizedPnLQuote" => "21.25"
+          }
+        }))
+        File.write(positions_path, "account,qty\nacc-1,10\n")
+        File.write(pnl_path, "account,total\nacc-1,42.25\n")
+
+        previous_run.update!(artifacts: { "result_json_path" => previous_path })
+        latest_run.update!(artifacts: {
+          "result_json_path" => latest_path,
+          "positions_csv_path" => positions_path,
+          "pnl_csv_path" => pnl_path
+        })
+
+        metrics = described_class.new.call
+
+        expect(metrics[:simulation_context]).to include(
+          dataset: "demo_input.json",
+          accounts_count: 2,
+          events_count: 2,
+          markets: "BTC-USD, ETH-USD",
+          input_hash: "same-hash",
+          deterministic: "YES"
+        )
+
+        expect(metrics[:run_comparison]).to include(
+          current_run_id: latest_run.id,
+          previous_run_id: previous_run.id,
+          total_pnl_delta: "2.25",
+          realized_delta: "1.0",
+          unrealized_delta: "1.25"
+        )
+        expect(metrics[:run_comparison][:deterministic_result]).to eq("Differences detected between latest runs.")
+
+        expect(metrics[:input_traceability]).to include(
+          dataset: "demo_input.json",
+          input_hash: "same-hash"
+        )
+        expect(metrics[:input_traceability][:artifacts]).to include(
+          result_json_path: Pathname(latest_path).relative_path_from(Rails.root).to_s,
+          positions_csv_path: Pathname(positions_path).relative_path_from(Rails.root).to_s,
+          pnl_csv_path: Pathname(pnl_path).relative_path_from(Rails.root).to_s
         )
       end
     end
