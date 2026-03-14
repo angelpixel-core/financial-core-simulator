@@ -276,7 +276,7 @@ class RunArtifactsController < ApplicationController
 
   def run_details_path
     query = Rack::Utils.build_query(navigation_context_params)
-    base_path = "/admin/resources/runs/#{@run.id}"
+    base_path = helpers.avo.resources_run_path(id: @run.id)
     query.empty? ? base_path : "#{base_path}?#{query}"
   end
 
