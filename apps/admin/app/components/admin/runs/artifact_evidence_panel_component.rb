@@ -64,6 +64,14 @@ module Admin
         end
       end
 
+      def status_label(state)
+        case state
+        when :complete then "Completo"
+        when :partial then "Parcial"
+        else "No disponible"
+        end
+      end
+
       private
 
       def action(label, helper_name, attribute, extra_params = {})

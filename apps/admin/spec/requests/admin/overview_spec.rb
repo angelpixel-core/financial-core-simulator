@@ -19,6 +19,22 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("data-controller=\"poll\"")
   end
 
+  it "keeps state-first navigation sequence discoverable in the shell" do
+    get "/admin/overview", headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Open Latest Reliable Run")
+
+    overview_index = response.body.index("Overview")
+    runs_index = response.body.index("Runs")
+    validation_index = response.body.index("Validation")
+    artifacts_index = response.body.index("Artifacts")
+
+    expect(overview_index).to be < runs_index
+    expect(runs_index).to be < validation_index
+    expect(validation_index).to be < artifacts_index
+  end
+
   it "renders authenticated shell identity and logout affordance on overview" do
     Account.create!(
       email: "ops-shell@example.com",

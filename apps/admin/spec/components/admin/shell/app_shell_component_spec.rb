@@ -28,5 +28,9 @@ RSpec.describe Admin::Shell::AppShellComponent, type: :component do
     expect(rendered_content).to include("Main content")
     expect(rendered_content).to include("aria-label=\"Workspace navigation\"")
     expect(rendered_content).to include("aria-label=\"Workspace topbar\"")
+    expect(rendered_content).to include("Saltar al contenido principal")
+    expect(rendered_content).to include("href=\"#workspace-main\"")
+    expect(rendered_content).to include("aria-current=&quot;page&quot;")
+    expect(rendered_content).to include("id=\"workspace-main\"")
   end
 end

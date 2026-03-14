@@ -73,5 +73,7 @@ RSpec.describe Admin::Runs::ValidationIssuesPanelComponent, type: :component do
     expect(rendered_content).to include("Issues de validacion")
     expect(rendered_content).to include("Severidad")
     expect(rendered_content).to include("Severidad: Error")
+    expect(rendered_content).to include("validation-issues-panel__table-container")
+    expect(rendered_content).to include("tabindex=\"0\"")
   end
 end

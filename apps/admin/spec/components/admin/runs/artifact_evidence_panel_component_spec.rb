@@ -38,7 +38,8 @@ RSpec.describe Admin::Runs::ArtifactEvidencePanelComponent, type: :component do
     expect(rendered_content).to include("<dt>timestamp_utc:</dt>")
     expect(rendered_content).to include("<dd>2026-03-14T04:30:00Z</dd>")
     expect(rendered_content).to include("<dt>version:</dt>")
-    expect(rendered_content).to include("Estado: complete")
+    expect(rendered_content).to include("Estado: Completo")
+    expect(rendered_content).to include("role=\"status\"")
   ensure
     FileUtils.rm_f(result_path) if defined?(result_path)
     FileUtils.rm_f(positions_path) if defined?(positions_path)
@@ -49,7 +50,7 @@ RSpec.describe Admin::Runs::ArtifactEvidencePanelComponent, type: :component do
 
     render_inline(described_class.new(run: run))
 
-    expect(rendered_content).to include("Estado: unavailable")
+    expect(rendered_content).to include("Estado: No disponible")
     expect(rendered_content).to include("aria-label=\"Estado del artifact unavailable\"")
   end
 
@@ -68,7 +69,7 @@ RSpec.describe Admin::Runs::ArtifactEvidencePanelComponent, type: :component do
     render_inline(described_class.new(run: run))
 
     expect(rendered_content).to include("Abrir result.json (Unavailable)")
-    expect(rendered_content).to include("Estado: unavailable")
+    expect(rendered_content).to include("Estado: No disponible")
   ensure
     FileUtils.remove_entry(outside_dir) if defined?(outside_dir)
   end
