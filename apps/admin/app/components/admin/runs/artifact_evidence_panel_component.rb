@@ -78,7 +78,7 @@ module Admin
         return { label: label, href: nil } if resolved_path_for(attribute).nil?
 
         params = @context_params.merge(extra_params)
-        { label: label, href: helpers.public_send(helper_name, { id: @run.id }.merge(params)) }
+        { label: label, href: route_path(helper_name, { id: @run.id }.merge(params)) }
       end
 
       def status_for(attribute)
@@ -91,6 +91,12 @@ module Admin
       def resolved_path_for(attribute)
         @resolved_paths ||= {}
         @resolved_paths[attribute] ||= Artifacts::PathResolver.new(run: @run, attribute: attribute).call
+      end
+
+      def route_path(helper_name, params)
+        return helpers.public_send(helper_name, params) if helpers.respond_to?(helper_name)
+
+        helpers.main_app.public_send(helper_name, params)
       end
 
       def timestamp_utc
