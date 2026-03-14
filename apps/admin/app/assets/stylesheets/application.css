@@ -1523,6 +1523,19 @@ body {
   }
 }
 
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app-shell__topbar-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .workspace__cta-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 767px) {
   .app-shell__sidebar {
     gap: 12px;
