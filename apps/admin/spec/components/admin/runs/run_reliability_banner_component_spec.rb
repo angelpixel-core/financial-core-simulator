@@ -23,4 +23,36 @@ RSpec.describe Admin::Runs::RunReliabilityBannerComponent, type: :component do
     expect(rendered_content).to include("role=\"status\"")
     expect(rendered_content).to include("aria-live=\"polite\"")
   end
+
+  it "renders a reliable state banner" do
+    diagnostic = {
+      what_happened: "Run verificado",
+      impact: "Todo ok",
+      next_action: "Continuar"
+    }
+
+    render_inline(described_class.new(
+      state: :reliable,
+      title: "Reliability status",
+      diagnostic: diagnostic
+    ))
+
+    expect(rendered_content).to include("run-reliability-banner--reliable")
+  end
+
+  it "renders a loading state banner" do
+    diagnostic = {
+      what_happened: "Cargando",
+      impact: "Esperando datos",
+      next_action: "Reintenta"
+    }
+
+    render_inline(described_class.new(
+      state: :loading,
+      title: "Reliability status",
+      diagnostic: diagnostic
+    ))
+
+    expect(rendered_content).to include("run-reliability-banner--loading")
+  end
 end

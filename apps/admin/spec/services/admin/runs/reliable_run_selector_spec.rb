@@ -25,5 +25,16 @@ RSpec.describe Admin::Runs::ReliableRunSelector do
       expect(result.diagnostic[:impact]).to be_present
       expect(result.diagnostic[:next_action]).to be_present
     end
+
+    it "returns empty degraded state when no runs exist" do
+      result = described_class.new.call
+
+      expect(result.reliable_run).to be_nil
+      expect(result.candidate_run).to be_nil
+      expect(result.state).to eq(:degraded)
+      expect(result.diagnostic[:what_happened]).to be_present
+      expect(result.diagnostic[:impact]).to be_present
+      expect(result.diagnostic[:next_action]).to be_present
+    end
   end
 end
