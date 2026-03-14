@@ -1,11 +1,25 @@
 import { Controller } from "@hotwired/stimulus"
-import * as echarts from "echarts"
+import React from "react"
+import { createRoot } from "react-dom/client"
+import {
+  ResponsiveContainer,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar
+} from "recharts"
 
 export default class extends Controller {
   static targets = ["chart", "fallback"]
   static values = {
     points: Array,
     title: { type: String, default: "Run trend (14d)" },
+    chartKind: { type: String, default: "bar" },
+    tooltipLabel: { type: String, default: "Day" },
+    tooltipCountLabel: { type: String, default: "Runs" },
     animationMode: { type: String, default: "proportional" },
     baseDuration: { type: Number, default: 260 },
     maxExtraDuration: { type: Number, default: 540 }
@@ -17,88 +31,102 @@ export default class extends Controller {
     this.showFallback()
 
     try {
-      this.chart = echarts.init(this.chartTarget, null, { renderer: "svg" })
+      this.root = createRoot(this.chartTarget)
       this.renderChart()
-      this.showChart()
-
-      this.resizeObserver = new ResizeObserver(() => this.chart.resize())
-      this.resizeObserver.observe(this.chartTarget)
+      this.verifyRenderAndToggle()
     } catch (_error) {
       this.showFallback()
     }
   }
 
   disconnect() {
-    if (this.resizeObserver) this.resizeObserver.disconnect()
-    if (this.chart) this.chart.dispose()
-    this.chart = null
+    if (this.root) {
+      this.root.unmount()
+      this.root = null
+    }
   }
 
   renderChart() {
-    const points = this.pointsValue || []
-    const labels = points.map((point) => point.day)
-    const values = points.map((point) => Number(point.count || 0))
-    const reduceMotion = this.prefersReducedMotion()
-    const maxValue = Math.max(...values, 1)
+    if (!this.root) return
 
-    this.chart.setOption({
-      aria: {
-        show: true,
-        description: `${this.titleValue}. Last 14 days execution counts.`
-      },
-      grid: {
-        left: 24,
-        right: 18,
-        top: 28,
-        bottom: 24,
-        containLabel: true
-      },
-      xAxis: {
-        type: "category",
-        data: labels,
-        boundaryGap: false,
-        axisLabel: { color: "#5d6679", fontSize: 11 },
-        axisLine: { lineStyle: { color: "#d9e0eb" } },
-        axisTick: { show: false }
-      },
-      yAxis: {
-        type: "value",
-        minInterval: 1,
-        axisLabel: { color: "#5d6679", fontSize: 11 },
-        splitLine: { lineStyle: { color: "#e7edf7" } }
-      },
-      tooltip: {
-        trigger: "axis",
-        axisPointer: { type: "line" }
-      },
-      series: [
+    const points = this.pointsValue || []
+    const chartData = points.map((point) => ({
+      day: point.day,
+      runs: Number(point.count || 0)
+    }))
+
+    const reduceMotion = this.prefersReducedMotion()
+    const maxValue = Math.max(...chartData.map((point) => point.runs), 1)
+
+    const tooltip = ({ active, payload, label }) => {
+      if (!active || !payload || !payload.length) return null
+
+      const value = Number(payload[0]?.value || 0)
+
+      return React.createElement(
+        "div",
+        { className: "trend-chart__tooltip", role: "tooltip" },
+        React.createElement("p", { className: "trend-chart__tooltip-label" }, label),
+        React.createElement(
+          "p",
+          { className: "trend-chart__tooltip-value" },
+          React.createElement("span", { className: "trend-chart__tooltip-dot", "aria-hidden": "true" }),
+          React.createElement("span", null, this.tooltipCountLabelValue),
+          React.createElement("strong", null, value)
+        )
+      )
+    }
+
+    this.root.render(
+      React.createElement(
+        "div",
         {
-          type: "line",
-          data: values,
-          smooth: true,
-          showSymbol: false,
-          animation: !reduceMotion,
-          animationDuration: (dataIndex) => this.animationDurationFor(values[dataIndex], maxValue, reduceMotion),
-          animationDurationUpdate: (dataIndex) => this.animationDurationFor(values[dataIndex], maxValue, reduceMotion),
-          animationEasing: "cubicOut",
-          animationEasingUpdate: "cubicOut",
-          lineStyle: { width: 3, color: "#0f766e" },
-          areaStyle: {
-            color: {
-              type: "linear",
-              x: 0,
-              y: 0,
-              x2: 0,
-              y2: 1,
-              colorStops: [
-                { offset: 0, color: "rgba(15, 118, 110, 0.34)" },
-                { offset: 1, color: "rgba(15, 118, 110, 0.03)" }
-              ]
-            }
-          }
-        }
-      ]
-    })
+          className: "trend-chart__shell",
+          role: "img",
+          "aria-label": `${this.titleValue}. Last 14 days execution counts shown as bars.`
+        },
+        React.createElement(
+          ResponsiveContainer,
+          { width: "100%", height: "100%" },
+          React.createElement(
+            BarChart,
+            { data: chartData, margin: { top: 18, right: 12, left: 6, bottom: 10 }, barCategoryGap: "30%" },
+            React.createElement(CartesianGrid, { vertical: false, stroke: "rgba(148, 163, 184, 0.16)" }),
+            React.createElement(XAxis, {
+              dataKey: "day",
+              tickLine: false,
+              tickMargin: 10,
+              axisLine: false,
+              tick: { fill: "#94a3b8", fontSize: 11 }
+            }),
+            React.createElement(YAxis, {
+              allowDecimals: false,
+              tickLine: false,
+              axisLine: false,
+              tick: { fill: "#64748b", fontSize: 11 }
+            }),
+            React.createElement(Tooltip, {
+              cursor: { fill: "rgba(255,255,255,0.04)" },
+              content: tooltip,
+              isAnimationActive: !reduceMotion
+            }),
+            React.createElement(Legend, {
+              iconType: "circle",
+              wrapperStyle: { color: "#94a3b8", fontSize: "12px", paddingTop: "6px" }
+            }),
+            React.createElement(Bar, {
+              dataKey: "runs",
+              name: this.tooltipCountLabelValue,
+              fill: "#3b82f6",
+              radius: [4, 4, 0, 0],
+              animationDuration: this.animationDurationFor(maxValue, maxValue, reduceMotion),
+              animationBegin: this.animationDelayFor(0, reduceMotion),
+              isAnimationActive: !reduceMotion
+            })
+          )
+        )
+      )
+    )
   }
 
   showFallback() {
@@ -115,6 +143,12 @@ export default class extends Controller {
     return Math.round(this.baseDurationValue + (this.maxExtraDurationValue * ratio))
   }
 
+  animationDelayFor(dataIndex, reduceMotion) {
+    if (reduceMotion) return 0
+
+    return Math.min(18 * Number(dataIndex || 0), 260)
+  }
+
   prefersReducedMotion() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches
   }
@@ -122,5 +156,24 @@ export default class extends Controller {
   showChart() {
     if (this.hasChartTarget) this.chartTarget.classList.add("is-ready")
     if (this.hasFallbackTarget) this.fallbackTarget.hidden = true
+  }
+
+  verifyRenderAndToggle(attempt = 0) {
+    requestAnimationFrame(() => {
+      const rendered = this.hasChartTarget && this.chartTarget.querySelector("svg")
+
+      if (rendered) {
+        this.showChart()
+        window.dispatchEvent(new Event("resize"))
+        return
+      }
+
+      if (attempt < 8) {
+        this.verifyRenderAndToggle(attempt + 1)
+        return
+      }
+
+      this.showFallback()
+    })
   }
 }
