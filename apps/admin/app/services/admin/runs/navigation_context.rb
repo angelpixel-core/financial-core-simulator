@@ -26,10 +26,12 @@ module Admin
       def resolve
         persisted = normalize_hash(@session[SESSION_KEY])
         incoming = self.class.capture(params: @params)
+        cleared_keys = explicitly_cleared_keys
 
-        return persisted if incoming.empty?
+        return persisted if incoming.empty? && cleared_keys.empty?
 
         merged = persisted.merge(incoming)
+        cleared_keys.each { |key| merged.delete(key) }
         @session[SESSION_KEY] = merged
         merged
       end
@@ -48,6 +50,33 @@ module Admin
 
       def normalize_hash(value)
         self.class.normalize_hash(value)
+      end
+
+      def explicitly_cleared_keys
+        raw = raw_params_hash
+
+        CONTEXT_KEYS.each_with_object([]) do |key, cleared|
+          value = fetch_raw_value(raw, key)
+          next if value.nil?
+
+          cleared << key if value.to_s.strip.empty?
+        end
+      end
+
+      def raw_params_hash
+        if @params.respond_to?(:to_unsafe_h)
+          @params.to_unsafe_h
+        elsif @params.respond_to?(:to_h)
+          @params.to_h
+        else
+          @params
+        end
+      end
+
+      def fetch_raw_value(raw, key)
+        return nil unless raw.is_a?(Hash)
+
+        raw[key] || raw[key.to_sym]
       end
     end
   end

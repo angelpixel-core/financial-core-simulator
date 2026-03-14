@@ -46,5 +46,22 @@ RSpec.describe Admin::Runs::NavigationContext do
       expect(first).to eq("selected_run" => "run-99", "validation_status" => "verified")
       expect(second).to eq("selected_run" => "run-99", "validation_status" => "verified")
     end
+
+    it "clears persisted filters when incoming values are explicitly blank" do
+      session = {
+        "admin.runs.navigation_context" => {
+          "selected_run" => "run-99",
+          "validation_status" => "verified",
+          "date_range" => "last_7d"
+        }
+      }
+
+      resolved = described_class.new(
+        params: { validation_status: "", date_range: " " },
+        session: session
+      ).resolve
+
+      expect(resolved).to eq("selected_run" => "run-99")
+    end
   end
 end
