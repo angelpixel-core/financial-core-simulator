@@ -73,6 +73,7 @@ gem "financial-core-simulator", path: "../..", require: "fcs"
 gem "avo", "~> 3.29"
 gem "view_component", "~> 3.13"
 gem "phlex-rails", "~> 2.2"
+gem "vite_rails", "~> 3.0"
 # Enables Sequel to use Active Record's database connection
 gem "sequel-activerecord_connection", "~> 2.0", require: false
 # Used by Rodauth for rendering built-in view and email templates
