@@ -2,6 +2,14 @@ require "rails_helper"
 
 RSpec.describe Admin::Runs::RunValidationDiagnostics do
   describe "#call" do
+    it "returns loading with no issues for nil run" do
+      result = described_class.new.call(run: nil)
+
+      expect(result[:state]).to eq(:loading)
+      expect(result[:issues]).to eq([])
+      expect(result.dig(:diagnostic, :what_happened)).to be_present
+    end
+
     it "maps validation errors to issues with severity" do
       run = Run.create!(
         status: :failed,

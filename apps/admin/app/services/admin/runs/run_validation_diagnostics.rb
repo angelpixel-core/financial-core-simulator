@@ -58,6 +58,7 @@ module Admin
       end
 
       def issues_for(run)
+        return [] if run.nil?
         return [] unless validation_error?(run)
 
         entry = @error_mapper.map(run: run)
@@ -67,6 +68,8 @@ module Admin
       end
 
       def validation_error?(run)
+        return false if run.nil?
+
         VALIDATION_ERROR_CODES.include?(run.error_code)
       end
     end
