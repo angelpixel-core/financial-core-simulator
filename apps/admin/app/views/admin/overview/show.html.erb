@@ -165,6 +165,39 @@
             <li><span>Failed</span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
           </ul>
         </section>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>PnL trend</h2>
+            <p class="dashboard-card__meta">Global total PnL quote over successful runs</p>
+          </header>
+          <% if @metrics[:pnl_trend].blank? %>
+            <div class="ui-empty-state">
+              <p class="ui-empty-state__title">No PnL trend data available yet.</p>
+              <p class="empty-state">Run successful simulations with canonical result artifacts to populate this chart.</p>
+            </div>
+          <% else %>
+            <div
+              data-controller="pnl-trend-chart"
+              data-pnl-trend-chart-points-value="<%= @metrics[:pnl_trend].to_json %>"
+              data-pnl-trend-chart-title-value="PnL trend"
+              data-pnl-trend-chart-tooltip-label-value="Total PnL Quote"
+            >
+              <div
+                class="trend-chart trend-chart--pnl"
+                data-pnl-trend-chart-target="chart"
+                aria-label="PnL trend chart for successful runs"
+              ></div>
+              <ul class="trend-line-fallback" data-pnl-trend-chart-target="fallback" aria-label="PnL trend fallback values">
+                <% @metrics[:pnl_trend].each do |point| %>
+                  <li>
+                    <span><%= point[:label] %></span>
+                    <strong><%= point[:total_pnl_quote] %></strong>
+                  </li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+        </section>
       </section>
       <section class="overview__domain" aria-label="LATEST RUN">
         <h2 class="overview__domain-title">LATEST RUN</h2>
