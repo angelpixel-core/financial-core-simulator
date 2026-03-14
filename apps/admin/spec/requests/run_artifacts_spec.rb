@@ -1,4 +1,5 @@
 require "rails_helper"
+require "bcrypt"
 require "fileutils"
 require "json"
 require "tmpdir"
@@ -182,6 +183,38 @@ RSpec.describe "Run artifacts", type: :request do
     )
 
     get "/runs/#{run.id}/result", headers: { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+
+    expect(response).to have_http_status(:ok)
+    expect(JSON.parse(response.body)).to eq({ "ok" => true })
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
+  it "serves artifact for operator session while artifact token is configured" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
+
+    Account.create!(
+      email: "ops@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "ops@example.com", password: "secret-pass" }
+    expect(response).to have_http_status(:found)
+
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-token-operator-session.json")
+    File.write(path, JSON.generate({ ok: true }))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/result"
 
     expect(response).to have_http_status(:ok)
     expect(JSON.parse(response.body)).to eq({ "ok" => true })

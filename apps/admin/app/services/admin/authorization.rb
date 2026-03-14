@@ -79,7 +79,7 @@ module Admin
       account = Account.find_by(id: account_id)
       return nil unless account
 
-      role = account.respond_to?(:role) ? account.role.to_s.strip.downcase : "viewer"
+      role = Admin::SessionRoleResolver.call(account)
       role = "viewer" unless ROLE_ORDER.key?(role)
 
       { id: account.id.to_s, role: role }

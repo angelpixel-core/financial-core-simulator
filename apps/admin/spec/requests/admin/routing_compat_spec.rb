@@ -79,13 +79,32 @@ RSpec.describe "Admin routing compatibility", type: :request do
     expect(response).to have_http_status(:forbidden)
   end
 
+  it "denies Avo html resources when operator identity headers are provided" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/resources/runs", headers: { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/")
+  end
+
   it "allows Avo resources access when admin identity headers are provided" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    get "/admin/resources/runs", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
+    get "/admin/resources/runs", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "admin" }
 
     expect(response).not_to have_http_status(:forbidden)
+  end
+
+  it "forbids non-html Avo resources for operator identity headers" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+    get "/admin/resources/runs", as: :json, headers: { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+
+    expect(response).to have_http_status(:forbidden)
   end
 
   it "forbids dashboard overview when ADMIN_UI_TOKEN is set and token is missing" do

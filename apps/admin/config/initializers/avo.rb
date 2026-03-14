@@ -30,7 +30,7 @@ Avo.configure do |config|
   end
   config.authenticate_with do
     auth = Admin::Authorization.new(request: request)
-    allowed = auth.allow_admin_session?(required_role: "viewer")
+    allowed = auth.allow_admin_session?(required_role: "admin")
 
     next if allowed
 
