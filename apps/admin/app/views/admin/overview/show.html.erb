@@ -2,6 +2,8 @@
 <% candidate_run = @reliable_selection.candidate_run %>
 <% navigation_context = @navigation_context || {} %>
 <% run_details_path = ->(run_id) { avo.resources_run_path({ id: run_id }.merge(navigation_context)) } %>
+<% artifacts_run = reliable_run || candidate_run %>
+<% artifacts_path = artifacts_run.nil? ? avo.resources_runs_path : run_result_path({ id: artifacts_run.id }.merge(navigation_context)) %>
 <% primary_cta = {
   label: "Open Latest Reliable Run",
   path: reliable_run.nil? ? "#" : run_details_path.call(reliable_run.id),
@@ -12,7 +14,7 @@
     { label: "Overview", path: admin_overview_path(navigation_context), active: true },
     { label: "Runs", path: avo.resources_runs_path },
     { label: "Validation", path: admin_overview_ingestion_validation_errors_path(navigation_context) },
-    { label: "Artifacts", path: avo.resources_runs_path },
+    { label: "Artifacts", path: artifacts_path },
     { label: "Docs", path: @documentation_url, external: true },
     { label: "GitHub", path: @source_url, external: true }
   ],

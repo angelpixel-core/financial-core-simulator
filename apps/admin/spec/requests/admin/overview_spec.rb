@@ -80,6 +80,7 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("View latest run")
     expect(response.body).to include("View top accounts")
     expect(response.body).to include("View ingestion errors")
+    expect(response.body).to include(run_result_path(id: run.id))
 
     expect(response.body).to include(%(href="#{admin_overview_runs_trend_path}"))
     expect(response.body).to include(%(href="#{admin_overview_status_mix_path}"))
