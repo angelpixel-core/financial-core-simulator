@@ -41,6 +41,8 @@ RSpec.describe Admin::Runs::ValidationIssuesPanelComponent, type: :component do
     expect(rendered_content).to include("Que paso")
     expect(rendered_content).to include("Impacto")
     expect(rendered_content).to include("Siguiente accion")
+    expect(rendered_content).to include("Estado de validacion: Warning")
+    expect(rendered_content).to include(">Warning<")
   end
 
   it "renders error state issues with severity labels" do

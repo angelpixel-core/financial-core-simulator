@@ -23,6 +23,7 @@ RSpec.describe Admin::Runs::RunReliabilityBannerComponent, type: :component do
     expect(rendered_content).to include("role=\"status\"")
     expect(rendered_content).to include("aria-live=\"polite\"")
     expect(rendered_content).to include("Estado de confiabilidad")
+    expect(rendered_content).to include("Degradado")
   end
 
   it "renders a reliable state banner" do
