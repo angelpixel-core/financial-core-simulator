@@ -13,32 +13,32 @@ module Admin
           ArtifactEntry.new(
             label: "Resultado canonico (JSON)",
             description: "Contrato principal de salida para trazabilidad y reconciliacion.",
-            state: status_for(@run.result_json_path),
-            actions: [ action("Abrir result.json", :run_result_path, @run.result_json_path) ]
+            state: status_for(:result_json_path),
+            actions: [ action("Abrir result.json", :run_result_path, :result_json_path) ]
           ),
           ArtifactEntry.new(
             label: "Preview de posiciones",
             description: "Vista operativa de posiciones proyectadas por mercado/account.",
-            state: status_for(@run.positions_csv_path),
-            actions: [ action("Abrir preview positions.csv", :run_positions_path, @run.positions_csv_path, preview: 1) ]
+            state: status_for(:positions_csv_path),
+            actions: [ action("Abrir preview positions.csv", :run_positions_path, :positions_csv_path, preview: 1) ]
           ),
           ArtifactEntry.new(
             label: "Descarga de posiciones",
             description: "Export CSV para auditoria y analisis externo.",
-            state: status_for(@run.positions_csv_path),
-            actions: [ action("Descargar positions.csv", :run_positions_path, @run.positions_csv_path) ]
+            state: status_for(:positions_csv_path),
+            actions: [ action("Descargar positions.csv", :run_positions_path, :positions_csv_path) ]
           ),
           ArtifactEntry.new(
             label: "Preview de PnL",
             description: "Vista operativa del consolidado de PnL por run.",
-            state: status_for(@run.pnl_csv_path),
-            actions: [ action("Abrir preview pnl.csv", :run_pnl_path, @run.pnl_csv_path, preview: 1) ]
+            state: status_for(:pnl_csv_path),
+            actions: [ action("Abrir preview pnl.csv", :run_pnl_path, :pnl_csv_path, preview: 1) ]
           ),
           ArtifactEntry.new(
             label: "Vista de riesgo",
             description: "Drilldown por estado de riesgo, eventos y margen.",
-            state: status_for(@run.result_json_path),
-            actions: [ action("Abrir risk view", :run_risk_path, @run.result_json_path) ]
+            state: status_for(:result_json_path),
+            actions: [ action("Abrir risk view", :run_risk_path, :result_json_path) ]
           )
         ]
       end
@@ -66,18 +66,23 @@ module Admin
 
       private
 
-      def action(label, helper_name, path, extra_params = {})
-        return { label: label, href: nil } if path.blank?
+      def action(label, helper_name, attribute, extra_params = {})
+        return { label: label, href: nil } if resolved_path_for(attribute).nil?
 
         params = @context_params.merge(extra_params)
         { label: label, href: helpers.public_send(helper_name, { id: @run.id }.merge(params)) }
       end
 
-      def status_for(path)
-        return :unavailable if path.blank?
+      def status_for(attribute)
+        return :unavailable if resolved_path_for(attribute).nil?
         return :partial if @run.input_hash.blank?
 
         :complete
+      end
+
+      def resolved_path_for(attribute)
+        @resolved_paths ||= {}
+        @resolved_paths[attribute] ||= Artifacts::PathResolver.new(run: @run, attribute: attribute).call
       end
 
       def timestamp_utc
