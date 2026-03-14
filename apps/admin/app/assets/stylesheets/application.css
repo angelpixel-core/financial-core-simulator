@@ -380,6 +380,11 @@ body {
   box-shadow: 0 10px 24px rgba(21, 34, 52, 0.08);
 }
 
+.run-selection-card--empty {
+  border-style: dashed;
+  background: var(--surface-soft);
+}
+
 .run-selection-card--highlight {
   border-color: rgba(15, 118, 110, 0.5);
   box-shadow: 0 16px 30px rgba(15, 118, 110, 0.12);
@@ -419,6 +424,12 @@ body {
   margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.run-selection-card__diagnostic {
+  margin-top: 12px;
+  display: grid;
   gap: 10px;
 }
 

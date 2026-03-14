@@ -63,11 +63,26 @@
             cta_path: run_result_path(id: candidate_run.id)
           ) %>
         <% else %>
-          <%= render Admin::Ui::EmptyStateComponent.new(
-            title: "Sin runs",
-            message: "Aun no hay ejecuciones disponibles para inspeccionar.",
-            tone: :loading
-          ) %>
+          <article class="run-selection-card run-selection-card--empty" role="status" aria-live="polite">
+            <header>
+              <p class="run-selection-card__eyebrow">Sin run confiable</p>
+              <h2 class="run-selection-card__title">Seleccion degradada</h2>
+            </header>
+            <div class="run-selection-card__diagnostic">
+              <div>
+                <p class="run-selection-card__label">Que paso</p>
+                <p class="run-selection-card__value"><%= @reliable_selection.diagnostic[:what_happened] %></p>
+              </div>
+              <div>
+                <p class="run-selection-card__label">Impacto</p>
+                <p class="run-selection-card__value"><%= @reliable_selection.diagnostic[:impact] %></p>
+              </div>
+              <div>
+                <p class="run-selection-card__label">Siguiente accion</p>
+                <p class="run-selection-card__value"><%= @reliable_selection.diagnostic[:next_action] %></p>
+              </div>
+            </div>
+          </article>
         <% end %>
       </div>
     </section>
