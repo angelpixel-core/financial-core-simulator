@@ -98,6 +98,9 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include('data-controller="run-trend-chart"')
     expect(response.body).to include('data-run-trend-chart-target="chart"')
     expect(response.body).to include('data-run-trend-chart-target="fallback"')
+    expect(response.body).to include('data-run-trend-chart-chart-kind-value="bar"')
+    expect(response.body).to include('data-run-trend-chart-tooltip-label-value="Day"')
+    expect(response.body).to include('data-run-trend-chart-tooltip-count-label-value="Runs"')
     expect(response.body).to include('data-run-trend-chart-animation-mode-value="proportional"')
     expect(response.body).to include('data-run-trend-chart-base-duration-value="260"')
     expect(response.body).to include('data-run-trend-chart-max-extra-duration-value="540"')
@@ -116,9 +119,22 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include('data-controller="run-trend-chart"')
     expect(response.body).to include('data-run-trend-chart-target="chart"')
     expect(response.body).to include('data-run-trend-chart-target="fallback"')
+    expect(response.body).to include('data-run-trend-chart-chart-kind-value="bar"')
     expect(response.body).to include('data-run-trend-chart-animation-mode-value="proportional"')
     expect(response.body).to include('data-run-trend-chart-base-duration-value="260"')
     expect(response.body).to include('data-run-trend-chart-max-extra-duration-value="540"')
+  end
+
+  it "keeps run trend chart and fallback markup across mobile and desktop detail views" do
+    [ 375, 1280 ].each do |viewport_width|
+      get admin_overview_runs_trend_path, headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('data-controller="run-trend-chart"')
+      expect(response.body).to include('data-run-trend-chart-target="chart"')
+      expect(response.body).to include('data-run-trend-chart-target="fallback"')
+      expect(response.body).to include('trend-chart trend-chart--detail')
+    end
   end
 
   it "renders count-up data hooks for all system KPI cards with numeric values" do
