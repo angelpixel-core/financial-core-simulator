@@ -51,6 +51,11 @@ body {
   backdrop-filter: blur(8px);
 }
 
+.admin-shell-header--admin {
+  border-bottom-color: rgba(167, 139, 250, 0.38);
+  background: linear-gradient(90deg, rgba(52, 29, 96, 0.92), rgba(67, 56, 202, 0.66));
+}
+
 .admin-shell-header__inner {
   max-width: 1100px;
   margin: 0 auto;
@@ -68,6 +73,10 @@ body {
   color: var(--accent);
   font-size: 12px;
   font-weight: 700;
+}
+
+.admin-shell-header--admin .admin-shell-header__brand {
+  color: #ddd6fe;
 }
 
 .admin-shell-header__actions {
@@ -323,6 +332,12 @@ body {
   height: 14px;
 }
 
+.app-shell__nav-icon--sensitive {
+  background: rgba(127, 29, 29, 0.3);
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
 .app-shell__nav-label {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -345,6 +360,12 @@ body {
   background: rgba(20, 184, 166, 0.22);
   color: #99f6e4;
   border-color: rgba(45, 212, 191, 0.44);
+}
+
+.app-shell__nav-link--active .app-shell__nav-icon--sensitive {
+  background: rgba(127, 29, 29, 0.52);
+  color: #fee2e2;
+  border-color: rgba(248, 113, 113, 0.62);
 }
 
 .app-shell__nav-link--disabled {

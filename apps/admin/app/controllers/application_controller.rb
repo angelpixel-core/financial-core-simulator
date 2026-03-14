@@ -2,7 +2,12 @@ class ApplicationController < ActionController::Base
   include Rodauth::Rails::ControllerMethods
   include AdminShellHelper
 
-  helper_method :current_admin_account, :admin_shell_account_email
+  helper_method :current_admin_account,
+    :admin_shell_account_email,
+    :admin_shell_role,
+    :admin_shell_admin?,
+    :admin_shell_operator?,
+    :admin_shell_workspace_label
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern

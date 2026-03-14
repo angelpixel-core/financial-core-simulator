@@ -1,6 +1,7 @@
 require "rails_helper"
 require "bcrypt"
 require "json"
+require "nokogiri"
 require "tmpdir"
 
 RSpec.describe "Admin overview", type: :request do
@@ -51,6 +52,50 @@ RSpec.describe "Admin overview", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("ops-shell@example.com")
     expect(response.body).to include("/admin/logout")
+  end
+
+  it "renders operator-specific workspace shell navigation and header label" do
+    Account.create!(
+      email: "ops@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "ops@example.com", password: "secret-pass" }
+    expect(response).to have_http_status(:found)
+
+    get "/admin/overview"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("OPERATOR WORKSPACE")
+    expect(response.body).not_to include("GitHub")
+
+    nav_labels = Nokogiri::HTML(response.body)
+      .css(".app-shell__nav--desktop a")
+      .map { |node| node.text.strip }
+
+    expect(nav_labels).to include("Overview", "Validation", "Artifacts", "Docs")
+    expect(nav_labels).not_to include("Runs")
+  end
+
+  it "renders admin-specific shell with sensitive runs icon and no github links" do
+    Account.create!(
+      email: "admin@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "admin@example.com", password: "secret-pass" }
+    expect(response).to have_http_status(:found)
+
+    get "/admin/overview"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("admin-shell-header--admin")
+    expect(response.body).to include("Runs")
+    expect(response.body).to include("app-shell__nav-icon--sensitive")
+    expect(response.body).to include("Docs")
+    expect(response.body).not_to include("GitHub")
   end
 
   it "does not expose authenticated shell controls on landing and login" do

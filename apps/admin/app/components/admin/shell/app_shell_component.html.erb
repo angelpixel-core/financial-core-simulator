@@ -38,11 +38,13 @@
         <p class="app-shell__nav-group-label">Navigation</p>
         <% @sidebar_items.each do |item| %>
           <% classes = ["app-shell__nav-link"] %>
+          <% icon_classes = ["app-shell__nav-icon"] %>
           <% classes << "app-shell__nav-link--active" if item[:active] %>
           <% classes << "app-shell__nav-link--disabled" if item[:disabled] %>
+          <% icon_classes << "app-shell__nav-icon--#{item[:icon_variant]}" if item[:icon_variant].present? %>
           <% if item[:disabled] %>
             <span class="<%= classes.join(" ") %>" aria-disabled="true" title="<%= item[:label] %>">
-              <span class="app-shell__nav-icon"><%= icon_svg_for(item[:label]) %></span>
+              <span class="<%= icon_classes.join(" ") %>"><%= icon_svg_for(item[:label]) %></span>
               <span class="app-shell__nav-label"><%= item[:label] %></span>
             </span>
           <% else %>
@@ -53,7 +55,7 @@
               <%= item[:active] ? 'aria-current="page"' : "" %>
               <%= item[:external] ? "target=\"_blank\" rel=\"noopener noreferrer\"" : "" %>
             >
-              <span class="app-shell__nav-icon"><%= icon_svg_for(item[:label]) %></span>
+              <span class="<%= icon_classes.join(" ") %>"><%= icon_svg_for(item[:label]) %></span>
               <span class="app-shell__nav-label"><%= item[:label] %></span>
             </a>
           <% end %>
@@ -64,11 +66,13 @@
       <p class="app-shell__nav-group-label">Navigation</p>
       <% @sidebar_items.each do |item| %>
         <% classes = ["app-shell__nav-link"] %>
+        <% icon_classes = ["app-shell__nav-icon"] %>
         <% classes << "app-shell__nav-link--active" if item[:active] %>
         <% classes << "app-shell__nav-link--disabled" if item[:disabled] %>
+        <% icon_classes << "app-shell__nav-icon--#{item[:icon_variant]}" if item[:icon_variant].present? %>
         <% if item[:disabled] %>
           <span class="<%= classes.join(" ") %>" aria-disabled="true" title="<%= item[:label] %>">
-            <span class="app-shell__nav-icon"><%= icon_svg_for(item[:label]) %></span>
+            <span class="<%= icon_classes.join(" ") %>"><%= icon_svg_for(item[:label]) %></span>
             <span class="app-shell__nav-label"><%= item[:label] %></span>
           </span>
         <% else %>
@@ -79,7 +83,7 @@
             <%= item[:active] ? 'aria-current="page"' : "" %>
             <%= item[:external] ? "target=\"_blank\" rel=\"noopener noreferrer\"" : "" %>
           >
-            <span class="app-shell__nav-icon"><%= icon_svg_for(item[:label]) %></span>
+            <span class="<%= icon_classes.join(" ") %>"><%= icon_svg_for(item[:label]) %></span>
             <span class="app-shell__nav-label"><%= item[:label] %></span>
           </a>
         <% end %>

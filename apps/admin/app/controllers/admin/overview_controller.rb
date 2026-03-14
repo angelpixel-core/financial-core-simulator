@@ -26,7 +26,6 @@ class Admin::OverviewController < ApplicationController
     @ingestion_validation_errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
     @reliable_selection = Admin::Runs::ReliableRunSelector.new.call
     @documentation_url = "https://docs.ruby-lang.org"
-    @source_url = "https://github.com"
   end
 
   def top_accounts
