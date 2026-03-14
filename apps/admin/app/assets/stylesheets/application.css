@@ -574,7 +574,6 @@ body {
 
 .validation-issues-panel__table {
   width: 100%;
-  border-collapse: collapse;
   font-size: 13px;
 }
 
@@ -586,14 +585,6 @@ body {
 .validation-issues-panel__table-container:focus-visible {
   outline: 2px solid #0d9488;
   outline-offset: 2px;
-}
-
-.validation-issues-panel__table th,
-.validation-issues-panel__table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--table-row-separator);
-  text-align: left;
-  vertical-align: top;
 }
 
 .validation-issues-panel__table th {
@@ -1323,23 +1314,55 @@ body {
   background: #3b82f6;
 }
 
-.top-accounts-table {
+.shad-table-wrap {
+  position: relative;
   width: 100%;
-  border-collapse: collapse;
+  overflow: auto;
 }
 
-.top-accounts-table th,
-.top-accounts-table td {
-  text-align: left;
-  padding: 8px;
-  border-bottom: 1px solid var(--border);
+.shad-table {
+  width: 100%;
+  border-collapse: collapse;
+  caption-side: bottom;
   font-size: 14px;
 }
 
-.top-accounts-table th {
-  color: var(--muted);
+.shad-table__row {
+  border-bottom: 1px solid var(--table-row-separator);
+  transition: background 160ms ease;
+}
+
+.shad-table__row:hover {
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.shad-table__row--head:hover {
+  background: transparent;
+}
+
+.shad-table__th {
+  height: 46px;
+  padding: 0 16px;
+  text-align: left;
+  vertical-align: middle;
   font-weight: 600;
+  color: var(--muted);
   background: var(--surface-soft);
+  white-space: nowrap;
+}
+
+.shad-table__td {
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.shad-table__body .shad-table__row:last-child {
+  border-bottom: 0;
+}
+
+.top-accounts-table {
+  width: 100%;
 }
 
 .top-accounts-table.table--striped tbody tr:nth-child(odd) {
@@ -1354,12 +1377,8 @@ body {
   background: var(--table-stripe-ingestion-odd);
 }
 
-.top-accounts-table.table--striped tbody td {
-  border-bottom-color: var(--table-row-separator);
-}
-
-.top-accounts-table.table--striped tbody tr:last-child td {
-  border-bottom: 0;
+.top-accounts-table.table--striped tbody tr:hover {
+  background: rgba(148, 163, 184, 0.14);
 }
 
 .ui-empty-state {
@@ -1382,21 +1401,6 @@ body {
 
 .ui-data-table {
   width: 100%;
-  border-collapse: collapse;
-}
-
-.ui-data-table th,
-.ui-data-table td {
-  text-align: left;
-  padding: 8px;
-  border-bottom: 1px solid var(--border);
-  font-size: 14px;
-}
-
-.ui-data-table th {
-  color: var(--muted);
-  font-weight: 600;
-  background: var(--surface-soft);
 }
 
 .landing-page {
