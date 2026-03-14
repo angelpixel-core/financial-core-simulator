@@ -159,6 +159,35 @@ body {
   gap: 8px;
 }
 
+.app-shell__mobile-nav {
+  display: none;
+}
+
+.app-shell__mobile-nav-toggle {
+  list-style: none;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: var(--text);
+  background: var(--surface-soft);
+  font-weight: 700;
+}
+
+.app-shell__mobile-nav-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.app-shell__mobile-nav-sheet {
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 8px;
+  display: grid;
+  gap: 8px;
+}
+
 .app-shell__nav-link {
   display: flex;
   align-items: center;
@@ -1500,11 +1529,18 @@ body {
     padding: 14px 12px;
   }
 
-  .app-shell__nav {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 2px;
+  .app-shell__mobile-nav {
+    display: block;
+  }
+
+  .app-shell__nav--desktop {
+    display: none;
+  }
+
+  .app-shell__mobile-nav-sheet .app-shell__nav-link,
+  .app-shell__mobile-nav-sheet .app-shell__nav-link--disabled {
+    white-space: nowrap;
+    width: 100%;
   }
 
   .app-shell__nav-link,

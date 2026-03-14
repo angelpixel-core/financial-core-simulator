@@ -5,7 +5,27 @@
       <span class="app-shell__brand-title">FCS Workspace</span>
       <span class="app-shell__brand-subtitle">Ops Console</span>
     </div>
-    <nav class="app-shell__nav">
+    <details class="app-shell__mobile-nav">
+      <summary class="app-shell__mobile-nav-toggle" aria-label="Abrir menu de navegacion">Menu</summary>
+      <nav class="app-shell__mobile-nav-sheet" aria-label="Workspace navigation mobile">
+        <% @sidebar_items.each do |item| %>
+          <% classes = ["app-shell__nav-link"] %>
+          <% classes << "app-shell__nav-link--active" if item[:active] %>
+          <% classes << "app-shell__nav-link--disabled" if item[:disabled] %>
+          <% if item[:disabled] %>
+            <span class="<%= classes.join(" ") %>" aria-disabled="true"><%= item[:label] %></span>
+          <% else %>
+            <a
+              class="<%= classes.join(" ") %>"
+              href="<%= item[:path] %>"
+              <%= item[:active] ? 'aria-current="page"' : "" %>
+              <%= item[:external] ? "target=\"_blank\" rel=\"noopener noreferrer\"" : "" %>
+            ><%= item[:label] %></a>
+          <% end %>
+        <% end %>
+      </nav>
+    </details>
+    <nav class="app-shell__nav app-shell__nav--desktop">
       <% @sidebar_items.each do |item| %>
         <% classes = ["app-shell__nav-link"] %>
         <% classes << "app-shell__nav-link--active" if item[:active] %>

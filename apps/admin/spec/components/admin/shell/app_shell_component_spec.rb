@@ -32,5 +32,7 @@ RSpec.describe Admin::Shell::AppShellComponent, type: :component do
     expect(rendered_content).to include("href=\"#workspace-main\"")
     expect(rendered_content).to include("aria-current=&quot;page&quot;")
     expect(rendered_content).to include("id=\"workspace-main\"")
+    expect(rendered_content).to include("Menu")
+    expect(rendered_content).to include("aria-label=\"Workspace navigation mobile\"")
   end
 end
