@@ -8,8 +8,8 @@ module Admin
           source: source_for(run: run, input_json: input_json),
           field: field_for(run.error_code),
           message: run.error_message.to_s,
-          occurredAt: run.updated_at&.utc&.iso8601,
-          correlationId: input_json["correlationId"] || run.run_uuid
+          occurred_at: run.updated_at&.utc&.iso8601,
+          correlation_id: input_json["correlationId"] || run.run_uuid
         }
       end
 

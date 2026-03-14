@@ -23,9 +23,9 @@ RSpec.describe Admin::Dashboard::IngestionValidationErrorMapper do
       source: "source.venue.external",
       field: "riskModel",
       message: "risk invalid",
-      correlationId: "corr-001"
+      correlation_id: "corr-001"
     )
-    expect(mapped[:occurredAt]).to be_a(String)
+    expect(mapped[:occurred_at]).to be_a(String)
   end
 
   it "falls back to run_uuid when correlationId is missing" do
@@ -48,7 +48,7 @@ RSpec.describe Admin::Dashboard::IngestionValidationErrorMapper do
     expect(mapped).to include(
       source: "agente.hft.alpha",
       field: "accountingModel.method",
-      correlationId: "run-uuid-fallback"
+      correlation_id: "run-uuid-fallback"
     )
   end
 end

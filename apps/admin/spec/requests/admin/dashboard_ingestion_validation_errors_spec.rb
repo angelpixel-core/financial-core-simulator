@@ -24,7 +24,7 @@ RSpec.describe "Dashboard ingestion validation errors", type: :request do
     expect(parsed.fetch("contractVersion")).to eq("v1")
     expect(parsed["errors"]).to be_a(Array)
     expect(parsed["errors"]).not_to be_empty
-    expect(parsed["errors"].first).to include("source", "field", "message", "occurredAt", "correlationId")
+    expect(parsed["errors"].first).to include("source", "field", "message", "occurred_at", "correlation_id")
   end
 
   it "returns empty list when no validation failures exist" do

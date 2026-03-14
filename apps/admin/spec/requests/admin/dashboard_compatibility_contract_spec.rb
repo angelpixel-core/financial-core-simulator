@@ -40,6 +40,6 @@ RSpec.describe "Dashboard compatibility contract", type: :request do
     parsed = JSON.parse(response.body)
     expect(parsed).to include("contractVersion", "errors")
     expect(parsed.fetch("contractVersion")).to eq("v1")
-    expect(parsed.fetch("errors")).to all(include("source", "field", "message", "occurredAt", "correlationId"))
+    expect(parsed.fetch("errors")).to all(include("source", "field", "message", "occurred_at", "correlation_id"))
   end
 end
