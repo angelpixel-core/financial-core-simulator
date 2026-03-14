@@ -12,8 +12,6 @@ Rails.application.routes.draw do
   get "/dashboard/trend", to: "admin/overview#dashboard_trend", as: :dashboard_trend
   get "/dashboard/latest-run", to: "admin/overview#dashboard_latest_run", as: :dashboard_latest_run
   get "/dashboard/ingestion-validation-errors", to: "admin/overview#ingestion_validation_errors", as: :dashboard_ingestion_validation_errors
-  get "/admin/component-comparison", to: "admin/component_comparisons#show", as: :admin_component_comparison
-
   get "/admin/resources/runs/:id/result", to: redirect("/runs/%{id}/result")
   get "/admin/resources/runs/:id/positions", to: redirect("/runs/%{id}/positions")
   get "/admin/resources/runs/:id/pnl", to: redirect("/runs/%{id}/pnl")
