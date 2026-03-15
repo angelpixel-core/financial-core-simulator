@@ -79,6 +79,25 @@ RSpec.describe FCS::Engine::FXConverter do
 
       expect(converter.instance_variable_get(:@quote_usd)).to be_nil
     end
+
+    it "raises when usd_enabled is true and quoteUsd is explicitly nil" do
+      expect do
+        described_class.new(price_snapshot: build_snapshot(quote_usd: nil, include_quote_key: true), usd_enabled: true)
+      end.to raise_error(FCS::Error)
+    end
+
+    it "does not raise when quoteUsd key is present but nil and usd_enabled is false" do
+      converter = nil
+
+      expect do
+        converter = described_class.new(
+          price_snapshot: build_snapshot(quote_usd: nil, include_quote_key: true),
+          usd_enabled: false
+        )
+      end.not_to raise_error
+
+      expect(converter.instance_variable_get(:@quote_usd)).to be_nil
+    end
   end
 
   describe "#quote_to_usd" do
@@ -101,23 +120,4 @@ RSpec.describe FCS::Engine::FXConverter do
       end
     end
   end
-end
-
-it "raises when usd_enabled is true and quoteUsd is explicitly nil" do
-  expect do
-    described_class.new(price_snapshot: build_snapshot(quote_usd: nil, include_quote_key: true), usd_enabled: true)
-  end.to raise_error(FCS::Error)
-end
-
-it "does not raise when quoteUsd key is present but nil and usd_enabled is false" do
-  converter = nil
-
-  expect do
-    converter = described_class.new(
-      price_snapshot: build_snapshot(quote_usd: nil, include_quote_key: true),
-      usd_enabled: false
-    )
-  end.not_to raise_error
-
-  expect(converter.instance_variable_get(:@quote_usd)).to be_nil
 end
