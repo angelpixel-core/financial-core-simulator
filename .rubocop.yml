@@ -1,3 +1,5 @@
+inherit_from: .rubocop_todo.yml
+
 AllCops:
   TargetRubyVersion: 4.0
   NewCops: enable
@@ -5,7 +7,7 @@ AllCops:
   Exclude:
     - "apps/admin/**/*"
 
-require:
+plugins:
   - rubocop-rspec
 
 Style/StringLiterals:

@@ -1,5 +1,5 @@
 # Omakase Ruby styling for Rails
-require:
+plugins:
   - rubocop-rspec
 inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 inherit_from:
