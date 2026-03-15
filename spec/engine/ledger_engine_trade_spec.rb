@@ -36,12 +36,12 @@ RSpec.describe FCS::Engine::LedgerEngine do
   end
 
   class StubState
-    def initialize(position)
-      @position = position
+    def initialize(position = nil)
+      @position = position || SpyPosition.new
     end
 
     def position_for(account_id:, market_id:)
-      @position ||= SpyPosition.new
+      @position
     end
   end
 
