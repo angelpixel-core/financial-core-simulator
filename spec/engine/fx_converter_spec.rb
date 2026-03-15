@@ -1,8 +1,13 @@
 # frozen_string_literal: true
 
 RSpec.describe FCS::Engine::FXConverter do
-  def build_snapshot(quote_usd: nil, include_fx: true)
-    fx = quote_usd.nil? ? {} : { "quoteUsd" => quote_usd }
+  def build_snapshot(quote_usd: nil, include_fx: true, include_quote_key: false)
+    fx = if quote_usd.nil?
+           include_quote_key ? { "quoteUsd" => nil } : {}
+         else
+           { "quoteUsd" => quote_usd }
+         end
+
     include_fx ? { "fx" => fx } : {}
   end
 
@@ -96,4 +101,23 @@ RSpec.describe FCS::Engine::FXConverter do
       end
     end
   end
+end
+
+it "raises when usd_enabled is true and quoteUsd is explicitly nil" do
+  expect do
+    described_class.new(price_snapshot: build_snapshot(quote_usd: nil, include_quote_key: true), usd_enabled: true)
+  end.to raise_error(FCS::Error)
+end
+
+it "does not raise when quoteUsd key is present but nil and usd_enabled is false" do
+  converter = nil
+
+  expect do
+    converter = described_class.new(
+      price_snapshot: build_snapshot(quote_usd: nil, include_quote_key: true),
+      usd_enabled: false
+    )
+  end.not_to raise_error
+
+  expect(converter.instance_variable_get(:@quote_usd)).to be_nil
 end
