@@ -1,5 +1,6 @@
 class Admin::Ui::DataTableComponent < ViewComponent::Base
-  def initialize(columns:, rows:, table_class: nil, state: :default, loading_message: "Loading dashboard data...", error_message: "Dashboard source unavailable.")
+  def initialize(columns:, rows:, table_class: nil, state: :default, loading_message: "Loading dashboard data...", 
+error_message: "Dashboard source unavailable.")
     @columns = columns
     @rows = rows
     @table_class = table_class

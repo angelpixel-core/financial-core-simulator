@@ -139,7 +139,10 @@ class RunArtifactsController < ApplicationController
       "</tr>"
     end.join
 
-    body_rows = "<tr><td colspan=\"4\" style=\"padding: 10px; color: #4a5568;\">No accounts for selected filter.</td></tr>" if body_rows.empty?
+    if body_rows.empty?
+      body_rows = "<tr><td colspan=\"4\" style=\"padding: 10px; color: #4a5568;\">" \
+                  "No accounts for selected filter.</td></tr>"
+    end
 
     options = [ "ALL" ] + RISK_STATUSES
     option_html = options.map do |status|
@@ -147,10 +150,16 @@ class RunArtifactsController < ApplicationController
       "<option value=\"#{h(status)}\"#{selected}>#{h(status)}</option>"
     end.join
 
+    chip_style = "display:inline-block;" \
+                 "padding:4px 10px;" \
+                 "border-radius:999px;" \
+                 "background:#edf2f7;" \
+                 "color:#1a202c;" \
+                 "font-weight:600;"
     summary_chips = options.map do |status|
       key = status == "ALL" ? "ALL" : status
       value = counters.fetch(key, 0)
-      "<span style=\"display:inline-block;padding:4px 10px;border-radius:999px;background:#edf2f7;color:#1a202c;font-weight:600;\">#{h(status)}: #{value}</span>"
+      "<span style=\"#{chip_style}\">#{h(status)}: #{value}</span>"
     end.join(" ")
 
     pie_chart = risk_pie_chart_html(counters)
@@ -189,7 +198,9 @@ class RunArtifactsController < ApplicationController
     items = events.map do |event|
       "<li>" \
         "<strong>#{h(event.fetch('reasonCode', '-'))}</strong>" \
-        " - type: #{h(event.fetch('type', '-'))}, market: #{h(event.fetch('marketId', '-'))}, seq: #{h(event.fetch('seq', '-'))}, severity: #{h(event.fetch('severity', '-'))}" \
+        " - type: #{h(event.fetch('type',
+'-'))}, market: #{h(event.fetch('marketId',
+'-'))}, seq: #{h(event.fetch('seq', '-'))}, severity: #{h(event.fetch('severity', '-'))}" \
       "</li>"
     end.join
 
@@ -208,7 +219,13 @@ class RunArtifactsController < ApplicationController
                           [ "badge--unknown", "#edf2f7", "#2d3748" ]
     end
 
-    "<span class=\"#{css_class}\" style=\"display:inline-block;padding:2px 8px;border-radius:999px;font-weight:600;background:#{bg};color:#{fg};\">#{h(status)}</span>"
+    badge_style = "display:inline-block;" \
+                  "padding:2px 8px;" \
+                  "border-radius:999px;" \
+                  "font-weight:600;" \
+                  "background:#{bg};" \
+                  "color:#{fg};"
+    "<span class=\"#{css_class}\" style=\"#{badge_style}\">#{h(status)}</span>"
   end
 
   def normalize_status_filter(value)

@@ -5,7 +5,9 @@ module TokenAuthorization
     expected_token = ENV[env_key].to_s
     return true if expected_token.empty?
 
-    provided_token = bearer_token.presence || request.headers["X-Admin-Token"].to_s.presence || request.headers["X-Admin-Artifact-Token"].to_s
+    provided_token = bearer_token.presence ||
+      request.headers["X-Admin-Token"].to_s.presence ||
+      request.headers["X-Admin-Artifact-Token"].to_s
     ActiveSupport::SecurityUtils.secure_compare(provided_token, expected_token)
   rescue ArgumentError
     false

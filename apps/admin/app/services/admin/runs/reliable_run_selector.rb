@@ -73,7 +73,8 @@ module Admin
         {
           what_happened: "El ultimo run exitoso no tiene verificacion confiable.",
           impact: "La inspeccion se muestra en modo degradado porque la validacion aun no confirma confiabilidad.",
-          next_action: "Revisa el run ##{candidate.id} (estado #{status_label}, verificacion #{verification_label}) y ejecuta verificacion de hash."
+          next_action: "Revisa el run ##{candidate.id} (estado #{status_label}, " \
+                       "verificacion #{verification_label}) y ejecuta verificacion de hash."
         }
       end
 

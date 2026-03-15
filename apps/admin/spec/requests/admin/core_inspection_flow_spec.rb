@@ -39,7 +39,8 @@ RSpec.describe "Admin core inspection flow", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Open Latest Reliable Run")
 
-      get "/admin/resources/runs/#{run.id}", params: context, headers: headers
+      avo_headers = headers.merge("X-Admin-Role" => "admin")
+      get "/admin/resources/runs/#{run.id}", params: context, headers: avo_headers
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Evidencia y artifacts")
 

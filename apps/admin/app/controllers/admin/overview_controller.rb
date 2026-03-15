@@ -23,7 +23,8 @@ class Admin::OverviewController < ApplicationController
     @metrics = dashboard_metrics
     @selected_source = normalize_filter_value(params[:source])
     @selected_field = normalize_filter_value(params[:field])
-    @ingestion_validation_errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
+    @ingestion_validation_errors = dashboard_ingestion_validation_errors(source: @selected_source, 
+field: @selected_field)
     @reliable_selection = Admin::Runs::ReliableRunSelector.new.call
     @documentation_url = "https://docs.ruby-lang.org"
   end
@@ -31,7 +32,8 @@ class Admin::OverviewController < ApplicationController
   def top_accounts
     @metrics = dashboard_metrics
     if request.xhr?
-      render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: true, navigation_context: @navigation_context }
+      render partial: "admin/overview/top_accounts", 
+locals: { metrics: @metrics, show_drilldown: true, navigation_context: @navigation_context }
     else
       render :top_accounts
     end

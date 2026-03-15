@@ -5,7 +5,8 @@ RSpec.describe Admin::Dashboard::ReadMetrics do
     bff_reader = instance_double("Admin::Dashboard::BffReadMetrics")
     artifact_reader = instance_double("Admin::DashboardMetrics", call: { total_runs_7d: 7 })
 
-    metrics = described_class.new(env: { "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "0" }, bff_reader: bff_reader, artifact_reader: artifact_reader).call
+    metrics = described_class.new(env: { "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "0" }, bff_reader: bff_reader, 
+artifact_reader: artifact_reader).call
 
     expect(metrics).to eq(total_runs_7d: 7)
   end
@@ -14,7 +15,8 @@ RSpec.describe Admin::Dashboard::ReadMetrics do
     bff_reader = instance_double("Admin::Dashboard::BffReadMetrics", call: { total_runs_7d: 9 })
     artifact_reader = instance_double("Admin::DashboardMetrics")
 
-    metrics = described_class.new(env: { "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "1" }, bff_reader: bff_reader, artifact_reader: artifact_reader).call
+    metrics = described_class.new(env: { "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "1" }, bff_reader: bff_reader, 
+artifact_reader: artifact_reader).call
 
     expect(metrics).to eq(total_runs_7d: 9)
   end
@@ -42,8 +44,10 @@ RSpec.describe Admin::Dashboard::ReadMetrics do
     artifact_reader = instance_double("Admin::DashboardMetrics")
 
     expect do
-      described_class.new(env: { "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "1" }, bff_reader: bff_reader, artifact_reader: artifact_reader).call
-    end.to raise_error(described_class::ReadPathUnavailableError, "BFF read failed and fallback is disabled: bff unavailable")
+      described_class.new(env: { "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "1" }, bff_reader: bff_reader, 
+artifact_reader: artifact_reader).call
+    end.to raise_error(described_class::ReadPathUnavailableError, 
+"BFF read failed and fallback is disabled: bff unavailable")
   end
 
   it "raises read-path unavailable when BFF fails and fallback is explicitly disabled" do
@@ -60,6 +64,7 @@ RSpec.describe Admin::Dashboard::ReadMetrics do
         bff_reader: bff_reader,
         artifact_reader: artifact_reader
       ).call
-    end.to raise_error(described_class::ReadPathUnavailableError, "BFF read failed and fallback is disabled: bff unavailable")
+    end.to raise_error(described_class::ReadPathUnavailableError, 
+"BFF read failed and fallback is disabled: bff unavailable")
   end
 end

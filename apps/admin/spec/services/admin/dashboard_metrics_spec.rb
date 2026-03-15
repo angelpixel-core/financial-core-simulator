@@ -49,8 +49,10 @@ RSpec.describe Admin::DashboardMetrics do
                 "totalPnLUsd" => "10.5"
               },
               "accounts" => [
-                { "accountId" => "acc-1", "totals" => { "totalPnLQuote" => "5.5", "realizedNetPnLQuote" => "4.0", "unrealizedPnLQuote" => "1.5" } },
-                { "accountId" => "acc-2", "totals" => { "totalPnLQuote" => "8.0", "realizedNetPnLQuote" => "5.0", "unrealizedPnLQuote" => "3.0" } }
+                { "accountId" => "acc-1", 
+"totals" => { "totalPnLQuote" => "5.5", "realizedNetPnLQuote" => "4.0", "unrealizedPnLQuote" => "1.5" } },
+                { "accountId" => "acc-2", 
+"totals" => { "totalPnLQuote" => "8.0", "realizedNetPnLQuote" => "5.0", "unrealizedPnLQuote" => "3.0" } }
               ]
             }
           )
@@ -117,7 +119,8 @@ RSpec.describe Admin::DashboardMetrics do
             {
               "global" => { "totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "3.0", "unrealizedPnLQuote" => "2.0" },
               "accounts" => [
-                { "accountId" => "acc-artifact", "totals" => { "totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "3.0", "unrealizedPnLQuote" => "2.0" } }
+                { "accountId" => "acc-artifact", 
+"totals" => { "totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "3.0", "unrealizedPnLQuote" => "2.0" } }
               ]
             }
           )
@@ -129,7 +132,8 @@ RSpec.describe Admin::DashboardMetrics do
           "Admin::LiveStateMetrics",
           call: {
             checkpoint_timeline_seq: 10,
-            latest_global: { "totalPnLQuote" => "77.0", "realizedNetPnLQuote" => "70.0", "unrealizedPnLQuote" => "7.0" },
+            latest_global: { "totalPnLQuote" => "77.0", "realizedNetPnLQuote" => "70.0", 
+"unrealizedPnLQuote" => "7.0" },
             top_accounts: [
               {
                 account_id: "acc-live",
@@ -160,7 +164,8 @@ RSpec.describe Admin::DashboardMetrics do
             {
               "global" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" },
               "accounts" => [
-                { "accountId" => "acc-fallback", "totals" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" } }
+                { "accountId" => "acc-fallback", 
+"totals" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" } }
               ]
             }
           )
@@ -190,7 +195,8 @@ RSpec.describe Admin::DashboardMetrics do
             {
               "global" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" },
               "accounts" => [
-                { "accountId" => "acc-fallback", "totals" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" } }
+                { "accountId" => "acc-fallback", 
+"totals" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" } }
               ]
             }
           )
@@ -236,7 +242,8 @@ RSpec.describe Admin::DashboardMetrics do
       failed_run = Run.create!(status: :failed, created_at: 3.days.ago, input_json: { "schemaVersion" => "1.0" })
       failed_run.update!(artifacts: { "result_json_path" => "/tmp/missing.json" })
 
-      missing_artifact_run = Run.create!(status: :succeeded, created_at: 2.days.ago, input_json: { "schemaVersion" => "1.0" })
+      missing_artifact_run = Run.create!(status: :succeeded, created_at: 2.days.ago, 
+input_json: { "schemaVersion" => "1.0" })
       missing_artifact_run.update!(artifacts: { "result_json_path" => "/tmp/missing.json" })
 
       invalid_pnl_run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })

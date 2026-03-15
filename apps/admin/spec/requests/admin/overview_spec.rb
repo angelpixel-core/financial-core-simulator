@@ -296,7 +296,8 @@ RSpec.describe "Admin overview", type: :request do
 
   it "keeps run trend chart and fallback markup across mobile and desktop detail views" do
     [ 375, 1280 ].each do |viewport_width|
-      get admin_overview_runs_trend_path, headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
+      get admin_overview_runs_trend_path, 
+headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include('data-controller="run-trend-chart"')
@@ -478,7 +479,8 @@ RSpec.describe "Admin overview", type: :request do
         run_with_accounts_json(dir: dir, account_id: "acc-artifact", total_pnl_quote: "3.0")
 
         live_provider = class_double("Admin::LiveStateMetrics").as_stubbed_const
-        live_instance = instance_double("Admin::LiveStateMetrics", call: live_metrics_for(account_id: "acc-live", total_pnl_quote: "77.0"))
+        live_instance = instance_double("Admin::LiveStateMetrics", 
+call: live_metrics_for(account_id: "acc-live", total_pnl_quote: "77.0"))
         expect(live_provider).to receive(:new).and_return(live_instance)
 
         get "/admin/overview", headers: admin_session_headers

@@ -18,7 +18,8 @@ RSpec.describe Admin::LiveStateMetrics do
             "state" => {
               "global" => { "totalPnLQuote" => "10.0" },
               "accounts" => [
-                { "accountId" => "acc-old", "totals" => { "totalPnLQuote" => "10.0", "realizedNetPnLQuote" => "5.0", "unrealizedPnLQuote" => "5.0" } }
+                { "accountId" => "acc-old", 
+"totals" => { "totalPnLQuote" => "10.0", "realizedNetPnLQuote" => "5.0", "unrealizedPnLQuote" => "5.0" } }
               ]
             }
           }
@@ -31,10 +32,13 @@ RSpec.describe Admin::LiveStateMetrics do
           {
             "timelineSeq" => 8,
             "state" => {
-              "global" => { "totalPnLQuote" => "42.0", "realizedNetPnLQuote" => "30.0", "unrealizedPnLQuote" => "12.0" },
+              "global" => { "totalPnLQuote" => "42.0", "realizedNetPnLQuote" => "30.0", 
+"unrealizedPnLQuote" => "12.0" },
               "accounts" => [
-                { "accountId" => "acc-b", "totals" => { "totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "2.0", "unrealizedPnLQuote" => "3.0" } },
-                { "accountId" => "acc-a", "totals" => { "totalPnLQuote" => "20.0", "realizedNetPnLQuote" => "11.0", "unrealizedPnLQuote" => "9.0" } }
+                { "accountId" => "acc-b", 
+"totals" => { "totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "2.0", "unrealizedPnLQuote" => "3.0" } },
+                { "accountId" => "acc-a", 
+"totals" => { "totalPnLQuote" => "20.0", "realizedNetPnLQuote" => "11.0", "unrealizedPnLQuote" => "9.0" } }
               ]
             }
           }

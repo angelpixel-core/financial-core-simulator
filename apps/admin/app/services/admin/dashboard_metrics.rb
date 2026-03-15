@@ -397,7 +397,8 @@ module Admin
           risk_events = entry["riskEvents"]
           next unless risk_events.is_a?(Array)
 
-          risk_events.filter_map { |risk_event| risk_event.is_a?(Hash) ? risk_event["marketId"].to_s.strip.presence : nil }
+          risk_events.filter_map { |risk_event|
+ risk_event.is_a?(Hash) ? risk_event["marketId"].to_s.strip.presence : nil }
         end.flatten.uniq
         return from_payload.join(", ") if from_payload.any?
       end
@@ -417,9 +418,12 @@ module Admin
 
     def deterministic_result_label(current_run:, previous_run:, total_delta:, realized_delta:, unrealized_delta:)
       return "Comparison unavailable (need at least two succeeded runs)." if previous_run.nil?
-      return "Comparison unavailable (missing canonical artifacts)." if [ total_delta, realized_delta, unrealized_delta ].all?(&:nil?)
+      return "Comparison unavailable (missing canonical artifacts)." if [ total_delta, realized_delta,
+unrealized_delta ].all?(&:nil?)
 
-      same_input = current_run.input_hash.present? && previous_run.input_hash.present? && current_run.input_hash == previous_run.input_hash
+      same_input = current_run.input_hash.present? &&
+        previous_run.input_hash.present? &&
+        current_run.input_hash == previous_run.input_hash
       deltas_zero = [ total_delta, realized_delta, unrealized_delta ].compact.all? { |value| BigDecimal(value).zero? }
 
       return "Identical output for matching input hash." if same_input && deltas_zero

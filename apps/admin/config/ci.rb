@@ -12,11 +12,24 @@ CI.run do
   step "Gate: Security - Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
 
   if ENV["ENABLE_COVERAGE_GATE"] == "1"
-    step "Gate: Coverage report", "ADMIN_COVERAGE=1 ADMIN_COVERAGE_MODE=report ADMIN_COVERAGE_DIR=coverage/admin bundle exec rspec -Ispec spec"
+    step "Gate: Coverage report",
+         [
+           "ADMIN_COVERAGE=1",
+           "ADMIN_COVERAGE_MODE=report",
+           "ADMIN_COVERAGE_DIR=coverage/admin",
+           "bundle exec rspec -Ispec spec"
+         ].join(" ")
 
     if ENV["ENFORCE_COVERAGE_GATE"] == "1"
       threshold = ENV.fetch("ADMIN_COVERAGE_MIN", "80")
-      step "Gate: Coverage threshold", "ADMIN_COVERAGE=1 ADMIN_COVERAGE_MODE=enforce ADMIN_COVERAGE_MIN=#{threshold} ADMIN_COVERAGE_DIR=coverage/admin bundle exec rspec -Ispec spec"
+      step "Gate: Coverage threshold",
+           [
+             "ADMIN_COVERAGE=1",
+             "ADMIN_COVERAGE_MODE=enforce",
+             "ADMIN_COVERAGE_MIN=#{threshold}",
+             "ADMIN_COVERAGE_DIR=coverage/admin",
+             "bundle exec rspec -Ispec spec"
+           ].join(" ")
     end
   end
 

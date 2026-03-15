@@ -46,7 +46,8 @@ module Admin
           {
             what_happened: "El run no cumple con criterios de confiabilidad.",
             impact: "La inspeccion se muestra en modo degradado.",
-            next_action: "Revisa estado #{status_label} y verificacion #{verification_label}, luego valida hash o re-ejecuta."
+            next_action: "Revisa estado #{status_label} y verificacion #{verification_label}, " \
+                         "luego valida hash o re-ejecuta."
           }
         end
       end
