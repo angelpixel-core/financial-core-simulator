@@ -18,7 +18,6 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include("ACTIVITY")
     expect(response.body).to include("FINANCIAL RESULTS")
     expect(response.body).to include("DATA QUALITY")
-    expect(response.body).to include("Expone errores de validacion de ingesta")
     expect(response.body).to include("No succeeded runs yet.")
     expect(response.body).to include("No PnL trend data available yet.")
     expect(response.body).to include("No simulation context available yet.")

@@ -41,7 +41,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
     end
 
     def position_for(account_id:, market_id:)
-      @position
+      @position ||= SpyPosition.new
     end
   end
 
@@ -243,9 +243,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
   it "injects a custom decimal class for trade parsing" do
     decimal_klass = Class.new do
       DecimalStub = Struct.new(:atoms) do
-        def to_s
-          atoms.to_s
-        end
+        delegate :to_s, to: :atoms
       end
 
       def self.from_string(value)
