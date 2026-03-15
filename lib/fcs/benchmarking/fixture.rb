@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'json'
+require "json"
 
 module FCS
   module Benchmarking
@@ -12,30 +12,30 @@ module FCS
         data = JSON.parse(raw)
 
         fixture = new(
-          schema_version: data.fetch('schemaVersion'),
-          fixture_version: data.fetch('fixtureVersion'),
-          trades: data.fetch('trades'),
-          accounts: data.fetch('accounts'),
-          markets: data.fetch('markets'),
-          valuation_timestamp: data.fetch('valuationTimestamp')
+          schema_version: data.fetch("schemaVersion"),
+          fixture_version: data.fetch("fixtureVersion"),
+          trades: data.fetch("trades"),
+          accounts: data.fetch("accounts"),
+          markets: data.fetch("markets"),
+          valuation_timestamp: data.fetch("valuationTimestamp")
         )
 
         fixture.validate!(path: path)
         fixture
       rescue Errno::ENOENT
-        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, 'Fixture file not found', details: { path: path })
+        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "Fixture file not found", details: { path: path })
       rescue Errno::EACCES
-        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, 'Fixture file is not readable', details: { path: path })
+        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "Fixture file is not readable", details: { path: path })
       rescue JSON::ParserError
         raise FCS::Error.new(
           FCS::Errors::ERR_INVALID_INPUT,
-          'Fixture JSON is invalid',
-          details: { path: path, errorClass: 'JSON::ParserError', errorCode: 'INVALID_JSON_SYNTAX' }
+          "Fixture JSON is invalid",
+          details: { path: path, errorClass: "JSON::ParserError", errorCode: "INVALID_JSON_SYNTAX" }
         )
       rescue KeyError => e
         raise FCS::Error.new(
           FCS::Errors::ERR_INVALID_INPUT,
-          'Fixture missing required field',
+          "Fixture missing required field",
           details: { path: path, field: e.message }
         )
       end
@@ -51,24 +51,24 @@ module FCS
 
       def to_h
         {
-          'schema_version' => schema_version,
-          'fixture_version' => fixture_version,
-          'trades' => trades,
-          'accounts' => accounts,
-          'markets' => markets,
-          'valuation_timestamp' => valuation_timestamp
+          "schema_version" => schema_version,
+          "fixture_version" => fixture_version,
+          "trades" => trades,
+          "accounts" => accounts,
+          "markets" => markets,
+          "valuation_timestamp" => valuation_timestamp
         }
       end
 
       def validate!(path:)
-        validate_integer!('trades', trades, path: path)
-        validate_integer!('accounts', accounts, path: path)
-        validate_integer!('markets', markets, path: path)
+        validate_integer!("trades", trades, path: path)
+        validate_integer!("accounts", accounts, path: path)
+        validate_integer!("markets", markets, path: path)
 
         if trades < 100_000
           raise FCS::Error.new(
             FCS::Errors::ERR_INVALID_INPUT,
-            'Fixture must define at least 100,000 trades',
+            "Fixture must define at least 100,000 trades",
             details: { path: path, trades: trades }
           )
         end
@@ -76,7 +76,7 @@ module FCS
         unless schema_version.is_a?(String) && !schema_version.strip.empty?
           raise FCS::Error.new(
             FCS::Errors::ERR_INVALID_INPUT,
-            'Fixture schemaVersion must be a non-empty string',
+            "Fixture schemaVersion must be a non-empty string",
             details: { path: path, schemaVersion: schema_version }
           )
         end
@@ -85,7 +85,7 @@ module FCS
 
         raise FCS::Error.new(
           FCS::Errors::ERR_INVALID_INPUT,
-          'Fixture valuationTimestamp must be a non-empty string',
+          "Fixture valuationTimestamp must be a non-empty string",
           details: { path: path, valuationTimestamp: valuation_timestamp }
         )
       end

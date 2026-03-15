@@ -4,27 +4,27 @@ module FCS
   module Reporting
     class CliSummary
       REQUIRED_ARTIFACT_KEYS = [
-        [:json_path, 'result_json'],
-        [:positions_csv_path, 'positions_csv'],
-        [:pnl_csv_path, 'pnl_csv']
+        [:json_path, "result_json"],
+        [:positions_csv_path, "positions_csv"],
+        [:pnl_csv_path, "pnl_csv"]
       ].freeze
 
       def initialize(io: $stdout)
         @io = io
       end
 
-      def print(result_json_payload, artifacts: {}, status: 'success', validate_artifacts: true)
+      def print(result_json_payload, artifacts: {}, status: "success", validate_artifacts: true)
         validate_artifacts!(artifacts) if validate_artifacts
 
         lines = []
-        lines << '=== fcs_summary ==='
+        lines << "=== fcs_summary ==="
         lines << "status: #{status}"
         lines << "run_id: #{result_json_payload.fetch('runId')}"
         lines << "input_hash: #{result_json_payload.fetch('inputHash')}"
         lines << "schema_version: #{result_json_payload.fetch('schemaVersion')}"
         lines << "engine_version: #{result_json_payload.fetch('engineVersion')}"
         lines << "valuation_timestamp: #{result_json_payload.fetch('valuationTimestamp')}"
-        lines.concat(metric_lines(result_json_payload.fetch('global')))
+        lines.concat(metric_lines(result_json_payload.fetch("global")))
         lines.concat(artifact_lines(artifacts))
 
         @io.puts(lines.join("\n"))
@@ -34,7 +34,7 @@ module FCS
 
       def metric_lines(global)
         lines = []
-        lines << 'metrics:'
+        lines << "metrics:"
         lines << "  realized_pnl_quote: #{format_value(global.fetch('realizedPnLQuote'))}"
         lines << "  fees_quote: #{format_value(global.fetch('feesQuote'))}"
         lines << "  realized_net_pnl_quote: #{format_value(global.fetch('realizedNetPnLQuote'))}"
@@ -46,7 +46,7 @@ module FCS
 
       def artifact_lines(artifacts)
         lines = []
-        lines << 'artifacts:'
+        lines << "artifacts:"
 
         REQUIRED_ARTIFACT_KEYS.each do |key, label|
           path = artifacts[key]
@@ -64,7 +64,7 @@ module FCS
       end
 
       def format_value(value)
-        value.nil? ? 'n/a' : value
+        value.nil? ? "n/a" : value
       end
 
       def validate_artifacts!(artifacts)
@@ -80,15 +80,15 @@ module FCS
         return if missing.empty?
 
         details = {
-          'missing_artifacts' => missing.to_h,
-          'expected_artifacts' => REQUIRED_ARTIFACT_KEYS.each_with_object({}) do |(key, label), acc|
+          "missing_artifacts" => missing.to_h,
+          "expected_artifacts" => REQUIRED_ARTIFACT_KEYS.each_with_object({}) do |(key, label), acc|
             acc[label] = artifacts[key]
           end
         }
 
         raise FCS::Error.new(
           FCS::Errors::ERR_VALIDATION,
-          'Missing required artifacts for CLI summary',
+          "Missing required artifacts for CLI summary",
           details: details
         )
       end

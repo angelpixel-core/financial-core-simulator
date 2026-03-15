@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'bigdecimal'
+require "bigdecimal"
 
 module FCS
   module Types
@@ -12,14 +12,14 @@ module FCS
       attr_reader :atoms
 
       def initialize(atoms)
-        raise ArgumentError, 'atoms must be Integer' unless atoms.is_a?(Integer)
+        raise ArgumentError, "atoms must be Integer" unless atoms.is_a?(Integer)
 
         @atoms = atoms
       end
 
       def self.from_rational(num, den = 1)
-        raise ArgumentError, 'den must be > 0' unless den.is_a?(Integer) && den > 0
-        raise ArgumentError, 'num must be Integer' unless num.is_a?(Integer)
+        raise ArgumentError, "den must be > 0" unless den.is_a?(Integer) && den > 0
+        raise ArgumentError, "num must be Integer" unless num.is_a?(Integer)
 
         # floor(num/den * 1e18) determinista
         new((num * SCALE) / den)
@@ -56,7 +56,7 @@ module FCS
       end
 
       def to_s
-        to_bigdecimal.to_s('F')
+        to_bigdecimal.to_s("F")
       end
     end
   end

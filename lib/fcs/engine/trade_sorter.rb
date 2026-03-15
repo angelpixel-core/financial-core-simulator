@@ -11,11 +11,11 @@ module FCS
 
       def sort_key_for(trade)
         [
-          trade.fetch('timestamp'),
-          trade.fetch('seq'),
-          trade['accountId'].to_s,
-          trade['marketId'].to_s,
-          trade['tradeId'].to_s
+          trade.fetch("timestamp"),
+          trade.fetch("seq"),
+          trade["accountId"].to_s,
+          trade["marketId"].to_s,
+          trade["tradeId"].to_s
         ]
       end
     end

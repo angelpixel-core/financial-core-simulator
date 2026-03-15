@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'time'
-require 'fileutils'
+require "json"
+require "time"
+require "fileutils"
 
 module FCS
   module Reporting
@@ -10,7 +10,7 @@ module FCS
       def write!(output_dir:, payload:)
         FileUtils.mkdir_p(output_dir)
 
-        path = File.join(output_dir, 'result.json')
+        path = File.join(output_dir, "result.json")
         File.write(path, JSON.pretty_generate(canonicalize(payload)) + "\n")
         path
       end

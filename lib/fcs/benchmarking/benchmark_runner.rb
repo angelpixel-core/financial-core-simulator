@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'digest'
-require 'fileutils'
-require 'time'
+require "digest"
+require "fileutils"
+require "time"
 
 module FCS
   module Benchmarking
@@ -34,12 +34,12 @@ module FCS
           markets: fixture.markets
         )
 
-        input['schemaVersion'] = fixture.schema_version
-        input['priceSnapshot'] ||= {}
-        input['priceSnapshot']['valuationTimestamp'] = fixture.valuation_timestamp
+        input["schemaVersion"] = fixture.schema_version
+        input["priceSnapshot"] ||= {}
+        input["priceSnapshot"]["valuationTimestamp"] = fixture.valuation_timestamp
 
         FileUtils.mkdir_p(output_dir)
-        artifacts_dir = File.join(output_dir, 'artifacts')
+        artifacts_dir = File.join(output_dir, "artifacts")
         FileUtils.mkdir_p(artifacts_dir)
 
         started_at = @clock.now.utc
@@ -100,7 +100,7 @@ module FCS
         if base.fetch(:input_hash) != candidate.fetch(:input_hash) || base.fetch(:run_id) != candidate.fetch(:run_id)
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,
-            'Benchmark input hash drift detected',
+            "Benchmark input hash drift detected",
             details: {
               fixture: fixture_path,
               base_input_hash: base.fetch(:input_hash),
@@ -116,24 +116,24 @@ module FCS
 
       def build_report(command:, fixture_path:, fixture:, timings:, started_at:, completed_at:, metadata:, samples:)
         {
-          'report_schema_version' => '1.0',
-          'command' => command,
-          'fixture_path' => fixture_path,
-          'fixture' => fixture.to_h,
-          'runs' => timings.length,
-          'started_at' => started_at.iso8601,
-          'completed_at' => completed_at.iso8601,
-          'timings_seconds' => timings,
-          'p95_seconds' => percentile(timings, 0.95),
-          'p95_gate_seconds' => @gate_seconds,
-          'input_hash' => metadata.fetch(:input_hash),
-          'run_id' => metadata.fetch(:run_id),
-          'engine_version' => FCS::VERSION,
-          'samples' => samples,
-          'artifacts' => {
-            'result_json' => metadata.fetch(:artifacts).fetch(:json_path),
-            'positions_csv' => metadata.fetch(:artifacts).fetch(:positions_csv_path),
-            'pnl_csv' => metadata.fetch(:artifacts).fetch(:pnl_csv_path)
+          "report_schema_version" => "1.0",
+          "command" => command,
+          "fixture_path" => fixture_path,
+          "fixture" => fixture.to_h,
+          "runs" => timings.length,
+          "started_at" => started_at.iso8601,
+          "completed_at" => completed_at.iso8601,
+          "timings_seconds" => timings,
+          "p95_seconds" => percentile(timings, 0.95),
+          "p95_gate_seconds" => @gate_seconds,
+          "input_hash" => metadata.fetch(:input_hash),
+          "run_id" => metadata.fetch(:run_id),
+          "engine_version" => FCS::VERSION,
+          "samples" => samples,
+          "artifacts" => {
+            "result_json" => metadata.fetch(:artifacts).fetch(:json_path),
+            "positions_csv" => metadata.fetch(:artifacts).fetch(:positions_csv_path),
+            "pnl_csv" => metadata.fetch(:artifacts).fetch(:pnl_csv_path)
           }
         }
       end
@@ -141,16 +141,16 @@ module FCS
       def sample_for_run(index:, metadata:)
         artifacts = metadata.fetch(:artifacts)
         {
-          'run_index' => index + 1,
-          'artifacts' => {
-            'result_json' => artifacts.fetch(:json_path),
-            'positions_csv' => artifacts.fetch(:positions_csv_path),
-            'pnl_csv' => artifacts.fetch(:pnl_csv_path)
+          "run_index" => index + 1,
+          "artifacts" => {
+            "result_json" => artifacts.fetch(:json_path),
+            "positions_csv" => artifacts.fetch(:positions_csv_path),
+            "pnl_csv" => artifacts.fetch(:pnl_csv_path)
           },
-          'artifact_sha256' => {
-            'result_json' => sha256(artifacts.fetch(:json_path)),
-            'positions_csv' => sha256(artifacts.fetch(:positions_csv_path)),
-            'pnl_csv' => sha256(artifacts.fetch(:pnl_csv_path))
+          "artifact_sha256" => {
+            "result_json" => sha256(artifacts.fetch(:json_path)),
+            "positions_csv" => sha256(artifacts.fetch(:positions_csv_path)),
+            "pnl_csv" => sha256(artifacts.fetch(:pnl_csv_path))
           }
         }
       end
@@ -166,24 +166,24 @@ module FCS
       end
 
       def enforce_p95_gate!(report:, report_path:, fixture_path:, command:)
-        p95 = report.fetch('p95_seconds')
+        p95 = report.fetch("p95_seconds")
         return if p95 < @gate_seconds
 
         raise FCS::Error.new(
           FCS::Errors::ERR_VALIDATION,
-          'Benchmark p95 exceeded deterministic gate',
+          "Benchmark p95 exceeded deterministic gate",
           details: {
-            'p95_seconds' => p95,
-            'p95_gate_seconds' => @gate_seconds,
-            'report_path' => report_path,
-            'fixture_path' => fixture_path,
-            'command' => command
+            "p95_seconds" => p95,
+            "p95_gate_seconds" => @gate_seconds,
+            "report_path" => report_path,
+            "fixture_path" => fixture_path,
+            "command" => command
           }
         )
       end
 
       def write_report(output_dir:, report:, completed_at:)
-        timestamp = completed_at.iso8601.gsub(':', '').gsub('-', '')
+        timestamp = completed_at.iso8601.gsub(":", "").gsub("-", "")
         path = File.join(output_dir, "benchmark_report_#{timestamp}.json")
         payload = FCS::Hashing::CanonicalJSON.dump(report)
         File.write(path, payload + "\n")

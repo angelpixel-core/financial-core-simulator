@@ -56,7 +56,7 @@ module FCS
       def raise_invalid_buy_quantity!(buy_qty)
         raise FCS::Error.new(
           FCS::Errors::ERR_VALIDATION,
-          'BUY quantity must be > 0',
+          "BUY quantity must be > 0",
           details: { quantityBase: buy_qty.to_s }
         )
       end
@@ -64,7 +64,7 @@ module FCS
       def raise_long_only_violation!
         raise FCS::Error.new(
           FCS::Errors::ERR_POSITION_NEGATIVE,
-          'SELL would make position negative',
+          "SELL would make position negative",
           details: { qty: @qty.to_s }
         )
       end

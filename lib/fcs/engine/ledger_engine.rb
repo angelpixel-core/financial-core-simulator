@@ -3,8 +3,8 @@
 module FCS
   module Engine
     class LedgerEngine
-      ACCOUNTING_METHOD_AVERAGE = 'AVERAGE_COST'
-      ACCOUNTING_METHOD_FIFO = 'FIFO'
+      ACCOUNTING_METHOD_AVERAGE = "AVERAGE_COST"
+      ACCOUNTING_METHOD_FIFO = "FIFO"
 
       def initialize(
         state: nil,
@@ -26,15 +26,15 @@ module FCS
       attr_reader :state
 
       def apply_trade!(trade)
-        pos = @state.position_for(account_id: trade.fetch('accountId'), market_id: trade.fetch('marketId'))
+        pos = @state.position_for(account_id: trade.fetch("accountId"), market_id: trade.fetch("marketId"))
         validate_long_only_sell!(pos: pos, trade: trade)
 
         @risk_engine.pre_trade_check!(
-          account_id: trade.fetch('accountId'),
-          market_id: trade.fetch('marketId'),
-          side: trade.fetch('side'),
-          quantity: trade.fetch('quantityBase'),
-          price: trade.fetch('priceQuotePerBase'),
+          account_id: trade.fetch("accountId"),
+          market_id: trade.fetch("marketId"),
+          side: trade.fetch("side"),
+          quantity: trade.fetch("quantityBase"),
+          price: trade.fetch("priceQuotePerBase"),
           position: pos,
           accounting_method: @accounting_method
         )
@@ -44,16 +44,16 @@ module FCS
           pos.apply_fee!(fee_quote) if fee_quote
         end
 
-        case trade.fetch('side')
-        when 'BUY'
+        case trade.fetch("side")
+        when "BUY"
           apply_buy!(pos, trade)
-        when 'SELL'
+        when "SELL"
           apply_sell!(pos, trade)
         else
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,
-            'Unsupported side',
-            details: { side: trade['side'], tradeId: trade['tradeId'] }
+            "Unsupported side",
+            details: { side: trade["side"], tradeId: trade["tradeId"] }
           )
         end
       end
@@ -69,37 +69,37 @@ module FCS
         else
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,
-            'Unsupported accounting method',
+            "Unsupported accounting method",
             details: { accountingMethod: accounting_method }
           )
         end
       end
 
       def apply_buy!(pos, t)
-        qty = FCS::Types::Decimal18.from_string(t.fetch('quantityBase'))
-        price = FCS::Types::Decimal18.from_string(t.fetch('priceQuotePerBase'))
+        qty = FCS::Types::Decimal18.from_string(t.fetch("quantityBase"))
+        price = FCS::Types::Decimal18.from_string(t.fetch("priceQuotePerBase"))
         pos.apply_buy!(buy_qty: qty, buy_price: price)
       end
 
       def apply_sell!(pos, t)
-        qty = FCS::Types::Decimal18.from_string(t.fetch('quantityBase'))
-        price = FCS::Types::Decimal18.from_string(t.fetch('priceQuotePerBase'))
+        qty = FCS::Types::Decimal18.from_string(t.fetch("quantityBase"))
+        price = FCS::Types::Decimal18.from_string(t.fetch("priceQuotePerBase"))
         pos.apply_sell!(sell_qty: qty, sell_price: price)
       end
 
       def validate_long_only_sell!(pos:, trade:)
-        return unless trade.fetch('side') == 'SELL'
+        return unless trade.fetch("side") == "SELL"
 
-        sell_qty = FCS::Types::Decimal18.from_string(trade.fetch('quantityBase'))
+        sell_qty = FCS::Types::Decimal18.from_string(trade.fetch("quantityBase"))
         return if sell_qty.atoms <= pos.qty.atoms
 
         raise FCS::Error.new(
           FCS::Errors::ERR_POSITION_NEGATIVE,
-          'SELL would make position negative',
+          "SELL would make position negative",
           details: {
-            accountId: trade.fetch('accountId'),
-            marketId: trade.fetch('marketId'),
-            tradeId: trade.fetch('tradeId'),
+            accountId: trade.fetch("accountId"),
+            marketId: trade.fetch("marketId"),
+            tradeId: trade.fetch("tradeId"),
             qty: pos.qty.to_s,
             sellQty: sell_qty.to_s
           }
@@ -107,10 +107,10 @@ module FCS
       end
 
       def extract_fee_quote(trade)
-        fee = trade['fee']
-        return nil unless fee.is_a?(Hash) && fee.key?('amountQuote')
+        fee = trade["fee"]
+        return nil unless fee.is_a?(Hash) && fee.key?("amountQuote")
 
-        FCS::Types::Decimal18.from_string(fee.fetch('amountQuote'))
+        FCS::Types::Decimal18.from_string(fee.fetch("amountQuote"))
       end
     end
   end

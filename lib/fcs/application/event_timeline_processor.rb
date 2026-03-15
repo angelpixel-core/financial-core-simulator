@@ -6,19 +6,19 @@ module FCS
         processed_events = 0
 
         events
-          .sort_by { |event| event.fetch('timelineSeq') }
+          .sort_by { |event| event.fetch("timelineSeq") }
           .each do |event|
-            timeline_seq = event.fetch('timelineSeq')
+            timeline_seq = event.fetch("timelineSeq")
             next if checkpoint_seq && timeline_seq <= checkpoint_seq
 
-            case event.fetch('eventType')
-            when 'PRICE_UPDATED'
+            case event.fetch("eventType")
+            when "PRICE_UPDATED"
               valuation.update_price!(
-                market_id: event.fetch('marketId'),
-                price_quote_per_base: event.fetch('priceQuotePerBase')
+                market_id: event.fetch("marketId"),
+                price_quote_per_base: event.fetch("priceQuotePerBase")
               )
-            when 'TRADE_APPLIED'
-              ledger.apply_trade!(event.fetch('trade'))
+            when "TRADE_APPLIED"
+              ledger.apply_trade!(event.fetch("trade"))
             end
 
             processed_events += 1
@@ -26,7 +26,7 @@ module FCS
               event_count: processed_events,
               timeline_seq: timeline_seq,
               state: capture_state(ledger),
-              input_hash: input_hash || ''
+              input_hash: input_hash || ""
             )
           end
       end
@@ -36,25 +36,25 @@ module FCS
       def restore_checkpoint_state!(checkpoint:, ledger:)
         return nil unless checkpoint.is_a?(Hash)
 
-        accounts = checkpoint.dig('state', 'accounts')
+        accounts = checkpoint.dig("state", "accounts")
         return nil unless accounts.is_a?(Array)
 
         accounts.each do |account|
-          account_id = account.fetch('accountId')
-          markets = account.fetch('markets', [])
+          account_id = account.fetch("accountId")
+          markets = account.fetch("markets", [])
 
           markets.each do |market|
             restore_market_position!(
               ledger: ledger,
               account_id: account_id,
-              market_id: market.fetch('marketId'),
-              quantity: market.fetch('quantity', '0'),
-              avg_cost: market.fetch('avgCost', '0')
+              market_id: market.fetch("marketId"),
+              quantity: market.fetch("quantity", "0"),
+              avg_cost: market.fetch("avgCost", "0")
             )
           end
         end
 
-        checkpoint['timelineSeq']
+        checkpoint["timelineSeq"]
       end
 
       def restore_market_position!(ledger:, account_id:, market_id:, quantity:, avg_cost:)
@@ -73,19 +73,19 @@ module FCS
 
       def capture_state(ledger)
         grouped = ledger.state.positions.each_with_object(Hash.new { |h, k| h[k] = [] }) do |(key, position), acc|
-          account_id, market_id = key.split('|', 2)
+          account_id, market_id = key.split("|", 2)
           acc[account_id] << {
-            'marketId' => market_id,
-            'quantity' => position.qty.to_s,
-            'avgCost' => position.avg_cost.to_s
+            "marketId" => market_id,
+            "quantity" => position.qty.to_s,
+            "avgCost" => position.avg_cost.to_s
           }
         end
 
         {
-          'accounts' => grouped.sort_by { |account_id, _| account_id }.map do |account_id, markets|
+          "accounts" => grouped.sort_by { |account_id, _| account_id }.map do |account_id, markets|
             {
-              'accountId' => account_id,
-              'markets' => markets.sort_by { |market| market.fetch('marketId') }
+              "accountId" => account_id,
+              "markets" => markets.sort_by { |market| market.fetch("marketId") }
             }
           end
         }

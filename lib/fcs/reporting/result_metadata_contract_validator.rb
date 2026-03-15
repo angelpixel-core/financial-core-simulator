@@ -14,15 +14,15 @@ module FCS
           next unless value.nil? || (value.is_a?(String) && value.strip.empty?)
 
           raise_contract_error!(
-            message: 'result metadata missing required field',
+            message: "result metadata missing required field",
             field: field,
             invalid_value: value
           )
         end
 
-        validate_format!(payload.fetch('inputHash'), field: 'inputHash', regex: INPUT_HASH_REGEX)
-        validate_format!(payload.fetch('runId'), field: 'runId', regex: RUN_ID_REGEX)
-        validate_format!(payload.fetch('valuationTimestamp'), field: 'valuationTimestamp', regex: ISO_UTC_REGEX)
+        validate_format!(payload.fetch("inputHash"), field: "inputHash", regex: INPUT_HASH_REGEX)
+        validate_format!(payload.fetch("runId"), field: "runId", regex: RUN_ID_REGEX)
+        validate_format!(payload.fetch("valuationTimestamp"), field: "valuationTimestamp", regex: ISO_UTC_REGEX)
       end
 
       private
@@ -31,7 +31,7 @@ module FCS
         return if value.is_a?(String) && value.match?(regex)
 
         raise_contract_error!(
-          message: 'result metadata has invalid format',
+          message: "result metadata has invalid format",
           field: field,
           invalid_value: value
         )
@@ -39,11 +39,12 @@ module FCS
 
       def raise_contract_error!(message:, field:, invalid_value: nil)
         details = {
-          'field' => field,
-          'impact' => 'Canonical result metadata cannot be trusted for this run.',
-          'next_action' => 'Ensure metadata fields are present and formatted as required (ISO-8601 UTC timestamps, deterministic identifiers).'
+          "field" => field,
+          "impact" => "Canonical result metadata cannot be trusted for this run.",
+          "next_action" => "Ensure metadata fields are present and formatted as required " \
+                           "(ISO-8601 UTC timestamps, deterministic identifiers)."
         }
-        details['invalid_value'] = invalid_value unless invalid_value.nil?
+        details["invalid_value"] = invalid_value unless invalid_value.nil?
 
         raise FCS::Error.new(
           FCS::Errors::ERR_VALIDATION,

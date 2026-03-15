@@ -34,8 +34,8 @@ module FCS
             next
           end
 
-          raise_invalid!('source event idempotency key conflict for duplicate event',
-                         field: 'sourceEvent.idempotencyKey')
+          raise_invalid!("source event idempotency key conflict for duplicate event",
+                         field: "sourceEvent.idempotencyKey")
         end
 
         { accepted: accepted, duplicates: duplicates }
@@ -46,14 +46,14 @@ module FCS
       def validate_event_shape!(event)
         return if event.is_a?(Hash)
 
-        raise_invalid!('source event must be an object', field: 'sourceEvent')
+        raise_invalid!("source event must be an object", field: "sourceEvent")
       end
 
       def validate_required_fields!(event)
         REQUIRED_FIELDS.each do |field|
           next if event.key?(field)
 
-          raise_invalid!('missing required source event field', field: "sourceEvent.#{field}")
+          raise_invalid!("missing required source event field", field: "sourceEvent.#{field}")
         end
       end
 
@@ -64,21 +64,21 @@ module FCS
       end
 
       def validate_payload!(event)
-        return if event['payload'].is_a?(Hash)
+        return if event["payload"].is_a?(Hash)
 
-        raise_invalid!('source event payload must be an object', field: 'sourceEvent.payload')
+        raise_invalid!("source event payload must be an object", field: "sourceEvent.payload")
       end
 
       def validate_batch_shape!(events)
         return if events.is_a?(Array)
 
-        raise_invalid!('source events batch must be an array', field: 'sourceEvents')
+        raise_invalid!("source events batch must be an array", field: "sourceEvents")
       end
 
       def validate_non_empty_string!(value, field:)
         return if value.is_a?(String) && !value.strip.empty?
 
-        raise_invalid!('source event field must be a non-empty string', field: field)
+        raise_invalid!("source event field must be a non-empty string", field: field)
       end
 
       def raise_invalid!(message, field:)

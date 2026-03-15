@@ -3,9 +3,9 @@
 module FCS
   module Engine
     class RiskEngine
-      STATUS_HEALTHY = 'HEALTHY'
-      STATUS_MARGIN_CALL = 'MARGIN_CALL'
-      STATUS_LIQUIDATABLE = 'LIQUIDATABLE'
+      STATUS_HEALTHY = "HEALTHY"
+      STATUS_MARGIN_CALL = "MARGIN_CALL"
+      STATUS_LIQUIDATABLE = "LIQUIDATABLE"
 
       def initialize(account_collateral:, risk_config:)
         @account_collateral = normalize_collateral(account_collateral)
@@ -20,8 +20,8 @@ module FCS
         if accounting_method == FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_FIFO
           raise FCS::Error.new(
             FCS::Errors::ERR_RISK_REJECTION,
-            'Short selling is not supported with FIFO accounting',
-            details: { accountingMethod: accounting_method, reason: 'FIFO_SHORT_FORBIDDEN' }
+            "Short selling is not supported with FIFO accounting",
+            details: { accountingMethod: accounting_method, reason: "FIFO_SHORT_FORBIDDEN" }
           )
         end
 
@@ -30,7 +30,7 @@ module FCS
         if collateral.nil? || max_leverage.nil? || collateral.zero?
           raise FCS::Error.new(
             FCS::Errors::ERR_RISK_CONFIG_INVALID,
-            'Short selling requires collateralQuote and riskModel.maxLeverage',
+            "Short selling requires collateralQuote and riskModel.maxLeverage",
             details: { accountId: account_id }
           )
         end
@@ -42,14 +42,14 @@ module FCS
 
         raise FCS::Error.new(
           FCS::Errors::ERR_RISK_REJECTION,
-          'Leverage limit exceeded',
+          "Leverage limit exceeded",
           details: {
             accountId: account_id,
             marketId: market_id,
             projectedNotionalQuote: projected_notional.to_s,
             collateralQuote: collateral.to_s,
             maxLeverage: max_leverage.to_s,
-            reason: 'MAX_LEVERAGE_EXCEEDED'
+            reason: "MAX_LEVERAGE_EXCEEDED"
           }
         )
       end
@@ -67,7 +67,7 @@ module FCS
         end
 
         state.positions.each do |key, pos|
-          account_id, market_id = key.split('|', 2)
+          account_id, market_id = key.split("|", 2)
           snapshot_price = valuation.snapshot_price_for(market_id)
           notional = pos.qty.abs * snapshot_price
           unrealized = valuation.unrealized_pnl_quote(market_id: market_id, position: pos)
@@ -126,9 +126,9 @@ module FCS
 
       def projected_qty_atoms(position:, side:, quantity:)
         case side
-        when 'BUY'
+        when "BUY"
           position.qty.atoms + quantity.atoms
-        when 'SELL'
+        when "SELL"
           position.qty.atoms - quantity.atoms
         else
           position.qty.atoms
@@ -159,7 +159,7 @@ module FCS
 
         raise FCS::Error.new(
           FCS::Errors::ERR_RISK_CONFIG_INVALID,
-          'RiskEngine expects Decimal18-compatible values',
+          "RiskEngine expects Decimal18-compatible values",
           details: { valueClass: value.class.to_s }
         )
       end

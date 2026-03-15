@@ -15,23 +15,23 @@ module FCS
       end
 
       def debug(message)
-        log('DEBUG', DEBUG, message)
+        log("DEBUG", DEBUG, message)
       end
 
       def info(message)
-        log('INFO', INFO, message)
+        log("INFO", INFO, message)
       end
 
       def warn(message)
-        log('WARN', WARN, message)
+        log("WARN", WARN, message)
       end
 
       def error(message)
-        log('ERROR', ERROR, message)
+        log("ERROR", ERROR, message)
       end
 
       def fatal(message)
-        log('FATAL', FATAL, message)
+        log("FATAL", FATAL, message)
       end
 
       private

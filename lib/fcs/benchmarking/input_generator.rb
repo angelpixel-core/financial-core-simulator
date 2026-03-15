@@ -8,12 +8,12 @@ module FCS
         market_ids  = (1..markets).map { |i| "MKT-#{i}" }
 
         {
-          'schemaVersion' => '1.0',
-          'accounts' => account_ids.map { |id| { 'accountId' => id } },
-          'markets' => market_ids.map { |id| { 'marketId' => id } },
-          'feeModel' => { 'enabled' => true },
-          'trades' => build_trades(trades, account_ids, market_ids),
-          'priceSnapshot' => build_snapshot(market_ids)
+          "schemaVersion" => "1.0",
+          "accounts" => account_ids.map { |id| { "accountId" => id } },
+          "markets" => market_ids.map { |id| { "marketId" => id } },
+          "feeModel" => { "enabled" => true },
+          "trades" => build_trades(trades, account_ids, market_ids),
+          "priceSnapshot" => build_snapshot(market_ids)
         }
       end
 
@@ -40,32 +40,32 @@ module FCS
           # si no hay inventario, forzamos BUY
           side =
             if inventory[key] <= 0
-              'BUY'
+              "BUY"
             else
               # alternar para dar mezcla
-              (i.even? ? 'SELL' : 'BUY')
+              (i.even? ? "SELL" : "BUY")
             end
 
-          if side == 'SELL'
+          if side == "SELL"
             inventory[key] -= 1
-            price = '101' # slightly higher
+            price = "101" # slightly higher
           else
             inventory[key] += 1
-            price = '100'
+            price = "100"
           end
 
           seqs[key] += 1
 
           out << {
-            'tradeId' => "t-#{i + 1}",
-            'accountId' => acc,
-            'marketId' => mkt,
-            'timestamp' => ts,
-            'seq' => seqs[key],
-            'side' => side,
-            'quantityBase' => '1',
-            'priceQuotePerBase' => price,
-            'fee' => { 'amountQuote' => '0.01' }
+            "tradeId" => "t-#{i + 1}",
+            "accountId" => acc,
+            "marketId" => mkt,
+            "timestamp" => ts,
+            "seq" => seqs[key],
+            "side" => side,
+            "quantityBase" => "1",
+            "priceQuotePerBase" => price,
+            "fee" => { "amountQuote" => "0.01" }
           }
 
           i += 1
@@ -77,9 +77,9 @@ module FCS
 
       def build_snapshot(market_ids)
         {
-          'valuationTimestamp' => '2026-02-25T03:00:00Z',
-          'prices' => market_ids.map { |m| { 'marketId' => m, 'priceQuotePerBase' => '100' } },
-          'fx' => { 'quoteUsd' => '1' }
+          "valuationTimestamp" => "2026-02-25T03:00:00Z",
+          "prices" => market_ids.map { |m| { "marketId" => m, "priceQuotePerBase" => "100" } },
+          "fx" => { "quoteUsd" => "1" }
         }
       end
     end

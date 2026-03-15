@@ -17,7 +17,7 @@ RSpec.configure do |config|
   config.filter_run_excluding perf: true
 
   config.before(:suite) do
-    require_relative '../lib/fcs'
+    require_relative "../lib/fcs"
     FCS.logger.level = FCS::Logging::SimpleLogger::FATAL
   end
 

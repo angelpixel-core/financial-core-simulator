@@ -19,11 +19,11 @@ module FCS
 
       def write_all!(output_dir:, payload:)
         @result_metadata_contract_validator.validate!(payload: payload)
-        @account_market_contract_validator.validate!(accounts: payload.fetch('accounts'))
+        @account_market_contract_validator.validate!(accounts: payload.fetch("accounts"))
 
         json_path = @reporter.write!(output_dir: output_dir, payload: payload)
-        positions_path = @positions_csv.write!(output_dir: output_dir, accounts: payload.fetch('accounts'))
-        pnl_path = @pnl_csv.write!(output_dir: output_dir, accounts: payload.fetch('accounts'))
+        positions_path = @positions_csv.write!(output_dir: output_dir, accounts: payload.fetch("accounts"))
+        pnl_path = @pnl_csv.write!(output_dir: output_dir, accounts: payload.fetch("accounts"))
 
         @csv_reconciler.validate!(
           json_path: json_path,

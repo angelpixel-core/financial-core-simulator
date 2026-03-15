@@ -5,9 +5,9 @@ module FCS
     class FXConverter
       def initialize(price_snapshot:, usd_enabled:)
         @usd_enabled = usd_enabled
-        fx = price_snapshot['fx']
+        fx = price_snapshot["fx"]
         @quote_usd =
-          (FCS::Types::Decimal18.from_string(fx.fetch('quoteUsd')) if fx && fx['quoteUsd'])
+          (FCS::Types::Decimal18.from_string(fx.fetch("quoteUsd")) if fx && fx["quoteUsd"])
 
         raise_missing_fx_for_usd_enabled! if @usd_enabled && @quote_usd.nil?
       end
@@ -27,12 +27,12 @@ module FCS
       def raise_missing_fx_for_usd_enabled!
         raise FCS::Error.new(
           FCS::Errors::ERR_MISSING_SNAPSHOT,
-          'Missing required snapshot FX rate',
+          "Missing required snapshot FX rate",
           details: {
-            missingField: 'priceSnapshot.fx.quoteUsd',
-            what_happened: 'USD conversion is enabled but quoteUsd FX rate is missing from snapshot.',
-            impact: 'Account and global USD totals cannot be calculated deterministically.',
-            next_action: 'Provide priceSnapshot.fx.quoteUsd as a positive decimal string, or disable usdModel.enabled.'
+            missingField: "priceSnapshot.fx.quoteUsd",
+            what_happened: "USD conversion is enabled but quoteUsd FX rate is missing from snapshot.",
+            impact: "Account and global USD totals cannot be calculated deterministically.",
+            next_action: "Provide priceSnapshot.fx.quoteUsd as a positive decimal string, or disable usdModel.enabled."
           }
         )
       end
