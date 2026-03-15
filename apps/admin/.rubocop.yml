@@ -1,4 +1,6 @@
 # Omakase Ruby styling for Rails
+require:
+  - rubocop-rspec
 inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 inherit_from:
   - config/release/rubocop_lint_debt.yml

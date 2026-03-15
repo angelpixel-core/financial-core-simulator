@@ -11,4 +11,6 @@ gem "csv", "~> 3.3"
 
 group :development do
   gem "rails-mcp-server", "~> 1.5"
+  gem "rubocop", require: false
+  gem "rubocop-rspec", require: false
 end
