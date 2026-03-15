@@ -1,6 +1,8 @@
+require "active_support/core_ext/module/delegation"
+
 module FCS
   module Projector
-    # Replays event streams into read models.
+    # Replays event streams into read models (pure Ruby).
     class ReadModelReplay
       def initialize(
         today: Date.today,
