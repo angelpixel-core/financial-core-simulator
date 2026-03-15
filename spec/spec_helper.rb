@@ -14,6 +14,7 @@
 #
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 require "simplecov"
+require "rspec"
 
 SimpleCov.start do
   enable_coverage :branch
