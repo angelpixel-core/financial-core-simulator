@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      gem: ${{ steps.filter.outputs.gem }}
+      admin: ${{ steps.filter.outputs.admin }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            gem:
+              - lib/**
+              - spec/**
+              - Gemfile
+              - Gemfile.lock
+              - financial-core-simulator.gemspec
+            admin:
+              - apps/admin/**
+
+  gem-tests:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.gem == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Placeholder - gem tests
+        run: 'echo "TODO: run bundle exec rspec"'
+
+  gem-quality:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.gem == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Placeholder - gem quality
+        run: 'echo "TODO: run rubocop, reek, rubycritic"'
+
+  gem-security:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.gem == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Placeholder - gem security
+        run: 'echo "TODO: run brakeman and bundle-audit"'
+
+  admin-tests:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.admin == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Placeholder - admin tests
+        run: 'echo "TODO: run admin app specs with DB"'

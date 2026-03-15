@@ -1,0 +1,20 @@
+name: Mutation Nightly
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+
+jobs:
+  mutant:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Placeholder - mutation testing
+        run: 'echo "TODO: run bundle exec mutant run --use rspec \"FCS::Engine*\""'
