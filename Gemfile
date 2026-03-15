@@ -12,6 +12,7 @@ gem "csv", "~> 3.3"
 group :development do
   gem "rails-mcp-server", "~> 1.5"
   gem "brakeman", require: false
+  gem "bundler-audit", require: false
   gem "rubocop", require: false
   gem "rubocop-performance", require: false
   gem "rubocop-rspec", require: false
