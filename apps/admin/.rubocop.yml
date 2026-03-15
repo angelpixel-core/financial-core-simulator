@@ -12,7 +12,7 @@ RSpec/LeakyLocalVariable:
   Enabled: true
 
 RSpec/Output:
-  Enabled: false
+  Enabled: true
 
 # Overwrite or add rules to create your own house style
 #
