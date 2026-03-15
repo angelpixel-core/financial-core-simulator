@@ -229,6 +229,7 @@ DEPENDENCIES
   rubocop-performance
   rubocop-rspec
   rubycritic
+  simplecov
   zeitwerk
 
 CHECKSUMS

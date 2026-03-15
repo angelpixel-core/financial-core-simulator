@@ -13,6 +13,22 @@
 # it.
 #
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+require "simplecov"
+
+SimpleCov.start do
+  enable_coverage :branch
+
+  add_filter "/spec/"
+  add_filter "/config/"
+  add_filter "/vendor/"
+  add_filter "/bin/"
+
+  add_group "Domain", "lib/fcs"
+  add_group "Engine", "lib/fcs/engine"
+  add_group "Reporting", "lib/fcs/reporting"
+  add_group "Ingestion", "lib/fcs/ingestion"
+end
+
 RSpec.configure do |config|
   config.filter_run_excluding perf: true
 
