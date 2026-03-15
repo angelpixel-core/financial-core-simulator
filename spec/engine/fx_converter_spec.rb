@@ -40,6 +40,7 @@ RSpec.describe FCS::Engine::FXConverter do
       quote_usd = converter.instance_variable_get(:@quote_usd)
 
       expect(quote_usd).to be_a(FCS::Types::Decimal18)
+      expect(quote_usd.class.name).to eq("FCS::Types::Decimal18")
       expect(quote_usd.atoms).to eq(FCS::Types::Decimal18.from_string("1.25").atoms)
     end
 
@@ -47,6 +48,7 @@ RSpec.describe FCS::Engine::FXConverter do
       expect do
         described_class.new(price_snapshot: build_snapshot, usd_enabled: true)
       end.to raise_error(FCS::Error) do |error|
+        expect(error.message).to eq("Missing required snapshot FX rate")
         expect(error.code).to eq(FCS::Errors::ERR_MISSING_SNAPSHOT)
         expect(error.details).to eq(
           missingField: "priceSnapshot.fx.quoteUsd",
