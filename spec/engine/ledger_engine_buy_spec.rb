@@ -69,9 +69,11 @@ RSpec.describe FCS::Engine::LedgerEngine do
     expect { engine.apply_trade!(sell) }
       .to raise_error(FCS::Error) { |e|
         expect(e.code).to eq(FCS::Errors::ERR_POSITION_NEGATIVE)
+        expect(e.message).to eq("SELL would make position negative")
         expect(e.details).to include(
           accountId: "acc-1",
           marketId: "ETH-USD",
+          tradeId: "s1",
           qty: "1.0",
           sellQty: "2.0"
         )
