@@ -8,7 +8,8 @@ RSpec.describe "Dashboard overview", type: :request do
 
     parsed = JSON.parse(response.body)
     expect(parsed).to include("runKpis", "runsTrend14d", "statusMix30d", "latestRun", "globalSummary", "topAccounts")
-    expect(parsed.fetch("runKpis")).to include("totalRuns7d", "totalRuns30d", "successRateLast50", "avgDurationMsLast50")
+    expect(parsed.fetch("runKpis")).to include("totalRuns7d", "totalRuns30d", "successRateLast50", 
+"avgDurationMsLast50")
     expect(parsed.fetch("runsTrend14d")).to be_a(Array)
     expect(parsed.fetch("statusMix30d")).to include("queued", "running", "succeeded", "failed")
     expect(parsed.fetch("topAccounts")).to be_a(Array)

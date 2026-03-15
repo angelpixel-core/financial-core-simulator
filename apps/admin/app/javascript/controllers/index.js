@@ -1,4 +1,13 @@
-// Import and register all your controllers from the importmap via controllers/**/*_controller
-import { application } from "controllers/application"
-import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
-eagerLoadControllersFrom("controllers", application)
+import { application } from "./application"
+
+const controllerFiles = import.meta.glob("./**/*_controller.js", { eager: true })
+
+Object.entries(controllerFiles).forEach(([path, module]) => {
+  const identifier = path
+    .replace("./", "")
+    .replace("_controller.js", "")
+    .replace(/\//g, "--")
+    .replace(/_/g, "-")
+
+  application.register(identifier, module.default)
+})

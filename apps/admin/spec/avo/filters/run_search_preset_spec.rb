@@ -25,9 +25,12 @@ RSpec.describe Avo::Filters::RunSearchPreset do
     end
 
     it "filters unverified recent runs preset" do
-      unverified = Run.create!(status: :succeeded, verification_status: :unverified, input_json: { "schemaVersion" => "1.0" })
-      mismatch = Run.create!(status: :succeeded, verification_status: :mismatch, input_json: { "schemaVersion" => "1.0" })
-      verification_error = Run.create!(status: :succeeded, verification_status: :verification_error, input_json: { "schemaVersion" => "1.0" })
+      unverified = Run.create!(status: :succeeded, verification_status: :unverified, 
+input_json: { "schemaVersion" => "1.0" })
+      mismatch = Run.create!(status: :succeeded, verification_status: :mismatch, 
+input_json: { "schemaVersion" => "1.0" })
+      verification_error = Run.create!(status: :succeeded, verification_status: :verification_error, 
+input_json: { "schemaVersion" => "1.0" })
       Run.create!(status: :succeeded, verification_status: :verified, input_json: { "schemaVersion" => "1.0" })
 
       query = described_class.new.apply(nil, Run.all, "unverified_recent")

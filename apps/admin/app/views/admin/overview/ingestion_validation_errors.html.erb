@@ -1,4 +1,5 @@
 <main class="overview">
+  <% navigation_context = @navigation_context || {} %>
   <header class="overview__header">
     <div>
       <p class="overview__eyebrow">Admin</p>
@@ -6,7 +7,7 @@
       <p class="overview__subtitle">Standalone view for latest envelope validation failures.</p>
     </div>
     <nav class="overview__nav">
-      <a class="overview__link" href="<%= admin_overview_path %>">Back to overview</a>
+      <a class="overview__link" href="<%= admin_overview_path(navigation_context) %>">Back to overview</a>
       <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
     </nav>
   </header>
@@ -15,7 +16,8 @@
       errors: @errors,
       selected_source: @selected_source,
       selected_field: @selected_field,
-      show_drilldown: false
+      show_drilldown: false,
+      navigation_context: navigation_context
     } %>
   </section>
 </main>

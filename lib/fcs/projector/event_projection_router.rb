@@ -1,10 +1,11 @@
 module FCS
   module Projector
+    # Routes normalized events to projection keys.
     class EventProjectionRouter
       DEFAULT_ROUTES = {
-        'RUN_LIFECYCLE_NORMALIZED' => %w[overview trend],
-        'ACCOUNT_TOTALS_NORMALIZED' => ['topAccountsRisk'],
-        'RISK_SNAPSHOT_NORMALIZED' => ['topAccountsRisk']
+        "RUN_LIFECYCLE_NORMALIZED" => %w[overview trend],
+        "ACCOUNT_TOTALS_NORMALIZED" => ["topAccountsRisk"],
+        "RISK_SNAPSHOT_NORMALIZED" => ["topAccountsRisk"]
       }.freeze
 
       def initialize(routes: DEFAULT_ROUTES)
@@ -19,14 +20,14 @@ module FCS
 
       def normalize_routes!(routes)
         unless routes.is_a?(Hash) && !routes.empty?
-          raise_invalid!('event projection routes must be a non-empty hash', field: 'eventProjectionRouter.routes')
+          raise_invalid!("event projection routes must be a non-empty hash", field: "eventProjectionRouter.routes")
         end
 
         routes.each_with_object({}) do |(event_type, projection_keys), normalized|
-          validate_non_empty_string!(event_type, field: 'eventProjectionRouter.routes.eventType')
+          validate_non_empty_string!(event_type, field: "eventProjectionRouter.routes.eventType")
 
           unless projection_keys.is_a?(Array) && !projection_keys.empty?
-            raise_invalid!('event projection routes must map to a non-empty array',
+            raise_invalid!("event projection routes must map to a non-empty array",
                            field: "eventProjectionRouter.routes.#{event_type}")
           end
 
@@ -40,7 +41,7 @@ module FCS
       def validate_non_empty_string!(value, field:)
         return if value.is_a?(String) && !value.strip.empty?
 
-        raise_invalid!('event projection router field must be a non-empty string', field: field)
+        raise_invalid!("event projection router field must be a non-empty string", field: field)
       end
 
       def raise_invalid!(message, field:)

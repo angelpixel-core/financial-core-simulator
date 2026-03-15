@@ -6,7 +6,8 @@ module Admin
       end
 
       def top_accounts(metrics:)
-        serialize_widget(payload: { "topAccounts" => metrics[:top_accounts] || [] }, required_widget_keys: [ "topAccounts" ])
+        serialize_widget(payload: { "topAccounts" => metrics[:top_accounts] || [] }, 
+required_widget_keys: [ "topAccounts" ])
       end
 
       def risk(metrics:)
@@ -14,7 +15,8 @@ module Admin
       end
 
       def trend(metrics:)
-        serialize_widget(payload: { "runsTrend14d" => metrics[:runs_trend_14d] || [] }, required_widget_keys: [ "runsTrend14d" ])
+        serialize_widget(payload: { "runsTrend14d" => metrics[:runs_trend_14d] || [] }, 
+required_widget_keys: [ "runsTrend14d" ])
       end
 
       def latest_run(metrics:)

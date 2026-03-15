@@ -1,6 +1,8 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help setup setup-root setup-admin db-up db-down db-logs test test-root test-admin test-perf smoke-manual seed-dashboard quality lint-admin docs-check status
+ADMIN_COVERAGE_MIN ?= 80
+
+.PHONY: help setup setup-root setup-admin db-up db-down db-logs test test-root test-admin test-perf smoke-manual seed-dashboard quality lint-admin coverage-admin coverage-admin-enforce docs-check security-admin release-gate-pre-demo release-gate-pre-production status
 
 help: ## Mostrar tareas disponibles
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "%-18s %s\n", $$1, $$2}'
@@ -41,6 +43,19 @@ seed-dashboard: ## Poblar datos demo para dashboard admin
 
 lint-admin: ## Ejecutar RuboCop en apps/admin
 	BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rubocop apps/admin
+
+coverage-admin: ## Ejecutar tests admin con cobertura SimpleCov
+	ADMIN_COVERAGE=1 ADMIN_COVERAGE_MODE=report ADMIN_COVERAGE_DIR=coverage/admin BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rspec -Iapps/admin/spec apps/admin/spec
+
+coverage-admin-enforce: ## Ejecutar tests admin con cobertura y umbral
+	ADMIN_COVERAGE=1 ADMIN_COVERAGE_MODE=enforce ADMIN_COVERAGE_MIN=$(ADMIN_COVERAGE_MIN) ADMIN_COVERAGE_DIR=coverage/admin BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rspec -Iapps/admin/spec apps/admin/spec
+
+security-admin: ## Ejecutar auditorias de seguridad de apps/admin
+	cd apps/admin && bin/bundler-audit && bin/importmap audit && bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error
+
+release-gate-pre-demo: test-admin lint-admin security-admin ## Gate pre-demo (deterministico)
+
+release-gate-pre-production: test-admin lint-admin security-admin ## Gate pre-produccion (deterministico)
 
 docs-check: ## Verificar que no queden referencias a docs/discussion
 	@! rg -n "docs/discussion/" docs

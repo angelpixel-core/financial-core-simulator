@@ -1,2 +1,43 @@
 #!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+
+require "fileutils"
+
+APP_ROOT = File.expand_path("..", __dir__)
+ENV["PORT"] ||= "3000"
+ENV["BINDING"] ||= "0.0.0.0"
+
+Dir.chdir(APP_ROOT) do
+  if File.exist?("Procfile.dev")
+    if system("which overmind > /dev/null 2>&1")
+      exec "overmind", "start", "-f", "Procfile.dev", *ARGV
+    elsif system("foreman --version > /dev/null 2>&1")
+      exec "foreman", "start", "-f", "Procfile.dev", *ARGV
+    elsif system("bundle exec foreman --version > /dev/null 2>&1")
+      exec "bundle", "exec", "foreman", "start", "-f", "Procfile.dev", *ARGV
+    end
+
+    warn "Foreman/Overmind no disponible en este Ruby; usando fallback multiproceso"
+
+    pids = []
+    pids << Process.spawn("bundle", "exec", "vite", "dev")
+    pids << Process.spawn({ "SERVER_PROCESS" => "1" }, "./bin/rails", "server", *ARGV)
+
+    shutdown = proc do
+      pids.each do |pid|
+        begin
+          Process.kill("TERM", pid)
+        rescue Errno::ESRCH
+          nil
+        end
+      end
+    end
+
+    trap("INT", &shutdown)
+    trap("TERM", &shutdown)
+
+    Process.waitall
+    exit 0
+  end
+
+  exec "./bin/rails", "server", *ARGV
+end

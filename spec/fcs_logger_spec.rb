@@ -1,8 +1,8 @@
-require_relative '../lib/fcs'
-require 'stringio'
+require_relative "../lib/fcs"
+require "stringio"
 
-RSpec.describe 'FCS.logger' do
-  it 'provides a configurable logger with WARN default level' do
+RSpec.describe "FCS.logger" do
+  it "provides a configurable logger with WARN default level" do
     original_logger = FCS.logger
 
     io = StringIO.new

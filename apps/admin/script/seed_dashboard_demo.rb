@@ -196,5 +196,10 @@ upsert_validation_failure(
 
 puts "Done."
 puts "Runs total: #{Run.count}"
-puts "Succeeded: #{Run.succeeded.count} | Failed: #{Run.failed.count} | Running: #{Run.running.count} | Queued: #{Run.queued.count}"
+puts [
+  "Succeeded: #{Run.succeeded.count}",
+  "Failed: #{Run.failed.count}",
+  "Running: #{Run.running.count}",
+  "Queued: #{Run.queued.count}"
+].join(" | ")
 puts "Open overview: /admin/overview"

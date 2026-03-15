@@ -2,8 +2,9 @@
 
 module FCS
   module Ingestion
+    # Validates ingestion payloads and raises on invalid input.
     class Validator
-      SUPPORTED_SCHEMA_VERSIONS = ['1.0'].freeze
+      SUPPORTED_SCHEMA_VERSIONS = ["1.0"].freeze
       SUPPORTED_ACCOUNTING_METHODS = [
         FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE,
         FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_FIFO
@@ -13,21 +14,23 @@ module FCS
         validate_schema_version!(h)
         validate_shape!(h)
         validate_accounting_model!(h)
+        validate_usd_model!(h)
         validate_risk_model!(h)
 
-        accounts = h.fetch('accounts')
-        markets  = h.fetch('markets')
-        trades   = h.fetch('trades')
+        accounts = h.fetch("accounts")
+        markets  = h.fetch("markets")
+        trades   = h["trades"] || []
 
-        account_ids = extract_unique_ids!(accounts, 'accountId', code: FCS::Errors::ERR_DUPLICATE_ID)
-        market_ids  = extract_unique_ids!(markets, 'marketId', code: FCS::Errors::ERR_DUPLICATE_ID)
+        account_ids = extract_unique_ids!(accounts, "accountId", code: FCS::Errors::ERR_DUPLICATE_ID)
+        market_ids  = extract_unique_ids!(markets, "marketId", code: FCS::Errors::ERR_DUPLICATE_ID)
         validate_account_collateral!(accounts)
 
         validate_snapshot!(h, market_ids)
-        validate_timeline!(h)
+        validate_timeline!(h, account_ids: account_ids, market_ids: market_ids)
 
-        validate_trades!(trades, account_ids, market_ids, fee_enabled?(h))
-        validate_seq_uniqueness!(trades)
+        effective_trades = timeline_mode_payload?(h) ? timeline_trade_payloads(h) : trades
+        validate_trades!(effective_trades, account_ids, market_ids, fee_enabled?(h))
+        validate_seq_uniqueness!(effective_trades)
 
         true
       end
@@ -35,107 +38,155 @@ module FCS
       private
 
       def validate_schema_version!(h)
-        sv = h['schemaVersion']
+        sv = h["schemaVersion"]
         return if SUPPORTED_SCHEMA_VERSIONS.include?(sv)
 
         raise FCS::Error.new(
           FCS::Errors::ERR_UNSUPPORTED_SCHEMA,
-          'Unsupported schemaVersion',
+          "Unsupported schemaVersion",
           details: { schemaVersion: sv, supported: SUPPORTED_SCHEMA_VERSIONS }
         )
       end
 
       def validate_shape!(h)
-        %w[accounts markets trades priceSnapshot].each do |k|
-          raise_invalid!('Missing required field', field: k) unless h.key?(k)
+        %w[accounts markets priceSnapshot].each do |k|
+          raise_invalid!("Missing required field", field: k) unless h.key?(k)
         end
 
-        raise_invalid!('accounts must be an array', field: 'accounts') unless h['accounts'].is_a?(Array)
-        raise_invalid!('markets must be an array', field: 'markets')   unless h['markets'].is_a?(Array)
-        raise_invalid!('trades must be an array', field: 'trades')     unless h['trades'].is_a?(Array)
-        raise_invalid!('priceSnapshot must be an object', field: 'priceSnapshot') unless h['priceSnapshot'].is_a?(Hash)
+        raise_invalid!("accounts must be an array", field: "accounts") unless h["accounts"].is_a?(Array)
+        raise_invalid!("markets must be an array", field: "markets")   unless h["markets"].is_a?(Array)
+        raise_invalid!("priceSnapshot must be an object", field: "priceSnapshot") unless h["priceSnapshot"].is_a?(Hash)
 
-        timeline = h['timeline']
-        return if timeline.nil?
+        timeline = h["timeline"]
+        unless timeline.nil?
+          raise_invalid!("timeline must be an object", field: "timeline") unless timeline.is_a?(Hash)
+          unless timeline["events"].is_a?(Array)
+            raise_invalid!("timeline.events must be an array",
+                           field: "timeline.events")
+          end
+        end
 
-        raise_invalid!('timeline must be an object', field: 'timeline') unless timeline.is_a?(Hash)
-        return if timeline['events'].is_a?(Array)
-
-        raise_invalid!('timeline.events must be an array',
-                       field: 'timeline.events')
+        if timeline.nil?
+          raise_invalid!("Missing required field", field: "trades") unless h.key?("trades")
+          raise_invalid!("trades must be an array", field: "trades") unless h["trades"].is_a?(Array)
+        elsif h.key?("trades") && !h["trades"].is_a?(Array)
+          raise_invalid!("trades must be an array", field: "trades")
+        end
       end
 
-      def validate_timeline!(h)
-        timeline = h['timeline']
+      def validate_timeline!(h, account_ids:, market_ids:)
+        timeline = h["timeline"]
         return if timeline.nil?
 
-        previous_seq = nil
         seen_full_idempotency = {}
         seen_source_external = {}
-        timeline.fetch('events').each do |event|
-          raise_invalid!('timeline.events item must be an object', field: 'timeline.events') unless event.is_a?(Hash)
+        seen_trade_seq = {}
+        seen_timeline_seq = {}
+        context = {
+          account_ids: account_ids,
+          market_ids: market_ids,
+          seen_full_idempotency: seen_full_idempotency,
+          seen_source_external: seen_source_external,
+          seen_trade_seq: seen_trade_seq,
+          seen_timeline_seq: seen_timeline_seq
+        }
+        timeline.fetch("events").each do |event|
+          process_timeline_event!(event, context)
+        end
+      end
 
-          validate_timeline_common_fields!(event)
+      def process_timeline_event!(event, context)
+        raise_invalid!("timeline.events item must be an object", field: "timeline.events") unless event.is_a?(Hash)
 
-          idempotency_key = timeline_full_idempotency_key(event)
-          source_external_key = timeline_source_external_key(event)
+        validate_timeline_common_fields!(event)
 
-          if seen_full_idempotency.key?(idempotency_key)
-            validate_timeline_exact_duplicate!(
-              event,
-              stored_event: seen_full_idempotency.fetch(idempotency_key),
-              idempotency_key: idempotency_key
-            )
+        idempotency_key = timeline_full_idempotency_key(event)
+        source_external_key = timeline_source_external_key(event)
+        seen_full_idempotency = context.fetch(:seen_full_idempotency)
+        seen_source_external = context.fetch(:seen_source_external)
+        seen_trade_seq = context.fetch(:seen_trade_seq)
+        seen_timeline_seq = context.fetch(:seen_timeline_seq)
+        account_ids = context.fetch(:account_ids)
+        market_ids = context.fetch(:market_ids)
 
-            next
-          end
-
-          validate_timeline_partial_collision!(
+        if seen_full_idempotency.key?(idempotency_key)
+          validate_timeline_exact_duplicate!(
             event,
-            source_external_key: source_external_key,
-            seen_source_external: seen_source_external
+            stored_event: seen_full_idempotency.fetch(idempotency_key),
+            idempotency_key: idempotency_key
           )
 
-          seen_full_idempotency[idempotency_key] = event
-          seen_source_external[source_external_key] = event.fetch('timelineSeq')
-
-          validate_timeline_monotonic_seq!(event.fetch('timelineSeq'), previous_seq)
-          previous_seq = event.fetch('timelineSeq')
-
-          case event.fetch('eventType')
-          when 'PRICE_UPDATED'
-            validate_timeline_price_updated!(event)
-          when 'TRADE_APPLIED'
-            validate_timeline_trade_applied!(event)
-          else
-            raise_invalid!('Unsupported timeline eventType',
-                           field: 'timeline.events.eventType',
-                           details: { eventType: event.fetch('eventType') })
-          end
+          return
         end
+
+        validate_timeline_partial_collision!(
+          event,
+          source_external_key: source_external_key,
+          seen_source_external: seen_source_external
+        )
+
+        seen_full_idempotency[idempotency_key] = event
+        seen_source_external[source_external_key] = event.fetch("timelineSeq")
+        register_timeline_seq!(seen_timeline_seq, event.fetch("timelineSeq"))
+
+        case event.fetch("eventType")
+        when "PRICE_UPDATED"
+          validate_timeline_price_updated!(event, market_ids: market_ids)
+        when "TRADE_APPLIED"
+          validate_timeline_trade_applied!(
+            event,
+            account_ids: account_ids,
+            market_ids: market_ids,
+            seen_trade_seq: seen_trade_seq
+          )
+        else
+          raise_invalid!("Unsupported timeline eventType",
+                         field: "timeline.events.eventType",
+                         details: { eventType: event.fetch("eventType") })
+        end
+      end
+
+      def register_timeline_seq!(seen_timeline_seq, current_seq)
+        return unless seen_timeline_seq[current_seq]
+
+        raise_invalid!("timeline timelineSeq must be unique",
+                       field: "timeline.events.timelineSeq",
+                       details: { timelineSeq: current_seq })
+      ensure
+        seen_timeline_seq[current_seq] = true
       end
 
       def timeline_full_idempotency_key(event)
         [
-          event.fetch('source'),
-          event.fetch('externalId'),
-          event.fetch('timelineSeq')
+          event.fetch("source"),
+          event.fetch("externalId"),
+          event.fetch("timelineSeq")
         ]
       end
 
       def timeline_source_external_key(event)
         [
-          event.fetch('source'),
-          event.fetch('externalId')
+          event.fetch("source"),
+          event.fetch("externalId")
         ]
       end
 
       def validate_timeline_exact_duplicate!(event, stored_event:, idempotency_key:)
-        return if stored_event == event
+        if stored_event != event
+          raise_invalid!(
+            "timeline idempotency key conflict for duplicate event",
+            field: "timeline.events.idempotencyKey",
+            details: {
+              source: idempotency_key[0],
+              externalId: idempotency_key[1],
+              timelineSeq: idempotency_key[2]
+            }
+          )
+        end
 
         raise_invalid!(
-          'timeline idempotency key conflict for duplicate event',
-          field: 'timeline.events.idempotencyKey',
+          "timeline duplicate event is not allowed",
+          field: "timeline.events.idempotencyKey",
           details: {
             source: idempotency_key[0],
             externalId: idempotency_key[1],
@@ -147,221 +198,243 @@ module FCS
       def validate_timeline_partial_collision!(event, source_external_key:, seen_source_external:)
         previous_seq = seen_source_external[source_external_key]
         return if previous_seq.nil?
-        return if previous_seq == event.fetch('timelineSeq')
+        return if previous_seq == event.fetch("timelineSeq")
 
         raise_invalid!(
-          'timeline idempotency collision for source+externalId',
-          field: 'timeline.events.externalId',
+          "timeline idempotency collision for source+externalId",
+          field: "timeline.events.externalId",
           details: {
             source: source_external_key[0],
             externalId: source_external_key[1],
             previousSeq: previous_seq,
-            currentSeq: event.fetch('timelineSeq')
+            currentSeq: event.fetch("timelineSeq")
           }
         )
       end
 
-      def validate_timeline_monotonic_seq!(current_seq, previous_seq)
-        return if previous_seq.nil?
-        return if current_seq > previous_seq
-
-        raise_invalid!(
-          'timeline timelineSeq must be strictly increasing',
-          field: 'timeline.events.timelineSeq',
-          details: { previousSeq: previous_seq, currentSeq: current_seq }
-        )
-      end
-
       def validate_timeline_common_fields!(event)
-        unless event.key?('eventType')
-          raise_invalid!('timeline eventType is required',
-                         field: 'timeline.events.eventType')
+        unless event.key?("eventType")
+          raise_invalid!("timeline eventType is required",
+                         field: "timeline.events.eventType")
         end
-        unless event.key?('timelineSeq')
-          raise_invalid!('timeline timelineSeq is required',
-                         field: 'timeline.events.timelineSeq')
+        unless event.key?("timelineSeq")
+          raise_invalid!("timeline timelineSeq is required",
+                         field: "timeline.events.timelineSeq")
         end
-        raise_invalid!('timeline source is required', field: 'timeline.events.source') unless event.key?('source')
-        unless event.key?('externalId')
-          raise_invalid!('timeline externalId is required',
-                         field: 'timeline.events.externalId')
+        raise_invalid!("timeline source is required", field: "timeline.events.source") unless event.key?("source")
+        unless event.key?("externalId")
+          raise_invalid!("timeline externalId is required",
+                         field: "timeline.events.externalId")
         end
-        unless event.key?('timestamp')
-          raise_invalid!('timeline timestamp is required',
-                         field: 'timeline.events.timestamp')
+        unless event.key?("timestamp")
+          raise_invalid!("timeline timestamp is required",
+                         field: "timeline.events.timestamp")
         end
 
-        unless non_empty_string?(event['eventType'])
-          raise_invalid!('timeline eventType must be a non-empty string',
-                         field: 'timeline.events.eventType')
+        unless non_empty_string?(event["eventType"])
+          raise_invalid!("timeline eventType must be a non-empty string",
+                         field: "timeline.events.eventType")
         end
-        unless event['timelineSeq'].is_a?(Integer)
-          raise_invalid!('timeline timelineSeq must be an integer',
-                         field: 'timeline.events.timelineSeq')
+        unless event["timelineSeq"].is_a?(Integer)
+          raise_invalid!("timeline timelineSeq must be an integer",
+                         field: "timeline.events.timelineSeq")
         end
-        unless non_empty_string?(event['source'])
-          raise_invalid!('timeline source must be a non-empty string',
-                         field: 'timeline.events.source')
+        unless non_empty_string?(event["source"])
+          raise_invalid!("timeline source must be a non-empty string",
+                         field: "timeline.events.source")
         end
-        unless non_empty_string?(event['externalId'])
-          raise_invalid!('timeline externalId must be a non-empty string',
-                         field: 'timeline.events.externalId')
+        unless non_empty_string?(event["externalId"])
+          raise_invalid!("timeline externalId must be a non-empty string",
+                         field: "timeline.events.externalId")
         end
-        return if non_empty_string?(event['timestamp'])
+        unless non_empty_string?(event["timestamp"])
+          raise_invalid!("timeline timestamp must be a non-empty string", field: "timeline.events.timestamp")
+        end
 
-        raise_invalid!('timeline timestamp must be a non-empty string',
-                       field: 'timeline.events.timestamp')
+        return if event["timestamp"].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\z/)
+
+        raise_invalid!("timeline timestamp must use ISO-8601 UTC format", field: "timeline.events.timestamp")
       end
 
-      def validate_timeline_price_updated!(event)
-        unless event.key?('marketId')
-          raise_invalid!('timeline PRICE_UPDATED marketId is required',
-                         field: 'timeline.events.marketId')
+      def validate_timeline_price_updated!(event, market_ids:)
+        unless event.key?("marketId")
+          raise_invalid!("timeline PRICE_UPDATED marketId is required",
+                         field: "timeline.events.marketId")
         end
-        unless event.key?('priceQuotePerBase')
-          raise_invalid!('timeline PRICE_UPDATED priceQuotePerBase is required',
-                         field: 'timeline.events.priceQuotePerBase')
+        unless event.key?("priceQuotePerBase")
+          raise_invalid!("timeline PRICE_UPDATED priceQuotePerBase is required",
+                         field: "timeline.events.priceQuotePerBase")
         end
 
-        unless non_empty_string?(event['marketId'])
-          raise_invalid!('timeline PRICE_UPDATED marketId must be a non-empty string',
-                         field: 'timeline.events.marketId')
+        unless non_empty_string?(event["marketId"])
+          raise_invalid!("timeline PRICE_UPDATED marketId must be a non-empty string",
+                         field: "timeline.events.marketId")
+        end
+        unless market_ids.include?(event["marketId"])
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
+                               "Unknown marketId",
+                               details: { marketId: event["marketId"] })
         end
         validate_positive_decimal_string!(
-          event['priceQuotePerBase'],
-          field: 'timeline.events.priceQuotePerBase',
-          context: { marketId: event['marketId'] }
+          event["priceQuotePerBase"],
+          field: "timeline.events.priceQuotePerBase",
+          context: { marketId: event["marketId"] }
         )
       end
 
-      def validate_timeline_trade_applied!(event)
-        trade = event['trade']
+      def validate_timeline_trade_applied!(event, account_ids:, market_ids:, seen_trade_seq:)
+        trade = event["trade"]
         unless trade.is_a?(Hash)
-          raise_invalid!('timeline TRADE_APPLIED trade is required',
-                         field: 'timeline.events.trade')
+          raise_invalid!("timeline TRADE_APPLIED trade is required",
+                         field: "timeline.events.trade")
         end
 
-        %w[tradeId accountId marketId seq side quantityBase priceQuotePerBase].each do |field|
+        %w[tradeId accountId marketId timestamp seq side quantityBase priceQuotePerBase].each do |field|
           unless trade.key?(field)
             raise_invalid!("timeline TRADE_APPLIED trade.#{field} is required",
                            field: "timeline.events.trade.#{field}")
           end
         end
 
-        unless non_empty_string?(trade['tradeId'])
-          raise_invalid!('timeline.events.trade.tradeId must be a non-empty string',
-                         field: 'timeline.events.trade.tradeId')
+        unless non_empty_string?(trade["tradeId"])
+          raise_invalid!("timeline.events.trade.tradeId must be a non-empty string",
+                         field: "timeline.events.trade.tradeId")
         end
-        unless non_empty_string?(trade['accountId'])
-          raise_invalid!('timeline.events.trade.accountId must be a non-empty string',
-                         field: 'timeline.events.trade.accountId')
+        unless non_empty_string?(trade["accountId"])
+          raise_invalid!("timeline.events.trade.accountId must be a non-empty string",
+                         field: "timeline.events.trade.accountId")
         end
-        unless non_empty_string?(trade['marketId'])
-          raise_invalid!('timeline.events.trade.marketId must be a non-empty string',
-                         field: 'timeline.events.trade.marketId')
+        unless account_ids.include?(trade["accountId"])
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
+                               "Unknown accountId",
+                               details: { accountId: trade["accountId"] })
         end
-        unless trade['seq'].is_a?(Integer)
-          raise_invalid!('timeline.events.trade.seq must be an integer',
-                         field: 'timeline.events.trade.seq')
+        unless non_empty_string?(trade["marketId"])
+          raise_invalid!("timeline.events.trade.marketId must be a non-empty string",
+                         field: "timeline.events.trade.marketId")
         end
-        raise_invalid!('Invalid side', field: 'timeline.events.trade.side', details: { side: trade['side'] }) unless %w[
-          BUY SELL
-        ].include?(trade['side'])
+        unless market_ids.include?(trade["marketId"])
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
+                               "Unknown marketId",
+                               details: { marketId: trade["marketId"] })
+        end
+        unless trade["seq"].is_a?(Integer)
+          raise_invalid!("timeline.events.trade.seq must be an integer",
+                         field: "timeline.events.trade.seq")
+        end
+        unless trade["timestamp"].is_a?(Integer)
+          raise_invalid!("timeline.events.trade.timestamp must be an integer",
+                         field: "timeline.events.trade.timestamp")
+        end
 
-        validate_positive_decimal_string!(trade['quantityBase'],
-                                          field: 'timeline.events.trade.quantityBase',
-                                          context: { tradeId: trade['tradeId'] })
-        validate_positive_decimal_string!(trade['priceQuotePerBase'],
-                                          field: 'timeline.events.trade.priceQuotePerBase',
-                                          context: { tradeId: trade['tradeId'] })
+        trade_seq_key = [trade["accountId"], trade["marketId"], trade["seq"]]
+        if seen_trade_seq[trade_seq_key]
+          raise FCS::Error.new(
+            FCS::Errors::ERR_DUPLICATE_SEQ,
+            "Duplicate seq for account+market",
+            details: { accountId: trade["accountId"], marketId: trade["marketId"], seq: trade["seq"] }
+          )
+        end
+        seen_trade_seq[trade_seq_key] = true
+
+        raise_invalid!("Invalid side", field: "timeline.events.trade.side", details: { side: trade["side"] }) unless %w[
+          BUY SELL
+        ].include?(trade["side"])
+
+        validate_positive_decimal_string!(trade["quantityBase"],
+                                          field: "timeline.events.trade.quantityBase",
+                                          context: { tradeId: trade["tradeId"] })
+        validate_positive_decimal_string!(trade["priceQuotePerBase"],
+                                          field: "timeline.events.trade.priceQuotePerBase",
+                                          context: { tradeId: trade["tradeId"] })
       end
 
       def validate_accounting_model!(h)
-        model = h['accountingModel']
+        model = h["accountingModel"]
         return if model.nil?
 
-        raise_invalid!('accountingModel must be an object', field: 'accountingModel') unless model.is_a?(Hash)
+        raise_invalid!("accountingModel must be an object", field: "accountingModel") unless model.is_a?(Hash)
 
-        method = model['method']
+        method = model["method"]
         return if method.nil?
 
         return if SUPPORTED_ACCOUNTING_METHODS.include?(method)
 
         raise_invalid!(
-          'Unsupported accounting method',
-          field: 'accountingModel.method',
+          "Unsupported accounting method",
+          field: "accountingModel.method",
           details: { method: method, supported: SUPPORTED_ACCOUNTING_METHODS }
         )
       end
 
       def validate_risk_model!(h)
-        model = h['riskModel']
+        model = h["riskModel"]
         return if model.nil?
 
-        raise_invalid!('riskModel must be an object', field: 'riskModel') unless model.is_a?(Hash)
+        raise_invalid!("riskModel must be an object", field: "riskModel") unless model.is_a?(Hash)
 
-        max_leverage = model['maxLeverage']
+        max_leverage = model["maxLeverage"]
         unless max_leverage.nil?
-          validate_positive_decimal_string!(max_leverage, field: 'riskModel.maxLeverage',
+          validate_positive_decimal_string!(max_leverage, field: "riskModel.maxLeverage",
                                                           context: {})
         end
 
-        maintenance = model['maintenanceMarginRatio']
-        if model.key?('maintenanceMarginRatio') && maintenance.nil?
-          raise_invalid!('riskModel.maintenanceMarginRatio is required when provided',
-                         field: 'riskModel.maintenanceMarginRatio')
+        maintenance = model["maintenanceMarginRatio"]
+        if model.key?("maintenanceMarginRatio") && maintenance.nil?
+          raise_invalid!("riskModel.maintenanceMarginRatio is required when provided",
+                         field: "riskModel.maintenanceMarginRatio")
         end
 
         unless maintenance.nil?
           validate_ratio_decimal_string!(
             maintenance,
-            field: 'riskModel.maintenanceMarginRatio',
+            field: "riskModel.maintenanceMarginRatio",
             context: {},
-            max: '0.95'
+            max: "0.95"
           )
         end
 
-        liquidation = model['liquidation']
+        liquidation = model["liquidation"]
         return if liquidation.nil?
 
         unless liquidation.is_a?(Hash)
-          raise_invalid!('riskModel.liquidation must be an object',
-                         field: 'riskModel.liquidation')
+          raise_invalid!("riskModel.liquidation must be an object",
+                         field: "riskModel.liquidation")
         end
 
-        enabled = liquidation['enabled']
+        enabled = liquidation["enabled"]
         unless enabled.nil? || enabled == true || enabled == false
-          raise_invalid!('riskModel.liquidation.enabled must be boolean', field: 'riskModel.liquidation.enabled')
+          raise_invalid!("riskModel.liquidation.enabled must be boolean", field: "riskModel.liquidation.enabled")
         end
 
-        close_factor = liquidation['closeFactor']
-        unless liquidation.key?('closeFactor')
-          raise_invalid!('riskModel.liquidation.closeFactor is required', field: 'riskModel.liquidation.closeFactor')
+        close_factor = liquidation["closeFactor"]
+        unless liquidation.key?("closeFactor")
+          raise_invalid!("riskModel.liquidation.closeFactor is required", field: "riskModel.liquidation.closeFactor")
         end
 
-        if liquidation.key?('closeFactor') && close_factor.nil?
-          raise_invalid!('riskModel.liquidation.closeFactor is required', field: 'riskModel.liquidation.closeFactor')
+        if liquidation.key?("closeFactor") && close_factor.nil?
+          raise_invalid!("riskModel.liquidation.closeFactor is required", field: "riskModel.liquidation.closeFactor")
         end
 
         return if close_factor.nil?
 
         validate_ratio_decimal_string!(
           close_factor,
-          field: 'riskModel.liquidation.closeFactor',
+          field: "riskModel.liquidation.closeFactor",
           context: {},
-          max: '1'
+          max: "1"
         )
       end
 
       def validate_account_collateral!(accounts)
         accounts.each do |account|
-          collateral = account['collateralQuote']
+          collateral = account["collateralQuote"]
           next if collateral.nil?
 
           validate_non_negative_decimal_string!(
             collateral,
-            field: 'accounts.collateralQuote',
-            context: { accountId: account['accountId'] }
+            field: "accounts.collateralQuote",
+            context: { accountId: account["accountId"] }
           )
         end
       end
@@ -369,27 +442,56 @@ module FCS
       def extract_unique_ids!(arr, key, code:)
         ids = arr.map { |x| x[key] }
         if ids.any?(&:nil?) || ids.any? { |v| !v.is_a?(String) || v.strip.empty? }
-          raise_invalid!('Missing or invalid id', field: key)
+          raise_invalid!("Missing or invalid id", field: key)
         end
 
         dup = ids.group_by(&:itself).find { |_k, v| v.size > 1 }&.first
-        raise FCS::Error.new(code, 'Duplicate id', details: { field: key, value: dup }) if dup
+        raise FCS::Error.new(code, "Duplicate id", details: { field: key, value: dup }) if dup
 
         ids.to_set
       end
 
       def validate_snapshot!(h, market_ids)
-        snap = h['priceSnapshot']
-        prices = snap['prices']
+        snap = h["priceSnapshot"]
+        unless non_empty_string?(snap["valuationTimestamp"])
+          raise FCS::Error.new(
+            FCS::Errors::ERR_MISSING_SNAPSHOT,
+            "Missing snapshot valuation timestamp",
+            details: { missingField: "priceSnapshot.valuationTimestamp" }
+          )
+        end
+
+        unless snap["valuationTimestamp"].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\z/)
+          raise_invalid!("Invalid snapshot valuation timestamp format",
+                         field: "priceSnapshot.valuationTimestamp")
+        end
+
+        prices = snap["prices"]
         unless prices.is_a?(Array)
-          raise FCS::Error.new(FCS::Errors::ERR_MISSING_SNAPSHOT, 'Missing snapshot prices',
+          raise FCS::Error.new(FCS::Errors::ERR_MISSING_SNAPSHOT, "Missing snapshot prices",
                                details: {})
         end
 
         price_map = {}
+        seen_snapshot_markets = {}
         prices.each do |p|
-          mid = p['marketId']
-          price = p['priceQuotePerBase']
+          unless p.is_a?(Hash)
+            raise_invalid!("priceSnapshot.prices item must be an object",
+                           field: "priceSnapshot.prices")
+          end
+
+          mid = p["marketId"]
+          unless non_empty_string?(mid)
+            raise_invalid!("Missing or invalid snapshot marketId", field: "priceSnapshot.prices.marketId")
+          end
+
+          if seen_snapshot_markets[mid]
+            raise_invalid!("Duplicate snapshot marketId", field: "priceSnapshot.prices.marketId",
+                                                          details: { marketId: mid })
+          end
+
+          seen_snapshot_markets[mid] = true
+          price = p["priceQuotePerBase"]
           price_map[mid] = price
         end
 
@@ -397,76 +499,163 @@ module FCS
         unless missing.empty?
           raise FCS::Error.new(
             FCS::Errors::ERR_MISSING_SNAPSHOT,
-            'Snapshot missing markets',
+            "Snapshot missing markets",
             details: { missingMarkets: missing.to_a }
           )
         end
 
         # validate price > 0, and disallow floats
         prices.each do |p|
-          mid = p['marketId']
-          v = p['priceQuotePerBase']
-          validate_positive_decimal_string!(v, field: 'priceSnapshot.prices.priceQuotePerBase',
+          mid = p["marketId"]
+          v = p["priceQuotePerBase"]
+          validate_positive_decimal_string!(v, field: "priceSnapshot.prices.priceQuotePerBase",
                                                context: { marketId: mid })
         end
 
-        fx = snap['fx']
-        return if fx.nil?
+        fx = snap["fx"]
+        if usd_conversion_enabled?(h) && (fx.nil? || !fx.is_a?(Hash) || !fx.key?("quoteUsd") || fx["quoteUsd"].nil?)
+          raise_missing_fx_for_usd_enabled!
+        end
 
-        q = fx['quoteUsd']
-        validate_positive_decimal_string!(q, field: 'priceSnapshot.fx.quoteUsd', context: {})
+        return if fx.nil?
+        return if usd_model_explicitly_disabled?(h)
+
+        unless fx.is_a?(Hash)
+          raise FCS::Error.new(
+            FCS::Errors::ERR_MISSING_SNAPSHOT,
+            "Missing required snapshot FX payload",
+            details: { missingField: "priceSnapshot.fx.quoteUsd" }
+          )
+        end
+
+        unless fx.key?("quoteUsd") && !fx["quoteUsd"].nil?
+          raise FCS::Error.new(
+            FCS::Errors::ERR_MISSING_SNAPSHOT,
+            "Missing required snapshot FX rate",
+            details: { missingField: "priceSnapshot.fx.quoteUsd" }
+          )
+        end
+
+        q = fx["quoteUsd"]
+        validate_positive_decimal_string!(q, field: "priceSnapshot.fx.quoteUsd", context: {})
+      end
+
+      def validate_usd_model!(h)
+        model = h["usdModel"]
+        return if model.nil?
+
+        raise_invalid!("usdModel must be an object", field: "usdModel") unless model.is_a?(Hash)
+        unless model.key?("enabled")
+          raise_invalid!("usdModel.enabled is required when usdModel is provided", field: "usdModel.enabled")
+        end
+
+        enabled = model["enabled"]
+        return if [true, false].include?(enabled)
+
+        raise_invalid!("usdModel.enabled must be boolean", field: "usdModel.enabled")
+      end
+
+      def usd_conversion_enabled?(h)
+        model = h["usdModel"]
+        return model.is_a?(Hash) && model["enabled"] == true if h.key?("usdModel")
+
+        fx = h.dig("priceSnapshot", "fx")
+        fx.is_a?(Hash) && fx.key?("quoteUsd") && !fx["quoteUsd"].nil?
+      end
+
+      def usd_model_explicitly_disabled?(h)
+        model = h["usdModel"]
+        model.is_a?(Hash) && model["enabled"] == false
+      end
+
+      def raise_missing_fx_for_usd_enabled!
+        raise FCS::Error.new(
+          FCS::Errors::ERR_MISSING_SNAPSHOT,
+          "Missing required snapshot FX rate",
+          details: {
+            missingField: "priceSnapshot.fx.quoteUsd",
+            what_happened: "USD conversion is enabled but quoteUsd FX rate is missing from snapshot.",
+            impact: "Account and global USD totals cannot be calculated deterministically.",
+            next_action: "Provide priceSnapshot.fx.quoteUsd as a positive decimal string, or disable usdModel.enabled."
+          }
+        )
       end
 
       def validate_trades!(trades, account_ids, market_ids, fee_enabled)
-        trades.each do |t|
-          aid = t['accountId']
-          mid = t['marketId']
-
-          unless account_ids.include?(aid)
-            raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE, 'Unknown accountId', details: { accountId: aid })
-          end
-          unless market_ids.include?(mid)
-            raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE, 'Unknown marketId', details: { marketId: mid })
-          end
-
-          side = t['side']
-          raise_invalid!('Invalid side', field: 'side', details: { side: side }) unless %w[BUY SELL].include?(side)
-
-          validate_positive_decimal_string!(t['quantityBase'], field: 'quantityBase',
-                                                               context: { tradeId: t['tradeId'] })
-          validate_positive_decimal_string!(t['priceQuotePerBase'], field: 'priceQuotePerBase',
-                                                                    context: { tradeId: t['tradeId'] })
-
-          if fee_enabled && t['fee'].is_a?(Hash) && t['fee'].key?('amountQuote')
-            v = t['fee']['amountQuote']
-            validate_non_negative_decimal_string!(v, field: 'fee.amountQuote', context: { tradeId: t['tradeId'] })
-          end
-
-          seq = t['seq']
-          raise_invalid!('Missing seq', field: 'seq', details: { tradeId: t['tradeId'] }) unless seq.is_a?(Integer)
+        trades.each do |trade|
+          validate_trade!(trade, account_ids, market_ids, fee_enabled)
         end
+      end
+
+      def validate_trade!(trade, account_ids, market_ids, fee_enabled)
+        raise_invalid!("trades item must be an object", field: "trades") unless trade.is_a?(Hash)
+
+        trade_id = trade["tradeId"]
+        raise_invalid!("Missing tradeId", field: "tradeId") unless non_empty_string?(trade_id)
+
+        aid = trade["accountId"]
+        mid = trade["marketId"]
+
+        unless account_ids.include?(aid)
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE, "Unknown accountId", details: { accountId: aid })
+        end
+        unless market_ids.include?(mid)
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE, "Unknown marketId", details: { marketId: mid })
+        end
+
+        side = trade["side"]
+        raise_invalid!("Invalid side", field: "side", details: { side: side }) unless %w[BUY SELL].include?(side)
+
+        validate_positive_decimal_string!(trade["quantityBase"], field: "quantityBase",
+                                                                 context: { tradeId: trade_id })
+        validate_positive_decimal_string!(trade["priceQuotePerBase"], field: "priceQuotePerBase",
+                                                                      context: { tradeId: trade_id })
+
+        if fee_enabled && trade["fee"].is_a?(Hash) && trade["fee"].key?("amountQuote")
+          value = trade["fee"]["amountQuote"]
+          validate_non_negative_decimal_string!(value, field: "fee.amountQuote", context: { tradeId: trade_id })
+        end
+
+        timestamp = trade["timestamp"]
+        unless timestamp.is_a?(Integer)
+          raise_invalid!("Missing or invalid timestamp", field: "timestamp", details: { tradeId: trade_id })
+        end
+
+        seq = trade["seq"]
+        raise_invalid!("Missing seq", field: "seq", details: { tradeId: trade_id }) unless seq.is_a?(Integer)
       end
 
       def validate_seq_uniqueness!(trades)
         seen = {}
         trades.each do |t|
-          key = "#{t['accountId']}|#{t['marketId']}|#{t['seq']}"
+          key = [t["accountId"], t["marketId"], t["seq"]]
           if seen[key]
             raise FCS::Error.new(
               FCS::Errors::ERR_DUPLICATE_SEQ,
-              'Duplicate seq for account+market',
-              details: { accountId: t['accountId'], marketId: t['marketId'], seq: t['seq'] }
+              "Duplicate seq for account+market",
+              details: { accountId: t["accountId"], marketId: t["marketId"], seq: t["seq"] }
             )
           end
           seen[key] = true
         end
       end
 
+      def timeline_mode_payload?(h)
+        h["timeline"].is_a?(Hash) && h.dig("timeline", "events").is_a?(Array)
+      end
+
+      def timeline_trade_payloads(h)
+        h.fetch("timeline")
+         .fetch("events")
+         .select { |event| event.is_a?(Hash) && event["eventType"] == "TRADE_APPLIED" }
+         .map { |event| event["trade"] }
+      end
+
       def fee_enabled?(h)
-        fm = h['feeModel']
+        fm = h["feeModel"]
         return true if fm.nil?
 
-        v = fm['enabled']
+        v = fm["enabled"]
         v.nil? || !!v
       end
 
@@ -478,7 +667,7 @@ module FCS
         validate_decimal_string!(v, field:, context:, allow_zero: true)
       end
 
-      def validate_ratio_decimal_string!(v, field:, context:, max: '1')
+      def validate_ratio_decimal_string!(v, field:, context:, max: "1")
         validate_decimal_string!(v, field:, context:, allow_zero: false)
         parsed = FCS::Types::Decimal18.from_string(v)
         max_decimal = FCS::Types::Decimal18.from_string(max)
@@ -489,16 +678,18 @@ module FCS
 
       def validate_decimal_string!(v, field:, context:, allow_zero:)
         if v.is_a?(Float)
-          raise FCS::Error.new(FCS::Errors::ERR_INVALID_NUMBER, 'Float not allowed',
+          raise FCS::Error.new(FCS::Errors::ERR_INVALID_NUMBER, "Float not allowed",
                                details: context.merge(field: field))
         end
 
         unless v.is_a?(String) && v.match?(/\A\d+(\.\d+)?\z/)
-          raise_invalid!('Invalid decimal string', field: field, details: context.merge(value: v))
+          raise_invalid!("Invalid decimal string", field: field, details: context.merge(value: v))
         end
-        return unless !allow_zero && v == '0'
 
-        raise_invalid!('Must be > 0', field: field, details: context.merge(value: v))
+        parsed = FCS::Types::Decimal18.from_string(v)
+        return unless !allow_zero && parsed.zero?
+
+        raise_invalid!("Must be > 0", field: field, details: context.merge(value: v))
       end
 
       def non_empty_string?(v)

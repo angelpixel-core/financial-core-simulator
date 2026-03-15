@@ -1,10 +1,11 @@
 module FCS
   module Ingestion
+    # Dispatches source events to the right normalization mapper.
     class SourceEventNormalizationPipeline
       SOURCE_MAPPERS = {
-        'agente.' => FCS::Ingestion::AgenteIntentMapper,
-        'venue.' => FCS::Ingestion::VenueExecutionMapper,
-        'faucet.' => FCS::Ingestion::FaucetIssuanceMapper
+        "agente." => FCS::Ingestion::AgenteIntentMapper,
+        "venue." => FCS::Ingestion::VenueExecutionMapper,
+        "faucet." => FCS::Ingestion::FaucetIssuanceMapper
       }.freeze
 
       def normalize!(source_event)
@@ -24,25 +25,25 @@ module FCS
       def validate_source_event_shape!(source_event)
         return if source_event.is_a?(Hash)
 
-        raise_invalid!('source event must be an object', field: 'sourceEvent')
+        raise_invalid!("source event must be an object", field: "sourceEvent")
       end
 
       def validate_source_events_shape!(source_events)
         return if source_events.is_a?(Array)
 
-        raise_invalid!('source events must be an array', field: 'sourceEvents')
+        raise_invalid!("source events must be an array", field: "sourceEvents")
       end
 
       def mapper_for(source_event)
-        source = source_event.fetch('source', nil)
+        source = source_event.fetch("source", nil)
         unless source.is_a?(String) && !source.strip.empty?
-          raise_invalid!('source event source must be a non-empty string', field: 'sourceEvent.source')
+          raise_invalid!("source event source must be a non-empty string", field: "sourceEvent.source")
         end
 
         _, mapper_klass = SOURCE_MAPPERS.find { |prefix, _klass| source.start_with?(prefix) }
         return mapper_klass.new if mapper_klass
 
-        raise_invalid!('unsupported source for normalization pipeline', field: 'sourceEvent.source')
+        raise_invalid!("unsupported source for normalization pipeline", field: "sourceEvent.source")
       end
 
       def raise_invalid!(message, field:)

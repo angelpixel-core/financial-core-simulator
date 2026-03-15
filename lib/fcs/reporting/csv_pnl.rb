@@ -5,15 +5,17 @@ require "fileutils"
 
 module FCS
   module Reporting
+    # Writes PnL CSV artifacts.
     class CsvPnL
       HEADER = %w[
-        accountId
-        marketId
-        realizedPnLQuote
-        feesQuote
-        realizedNetPnLQuote
-        unrealizedPnLQuote
-        totalPnLQuote
+        account_id
+        market_id
+        realized_pnl_quote
+        fees_quote
+        realized_net_pnl_quote
+        unrealized_pnl_quote
+        total_pnl_quote
+        total_pnl_usd
       ].freeze
 
       def write!(output_dir:, accounts:)
@@ -21,22 +23,31 @@ module FCS
         path = File.join(output_dir, "pnl.csv")
 
         CSV.open(path, "w", write_headers: true, headers: HEADER) do |csv|
-          accounts.each do |acc|
-            acc.fetch("markets").each do |m|
+          accounts.sort_by { |account| account.fetch("accountId") }.each do |acc|
+            acc.fetch("markets").sort_by { |market| market.fetch("marketId") }.each do |m|
               csv << [
                 acc.fetch("accountId"),
                 m.fetch("marketId"),
-                m.fetch("realizedPnLQuote"),
-                m.fetch("feesQuote"),
-                m.fetch("realizedNetPnLQuote"),
-                m.fetch("unrealizedPnLQuote"),
-                m.fetch("totalPnLQuote")
+                serialize_decimal(m.fetch("realizedPnLQuote")),
+                serialize_decimal(m.fetch("feesQuote")),
+                serialize_decimal(m.fetch("realizedNetPnLQuote")),
+                serialize_decimal(m.fetch("unrealizedPnLQuote")),
+                serialize_decimal(m.fetch("totalPnLQuote")),
+                serialize_decimal(m["totalPnLUsd"])
               ]
             end
           end
         end
 
         path
+      end
+
+      private
+
+      def serialize_decimal(value)
+        return nil if value.nil?
+
+        FCS::Types::Decimal18.from_string(value.to_s).to_s
       end
     end
   end

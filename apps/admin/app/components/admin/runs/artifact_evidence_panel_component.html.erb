@@ -1,0 +1,39 @@
+<section class="artifact-evidence-panel" role="region" aria-labelledby="artifact-evidence-title">
+  <header class="artifact-evidence-panel__header">
+    <p class="artifact-evidence-panel__eyebrow">Evidence-first</p>
+    <h3 class="artifact-evidence-panel__title" id="artifact-evidence-title">Evidencia y artifacts</h3>
+  </header>
+  <ul class="artifact-evidence-panel__list">
+    <% entries.each do |entry| %>
+      <li class="artifact-evidence-panel__item">
+        <div class="artifact-evidence-panel__item-top">
+          <div>
+            <p class="artifact-evidence-panel__item-title"><%= entry.label %></p>
+            <p class="artifact-evidence-panel__item-description"><%= entry.description %></p>
+          </div>
+          <span class="<%= status_badge_class(entry.state) %>" role="status" aria-label="Estado del artifact <%= entry.state %>">
+            <span class="artifact-evidence-panel__status-icon" aria-hidden="true"><%= status_icon(entry.state) %></span>
+            Estado: <%= status_label(entry.state) %>
+          </span>
+        </div>
+        <div class="artifact-evidence-panel__actions">
+          <% entry.actions.each do |action| %>
+            <% if action[:href].present? %>
+              <a class="artifact-evidence-panel__link" href="<%= action[:href] %>" rel="noopener"><%= action[:label] %></a>
+            <% else %>
+              <span class="artifact-evidence-panel__link artifact-evidence-panel__link--disabled" aria-disabled="true"><%= action[:label] %> (Unavailable)</span>
+            <% end %>
+          <% end %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+  <dl class="artifact-evidence-panel__provenance">
+    <% provenance_rows.each do |(key, value)| %>
+      <div>
+        <dt><%= key %>:</dt>
+        <dd><%= value %></dd>
+      </div>
+    <% end %>
+  </dl>
+</section>

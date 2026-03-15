@@ -131,6 +131,25 @@ RSpec.describe Admin::Authorization do
       expect(auth.allow_admin_session?(required_role: "admin")).to be(false)
     end
 
+    it "resolves session account email mapping for role thresholds" do
+      admin_account = Account.create!(
+        email: "admin@example.com",
+        status: :verified,
+        password_hash: BCrypt::Password.create("secret-pass")
+      )
+      session_request = instance_double(
+        ActionDispatch::Request,
+        headers: {},
+        session: { "admin_account_id" => admin_account.id },
+        params: {}
+      )
+
+      auth = described_class.new(request: session_request)
+
+      expect(auth.allow_admin_session?(required_role: "admin")).to be(true)
+      expect(auth.allow_admin_session?(required_role: "operator")).to be(true)
+    end
+
     it "allows machine-or-session gate with valid machine token" do
       allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
       request.headers["X-Admin-Token"] = "ui-secret"

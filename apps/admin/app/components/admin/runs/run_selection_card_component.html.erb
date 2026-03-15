@@ -1,0 +1,30 @@
+<article class="<%= card_classes %>">
+  <header class="run-selection-card__header">
+    <div>
+      <p class="run-selection-card__eyebrow"><%= @title %></p>
+      <h2 class="run-selection-card__title">Run #<%= @run.id %></h2>
+    </div>
+    <span
+      class="run-selection-card__status"
+      data-status="<%= status_label %>"
+      aria-label="Run status: <%= status_label %>"
+    ><%= status_label %></span>
+  </header>
+  <div class="run-selection-card__meta">
+    <div>
+      <p class="run-selection-card__label">Timestamp</p>
+      <p class="run-selection-card__value"><%= created_at_label %></p>
+    </div>
+    <div>
+      <p class="run-selection-card__label">Validacion</p>
+      <p class="run-selection-card__value"><%= verification_label %></p>
+    </div>
+    <div>
+      <p class="run-selection-card__label">Duracion</p>
+      <p class="run-selection-card__value"><%= duration_label %></p>
+    </div>
+  </div>
+  <footer class="run-selection-card__footer">
+    <a class="run-selection-card__cta" href="<%= @cta_path %>"><%= @cta_label %></a>
+  </footer>
+</article>

@@ -37,7 +37,8 @@ RSpec.describe "Dashboard contract regression", type: :request do
     ingestion_errors = get_json("/dashboard/ingestion-validation-errors")
     expect(ingestion_errors.fetch("contractVersion")).to eq("v1")
     expect(ingestion_errors.keys).to contain_exactly("contractVersion", "errors")
-    expect(ingestion_errors.fetch("errors")).to all(include("source", "field", "message", "occurredAt", "correlationId"))
+    expect(ingestion_errors.fetch("errors")).to all(include("source", "field", "message", "occurred_at", 
+"correlation_id"))
 
     risk = get_json("/dashboard/risk")
     expect(risk.fetch("contractVersion")).to eq("v1")
@@ -93,7 +94,8 @@ RSpec.describe "Dashboard contract regression", type: :request do
       "/dashboard/latest-run"
     ].each do |path|
       get path, as: :json
-      expect(response).to have_http_status(:forbidden), "Expected #{path} to require auth when ADMIN_UI_TOKEN is configured"
+      expect(response).to have_http_status(:forbidden), 
+"Expected #{path} to require auth when ADMIN_UI_TOKEN is configured"
     end
   end
 

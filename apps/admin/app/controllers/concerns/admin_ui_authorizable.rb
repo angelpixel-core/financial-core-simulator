@@ -50,7 +50,8 @@ module AdminUiAuthorizable
   end
 
   def allow_machine_or_session_gate?(auth, required_role:, token_key:)
-    return auth.allow_machine_or_session?(required_role: required_role, token_key: token_key) if auth.respond_to?(:allow_machine_or_session?)
+    return auth.allow_machine_or_session?(required_role: required_role, 
+token_key: token_key) if auth.respond_to?(:allow_machine_or_session?)
 
     auth.allow?(required_role: required_role, token_key: token_key)
   end

@@ -5,12 +5,13 @@ require "fileutils"
 
 module FCS
   module Reporting
+    # Writes positions CSV artifacts.
     class CsvPositions
       HEADER = %w[
-        accountId
-        marketId
+        account_id
+        market_id
         quantity
-        avgCost
+        avg_cost
       ].freeze
 
       def write!(output_dir:, accounts:)
@@ -18,19 +19,27 @@ module FCS
         path = File.join(output_dir, "positions.csv")
 
         CSV.open(path, "w", write_headers: true, headers: HEADER) do |csv|
-          accounts.each do |acc|
-            acc.fetch("markets").each do |m|
+          accounts.sort_by { |account| account.fetch("accountId") }.each do |acc|
+            acc.fetch("markets").sort_by { |market| market.fetch("marketId") }.each do |m|
               csv << [
                 acc.fetch("accountId"),
                 m.fetch("marketId"),
-                m.fetch("quantity"),
-                m.fetch("avgCost")
+                serialize_decimal(m.fetch("quantity")),
+                serialize_decimal(m.fetch("avgCost"))
               ]
             end
           end
         end
 
         path
+      end
+
+      private
+
+      def serialize_decimal(value)
+        return nil if value.nil?
+
+        FCS::Types::Decimal18.from_string(value.to_s).to_s
       end
     end
   end

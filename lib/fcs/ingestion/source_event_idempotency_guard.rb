@@ -1,5 +1,6 @@
 module FCS
   module Ingestion
+    # Detects duplicate and conflicting source events.
     class SourceEventIdempotencyGuard
       # Invariants:
       # 1) Identity key is [source, payload.externalId, payload.sequence].
@@ -27,19 +28,19 @@ module FCS
       private
 
       def idempotency_key_for(event)
-        payload = event.fetch('payload')
-        external_id = payload['externalId']
-        sequence = payload['sequence']
+        payload = event.fetch("payload")
+        external_id = payload["externalId"]
+        sequence = payload["sequence"]
 
         unless external_id.is_a?(String) && !external_id.strip.empty? && !sequence.nil?
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,
-            'source event idempotency identity requires payload.externalId and payload.sequence',
-            details: { field: 'sourceEvent.idempotencyKey' }
+            "source event idempotency identity requires payload.externalId and payload.sequence",
+            details: { field: "sourceEvent.idempotencyKey" }
           )
         end
 
-        [event.fetch('source'), external_id.to_s, sequence.to_s]
+        [event.fetch("source"), external_id.to_s, sequence.to_s]
       end
     end
   end

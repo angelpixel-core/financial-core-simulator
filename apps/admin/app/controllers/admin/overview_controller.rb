@@ -16,19 +16,24 @@ class Admin::OverviewController < ApplicationController
     dashboard_latest_run
     ingestion_validation_errors
   ]
+  before_action :load_navigation_context, only: %i[show top_accounts ingestion_validation_errors_panel]
   rescue_from Admin::Dashboard::ReadMetrics::ReadPathUnavailableError, with: :render_dashboard_unavailable
 
   def show
     @metrics = dashboard_metrics
     @selected_source = normalize_filter_value(params[:source])
     @selected_field = normalize_filter_value(params[:field])
-    @ingestion_validation_errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
+    @ingestion_validation_errors = dashboard_ingestion_validation_errors(source: @selected_source, 
+field: @selected_field)
+    @reliable_selection = Admin::Runs::ReliableRunSelector.new.call
+    @documentation_url = "https://docs.ruby-lang.org"
   end
 
   def top_accounts
     @metrics = dashboard_metrics
     if request.xhr?
-      render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: true }
+      render partial: "admin/overview/top_accounts", 
+locals: { metrics: @metrics, show_drilldown: true, navigation_context: @navigation_context }
     else
       render :top_accounts
     end
@@ -89,14 +94,16 @@ class Admin::OverviewController < ApplicationController
         errors: @errors,
         selected_source: @selected_source,
         selected_field: @selected_field,
-        show_drilldown: true
+        show_drilldown: true,
+        navigation_context: @navigation_context
       }
     elsif request.xhr?
       render partial: "admin/overview/ingestion_validation_errors", locals: {
         errors: @errors,
         selected_source: @selected_source,
         selected_field: @selected_field,
-        show_drilldown: true
+        show_drilldown: true,
+        navigation_context: @navigation_context
       }
     else
       render :ingestion_validation_errors
@@ -158,5 +165,9 @@ class Admin::OverviewController < ApplicationController
     return nil if normalized.empty?
 
     normalized
+  end
+
+  def load_navigation_context
+    @navigation_context = Admin::Runs::NavigationContext.new(params: params, session: session).resolve
   end
 end

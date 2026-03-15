@@ -2,6 +2,7 @@
 
 module FCS
   module Benchmarking
+    # Generates synthetic benchmark inputs.
     class InputGenerator
       def generate(trades:, accounts:, markets:)
         account_ids = (1..accounts).map { |i| "acc-#{i}" }
@@ -26,6 +27,7 @@ module FCS
         # - Fee pequeño fijo en quote.
         # - timestamp incrementa, seq = 1 siempre (ya es único por acc+market porque timestamp cambia)
         inventory = Hash.new(0) # key "acc|mkt" => qty integer
+        seqs = Hash.new(0)
 
         out = []
         i = 0
@@ -53,12 +55,14 @@ module FCS
             price = "100"
           end
 
+          seqs[key] += 1
+
           out << {
             "tradeId" => "t-#{i + 1}",
             "accountId" => acc,
             "marketId" => mkt,
             "timestamp" => ts,
-            "seq" => 1,
+            "seq" => seqs[key],
             "side" => side,
             "quantityBase" => "1",
             "priceQuotePerBase" => price,

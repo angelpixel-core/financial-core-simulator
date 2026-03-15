@@ -1,5 +1,6 @@
 module FCS
   module Engine
+    # FIFO position accounting helpers.
     class PositionFifo
       attr_reader :qty, :avg_cost, :realized_pnl_quote, :fees_quote
 
@@ -36,7 +37,7 @@ module FCS
         if (@qty - sell_qty).atoms < 0
           raise FCS::Error.new(
             FCS::Errors::ERR_POSITION_NEGATIVE,
-            'SELL would make position negative',
+            "SELL would make position negative",
             details: { qty: @qty.to_s, sellQty: sell_qty.to_s }
           )
         end

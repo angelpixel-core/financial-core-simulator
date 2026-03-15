@@ -1,5 +1,8 @@
+require "active_support/core_ext/module/delegation"
+
 module FCS
   module Projector
+    # Replays event streams into read models (pure Ruby).
     class ReadModelReplay
       def initialize(
         today: Date.today,
@@ -8,7 +11,8 @@ module FCS
         event_projection_router: FCS::Projector::EventProjectionRouter.new
       )
         @today = today
-        @projection_store_factory = projection_store_factory || FCS::Projector::DefaultProjectionStoreFactory.new(today: @today)
+        @projection_store_factory = projection_store_factory ||
+                                    FCS::Projector::DefaultProjectionStoreFactory.new(today: @today)
         @event_projection_router = event_projection_router
 
         validate_projection_store_factory_interface!(@projection_store_factory)
@@ -34,9 +38,7 @@ module FCS
         ).apply_stream!(stream)
       end
 
-      def read_model
-        projection_store.read_model
-      end
+      delegate :read_model, to: :projection_store
 
       private
 
@@ -45,10 +47,10 @@ module FCS
       def apply_event!(event)
         validate_event_shape!(event)
 
-        event_type = event.fetch('eventType', nil)
+        event_type = event.fetch("eventType", nil)
         projection_keys = event_projection_router.projections_for(event_type)
         if projection_keys.nil? || projection_keys.empty?
-          raise_invalid!('unsupported replay event type', field: 'event.eventType')
+          raise_invalid!("unsupported replay event type", field: "event.eventType")
         end
 
         projection_store.apply!(projection_keys, event)
@@ -57,13 +59,13 @@ module FCS
       def validate_stream_shape!(stream)
         return if stream.is_a?(Array)
 
-        raise_invalid!('replay stream must be an array', field: 'stream')
+        raise_invalid!("replay stream must be an array", field: "stream")
       end
 
       def validate_event_shape!(event)
         return if event.is_a?(Hash)
 
-        raise_invalid!('replay event must be an object', field: 'event')
+        raise_invalid!("replay event must be an object", field: "event")
       end
 
       def build_projection_store
@@ -75,19 +77,19 @@ module FCS
       def validate_projection_store_interface!(store)
         return if store.respond_to?(:apply!) && store.respond_to?(:read_model)
 
-        raise_invalid!('projection store must implement apply! and read_model', field: 'projectionStore')
+        raise_invalid!("projection store must implement apply! and read_model", field: "projectionStore")
       end
 
       def validate_projection_store_factory_interface!(factory)
         return if factory.respond_to?(:call)
 
-        raise_invalid!('projection store factory must implement call', field: 'projectionStoreFactory')
+        raise_invalid!("projection store factory must implement call", field: "projectionStoreFactory")
       end
 
       def validate_event_projection_router_interface!(router)
         return if router.respond_to?(:projections_for)
 
-        raise_invalid!('event projection router must implement projections_for', field: 'eventProjectionRouter')
+        raise_invalid!("event projection router must implement projections_for", field: "eventProjectionRouter")
       end
 
       def raise_invalid!(message, field:)

@@ -53,15 +53,27 @@ group :development, :test do
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
 
+  # Code smell detection [https://github.com/troessner/reek]
+  gem "reek", require: false
+
+  # Code quality reports [https://github.com/whitesmith/rubycritic]
+  gem "rubycritic", require: false
+
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+  gem "rubocop-performance", require: false
+  gem "rubocop-rspec", require: false
 
   gem "rspec-rails", "~> 8.0"
+  gem "simplecov", require: false
 end
 
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Browser auto-reload when ERB/templates change in development
+  gem "rails_live_reload"
 
   # Component catalog and preview UI for ViewComponent/Phlex
   gem "lookbook", "~> 2.3"
@@ -72,6 +84,7 @@ gem "financial-core-simulator", path: "../..", require: "fcs"
 gem "avo", "~> 3.29"
 gem "view_component", "~> 3.13"
 gem "phlex-rails", "~> 2.2"
+gem "vite_rails", "~> 3.0"
 # Enables Sequel to use Active Record's database connection
 gem "sequel-activerecord_connection", "~> 2.0", require: false
 # Used by Rodauth for rendering built-in view and email templates

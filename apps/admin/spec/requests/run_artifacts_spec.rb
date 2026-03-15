@@ -1,4 +1,5 @@
 require "rails_helper"
+require "bcrypt"
 require "fileutils"
 require "json"
 require "tmpdir"
@@ -189,6 +190,38 @@ RSpec.describe "Run artifacts", type: :request do
     FileUtils.rm_f(path) if defined?(path)
   end
 
+  it "serves artifact for operator session while artifact token is configured" do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
+
+    Account.create!(
+      email: "ops@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    post "/admin/login", params: { email: "ops@example.com", password: "secret-pass" }
+    expect(response).to have_http_status(:found)
+
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-token-operator-session.json")
+    File.write(path, JSON.generate({ ok: true }))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/result"
+
+    expect(response).to have_http_status(:ok)
+    expect(JSON.parse(response.body)).to eq({ "ok" => true })
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
   it "redirects to root when only viewer role header is provided" do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_ARTIFACTS_TOKEN").and_return("secret-token")
@@ -255,6 +288,70 @@ RSpec.describe "Run artifacts", type: :request do
     expect(response.body).to include("<table")
     expect(response.body).to include("account")
     expect(response.body).to include("acc-1")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
+  it "preserves navigation context in positions preview return link" do
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("positions-context.csv")
+    File.write(path, "account,qty\nacc-1,10\n")
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "positions_csv_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/positions", params: {
+      preview: 1,
+      selected_run: run.id,
+      run_status: "succeeded",
+      validation_status: "verified",
+      date_range: "last_7d",
+      correlation_id: "corr-pos"
+    }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Back to run details")
+    expect(response.body).to include("selected_run=#{run.id}")
+    expect(response.body).to include("run_status=succeeded")
+    expect(response.body).to include("validation_status=verified")
+    expect(response.body).to include("date_range=last_7d")
+    expect(response.body).to include("correlation_id=corr-pos")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
+  it "preserves navigation context in pnl preview return link" do
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("pnl-context.csv")
+    File.write(path, "account,total\nacc-1,12\n")
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      artifacts: { "pnl_csv_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/pnl", params: {
+      preview: 1,
+      selected_run: run.id,
+      run_status: "failed",
+      validation_status: "warning",
+      date_range: "last_24h",
+      correlation_id: "corr-pnl"
+    }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Back to run details")
+    expect(response.body).to include("selected_run=#{run.id}")
+    expect(response.body).to include("run_status=failed")
+    expect(response.body).to include("validation_status=warning")
+    expect(response.body).to include("date_range=last_24h")
+    expect(response.body).to include("correlation_id=corr-pnl")
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
@@ -353,6 +450,38 @@ RSpec.describe "Run artifacts", type: :request do
     expect(response.body).to include("ALL: 2")
     expect(response.body).to include("HEALTHY: 1")
     expect(response.body).to include("MARGIN_CALL: 1")
+  ensure
+    FileUtils.rm_f(path) if defined?(path)
+  end
+
+  it "renders context-preserving return link in risk drilldown" do
+    base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
+    FileUtils.mkdir_p(base_dir)
+    path = base_dir.join("result-risk-context.json")
+    File.write(path, JSON.generate({ "accounts" => [] }))
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: { "schemaVersion" => "1.0" },
+      input_hash: "hash-context",
+      artifacts: { "result_json_path" => path.to_s }
+    )
+
+    get "/runs/#{run.id}/risk", params: {
+      selected_run: run.id,
+      run_status: "succeeded",
+      validation_status: "verified",
+      date_range: "last_7d",
+      correlation_id: "corr-ctx"
+    }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Back to run details")
+    expect(response.body).to include("selected_run=#{run.id}")
+    expect(response.body).to include("run_status=succeeded")
+    expect(response.body).to include("validation_status=verified")
+    expect(response.body).to include("date_range=last_7d")
+    expect(response.body).to include("correlation_id=corr-ctx")
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end

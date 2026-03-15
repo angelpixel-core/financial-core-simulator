@@ -33,7 +33,8 @@ module Admin
         )
 
         validate_required_keys!(compatible_payload, OVERVIEW_REQUIRED_KEYS, field: "overview")
-        validate_required_keys!(compatible_payload.fetch("legacy"), LEGACY_OVERVIEW_REQUIRED_KEYS, field: "overview.legacy")
+        validate_required_keys!(compatible_payload.fetch("legacy"), LEGACY_OVERVIEW_REQUIRED_KEYS, 
+field: "overview.legacy")
 
         compatible_payload
       end

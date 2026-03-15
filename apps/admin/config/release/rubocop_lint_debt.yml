@@ -1,0 +1,16 @@
+# Temporary lint debt policy (release-gate explicit exceptions only)
+# owner: platform-team
+# expires_on: 2026-06-30
+# scope:
+#   - apps/admin/db/schema.rb
+#   - apps/admin/db/cache_schema.rb
+#   - apps/admin/db/cable_schema.rb
+
+Layout/SpaceInsideArrayLiteralBrackets:
+  Exclude:
+    - db/schema.rb
+    - db/cache_schema.rb
+    - db/cable_schema.rb
+    - apps/admin/db/schema.rb
+    - apps/admin/db/cache_schema.rb
+    - apps/admin/db/cable_schema.rb

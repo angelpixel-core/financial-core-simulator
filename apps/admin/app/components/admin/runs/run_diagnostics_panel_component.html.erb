@@ -1,0 +1,13 @@
+<section class="run-diagnostics-panel">
+  <%= render Admin::Runs::RunReliabilityBannerComponent.new(
+    state: reliability[:state],
+    title: reliability[:title],
+    diagnostic: reliability[:diagnostic]
+  ) %>
+  <%= render Admin::Runs::ValidationIssuesPanelComponent.new(
+    title: "Diagnostico de validacion",
+    state: validation[:state],
+    diagnostic: validation[:diagnostic],
+    issues: validation[:issues]
+  ) %>
+</section>

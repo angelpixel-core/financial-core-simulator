@@ -1,4 +1,5 @@
 <main class="overview">
+  <% navigation_context = @navigation_context || {} %>
   <header class="overview__header">
     <div>
       <p class="overview__eyebrow">Admin</p>
@@ -6,11 +7,11 @@
       <p class="overview__subtitle">Standalone view with the same visual language as Financial Overview.</p>
     </div>
     <nav class="overview__nav">
-      <a class="overview__link" href="<%= admin_overview_path %>">Back to overview</a>
+      <a class="overview__link" href="<%= admin_overview_path(navigation_context) %>">Back to overview</a>
       <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
     </nav>
   </header>
   <section class="overview__live">
-    <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: false } %>
+    <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: false, navigation_context: navigation_context } %>
   </section>
 </main>

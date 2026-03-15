@@ -1,5 +1,6 @@
 module FCS
   module Projector
+    # Builds the default projection store for read models.
     class DefaultProjectionStoreFactory
       def initialize(today:)
         @today = today
@@ -8,9 +9,9 @@ module FCS
       def call
         FCS::Projector::ProjectionStore.new(
           projections: {
-            'overview' => FCS::Projector::OverviewKpiStatusMixProjector.new,
-            'trend' => FCS::Projector::TrendLatestRunProjector.new(today: @today),
-            'topAccountsRisk' => FCS::Projector::TopAccountsRiskProjector.new
+            "overview" => FCS::Projector::OverviewKpiStatusMixProjector.new,
+            "trend" => FCS::Projector::TrendLatestRunProjector.new(today: @today),
+            "topAccountsRisk" => FCS::Projector::TopAccountsRiskProjector.new
           }
         )
       end

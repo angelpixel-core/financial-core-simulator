@@ -3,6 +3,54 @@
 
 require_relative "../lib/fcs"
 require "optparse"
+require "json"
+
+def print_diagnostic_error(code:, what_happened:, impact:, next_action:, details: {})
+  payload = {
+    "error" => {
+      "code" => code,
+      "message" => what_happened
+    },
+    "code" => code,
+    "what_happened" => what_happened,
+    "impact" => impact,
+    "next_action" => next_action,
+    "details" => details
+  }
+
+  warn(JSON.pretty_generate(payload))
+end
+
+def required_artifact_paths(output_dir)
+  {
+    "result_json" => File.join(output_dir, "result.json"),
+    "positions_csv" => File.join(output_dir, "positions.csv"),
+    "pnl_csv" => File.join(output_dir, "pnl.csv")
+  }
+end
+
+def available_artifacts(expected)
+  expected.select { |_key, path| File.exist?(path) }.keys.sort
+end
+
+def failure_summary_payload
+  {
+    "runId" => "n/a",
+    "inputHash" => "n/a",
+    "schemaVersion" => "n/a",
+    "engineVersion" => FCS::VERSION,
+    "valuationTimestamp" => "n/a",
+    "global" => {
+      "realizedPnLQuote" => nil,
+      "feesQuote" => nil,
+      "realizedNetPnLQuote" => nil,
+      "unrealizedPnLQuote" => nil,
+      "totalPnLQuote" => nil,
+      "totalPnLUsd" => nil
+    },
+    "accounts" => []
+  }
+end
 
 subcommand = ARGV.shift
 
@@ -18,7 +66,10 @@ when "run"
   }
 
   parser = OptionParser.new do |opts|
-    opts.banner = "Usage: fcs run --input path/to/input.json [--output-dir output] [--no-fee] [--explain] [--verbose|--quiet]"
+    opts.banner = [
+      "Usage: fcs run --input path/to/input.json",
+      "[--output-dir output] [--no-fee] [--explain] [--verbose|--quiet]"
+    ].join(" ")
 
     opts.on("--input PATH", "Path to input JSON (required)") { |v| options[:input] = v }
     opts.on("--output-dir DIR", "Output directory (default: output)") { |v| options[:output_dir] = v }
@@ -32,15 +83,37 @@ when "run"
       options[:verbose] = false
       options[:quiet] = true
     end
-    opts.on("-v", "--version", "Print version") { puts FCS::VERSION; exit(0) }
-    opts.on("-h", "--help", "Print help") { puts opts; exit(0) }
+    opts.on("-v", "--version", "Print version") do
+      puts FCS::VERSION
+      exit(0)
+    end
+    opts.on("-h", "--help", "Print help") do
+      puts opts
+      exit(0)
+    end
   end
 
-  parser.parse!(ARGV)
+  begin
+    parser.parse!(ARGV)
+  rescue OptionParser::ParseError => e
+    print_diagnostic_error(
+      code: FCS::Errors::ERR_VALIDATION,
+      what_happened: "Invalid CLI option",
+      impact: "The run command arguments are invalid; execution did not start.",
+      next_action: "Fix the CLI flags and re-run `bin/fcs run --help` for valid options.",
+      details: { "errorClass" => e.class.name, "errorMessage" => e.message }
+    )
+    exit(2)
+  end
 
   if options[:input].nil? || options[:input].strip.empty?
-    warn "ERR: --input is required"
-    puts parser
+    print_diagnostic_error(
+      code: FCS::Errors::ERR_VALIDATION,
+      what_happened: "--input is required",
+      impact: "The run did not start because required input path is missing.",
+      next_action: "Provide `--input <path>` and retry.",
+      details: { "usage" => parser.banner }
+    )
     exit(2)
   end
 
@@ -55,65 +128,177 @@ when "run"
 
   FCS.logger.level = options[:verbose] ? FCS::Logging::SimpleLogger::INFO : FCS::Logging::SimpleLogger::WARN
 
-  runner = FCS::Application::Runner.new
-  path = runner.run!(
-    input_path: options[:input],
-    output_dir: options[:output_dir],
-    fee_enabled: options[:fee_enabled],
-    explain: options[:explain],
-    verbose: options[:verbose]
-  )
+  begin
+    runner = FCS::Application::Runner.new
+    path = runner.run!(
+      input_path: options[:input],
+      output_dir: options[:output_dir],
+      fee_enabled: options[:fee_enabled],
+      explain: options[:explain],
+      verbose: options[:verbose]
+    )
 
-  puts "OK: wrote #{path}" unless options[:quiet]
+    expected_artifacts = required_artifact_paths(options[:output_dir])
+    missing_artifacts = expected_artifacts.reject { |_key, path| File.exist?(path) }
+    if missing_artifacts.any?
+      print_diagnostic_error(
+        code: FCS::Errors::ERR_VALIDATION,
+        what_happened: "Missing required artifacts after run",
+        impact: "The run completed but required artifacts are missing for reproducibility checks.",
+        next_action: "Inspect the output directory and re-run the command to regenerate artifacts.",
+        details: {
+          "missing_artifacts" => missing_artifacts,
+          "expected_artifacts" => expected_artifacts
+        }
+      )
+      exit(2)
+    end
+
+    puts "OK: wrote #{path}" unless options[:quiet]
+  rescue FCS::Error => e
+    expected_artifacts = required_artifact_paths(options[:output_dir])
+    if options[:verbose]
+      FCS::Reporting::CliSummary.new.print(
+        failure_summary_payload,
+        artifacts: {
+          json_path: expected_artifacts["result_json"],
+          positions_csv_path: expected_artifacts["positions_csv"],
+          pnl_csv_path: expected_artifacts["pnl_csv"]
+        },
+        status: "failure",
+        validate_artifacts: false
+      )
+    end
+    details = (e.details || {}).merge(
+      "run_status" => "failure",
+      "output_dir" => options[:output_dir],
+      "expected_artifacts" => expected_artifacts,
+      "available_artifacts" => available_artifacts(expected_artifacts)
+    )
+    print_diagnostic_error(
+      code: e.code,
+      what_happened: e.message,
+      impact: "The run stopped before canonical artifacts were fully produced.",
+      next_action: "Fix the input/config issue and re-run `bin/fcs run --input <file> --output-dir <dir>`.",
+      details: details
+    )
+    exit(2)
+  rescue StandardError => e
+    expected_artifacts = required_artifact_paths(options[:output_dir])
+    if options[:verbose]
+      FCS::Reporting::CliSummary.new.print(
+        failure_summary_payload,
+        artifacts: {
+          json_path: expected_artifacts["result_json"],
+          positions_csv_path: expected_artifacts["positions_csv"],
+          pnl_csv_path: expected_artifacts["pnl_csv"]
+        },
+        status: "failure",
+        validate_artifacts: false
+      )
+    end
+    print_diagnostic_error(
+      code: "ERR_INTERNAL",
+      what_happened: "Unexpected runtime error: #{e.class}",
+      impact: "The run failed unexpectedly and artifacts may be missing or incomplete.",
+      next_action: "Retry with `--verbose`; if it persists, open an issue with this error payload.",
+      details: {
+        "message" => e.message,
+        "run_status" => "failure",
+        "output_dir" => options[:output_dir],
+        "expected_artifacts" => expected_artifacts,
+        "available_artifacts" => available_artifacts(expected_artifacts)
+      }
+    )
+    exit(1)
+  end
 
 when "bench"
-  require "benchmark"
-
-  bench = {
-    trades: 100_000,
-    accounts: 10,
-    markets: 5
+  options = {
+    fixture: "lib/fcs/fixtures/benchmark_fixture.json",
+    runs: FCS::Benchmarking::BenchmarkRunner::DEFAULT_RUNS,
+    output_dir: "output/benchmarks"
   }
 
   parser = OptionParser.new do |opts|
-    opts.banner = "Usage: fcs bench [--trades N] [--accounts N] [--markets N]"
+    opts.banner = "Usage: fcs bench [--fixture PATH] [--runs N] [--output-dir DIR]"
 
-    opts.on("--trades N", Integer, "Number of trades (default: 100000)") { |v| bench[:trades] = v }
-    opts.on("--accounts N", Integer, "Number of accounts (default: 10)") { |v| bench[:accounts] = v }
-    opts.on("--markets N", Integer, "Number of markets (default: 5)") { |v| bench[:markets] = v }
-    opts.on("-v", "--version", "Print version") { puts FCS::VERSION; exit(0) }
-    opts.on("-h", "--help", "Print help") { puts opts; exit(0) }
+    opts.on("--fixture PATH", "Path to benchmark fixture definition") { |v| options[:fixture] = v }
+    opts.on("--runs N", Integer, "Number of runs for p95 (default: #{options[:runs]})") { |v| options[:runs] = v }
+    opts.on("--output-dir DIR", "Benchmark output directory (default: output/benchmarks)") do |v|
+      options[:output_dir] = v
+    end
+    opts.on("-v", "--version", "Print version") do
+      puts FCS::VERSION
+      exit(0)
+    end
+    opts.on("-h", "--help", "Print help") do
+      puts opts
+      exit(0)
+    end
   end
 
-  parser.parse!(ARGV)
-
-  input = FCS::Benchmarking::InputGenerator.new.generate(
-    trades: bench[:trades],
-    accounts: bench[:accounts],
-    markets: bench[:markets]
-  )
-
-  simulate = FCS::Application::Simulate.new
-
-  elapsed = Benchmark.realtime do
-    simulate.call(input)
+  begin
+    parser.parse!(ARGV)
+  rescue OptionParser::ParseError => e
+    print_diagnostic_error(
+      code: FCS::Errors::ERR_VALIDATION,
+      what_happened: "Invalid CLI option",
+      impact: "The bench command arguments are invalid; execution did not start.",
+      next_action: "Fix the CLI flags and re-run `bin/fcs bench --help` for valid options.",
+      details: { "errorClass" => e.class.name, "errorMessage" => e.message }
+    )
+    exit(2)
   end
 
-  puts "Bench:"
-  puts "  trades=#{bench[:trades]} accounts=#{bench[:accounts]} markets=#{bench[:markets]}"
-  puts format("  elapsed=%.3fs", elapsed)
+  command = "bin/fcs bench --fixture #{options[:fixture]} --runs #{options[:runs]} --output-dir #{options[:output_dir]}"
+
+  begin
+    result = FCS::Benchmarking::BenchmarkRunner.new.run!(
+      fixture_path: options[:fixture],
+      output_dir: options[:output_dir],
+      runs: options[:runs],
+      command: command
+    )
+
+    report = result.fetch(:report)
+
+    puts "Bench:"
+    puts "  runs=#{report.fetch('runs')} p95=#{format('%.3f', report.fetch('p95_seconds'))}s"
+    puts "  input_hash=#{report.fetch('input_hash')} run_id=#{report.fetch('run_id')}"
+    puts "  report=#{result.fetch(:report_path)}"
+    puts "  artifacts=#{report.dig('artifacts', 'result_json')}"
+  rescue FCS::Error => e
+    print_diagnostic_error(
+      code: e.code,
+      what_happened: e.message,
+      impact: "The benchmark did not complete with valid evidence artifacts.",
+      next_action: "Review the fixture definition and output paths, then retry.",
+      details: e.details
+    )
+    exit(2)
+  rescue StandardError => e
+    print_diagnostic_error(
+      code: "ERR_INTERNAL",
+      what_happened: "Unexpected runtime error: #{e.class}",
+      impact: "The benchmark failed unexpectedly and outputs may be incomplete.",
+      next_action: "Retry with the same command; if it persists, open an issue with this error payload.",
+      details: { "message" => e.message, "output_dir" => options[:output_dir] }
+    )
+    exit(1)
+  end
 
 else
   puts <<~TXT
     Usage:
       fcs run   --input path/to/input.json [--output-dir output] [--no-fee] [--explain] [--verbose|--quiet]
-      fcs bench [--trades N] [--accounts N] [--markets N]
+      fcs bench [--fixture PATH] [--runs N] [--output-dir DIR]
 
     Examples:
       fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output
       fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output --explain --verbose
       fcs bench
-      fcs bench --trades 200000 --accounts 20 --markets 10
+      fcs bench --runs 7 --output-dir output/benchmarks
   TXT
   exit(1)
 end

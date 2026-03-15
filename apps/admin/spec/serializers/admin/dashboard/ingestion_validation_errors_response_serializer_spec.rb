@@ -7,8 +7,8 @@ RSpec.describe Admin::Dashboard::IngestionValidationErrorsResponseSerializer do
         source: "source.venue.external",
         field: "riskModel",
         message: "risk invalid",
-        occurredAt: "2026-03-05T12:00:00Z",
-        correlationId: "corr-001"
+        occurred_at: "2026-03-05T12:00:00Z",
+        correlation_id: "corr-001"
       }
     ]
 
@@ -21,8 +21,8 @@ RSpec.describe Admin::Dashboard::IngestionValidationErrorsResponseSerializer do
           "source" => "source.venue.external",
           "field" => "riskModel",
           "message" => "risk invalid",
-          "occurredAt" => "2026-03-05T12:00:00Z",
-          "correlationId" => "corr-001"
+          "occurred_at" => "2026-03-05T12:00:00Z",
+          "correlation_id" => "corr-001"
         }
       ]
     )

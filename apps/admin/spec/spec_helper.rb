@@ -13,6 +13,28 @@
 # it.
 #
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+if ENV["ADMIN_COVERAGE"] == "1"
+  require "simplecov"
+
+  SimpleCov.start "rails" do
+    enable_coverage :branch
+    coverage_dir ENV.fetch("ADMIN_COVERAGE_DIR", "coverage/admin")
+    add_filter "/spec/"
+    add_filter "/config/"
+    add_filter "/vendor/"
+    add_filter "/bin/"
+
+    add_group "Controllers", "app/controllers"
+    add_group "Services", "app/services"
+    add_group "Models", "app/models"
+
+    if ENV.fetch("ADMIN_COVERAGE_MODE", "report") == "enforce"
+      minimum = ENV.fetch("ADMIN_COVERAGE_MIN", "80").to_i
+      minimum_coverage line: minimum
+    end
+  end
+end
+
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest

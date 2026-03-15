@@ -64,57 +64,43 @@ class Avo::Resources::Run < Avo::BaseResource
       end
     end
 
-    panel "Triage drilldown" do
-      field :overview_drilldown, as: :text, as_html: true, only_on: :show, name: "overview" do
-        view_context.link_to("Open admin overview", view_context.main_app.admin_overview_path, rel: "noopener")
-      end
-
-      field :top_accounts_drilldown, as: :text, as_html: true, only_on: :show, name: "top accounts" do
-        view_context.link_to("Open top accounts", view_context.main_app.admin_overview_top_accounts_path, rel: "noopener")
-      end
-
-      field :ingestion_errors_drilldown, as: :text, as_html: true, only_on: :show, name: "ingestion errors" do
-        view_context.link_to("Open ingestion validation errors", view_context.main_app.admin_overview_ingestion_validation_errors_path, rel: "noopener")
+    panel "Reliability & Validation" do
+      field :run_diagnostics, as: :text, as_html: true, only_on: :show, name: "diagnostics" do
+        view_context.render(Admin::Runs::RunDiagnosticsPanelComponent.new(run: record))
       end
     end
 
-    panel "Artifacts viewer" do
-      field :result_download, as: :text, as_html: true, only_on: :show, name: "result.json" do
-        next "Unavailable" if record.result_json_path.blank?
+      panel "Triage drilldown" do
+        field :overview_drilldown, as: :text, as_html: true, only_on: :show, name: "overview" do
+          context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters, 
+run: record)
+          view_context.link_to("Open admin overview", view_context.main_app.admin_overview_path(context_params), 
+rel: "noopener")
+        end
 
-        view_context.link_to("View result.json", view_context.main_app.run_result_path(id: record.id), target: "_blank", rel: "noopener")
+        field :top_accounts_drilldown, as: :text, as_html: true, only_on: :show, name: "top accounts" do
+          context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters, 
+run: record)
+          view_context.link_to("Open top accounts", 
+view_context.main_app.admin_overview_top_accounts_path(context_params), rel: "noopener")
+        end
+
+        field :ingestion_errors_drilldown, as: :text, as_html: true, only_on: :show, name: "ingestion errors" do
+          context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters, 
+run: record)
+          view_context.link_to("Open ingestion validation errors", 
+view_context.main_app.admin_overview_ingestion_validation_errors_path(context_params), rel: "noopener")
+        end
       end
 
-      field :positions_preview, as: :text, as_html: true, only_on: :show, name: "positions preview" do
-        next "Unavailable" if record.positions_csv_path.blank?
-
-        view_context.link_to("Preview positions.csv", view_context.main_app.run_positions_path(id: record.id, preview: 1), target: "_blank", rel: "noopener")
+      panel "Artifacts viewer" do
+        field :artifact_evidence, as: :text, as_html: true, only_on: :show, name: "artifact evidence" do
+          context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters, 
+run: record)
+          view_context.render(Admin::Runs::ArtifactEvidencePanelComponent.new(run: record, 
+context_params: context_params))
+        end
       end
-
-      field :positions_download, as: :text, as_html: true, only_on: :show, name: "positions.csv" do
-        next "Unavailable" if record.positions_csv_path.blank?
-
-        view_context.link_to("Download positions.csv", view_context.main_app.run_positions_path(id: record.id), target: "_blank", rel: "noopener")
-      end
-
-      field :pnl_preview, as: :text, as_html: true, only_on: :show, name: "pnl preview" do
-        next "Unavailable" if record.pnl_csv_path.blank?
-
-        view_context.link_to("Preview pnl.csv", view_context.main_app.run_pnl_path(id: record.id, preview: 1), target: "_blank", rel: "noopener")
-      end
-
-      field :pnl_download, as: :text, as_html: true, only_on: :show, name: "pnl.csv" do
-        next "Unavailable" if record.pnl_csv_path.blank?
-
-        view_context.link_to("Download pnl.csv", view_context.main_app.run_pnl_path(id: record.id), target: "_blank", rel: "noopener")
-      end
-
-      field :risk_view, as: :text, as_html: true, only_on: :show, name: "risk view" do
-        next "Unavailable" if record.result_json_path.blank?
-
-        view_context.link_to("Open risk view", view_context.main_app.run_risk_path(id: record.id), target: "_blank", rel: "noopener")
-      end
-    end
   end
 
   def filters

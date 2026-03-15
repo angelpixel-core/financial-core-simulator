@@ -1,8 +1,9 @@
-require 'json'
-require 'fileutils'
+require "json"
+require "fileutils"
 
 module FCS
   module Application
+    # Persists and retrieves simulation checkpoints.
     class CheckpointStore
       def initialize(output_dir:, checkpoint_every:, engine_version:, schema_version:)
         @output_dir = output_dir
@@ -44,13 +45,13 @@ module FCS
 
       def build_checkpoint(timeline_seq:, state:, input_hash:)
         {
-          'timelineSeq' => timeline_seq,
-          'state' => state,
-          'metadata' => {
-            'engineVersion' => @engine_version,
-            'schemaVersion' => @schema_version,
-            'inputHash' => input_hash,
-            'stateHash' => state_hash_for(state)
+          "timelineSeq" => timeline_seq,
+          "state" => state,
+          "metadata" => {
+            "engineVersion" => @engine_version,
+            "schemaVersion" => @schema_version,
+            "inputHash" => input_hash,
+            "stateHash" => state_hash_for(state)
           }
         }
       end
@@ -62,7 +63,7 @@ module FCS
 
       def persist_checkpoint!(checkpoint)
         FileUtils.mkdir_p(@output_dir)
-        path = File.join(@output_dir, checkpoint_filename(checkpoint.fetch('timelineSeq')))
+        path = File.join(@output_dir, checkpoint_filename(checkpoint.fetch("timelineSeq")))
         File.write(path, JSON.pretty_generate(checkpoint))
       end
 
@@ -71,7 +72,7 @@ module FCS
       end
 
       def latest_checkpoint_path
-        paths = Dir.glob(File.join(@output_dir, 'checkpoint_*.json'))
+        paths = Dir.glob(File.join(@output_dir, "checkpoint_*.json"))
         return nil if paths.empty?
 
         paths.max_by do |path|
@@ -80,28 +81,28 @@ module FCS
       end
 
       def validate_checkpoint_compatibility!(checkpoint)
-        metadata = checkpoint['metadata']
+        metadata = checkpoint["metadata"]
         return if metadata.nil?
 
-        unless metadata['engineVersion'] == @engine_version
+        unless metadata["engineVersion"] == @engine_version
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,
-            'Incompatible checkpoint engineVersion',
+            "Incompatible checkpoint engineVersion",
             details: {
               expectedEngineVersion: @engine_version,
-              checkpointEngineVersion: metadata['engineVersion']
+              checkpointEngineVersion: metadata["engineVersion"]
             }
           )
         end
 
-        return if metadata['schemaVersion'] == @schema_version
+        return if metadata["schemaVersion"] == @schema_version
 
         raise FCS::Error.new(
           FCS::Errors::ERR_VALIDATION,
-          'Incompatible checkpoint schemaVersion',
+          "Incompatible checkpoint schemaVersion",
           details: {
             expectedSchemaVersion: @schema_version,
-            checkpointSchemaVersion: metadata['schemaVersion']
+            checkpointSchemaVersion: metadata["schemaVersion"]
           }
         )
       end

@@ -4,6 +4,11 @@
 # FCS runtime artifacts
 output/
 apps/admin/storage/
+coverage/
+tmp/rubycritic/
+
+# BMAD generated planning/runtime artifacts
+.bmad/output
 
 .opencode
 .codex

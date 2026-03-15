@@ -4,6 +4,7 @@ require "json"
 
 module FCS
   module Hashing
+    # Generates deterministic JSON for hashing.
     module CanonicalJSON
       module_function
 

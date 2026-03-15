@@ -1,5 +1,19 @@
 # Omakase Ruby styling for Rails
+plugins:
+  - rubocop-rspec
+  - rubocop-performance
 inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+inherit_from:
+  - config/release/rubocop_lint_debt.yml
+
+RSpec/IncludeExamples:
+  Enabled: true
+
+RSpec/LeakyLocalVariable:
+  Enabled: true
+
+RSpec/Output:
+  Enabled: true
 
 # Overwrite or add rules to create your own house style
 #

@@ -1,0 +1,64 @@
+<section class="validation-issues-panel <%= state_class %>" role="status" aria-live="polite" aria-labelledby="validation-issues-title">
+  <header class="validation-issues-panel__header">
+    <div>
+      <p class="validation-issues-panel__eyebrow">Validacion</p>
+      <h3 class="validation-issues-panel__title" id="validation-issues-title"><%= @title %></h3>
+    </div>
+    <span class="validation-issues-panel__status" aria-label="Estado de validacion: <%= state_label %>">
+      <span class="validation-issues-panel__status-icon" aria-hidden="true"><%= state_icon %></span>
+      <span class="validation-issues-panel__status-text"><%= state_label %></span>
+    </span>
+  </header>
+  <div class="validation-issues-panel__diagnostic">
+    <div>
+      <p class="validation-issues-panel__label">Que paso</p>
+      <p class="validation-issues-panel__value"><%= @diagnostic[:what_happened] %></p>
+    </div>
+    <div>
+      <p class="validation-issues-panel__label">Impacto</p>
+      <p class="validation-issues-panel__value"><%= @diagnostic[:impact] %></p>
+    </div>
+    <div>
+      <p class="validation-issues-panel__label">Siguiente accion</p>
+      <p class="validation-issues-panel__value"><%= @diagnostic[:next_action] %></p>
+    </div>
+  </div>
+  <% if issues? %>
+    <div class="validation-issues-panel__table-container shad-table-wrap" tabindex="0" aria-label="Tabla de issues de validacion con scroll horizontal">
+      <table class="validation-issues-panel__table shad-table" aria-label="Issues de validacion">
+        <thead class="shad-table__head">
+          <tr class="shad-table__row shad-table__row--head">
+            <th class="shad-table__th">Severidad</th>
+            <th class="shad-table__th">Fuente</th>
+            <th class="shad-table__th">Campo</th>
+            <th class="shad-table__th">Mensaje</th>
+            <th class="shad-table__th">Timestamp</th>
+            <th class="shad-table__th">Correlation</th>
+          </tr>
+        </thead>
+        <tbody class="shad-table__body">
+          <% @issues.each do |issue| %>
+            <tr class="shad-table__row">
+              <td class="shad-table__td">
+                <span
+                  class="validation-issues-panel__severity <%= issue_severity_class(issue) %>"
+                  aria-label="Severidad: <%= issue_severity_label(issue) %>"
+                >
+                  <span class="validation-issues-panel__severity-icon" aria-hidden="true"><%= issue_severity_label(issue)[0] %></span>
+                  <span class="validation-issues-panel__severity-text"><%= issue_severity_label(issue) %></span>
+                </span>
+              </td>
+              <td class="shad-table__td"><%= issue[:source] || "-" %></td>
+              <td class="shad-table__td"><%= issue[:field] || "-" %></td>
+              <td class="shad-table__td"><%= issue[:message] || "-" %></td>
+              <td class="shad-table__td"><%= issue[:occurred_at] || "-" %></td>
+              <td class="shad-table__td"><%= issue[:correlation_id] || "-" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="validation-issues-panel__empty">Sin issues de validacion reportados.</p>
+  <% end %>
+</section>

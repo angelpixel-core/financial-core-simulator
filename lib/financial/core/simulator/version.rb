@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../../../fcs/version'
+require_relative "../../../fcs/version"
 
 module Financial
   module Core

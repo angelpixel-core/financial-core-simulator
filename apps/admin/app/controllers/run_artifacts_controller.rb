@@ -6,6 +6,7 @@ class RunArtifactsController < ApplicationController
   require "csv"
   require "cgi"
   require "json"
+  require "rack/utils"
 
   before_action :load_run
   before_action :authorize_artifact_access!
@@ -94,6 +95,7 @@ class RunArtifactsController < ApplicationController
 
     <<~HTML
       <main style="font-family: 'IBM Plex Sans', 'Inter', sans-serif; padding: 16px;">
+        <p style="margin: 0 0 10px;"><a href="#{h(run_details_path)}">Back to run details</a></p>
         <h1 style="margin-top: 0;">CSV Preview: #{CGI.escapeHTML(File.basename(path))}</h1>
         <table style="width: 100%; border-collapse: collapse;">
           <thead style="background: #f2f4f8;"><tr>#{header_cells}</tr></thead>
@@ -137,7 +139,10 @@ class RunArtifactsController < ApplicationController
       "</tr>"
     end.join
 
-    body_rows = "<tr><td colspan=\"4\" style=\"padding: 10px; color: #4a5568;\">No accounts for selected filter.</td></tr>" if body_rows.empty?
+    if body_rows.empty?
+      body_rows = "<tr><td colspan=\"4\" style=\"padding: 10px; color: #4a5568;\">" \
+                  "No accounts for selected filter.</td></tr>"
+    end
 
     options = [ "ALL" ] + RISK_STATUSES
     option_html = options.map do |status|
@@ -145,21 +150,29 @@ class RunArtifactsController < ApplicationController
       "<option value=\"#{h(status)}\"#{selected}>#{h(status)}</option>"
     end.join
 
+    chip_style = "display:inline-block;" \
+                 "padding:4px 10px;" \
+                 "border-radius:999px;" \
+                 "background:#edf2f7;" \
+                 "color:#1a202c;" \
+                 "font-weight:600;"
     summary_chips = options.map do |status|
       key = status == "ALL" ? "ALL" : status
       value = counters.fetch(key, 0)
-      "<span style=\"display:inline-block;padding:4px 10px;border-radius:999px;background:#edf2f7;color:#1a202c;font-weight:600;\">#{h(status)}: #{value}</span>"
+      "<span style=\"#{chip_style}\">#{h(status)}: #{value}</span>"
     end.join(" ")
 
     pie_chart = risk_pie_chart_html(counters)
 
     <<~HTML
       <main style="font-family: 'IBM Plex Sans', 'Inter', sans-serif; padding: 16px;">
+        <p style="margin: 0 0 10px;"><a href="#{h(run_details_path)}">Back to run details</a></p>
         <h1 style="margin-top: 0;">Risk View</h1>
         <p style="margin-top: 0; color: #4a5568;">Per-account risk status, margin ratio, and emitted risk events.</p>
         <section style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px;">#{summary_chips}</section>
         #{pie_chart}
         <form method="get" style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center;">
+          #{navigation_context_hidden_inputs_html}
           <label for="status" style="font-weight: 600;">Status filter</label>
           <select id="status" name="status" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;">#{option_html}</select>
           <button type="submit" style="padding: 4px 10px; border: 1px solid #1a202c; border-radius: 6px; background: #1a202c; color: #fff;">Apply</button>
@@ -185,7 +198,9 @@ class RunArtifactsController < ApplicationController
     items = events.map do |event|
       "<li>" \
         "<strong>#{h(event.fetch('reasonCode', '-'))}</strong>" \
-        " - type: #{h(event.fetch('type', '-'))}, market: #{h(event.fetch('marketId', '-'))}, seq: #{h(event.fetch('seq', '-'))}, severity: #{h(event.fetch('severity', '-'))}" \
+        " - type: #{h(event.fetch('type',
+'-'))}, market: #{h(event.fetch('marketId',
+'-'))}, seq: #{h(event.fetch('seq', '-'))}, severity: #{h(event.fetch('severity', '-'))}" \
       "</li>"
     end.join
 
@@ -204,7 +219,13 @@ class RunArtifactsController < ApplicationController
                           [ "badge--unknown", "#edf2f7", "#2d3748" ]
     end
 
-    "<span class=\"#{css_class}\" style=\"display:inline-block;padding:2px 8px;border-radius:999px;font-weight:600;background:#{bg};color:#{fg};\">#{h(status)}</span>"
+    badge_style = "display:inline-block;" \
+                  "padding:2px 8px;" \
+                  "border-radius:999px;" \
+                  "font-weight:600;" \
+                  "background:#{bg};" \
+                  "color:#{fg};"
+    "<span class=\"#{css_class}\" style=\"#{badge_style}\">#{h(status)}</span>"
   end
 
   def normalize_status_filter(value)
@@ -268,5 +289,21 @@ class RunArtifactsController < ApplicationController
 
   def h(value)
     CGI.escapeHTML(value.to_s)
+  end
+
+  def run_details_path
+    query = Rack::Utils.build_query(navigation_context_params)
+    base_path = helpers.avo.resources_run_path(id: @run.id)
+    query.empty? ? base_path : "#{base_path}?#{query}"
+  end
+
+  def navigation_context_params
+    @navigation_context_params ||= Admin::Runs::NavigationContext.capture(params: params, run: @run)
+  end
+
+  def navigation_context_hidden_inputs_html
+    navigation_context_params.map do |key, value|
+      %(<input type="hidden" name="#{h(key)}" value="#{h(value)}" />)
+    end.join
   end
 end

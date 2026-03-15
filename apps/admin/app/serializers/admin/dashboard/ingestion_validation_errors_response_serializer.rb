@@ -15,8 +15,8 @@ module Admin
           "source" => error[:source],
           "field" => error[:field],
           "message" => error[:message],
-          "occurredAt" => error[:occurredAt],
-          "correlationId" => error[:correlationId]
+          "occurred_at" => error[:occurred_at],
+          "correlation_id" => error[:correlation_id]
         }
       end
     end

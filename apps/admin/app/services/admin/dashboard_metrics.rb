@@ -6,17 +6,19 @@ module Admin
     WINDOW_7_DAYS = 7.days
     WINDOW_30_DAYS = 30.days
     RECENT_RUNS_LIMIT = 50
+    TREND_POINTS_LIMIT = 14
+    PNL_TREND_SCAN_LIMIT = 100
     TOP_ACCOUNTS_LIMIT = 5
     INGESTION_ERRORS_LIMIT = 50
     VALIDATION_ERROR_CODES = [
-      Runs::ErrorCodeMapper::VALIDATION_GENERAL,
-      Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING,
-      Runs::ErrorCodeMapper::VALIDATION_RISK,
-      Runs::ErrorCodeMapper::VALIDATION_COLLATERAL,
-      Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL,
-      Runs::ErrorCodeMapper::VALIDATION_UNKNOWN_REFERENCE,
-      Runs::ErrorCodeMapper::VALIDATION_DUPLICATE_SEQ,
-      Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
+      ::Runs::ErrorCodeMapper::VALIDATION_GENERAL,
+      ::Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING,
+      ::Runs::ErrorCodeMapper::VALIDATION_RISK,
+      ::Runs::ErrorCodeMapper::VALIDATION_COLLATERAL,
+      ::Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL,
+      ::Runs::ErrorCodeMapper::VALIDATION_UNKNOWN_REFERENCE,
+      ::Runs::ErrorCodeMapper::VALIDATION_DUPLICATE_SEQ,
+      ::Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
     ].freeze
 
     def initialize(ingestion_validation_error_mapper: Admin::Dashboard::IngestionValidationErrorMapper.new)
@@ -40,6 +42,7 @@ module Admin
         success_rate_last_50: success_rate,
         avg_duration_ms_last_50: avg_duration,
         runs_trend_14d: runs_trend_14d,
+        pnl_trend: pnl_trend,
         status_mix_30d: status_mix_30d,
         kpi_deltas: {
           total_runs_7d: delta_metadata(total_runs_7d, previous_total_runs_7d),
@@ -48,6 +51,9 @@ module Admin
           avg_duration_ms_last_50: delta_metadata(avg_duration, previous_avg_duration, inverse_good: true)
         },
         latest_run: latest_run_data,
+        simulation_context: simulation_context_data,
+        run_comparison: run_comparison_data,
+        input_traceability: input_traceability_data,
         latest_global: latest_global_data(live_state),
         top_accounts: top_accounts_data(live_state)
       }
@@ -187,6 +193,63 @@ module Admin
       }
     end
 
+    def simulation_context_data
+      return nil if latest_run.nil?
+
+      payload = canonical_result_payload_for(latest_run)
+      {
+        dataset: dataset_name_for(latest_run),
+        accounts_count: accounts_count_for(latest_run, payload: payload),
+        events_count: events_count_for(latest_run),
+        markets: markets_for(latest_run, payload: payload),
+        input_hash: latest_run.input_hash,
+        deterministic: "YES"
+      }
+    end
+
+    def run_comparison_data
+      runs = Run.succeeded.order(id: :desc).limit(2).to_a
+      return nil if runs.empty?
+
+      current_run = runs[0]
+      previous_run = runs[1]
+      current_payload = canonical_result_payload_for(current_run)
+      previous_payload = previous_run.nil? ? nil : canonical_result_payload_for(previous_run)
+
+      total_delta = delta_from_payloads(previous_payload, current_payload, key: "totalPnLQuote")
+      realized_delta = delta_from_payloads(previous_payload, current_payload, key: "realizedNetPnLQuote")
+      unrealized_delta = delta_from_payloads(previous_payload, current_payload, key: "unrealizedPnLQuote")
+
+      {
+        current_run_id: current_run.id,
+        previous_run_id: previous_run&.id,
+        total_pnl_delta: total_delta,
+        realized_delta: realized_delta,
+        unrealized_delta: unrealized_delta,
+        deterministic_result: deterministic_result_label(
+          current_run: current_run,
+          previous_run: previous_run,
+          total_delta: total_delta,
+          realized_delta: realized_delta,
+          unrealized_delta: unrealized_delta
+        )
+      }
+    end
+
+    def input_traceability_data
+      return nil if latest_run.nil?
+
+      {
+        dataset: dataset_name_for(latest_run),
+        input_hash: latest_run.input_hash,
+        artifacts: {
+          result_json_path: relative_to_project_root(latest_run.result_json_path),
+          positions_csv_path: relative_to_project_root(latest_run.positions_csv_path),
+          pnl_csv_path: relative_to_project_root(latest_run.pnl_csv_path)
+        }
+      }
+    end
+
     def latest_payload
       return nil if latest_run.nil?
       return nil if latest_run.result_json_path.blank?
@@ -239,12 +302,153 @@ module Admin
 
     def runs_trend_14d
       start_date = 13.days.ago.to_date
-      counts = runs_since(14.days).group("DATE(created_at)").count
+      counts = runs_since(TREND_POINTS_LIMIT.days).group("DATE(created_at)").count
 
       (start_date..Date.current).map do |day|
         count = counts[day] || counts[day.to_s] || 0
         { day: day.strftime("%m-%d"), count: count }
       end
+    end
+
+    def pnl_trend
+      points = Run.succeeded.order(created_at: :desc).limit(PNL_TREND_SCAN_LIMIT).filter_map do |run|
+        pnl_trend_point(run)
+      end
+
+      points.first(TREND_POINTS_LIMIT).sort_by { |point| point[:timestamp] }
+    end
+
+    def pnl_trend_point(run)
+      payload = canonical_result_payload_for(run)
+      return nil if payload.nil?
+
+      total = parse_decimal_or_nil(payload.dig("global", "totalPnLQuote"))
+      return nil if total.nil?
+
+      timestamp = run.valuation_timestamp || run.created_at
+      return nil if timestamp.nil?
+
+      {
+        label: timestamp.utc.strftime("%m-%d %H:%M UTC"),
+        timestamp: timestamp.utc.iso8601,
+        total_pnl_quote: total.to_s("F")
+      }
+    end
+
+    def canonical_result_payload_for(run)
+      path = run.result_json_path
+      return nil if path.blank?
+      return nil unless File.exist?(path)
+
+      JSON.parse(File.read(path))
+    rescue JSON::ParserError
+      nil
+    end
+
+    def dataset_name_for(run)
+      input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
+      input_json["dataset"] || input_json["datasetName"] || "N/A"
+    end
+
+    def events_count_for(run)
+      input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
+      events = input_json["events"]
+      trades = input_json["trades"]
+      orders = input_json["orders"]
+
+      return events.length if events.is_a?(Array)
+      return trades.length if trades.is_a?(Array)
+      return orders.length if orders.is_a?(Array)
+
+      nil
+    end
+
+    def accounts_count_for(run, payload:)
+      input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
+      input_accounts = input_json["accounts"]
+      return input_accounts.length if input_accounts.is_a?(Array)
+
+      payload_accounts = payload&.fetch("accounts", nil)
+      return payload_accounts.length if payload_accounts.is_a?(Array)
+
+      nil
+    end
+
+    def markets_for(run, payload:)
+      input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
+
+      input_markets = input_json["markets"]
+      if input_markets.is_a?(Array)
+        normalized = input_markets.filter_map { |entry| entry.to_s.strip.presence }.uniq
+        return normalized.join(", ") if normalized.any?
+      end
+
+      events = input_json["events"]
+      if events.is_a?(Array)
+        from_events = events.filter_map { |entry| entry.is_a?(Hash) ? entry["marketId"].to_s.strip.presence : nil }.uniq
+        return from_events.join(", ") if from_events.any?
+      end
+
+      payload_accounts = payload&.fetch("accounts", nil)
+      if payload_accounts.is_a?(Array)
+        from_payload = payload_accounts.filter_map do |entry|
+          next unless entry.is_a?(Hash)
+
+          risk_events = entry["riskEvents"]
+          next unless risk_events.is_a?(Array)
+
+          risk_events.filter_map { |risk_event|
+ risk_event.is_a?(Hash) ? risk_event["marketId"].to_s.strip.presence : nil }
+        end.flatten.uniq
+        return from_payload.join(", ") if from_payload.any?
+      end
+
+      nil
+    end
+
+    def delta_from_payloads(previous_payload, current_payload, key:)
+      return nil if previous_payload.nil? || current_payload.nil?
+
+      previous_value = parse_decimal_or_nil(previous_payload.dig("global", key))
+      current_value = parse_decimal_or_nil(current_payload.dig("global", key))
+      return nil if previous_value.nil? || current_value.nil?
+
+      (current_value - previous_value).to_s("F")
+    end
+
+    def deterministic_result_label(current_run:, previous_run:, total_delta:, realized_delta:, unrealized_delta:)
+      return "Comparison unavailable (need at least two succeeded runs)." if previous_run.nil?
+      return "Comparison unavailable (missing canonical artifacts)." if [ total_delta, realized_delta,
+unrealized_delta ].all?(&:nil?)
+
+      same_input = current_run.input_hash.present? &&
+        previous_run.input_hash.present? &&
+        current_run.input_hash == previous_run.input_hash
+      deltas_zero = [ total_delta, realized_delta, unrealized_delta ].compact.all? { |value| BigDecimal(value).zero? }
+
+      return "Identical output for matching input hash." if same_input && deltas_zero
+
+      "Differences detected between latest runs."
+    end
+
+    def relative_to_project_root(path)
+      path_string = path.to_s
+      return nil if path_string.blank?
+
+      pathname = Pathname(path_string)
+      return path_string unless pathname.absolute?
+
+      pathname.relative_path_from(Rails.root).to_s
+    rescue ArgumentError
+      path_string
+    end
+
+    def parse_decimal_or_nil(value)
+      return nil if value.nil?
+
+      BigDecimal(value.to_s)
+    rescue ArgumentError
+      nil
     end
 
     def status_mix_30d
