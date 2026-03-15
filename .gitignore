@@ -4,6 +4,7 @@
 # FCS runtime artifacts
 output/
 apps/admin/storage/
+coverage/
 
 # BMAD generated planning/runtime artifacts
 .bmad/output
