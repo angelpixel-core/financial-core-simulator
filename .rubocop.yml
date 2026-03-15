@@ -9,6 +9,7 @@ AllCops:
 
 plugins:
   - rubocop-rspec
+  - rubocop-performance
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes

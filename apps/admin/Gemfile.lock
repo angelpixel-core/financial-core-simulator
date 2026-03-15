@@ -518,6 +518,7 @@ DEPENDENCIES
   rodauth (~> 2.42)
   rodauth-rails!
   rspec-rails (~> 8.0)
+  rubocop-performance
   rubocop-rails-omakase
   rubocop-rspec
   sequel-activerecord_connection (~> 2.0)

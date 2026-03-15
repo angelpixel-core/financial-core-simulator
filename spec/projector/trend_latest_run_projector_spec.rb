@@ -31,7 +31,7 @@ RSpec.describe FCS::Projector::TrendLatestRunProjector do
     trend = read_model.fetch("runsTrend14d")
 
     expect(trend.length).to eq(14)
-    expect(trend.map { |point| point.fetch("count") }.sum).to eq(3)
+    expect(trend.sum { |point| point.fetch("count") }).to eq(3)
 
     by_day = trend.to_h { |point| [point.fetch("day"), point.fetch("count")] }
     expect(by_day.fetch("03-03")).to eq(2)
