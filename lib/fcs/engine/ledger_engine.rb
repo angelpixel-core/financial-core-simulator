@@ -13,12 +13,19 @@ module FCS
         accounting_method: ACCOUNTING_METHOD_AVERAGE,
         account_collateral: {},
         max_leverage: nil,
-        risk_engine: nil
+        risk_engine: nil,
+        risk_engine_klass: FCS::Engine::RiskEngine,
+        decimal_klass: FCS::Types::Decimal18,
+        error_klass: FCS::Error,
+        errors: FCS::Errors
       )
-        @state = state || LedgerState.new(position_builder: position_builder_for(accounting_method))
+        @decimal_klass = decimal_klass
+        @error_klass = error_klass
+        @errors = errors
         @fee_enabled = fee_enabled
         @accounting_method = accounting_method
-        @risk_engine = risk_engine || FCS::Engine::RiskEngine.new(
+        @state = state || LedgerState.new(position_builder: position_builder_for(accounting_method))
+        @risk_engine = risk_engine || risk_engine_klass.new(
           account_collateral: account_collateral,
           risk_config: { maxLeverage: max_leverage }
         )
@@ -51,10 +58,10 @@ module FCS
         when "SELL"
           apply_sell!(pos, trade)
         else
-          raise FCS::Error.new(
-            FCS::Errors::ERR_VALIDATION,
+          raise @error_klass.new(
+            @errors::ERR_VALIDATION,
             "Unsupported side",
-            details: { side: trade["side"], tradeId: trade["tradeId"] }
+            details: { side: trade.fetch("side"), tradeId: trade.fetch("tradeId") }
           )
         end
       end
@@ -68,8 +75,8 @@ module FCS
         when ACCOUNTING_METHOD_FIFO
           -> { PositionFifo.empty }
         else
-          raise FCS::Error.new(
-            FCS::Errors::ERR_VALIDATION,
+          raise @error_klass.new(
+            @errors::ERR_VALIDATION,
             "Unsupported accounting method",
             details: { accountingMethod: accounting_method }
           )
@@ -77,25 +84,25 @@ module FCS
       end
 
       def apply_buy!(pos, t)
-        qty = FCS::Types::Decimal18.from_string(t.fetch("quantityBase"))
-        price = FCS::Types::Decimal18.from_string(t.fetch("priceQuotePerBase"))
+        qty = @decimal_klass.from_string(t.fetch("quantityBase"))
+        price = @decimal_klass.from_string(t.fetch("priceQuotePerBase"))
         pos.apply_buy!(buy_qty: qty, buy_price: price)
       end
 
       def apply_sell!(pos, t)
-        qty = FCS::Types::Decimal18.from_string(t.fetch("quantityBase"))
-        price = FCS::Types::Decimal18.from_string(t.fetch("priceQuotePerBase"))
+        qty = @decimal_klass.from_string(t.fetch("quantityBase"))
+        price = @decimal_klass.from_string(t.fetch("priceQuotePerBase"))
         pos.apply_sell!(sell_qty: qty, sell_price: price)
       end
 
       def validate_long_only_sell!(pos:, trade:)
         return unless trade.fetch("side") == "SELL"
 
-        sell_qty = FCS::Types::Decimal18.from_string(trade.fetch("quantityBase"))
+        sell_qty = @decimal_klass.from_string(trade.fetch("quantityBase"))
         return if sell_qty.atoms <= pos.qty.atoms
 
-        raise FCS::Error.new(
-          FCS::Errors::ERR_POSITION_NEGATIVE,
+        raise @error_klass.new(
+          @errors::ERR_POSITION_NEGATIVE,
           "SELL would make position negative",
           details: {
             accountId: trade.fetch("accountId"),
@@ -111,7 +118,7 @@ module FCS
         fee = trade["fee"]
         return nil unless fee.is_a?(Hash) && fee.key?("amountQuote")
 
-        FCS::Types::Decimal18.from_string(fee.fetch("amountQuote"))
+        @decimal_klass.from_string(fee.fetch("amountQuote"))
       end
     end
   end
