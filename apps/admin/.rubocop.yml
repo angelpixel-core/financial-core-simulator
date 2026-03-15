@@ -9,7 +9,7 @@ RSpec/IncludeExamples:
   Enabled: true
 
 RSpec/LeakyLocalVariable:
-  Enabled: false
+  Enabled: true
 
 RSpec/Output:
   Enabled: false
