@@ -1,0 +1,8 @@
+integration: rspec
+requires:
+  - ./lib/fcs
+  - ./spec/spec_helper.rb
+includes:
+  - lib/fcs/engine
+  - lib/fcs/reporting
+  - lib/fcs/projector
