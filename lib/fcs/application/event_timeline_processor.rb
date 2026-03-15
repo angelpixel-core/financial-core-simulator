@@ -1,5 +1,6 @@
 module FCS
   module Application
+    # Applies timeline events to ledger and valuation, persisting checkpoints.
     class EventTimelineProcessor
       def call(events:, ledger:, valuation:, checkpoint: nil, checkpoint_store: nil, input_hash: nil)
         checkpoint_seq = restore_checkpoint_state!(checkpoint: checkpoint, ledger: ledger)

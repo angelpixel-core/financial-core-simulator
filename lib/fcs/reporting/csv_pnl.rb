@@ -5,6 +5,7 @@ require "fileutils"
 
 module FCS
   module Reporting
+    # Writes PnL CSV artifacts.
     class CsvPnL
       HEADER = %w[
         account_id

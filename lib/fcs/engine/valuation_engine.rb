@@ -2,6 +2,7 @@
 
 module FCS
   module Engine
+    # Computes valuations from price snapshots.
     class ValuationEngine
       def initialize(price_snapshot:)
         @prices = build_price_map(price_snapshot.fetch("prices"))

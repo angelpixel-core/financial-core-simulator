@@ -1,5 +1,6 @@
 module FCS
   module Application
+    # Builds report payloads from simulation results.
     class ReportPayloadBuilder
       def self.build(engine_version:, schema_version:, input_hash:, run_id:, valuation_timestamp:, accounts:, global:,
                      replay: nil)

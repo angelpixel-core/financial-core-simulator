@@ -4,6 +4,7 @@ require "json"
 
 module FCS
   module Ingestion
+    # Parses input JSON from disk.
     class Parser
       def parse_file(path)
         raw = File.read(path)

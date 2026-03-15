@@ -1,5 +1,6 @@
 module FCS
   module Ingestion
+    # Validates source event payloads and batches.
     class SourceEventValidator
       REQUIRED_FIELDS = %w[eventVersion source eventType correlationId occurredAt payload].freeze
       REQUIRED_STRING_FIELDS = %w[eventVersion source eventType correlationId occurredAt].freeze

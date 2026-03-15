@@ -3,6 +3,7 @@ require "time"
 
 module FCS
   module Projector
+    # Projects top account totals and risk snapshots.
     class TopAccountsRiskProjector
       ACCOUNT_TOTALS_EVENT_TYPE = "ACCOUNT_TOTALS_NORMALIZED".freeze
       RISK_SNAPSHOT_EVENT_TYPE = "RISK_SNAPSHOT_NORMALIZED".freeze

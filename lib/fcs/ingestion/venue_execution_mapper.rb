@@ -1,5 +1,6 @@
 module FCS
   module Ingestion
+    # Normalizes venue execution source events.
     class VenueExecutionMapper
       SUPPORTED_EVENT_TYPES = %w[
         ORDER_ACKNOWLEDGED

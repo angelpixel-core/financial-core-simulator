@@ -2,6 +2,7 @@
 
 module FCS
   module Benchmarking
+    # Generates synthetic benchmark inputs.
     class InputGenerator
       def generate(trades:, accounts:, markets:)
         account_ids = (1..accounts).map { |i| "acc-#{i}" }

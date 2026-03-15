@@ -1,5 +1,6 @@
 module FCS
   module Application
+    # Writes result artifacts and validates their consistency.
     class ReportArtifactsWriter
       def initialize(
         reporter: FCS::Reporting::JsonReport.new,

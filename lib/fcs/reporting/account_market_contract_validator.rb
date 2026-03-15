@@ -2,6 +2,7 @@
 
 module FCS
   module Reporting
+    # Validates account-market metrics presence and format.
     class AccountMarketContractValidator
       REQUIRED_MARKET_FIELDS = %w[quantity avgCost realizedPnL unrealizedPnL].freeze
 

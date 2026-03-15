@@ -2,6 +2,7 @@
 
 module FCS
   module Engine
+    # Tracks positions and balances per account and market.
     class LedgerState
       def initialize(position_builder: -> { Position.empty })
         @positions = {} # key: "accountId|marketId" => Position

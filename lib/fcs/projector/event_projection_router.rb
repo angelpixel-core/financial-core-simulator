@@ -1,5 +1,6 @@
 module FCS
   module Projector
+    # Routes normalized events to projection keys.
     class EventProjectionRouter
       DEFAULT_ROUTES = {
         "RUN_LIFECYCLE_NORMALIZED" => %w[overview trend],

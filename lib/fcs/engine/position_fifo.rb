@@ -1,5 +1,6 @@
 module FCS
   module Engine
+    # FIFO position accounting helpers.
     class PositionFifo
       attr_reader :qty, :avg_cost, :realized_pnl_quote, :fees_quote
 

@@ -4,6 +4,7 @@ require "json"
 
 module FCS
   module Benchmarking
+    # Loads and validates benchmark fixtures.
     class Fixture
       attr_reader :schema_version, :fixture_version, :trades, :accounts, :markets, :valuation_timestamp
 

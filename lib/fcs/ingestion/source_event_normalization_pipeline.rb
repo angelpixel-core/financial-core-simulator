@@ -1,5 +1,6 @@
 module FCS
   module Ingestion
+    # Dispatches source events to the right normalization mapper.
     class SourceEventNormalizationPipeline
       SOURCE_MAPPERS = {
         "agente." => FCS::Ingestion::AgenteIntentMapper,

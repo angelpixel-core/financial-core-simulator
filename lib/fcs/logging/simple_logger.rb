@@ -1,5 +1,6 @@
 module FCS
   module Logging
+    # Lightweight logger with severity filtering.
     class SimpleLogger
       DEBUG = 0
       INFO = 1

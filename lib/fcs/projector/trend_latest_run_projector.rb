@@ -3,6 +3,7 @@ require "time"
 
 module FCS
   module Projector
+    # Projects 14-day run trends and latest run metadata.
     class TrendLatestRunProjector
       SUPPORTED_EVENT_TYPE = "RUN_LIFECYCLE_NORMALIZED".freeze
       SUPPORTED_STATUSES = %w[queued running succeeded failed].freeze

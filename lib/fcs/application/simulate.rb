@@ -2,6 +2,7 @@
 
 module FCS
   module Application
+    # Builds the simulation result payload for the given input.
     class Simulate
       def call(input, explain: false, checkpoint_store: nil, input_hash: nil)
         fx = FCS::Engine::FXConverter.new(
@@ -54,44 +55,7 @@ module FCS
         market_ids = input.fetch("markets").map { |m| m.fetch("marketId") }.uniq.sort
 
         account_ids.map do |account_id|
-          markets = market_ids.map do |market_id|
-            pos = state.position_for(account_id: account_id, market_id: market_id)
-
-            unreal = valuation.unrealized_pnl_quote(market_id: market_id, position: pos)
-            realized = pos.realized_pnl_quote
-            fees = pos.fees_quote
-            realized_net = pos.realized_net_quote
-            total = realized_net + unreal
-
-            payload = {
-              "marketId" => market_id,
-              "quantity" => pos.qty.to_s,
-              "avgCost" => pos.avg_cost.to_s,
-              "realizedPnL" => realized.to_s,
-              "unrealizedPnL" => unreal.to_s,
-              "realizedPnLQuote" => realized.to_s,
-              "feesQuote" => fees.to_s,
-              "realizedNetPnLQuote" => realized_net.to_s,
-              "unrealizedPnLQuote" => unreal.to_s,
-              "totalPnLQuote" => total.to_s,
-              "totalPnLUsd" => fx.enabled? ? fx.quote_to_usd(total).to_s : nil
-            }
-
-            if explain
-              snapshot_price = valuation.snapshot_price_for(market_id)
-              payload["explain"] = {
-                "snapshotPrice" => snapshot_price.to_s,
-                "avgCost" => pos.avg_cost.to_s,
-                "qty" => pos.qty.to_s,
-                "realizedPnLQuote" => realized.to_s,
-                "feesQuote" => fees.to_s,
-                "unrealizedPnLQuote" => unreal.to_s,
-                "totalPnLQuote" => total.to_s
-              }
-            end
-
-            payload
-          end
+          markets = build_account_markets(account_id, market_ids, state, valuation, fx, explain)
 
           totals = sum_market_fields(markets, fx)
           health = risk_health.fetch(account_id, nil)
@@ -114,6 +78,54 @@ module FCS
           payload["riskEvents"] = risk_events_by_account.fetch(account_id, [])
           payload
         end
+      end
+
+      def build_account_markets(account_id, market_ids, state, valuation, fx, explain)
+        market_ids.map do |market_id|
+          position = state.position_for(account_id: account_id, market_id: market_id)
+          build_market_payload(market_id, position, valuation, fx, explain)
+        end
+      end
+
+      def build_market_payload(market_id, position, valuation, fx, explain)
+        unreal = valuation.unrealized_pnl_quote(market_id: market_id, position: position)
+        realized = position.realized_pnl_quote
+        fees = position.fees_quote
+        realized_net = position.realized_net_quote
+        total = realized_net + unreal
+
+        payload = {
+          "marketId" => market_id,
+          "quantity" => position.qty.to_s,
+          "avgCost" => position.avg_cost.to_s,
+          "realizedPnL" => realized.to_s,
+          "unrealizedPnL" => unreal.to_s,
+          "realizedPnLQuote" => realized.to_s,
+          "feesQuote" => fees.to_s,
+          "realizedNetPnLQuote" => realized_net.to_s,
+          "unrealizedPnLQuote" => unreal.to_s,
+          "totalPnLQuote" => total.to_s,
+          "totalPnLUsd" => fx.enabled? ? fx.quote_to_usd(total).to_s : nil
+        }
+
+        if explain
+          payload["explain"] =
+            build_market_explain_payload(market_id, position, valuation, realized, fees, unreal, total)
+        end
+        payload
+      end
+
+      def build_market_explain_payload(market_id, position, valuation, realized, fees, unreal, total)
+        snapshot_price = valuation.snapshot_price_for(market_id)
+        {
+          "snapshotPrice" => snapshot_price.to_s,
+          "avgCost" => position.avg_cost.to_s,
+          "qty" => position.qty.to_s,
+          "realizedPnLQuote" => realized.to_s,
+          "feesQuote" => fees.to_s,
+          "unrealizedPnLQuote" => unreal.to_s,
+          "totalPnLQuote" => total.to_s
+        }
       end
 
       def apply_execution_flow!(input:, ledger:, valuation:, timeline_processor:, checkpoint_store:, input_hash:)

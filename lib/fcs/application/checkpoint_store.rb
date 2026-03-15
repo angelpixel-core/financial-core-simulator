@@ -3,6 +3,7 @@ require "fileutils"
 
 module FCS
   module Application
+    # Persists and retrieves simulation checkpoints.
     class CheckpointStore
       def initialize(output_dir:, checkpoint_every:, engine_version:, schema_version:)
         @output_dir = output_dir

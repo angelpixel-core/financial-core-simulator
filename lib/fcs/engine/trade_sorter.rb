@@ -2,6 +2,7 @@
 
 module FCS
   module Engine
+    # Sorts trades deterministically for stable execution.
     class TradeSorter
       def sort(trades)
         trades.sort_by { |trade| sort_key_for(trade) }

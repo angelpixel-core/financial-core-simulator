@@ -5,6 +5,7 @@ require "fileutils"
 
 module FCS
   module Reporting
+    # Writes positions CSV artifacts.
     class CsvPositions
       HEADER = %w[
         account_id

@@ -2,6 +2,7 @@
 
 module FCS
   module Engine
+    # Represents a single account-market position.
     class Position
       attr_reader :qty, :avg_cost, :realized_pnl_quote, :fees_quote
 

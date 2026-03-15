@@ -1,5 +1,6 @@
 module FCS
   module Projector
+    # Replays event streams into read models.
     class ReadModelReplay
       def initialize(
         today: Date.today,
@@ -35,9 +36,7 @@ module FCS
         ).apply_stream!(stream)
       end
 
-      def read_model
-        projection_store.read_model
-      end
+      delegate :read_model, to: :projection_store
 
       private
 

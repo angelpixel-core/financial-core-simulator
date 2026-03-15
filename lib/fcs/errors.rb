@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module FCS
+  # Error type with structured code and details.
   class Error < StandardError
     attr_reader :code, :details
 

@@ -15,6 +15,7 @@ loader.inflector.inflect(
 loader.ignore("#{__dir__}/financial")
 loader.setup
 
+# Core namespace and entrypoint for the simulator.
 module FCS
   class << self
     attr_writer :logger

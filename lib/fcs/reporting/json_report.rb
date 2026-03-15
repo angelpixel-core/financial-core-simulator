@@ -6,6 +6,7 @@ require "fileutils"
 
 module FCS
   module Reporting
+    # Writes canonical JSON report output.
     class JsonReport
       def write!(output_dir:, payload:)
         FileUtils.mkdir_p(output_dir)

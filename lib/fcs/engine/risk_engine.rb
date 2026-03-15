@@ -2,6 +2,7 @@
 
 module FCS
   module Engine
+    # Evaluates margin requirements and liquidation risk.
     class RiskEngine
       STATUS_HEALTHY = "HEALTHY"
       STATUS_MARGIN_CALL = "MARGIN_CALL"

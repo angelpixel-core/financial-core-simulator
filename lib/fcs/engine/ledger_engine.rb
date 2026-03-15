@@ -2,6 +2,7 @@
 
 module FCS
   module Engine
+    # Applies trades and maintains ledger state.
     class LedgerEngine
       ACCOUNTING_METHOD_AVERAGE = "AVERAGE_COST"
       ACCOUNTING_METHOD_FIFO = "FIFO"

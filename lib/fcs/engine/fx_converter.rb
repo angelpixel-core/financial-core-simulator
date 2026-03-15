@@ -2,6 +2,7 @@
 
 module FCS
   module Engine
+    # Converts quote currency values to USD when enabled.
     class FXConverter
       def initialize(price_snapshot:, usd_enabled:)
         @usd_enabled = usd_enabled

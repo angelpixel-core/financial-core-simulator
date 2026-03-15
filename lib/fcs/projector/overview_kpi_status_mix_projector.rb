@@ -1,5 +1,6 @@
 module FCS
   module Projector
+    # Projects lifecycle KPI and status mix data.
     class OverviewKpiStatusMixProjector
       SUPPORTED_EVENT_TYPE = "RUN_LIFECYCLE_NORMALIZED".freeze
       SUPPORTED_STATUSES = %w[queued running succeeded failed].freeze

@@ -6,6 +6,7 @@ require "time"
 
 module FCS
   module Benchmarking
+    # Executes benchmark runs and produces performance reports.
     class BenchmarkRunner
       DEFAULT_RUNS = 5
       P95_GATE_SECONDS = 2.0
@@ -183,7 +184,7 @@ module FCS
       end
 
       def write_report(output_dir:, report:, completed_at:)
-        timestamp = completed_at.iso8601.gsub(":", "").gsub("-", "")
+        timestamp = completed_at.iso8601.delete(":").delete("-")
         path = File.join(output_dir, "benchmark_report_#{timestamp}.json")
         payload = FCS::Hashing::CanonicalJSON.dump(report)
         File.write(path, payload + "\n")

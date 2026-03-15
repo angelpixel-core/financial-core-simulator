@@ -2,6 +2,7 @@
 
 module FCS
   module Reporting
+    # Validates required metadata fields on result payloads.
     class ResultMetadataContractValidator
       REQUIRED_FIELDS = %w[engineVersion schemaVersion inputHash runId valuationTimestamp].freeze
       INPUT_HASH_REGEX = /\A[0-9a-f]{64}\z/

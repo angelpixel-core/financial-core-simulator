@@ -5,6 +5,7 @@ require "json"
 
 module FCS
   module Reporting
+    # Validates CSV artifacts against the canonical JSON payload.
     class CsvArtifactReconciler
       POSITION_NUMERIC_FIELDS = %w[quantity avg_cost].freeze
       PNL_NUMERIC_FIELDS = %w[
@@ -114,37 +115,12 @@ module FCS
 
       def compare_rows!(label:, expected_rows:, actual_rows:, numeric_fields:)
         expected_rows.each do |expected|
-          key = [expected.fetch("account_id"), expected.fetch("market_id")]
-          actual = actual_rows[key]
-
-          if actual.nil?
-            raise_validation_error!(
-              message: "CSV row missing for #{label}",
-              mismatch: "csv_row_missing",
-              details: {
-                "account_id" => key[0],
-                "market_id" => key[1]
-              }
-            )
-          end
-
-          numeric_fields.each do |field|
-            expected_value = expected[field]
-            actual_value = normalize_blank(actual[field])
-            next if decimals_equal?(expected_value, actual_value)
-
-            raise_validation_error!(
-              message: "CSV row mismatch for #{label}",
-              mismatch: "csv_row_mismatch",
-              details: {
-                "account_id" => key[0],
-                "market_id" => key[1],
-                "field" => field,
-                "expected" => expected_value,
-                "actual" => actual_value
-              }
-            )
-          end
+          validate_expected_row!(
+            expected: expected,
+            actual_rows: actual_rows,
+            numeric_fields: numeric_fields,
+            label: label
+          )
         end
 
         extra = actual_rows.keys - expected_rows.map { |row| [row["account_id"], row["market_id"]] }
@@ -157,6 +133,40 @@ module FCS
             "unexpected_rows" => extra.map { |row| { "account_id" => row[0], "market_id" => row[1] } }
           }
         )
+      end
+
+      def validate_expected_row!(expected:, actual_rows:, numeric_fields:, label:)
+        key = [expected.fetch("account_id"), expected.fetch("market_id")]
+        actual = actual_rows[key]
+
+        if actual.nil?
+          raise_validation_error!(
+            message: "CSV row missing for #{label}",
+            mismatch: "csv_row_missing",
+            details: {
+              "account_id" => key[0],
+              "market_id" => key[1]
+            }
+          )
+        end
+
+        numeric_fields.each do |field|
+          expected_value = expected[field]
+          actual_value = normalize_blank(actual[field])
+          next if decimals_equal?(expected_value, actual_value)
+
+          raise_validation_error!(
+            message: "CSV row mismatch for #{label}",
+            mismatch: "csv_row_mismatch",
+            details: {
+              "account_id" => key[0],
+              "market_id" => key[1],
+              "field" => field,
+              "expected" => expected_value,
+              "actual" => actual_value
+            }
+          )
+        end
       end
 
       def validate_global_totals!(global:, pnl_rows:)

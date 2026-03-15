@@ -1,5 +1,6 @@
 module FCS
   module Projector
+    # Builds the default projection store for read models.
     class DefaultProjectionStoreFactory
       def initialize(today:)
         @today = today

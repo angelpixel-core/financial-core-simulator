@@ -1,5 +1,6 @@
 module FCS
   module Projector
+    # Applies events to projections and builds composite read models.
     class ProjectionStore
       def initialize(projections:)
         @projections = normalize_projections!(projections)

@@ -1,5 +1,6 @@
 module FCS
   module Ingestion
+    # Detects duplicate and conflicting source events.
     class SourceEventIdempotencyGuard
       # Invariants:
       # 1) Identity key is [source, payload.externalId, payload.sequence].

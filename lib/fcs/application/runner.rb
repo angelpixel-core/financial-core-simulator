@@ -2,6 +2,7 @@
 
 module FCS
   module Application
+    # Coordinates parsing, validation, simulation, and artifact generation.
     class Runner
       def initialize(
         parser: FCS::Ingestion::Parser.new,
@@ -142,10 +143,10 @@ module FCS
         input["priceSnapshot"]["prices"] = sort_collection(prices) { |item| item.fetch("marketId") }
       end
 
-      def sort_collection(collection, &block)
+      def sort_collection(collection, &)
         return collection unless collection.is_a?(Array)
 
-        collection.sort_by(&block)
+        collection.sort_by(&)
       end
 
       def deep_copy(value)

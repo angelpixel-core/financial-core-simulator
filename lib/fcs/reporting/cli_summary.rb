@@ -2,6 +2,7 @@
 
 module FCS
   module Reporting
+    # Prints a CLI-friendly summary of a run.
     class CliSummary
       REQUIRED_ARTIFACT_KEYS = [
         [:json_path, "result_json"],
