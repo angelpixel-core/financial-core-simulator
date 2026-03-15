@@ -4,6 +4,15 @@ module FCS
   module Engine
     # Evaluates margin requirements and liquidation risk.
     class RiskEngine
+      AccountEntry = Struct.new(
+        :maintenance_margin_quote,
+        :equity_quote,
+        :margin_ratio,
+        :status,
+        :candidates,
+        keyword_init: true
+      )
+
       STATUS_HEALTHY = "HEALTHY"
       STATUS_MARGIN_CALL = "MARGIN_CALL"
       STATUS_LIQUIDATABLE = "LIQUIDATABLE"
@@ -58,30 +67,29 @@ module FCS
       def evaluate_accounts!(state:, valuation:)
         maintenance_ratio = @risk_config[:maintenance_margin_ratio]
         accounts = Hash.new do |hash, key|
-          hash[key] = {
+          hash[key] = AccountEntry.new(
             maintenance_margin_quote: zero,
             equity_quote: @account_collateral.fetch(key, zero),
-            margin_ratio: nil,
-            status: STATUS_HEALTHY,
             candidates: []
-          }
+          )
         end
 
         state.positions.each do |key, pos|
           account_id, market_id = key.split("|", 2)
+          entry = accounts[account_id]
           snapshot_price = valuation.snapshot_price_for(market_id)
           notional = pos.qty.abs * snapshot_price
           unrealized = valuation.unrealized_pnl_quote(market_id: market_id, position: pos)
-          accounts[account_id][:equity_quote] += pos.realized_net_quote + unrealized
+          entry.equity_quote += pos.realized_net_quote + unrealized
 
           if maintenance_ratio
             maintenance = notional * maintenance_ratio
-            accounts[account_id][:maintenance_margin_quote] += maintenance
+            entry.maintenance_margin_quote += maintenance
           end
 
           next unless pos.qty.atoms < 0
 
-          accounts[account_id][:candidates] << {
+          entry.candidates << {
             account_id: account_id,
             market_id: market_id,
             severity: notional,
@@ -90,13 +98,21 @@ module FCS
         end
 
         accounts.each_value do |entry|
-          maintenance = entry[:maintenance_margin_quote]
-          equity = entry[:equity_quote]
-          entry[:margin_ratio] = margin_ratio(maintenance: maintenance, equity: equity)
-          entry[:status] = status_for(maintenance: maintenance, equity: equity)
+          maintenance = entry.maintenance_margin_quote
+          equity = entry.equity_quote
+          entry.margin_ratio = margin_ratio(maintenance: maintenance, equity: equity)
+          entry.status = status_for(maintenance: maintenance, equity: equity)
         end
 
-        accounts
+        accounts.transform_values do |entry|
+          {
+            maintenance_margin_quote: entry.maintenance_margin_quote,
+            equity_quote: entry.equity_quote,
+            margin_ratio: entry.margin_ratio,
+            status: entry.status,
+            candidates: entry.candidates
+          }
+        end
       end
 
       def liquidation_candidates(health)
