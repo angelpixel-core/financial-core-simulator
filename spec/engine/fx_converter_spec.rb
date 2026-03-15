@@ -49,6 +49,25 @@ RSpec.describe FCS::Engine::FXConverter do
       expect(quote_usd.atoms).to eq(FCS::Types::Decimal18.from_string("1.25").atoms)
     end
 
+    it "uses injected decimal_klass for quote conversion" do
+      marker = Object.new
+      decimal_klass = Class.new do
+        define_singleton_method(:from_string) do |value|
+          raise "unexpected value" unless value == "2.75"
+
+          marker
+        end
+      end
+
+      converter = described_class.new(
+        price_snapshot: build_snapshot(quote_usd: "2.75"),
+        usd_enabled: true,
+        decimal_klass: decimal_klass
+      )
+
+      expect(converter.instance_variable_get(:@quote_usd)).to be(marker)
+    end
+
     it "raises when usd_enabled is true and quoteUsd is missing" do
       expect do
         described_class.new(price_snapshot: build_snapshot, usd_enabled: true)
@@ -61,6 +80,23 @@ RSpec.describe FCS::Engine::FXConverter do
           impact: "Account and global USD totals cannot be calculated deterministically.",
           next_action: "Provide priceSnapshot.fx.quoteUsd as a positive decimal string, or disable usdModel.enabled."
         )
+      end
+    end
+
+    it "uses injected error_klass and errors module" do
+      custom_errors = Module.new
+      custom_errors.const_set(:ERR_MISSING_SNAPSHOT, "CUSTOM_ERR")
+      custom_error_klass = Class.new(FCS::Error)
+
+      expect do
+        described_class.new(
+          price_snapshot: build_snapshot,
+          usd_enabled: true,
+          error_klass: custom_error_klass,
+          errors: custom_errors
+        )
+      end.to raise_error(custom_error_klass) do |error|
+        expect(error.code).to eq("CUSTOM_ERR")
       end
     end
 
@@ -97,6 +133,22 @@ RSpec.describe FCS::Engine::FXConverter do
       end.not_to raise_error
 
       expect(converter.instance_variable_get(:@quote_usd)).to be_nil
+    end
+
+    it "uses FCS defaults even when local constants exist" do
+      stub_const("FCS::Engine::FXConverter::Types", Module.new do
+        const_set(:Decimal18, Class.new)
+      end)
+      stub_const("FCS::Engine::FXConverter::Error", Class.new(StandardError))
+      stub_const("FCS::Engine::FXConverter::Errors", Module.new do
+        const_set(:ERR_MISSING_SNAPSHOT, "ERR_LOCAL")
+      end)
+
+      converter = described_class.new(price_snapshot: build_snapshot(quote_usd: "1.25"), usd_enabled: true)
+
+      expect(converter.instance_variable_get(:@decimal_klass)).to eq(FCS::Types::Decimal18)
+      expect(converter.instance_variable_get(:@error_klass)).to eq(FCS::Error)
+      expect(converter.instance_variable_get(:@errors)).to eq(FCS::Errors)
     end
   end
 

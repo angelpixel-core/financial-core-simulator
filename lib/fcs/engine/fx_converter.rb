@@ -4,11 +4,20 @@ module FCS
   module Engine
     # Converts quote currency values to USD when enabled.
     class FXConverter
-      def initialize(price_snapshot:, usd_enabled:)
+      def initialize(
+        price_snapshot:,
+        usd_enabled:,
+        decimal_klass: FCS::Types::Decimal18,
+        error_klass: FCS::Error,
+        errors: FCS::Errors
+      )
         @usd_enabled = usd_enabled
+        @decimal_klass = decimal_klass
+        @error_klass = error_klass
+        @errors = errors
         fx = price_snapshot["fx"]
         @quote_usd =
-          (FCS::Types::Decimal18.from_string(fx.fetch("quoteUsd")) if fx && fx["quoteUsd"])
+          (@decimal_klass.from_string(fx.fetch("quoteUsd")) if fx && fx["quoteUsd"])
 
         raise_missing_fx_for_usd_enabled! if @usd_enabled && @quote_usd.nil?
       end
@@ -26,8 +35,8 @@ module FCS
       private
 
       def raise_missing_fx_for_usd_enabled!
-        raise FCS::Error.new(
-          FCS::Errors::ERR_MISSING_SNAPSHOT,
+        raise @error_klass.new(
+          @errors::ERR_MISSING_SNAPSHOT,
           "Missing required snapshot FX rate",
           details: {
             missingField: "priceSnapshot.fx.quoteUsd",
