@@ -48,6 +48,20 @@ RSpec.describe FCS::Engine::ValuationEngine do
     expect(actual.to_s).to eq(expected.to_s)
   end
 
+  it "raises when updating an unknown market" do
+    snapshot = {
+      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+    }
+
+    valuation = described_class.new(price_snapshot: snapshot)
+
+    expect do
+      valuation.update_price!(market_id: "BTC-USD", price_quote_per_base: "151.25")
+    end.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_UNKNOWN_REFERENCE)
+    }
+  end
+
   it "rejects invalid update_price! input for price_quote_per_base" do
     snapshot = {
       "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
@@ -57,6 +71,26 @@ RSpec.describe FCS::Engine::ValuationEngine do
 
     expect do
       valuation.update_price!(market_id: "ETH-USD", price_quote_per_base: 151.25)
+    end.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
+    }
+  end
+
+  it "rejects invalid decimal strings and zero values" do
+    snapshot = {
+      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+    }
+
+    valuation = described_class.new(price_snapshot: snapshot)
+
+    expect do
+      valuation.update_price!(market_id: "ETH-USD", price_quote_per_base: "15a.25")
+    end.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
+    }
+
+    expect do
+      valuation.update_price!(market_id: "ETH-USD", price_quote_per_base: "0")
     end.to raise_error(FCS::Error) { |e|
       expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
     }
