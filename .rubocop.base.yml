@@ -1,0 +1,62 @@
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  TargetRubyVersion: 3.4
+  NewCops: enable
+  SuggestExtensions: false
+
+plugins:
+  - rubocop-rspec
+  - rubocop-performance
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+
+Metrics/ClassLength:
+  Max: 120
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Naming/MethodParameterName:
+  MinNameLength: 1
+
+Naming/VariableNumber:
+  Enabled: false
+
+Naming/PredicateMethod:
+  Enabled: false
+
+RSpec/DescribeClass:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/SpecFilePathFormat:
+  Enabled: false
+
+RSpec/VerifiedDoubles:
+  Enabled: false
+
+RSpec/InstanceVariable:
+  Enabled: false
+
+RSpec/LeakyConstantDeclaration:
+  Enabled: false
+
+Style/MultilineBlockChain:
+  Enabled: false
+
+Lint/ConstantDefinitionInBlock:
+  Enabled: false
