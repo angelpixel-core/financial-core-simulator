@@ -9,6 +9,7 @@ AllCops:
     - "Gemfile"
     - "*.gemspec"
   Exclude:
+    - "bin/ci-local"
     - "apps/admin/**/*"
     - "coverage/**/*"
     - "tmp/**/*"
