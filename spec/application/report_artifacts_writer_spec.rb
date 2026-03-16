@@ -20,12 +20,13 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
   end
 
   it "writes json and csv artifacts through reporting ports" do
+    account_market_spy = instance_spy(FCS::Reporting::AccountMarketContractValidator)
     writer = described_class.new(
       reporter: reporter,
       positions_csv: positions_csv,
       pnl_csv: pnl_csv,
       csv_reconciler: csv_reconciler,
-      account_market_contract_validator: account_market_contract_validator,
+      account_market_contract_validator: account_market_spy,
       result_metadata_contract_validator: result_metadata_contract_validator
     )
     payload = metadata.merge(
@@ -152,7 +153,7 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
 
     expect { writer.write_all!(output_dir: "out", payload: payload) }.to raise_error(FCS::Error)
 
-    expect(account_market_contract_validator).not_to have_received(:validate!)
+    expect(account_market_spy).not_to have_received(:validate!)
     expect(reporter).not_to have_received(:write!)
     expect(positions_csv).not_to have_received(:write!)
     expect(pnl_csv).not_to have_received(:write!)
