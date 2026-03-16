@@ -6,7 +6,3 @@ jobs: 4
 requires:
   - ./lib/fcs
   - ./spec/spec_helper.rb
-mutant:
-  ignore:
-    - FCS.logger
-    - FCS::Logging::SimpleLogger
