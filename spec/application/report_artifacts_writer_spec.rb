@@ -136,12 +136,13 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
   end
 
   it "stops early when metadata contract validation fails" do
+    account_market_spy = instance_spy(FCS::Reporting::AccountMarketContractValidator)
     writer = described_class.new(
       reporter: reporter,
       positions_csv: positions_csv,
       pnl_csv: pnl_csv,
       csv_reconciler: csv_reconciler,
-      account_market_contract_validator: account_market_contract_validator,
+      account_market_contract_validator: account_market_spy,
       result_metadata_contract_validator: result_metadata_contract_validator
     )
 
