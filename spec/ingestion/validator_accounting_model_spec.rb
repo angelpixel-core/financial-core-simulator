@@ -78,4 +78,26 @@ RSpec.describe FCS::Ingestion::Validator do
 
     expect { described_class.new.validate!(input) }.not_to raise_error
   end
+
+  it "rejects non-boolean liquidation.enabled" do
+    input = base_input.merge(
+      "riskModel" => {
+        "liquidation" => { "enabled" => "yes", "closeFactor" => "0.5" }
+      }
+    )
+
+    expect { described_class.new.validate!(input) }.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+      expect(e.details[:field]).to eq("riskModel.liquidation.enabled")
+    }
+  end
+
+  it "rejects usdModel without enabled flag" do
+    input = base_input.merge("usdModel" => {})
+
+    expect { described_class.new.validate!(input) }.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+      expect(e.details[:field]).to eq("usdModel.enabled")
+    }
+  end
 end

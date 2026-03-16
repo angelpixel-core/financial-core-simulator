@@ -562,6 +562,38 @@ RSpec.describe FCS::Ingestion::Validator do
     expect { validator.validate!(input) }.not_to raise_error
   end
 
+  it "falla si timelineSeq se repite" do
+    input = base_input
+    input["timeline"] = {
+      "events" => [
+        {
+          "eventType" => "PRICE_UPDATED",
+          "timelineSeq" => 101,
+          "timestamp" => "2026-03-03T12:00:01Z",
+          "source" => "feed.binance",
+          "externalId" => "px-ethusd-1",
+          "marketId" => "ETH-USD",
+          "priceQuotePerBase" => "3151.00"
+        },
+        {
+          "eventType" => "PRICE_UPDATED",
+          "timelineSeq" => 101,
+          "timestamp" => "2026-03-03T12:00:02Z",
+          "source" => "feed.binance",
+          "externalId" => "px-ethusd-2",
+          "marketId" => "ETH-USD",
+          "priceQuotePerBase" => "3152.00"
+        }
+      ]
+    }
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: "timeline.events.timelineSeq", timelineSeq: 101)
+      }
+  end
+
   it "falla si hay duplicado exacto de clave idempotente en timeline" do
     input = base_input
     input["timeline"] = {
@@ -677,6 +709,74 @@ RSpec.describe FCS::Ingestion::Validator do
       .to raise_error(FCS::Error) { |e|
         expect(e.code).to eq(FCS::Errors::ERR_UNKNOWN_REFERENCE)
         expect(e.details).to include(marketId: "BTC-USD")
+      }
+  end
+
+  it "falla si trade timestamp no es integer" do
+    input = base_input
+    input["trades"] = [
+      {
+        "tradeId" => "t-1",
+        "accountId" => "acc-1",
+        "marketId" => "ETH-USD",
+        "timestamp" => "bad",
+        "seq" => 1,
+        "side" => "BUY",
+        "quantityBase" => "1",
+        "priceQuotePerBase" => "100"
+      }
+    ]
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: "timestamp")
+      }
+  end
+
+  it "falla si trade seq no es integer" do
+    input = base_input
+    input["trades"] = [
+      {
+        "tradeId" => "t-1",
+        "accountId" => "acc-1",
+        "marketId" => "ETH-USD",
+        "timestamp" => 1,
+        "seq" => "1",
+        "side" => "BUY",
+        "quantityBase" => "1",
+        "priceQuotePerBase" => "100"
+      }
+    ]
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: "seq")
+      }
+  end
+
+  it "falla si fee amountQuote es negativo" do
+    input = base_input
+    input["feeModel"] = { "enabled" => true }
+    input["trades"] = [
+      {
+        "tradeId" => "t-1",
+        "accountId" => "acc-1",
+        "marketId" => "ETH-USD",
+        "timestamp" => 1,
+        "seq" => 1,
+        "side" => "BUY",
+        "quantityBase" => "1",
+        "priceQuotePerBase" => "100",
+        "fee" => { "amountQuote" => "-1" }
+      }
+    ]
+
+    expect { validator.validate!(input) }
+      .to raise_error(FCS::Error) { |e|
+        expect(e.code).to eq(FCS::Errors::ERR_VALIDATION)
+        expect(e.details).to include(field: "fee.amountQuote")
       }
   end
 
