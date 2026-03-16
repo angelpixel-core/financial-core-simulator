@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FCS
   module Ingestion
     # Normalizes venue execution source events.
@@ -9,7 +11,7 @@ module FCS
         ORDER_REJECTED
       ].freeze
 
-      NORMALIZED_EVENT_TYPE = "VENUE_EXECUTION_NORMALIZED".freeze
+      NORMALIZED_EVENT_TYPE = "VENUE_EXECUTION_NORMALIZED"
 
       def map!(source_event)
         validate_source_event_shape!(source_event)

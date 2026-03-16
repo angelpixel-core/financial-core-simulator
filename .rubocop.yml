@@ -1,19 +1,15 @@
-inherit_from: .rubocop_todo.yml
+inherit_from: .rubocop.base.yml
 
 AllCops:
-  TargetRubyVersion: 4.0
-  NewCops: enable
-  SuggestExtensions: false
+  Include:
+    - "lib/**/*.rb"
+    - "spec/**/*.rb"
+    - "bin/*"
+    - "Rakefile"
+    - "Gemfile"
+    - "*.gemspec"
   Exclude:
     - "apps/admin/**/*"
-
-plugins:
-  - rubocop-rspec
-  - rubocop-performance
-
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
-
-Metrics/BlockLength:
-  Exclude:
-    - "spec/**/*"
+    - "coverage/**/*"
+    - "tmp/**/*"
+    - "vendor/**/*"

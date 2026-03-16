@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "bigdecimal"
 require "time"
 
@@ -5,8 +7,8 @@ module FCS
   module Projector
     # Projects top account totals and risk snapshots.
     class TopAccountsRiskProjector
-      ACCOUNT_TOTALS_EVENT_TYPE = "ACCOUNT_TOTALS_NORMALIZED".freeze
-      RISK_SNAPSHOT_EVENT_TYPE = "RISK_SNAPSHOT_NORMALIZED".freeze
+      ACCOUNT_TOTALS_EVENT_TYPE = "ACCOUNT_TOTALS_NORMALIZED"
+      RISK_SNAPSHOT_EVENT_TYPE = "RISK_SNAPSHOT_NORMALIZED"
       SUPPORTED_EVENT_TYPES = [ACCOUNT_TOTALS_EVENT_TYPE, RISK_SNAPSHOT_EVENT_TYPE].freeze
 
       def initialize

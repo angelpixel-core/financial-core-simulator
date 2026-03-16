@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FCS
   module Projector
     # Routes normalized events to projection keys.

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "stringio"
 require "tmpdir"
 require "fileutils"
@@ -70,7 +72,7 @@ RSpec.describe FCS::Reporting::CliSummary do
         "  pnl_csv: #{pnl_csv}"
       ]
 
-      expect(io.string).to eq(expected_lines.join("\n") + "\n")
+      expect(io.string).to eq("#{expected_lines.join("\n")}\n")
     end
   end
 

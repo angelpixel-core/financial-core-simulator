@@ -83,7 +83,7 @@ RSpec.describe "result.json schema contract" do
   end
 
   it "adds replay metadata in timeline mode without breaking required shape" do
-    previous = ENV["FCS_TIMELINE_ENABLED"]
+    previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
     ENV["FCS_TIMELINE_ENABLED"] = "1"
 
     Dir.mktmpdir do |dir|

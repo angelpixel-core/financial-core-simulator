@@ -23,7 +23,7 @@ RSpec.describe "Deterministic benchmark runner", :perf do
 
       report = result.fetch(:report)
 
-      expect(File.exist?(result.fetch(:report_path))).to eq(true)
+      expect(File.exist?(result.fetch(:report_path))).to be(true)
       expect(report.fetch("fixture_path")).to eq(fixture_path)
       expect(report.fetch("input_hash")).not_to be_nil
       expect(report.fetch("run_id")).not_to be_nil

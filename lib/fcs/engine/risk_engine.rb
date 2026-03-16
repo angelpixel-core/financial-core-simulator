@@ -9,8 +9,7 @@ module FCS
         :equity_quote,
         :margin_ratio,
         :status,
-        :candidates,
-        keyword_init: true
+        :candidates
       )
 
       STATUS_HEALTHY = "HEALTHY"
@@ -25,7 +24,7 @@ module FCS
       def pre_trade_check!(account_id:, market_id:, side:, quantity:, price:, position:, accounting_method:)
         qty = coerce_decimal18(quantity)
         projected_qty_atoms = projected_qty_atoms(position: position, side: side, quantity: qty)
-        return true unless projected_qty_atoms < 0
+        return true unless projected_qty_atoms.negative?
 
         if accounting_method == FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_FIFO
           raise FCS::Error.new(
@@ -87,7 +86,7 @@ module FCS
             entry.maintenance_margin_quote += maintenance
           end
 
-          next unless pos.qty.atoms < 0
+          next unless pos.qty.atoms.negative?
 
           entry.candidates << {
             account_id: account_id,

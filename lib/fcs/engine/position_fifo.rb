@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FCS
   module Engine
     # FIFO position accounting helpers.
@@ -34,7 +36,7 @@ module FCS
       end
 
       def apply_sell!(sell_qty:, sell_price:)
-        if (@qty - sell_qty).atoms < 0
+        if (@qty - sell_qty).atoms.negative?
           raise FCS::Error.new(
             FCS::Errors::ERR_POSITION_NEGATIVE,
             "SELL would make position negative",
@@ -43,7 +45,7 @@ module FCS
         end
 
         remaining = sell_qty
-        while remaining.atoms > 0
+        while remaining.atoms.positive?
           current_lot = @lots.first
           lot_qty = current_lot.fetch(:qty)
           lot_price = current_lot.fetch(:price)

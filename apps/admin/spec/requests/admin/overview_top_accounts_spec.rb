@@ -40,6 +40,7 @@ RSpec.describe "Admin top accounts", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("No account totals available.")
     expect(response.body).to include("View top accounts")
+    expect(response.body).to include("workspace-widget--empty")
   end
 
   it "does not render self drilldown CTA on standalone top accounts page" do

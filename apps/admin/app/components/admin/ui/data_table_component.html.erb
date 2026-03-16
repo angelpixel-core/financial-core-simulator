@@ -18,7 +18,7 @@
         </tr>
       <% elsif empty? %>
         <tr class="shad-table__row">
-          <td class="shad-table__td" colspan="<%= column_count %>">No account totals available.</td>
+          <td class="shad-table__td" colspan="<%= column_count %>"><%= @empty_message %></td>
         </tr>
       <% else %>
         <% @rows.each do |row| %>

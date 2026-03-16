@@ -1,0 +1,22 @@
+<article class="dashboard-card workspace-widget workspace-widget--<%= @state %>">
+  <header class="dashboard-card__header workspace-widget__header">
+    <h3 class="workspace-widget__title"><%= @title %></h3>
+    <% if @updated_at.present? || @cta_path.present? %>
+      <nav class="dashboard-card__meta-actions workspace-widget__actions" aria-label="<%= actions_label %>">
+        <% if @updated_at.present? %>
+          <p class="dashboard-card__meta">Updated <%= @updated_at %></p>
+        <% end %>
+        <% if @cta_path.present? %>
+          <a class="overview__link" href="<%= @cta_path %>" data-turbo-frame="_top"><%= @cta_label || "View details" %></a>
+        <% end %>
+      </nav>
+    <% end %>
+  </header>
+  <% if render_state? %>
+    <%= render Admin::Ui::EmptyStateComponent.new(message: state_message, tone: state_tone) %>
+  <% else %>
+    <div class="workspace-widget__body <%= @body_class %>">
+      <%= content %>
+    </div>
+  <% end %>
+</article>

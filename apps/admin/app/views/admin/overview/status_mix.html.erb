@@ -10,13 +10,22 @@
       <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
     </nav>
   </header>
-  <section class="dashboard-card">
-    <h2>Status mix (30d)</h2>
+  <% status_mix = @metrics[:status_mix_30d] || {} %>
+  <% status_rows = [
+    ["Queued", status_mix[:queued]],
+    ["Running", status_mix[:running]],
+    ["Succeeded", status_mix[:succeeded]],
+    ["Failed", status_mix[:failed]]
+  ] %>
+  <%= render Admin::Ui::WorkspaceWidgetComponent.new(
+    title: "Status mix (30d)",
+    state: status_rows.all? { |_, value| value.nil? } ? :empty : :default,
+    empty_message: "No status mix data available."
+  ) do %>
     <ul class="detail-list">
-      <li><span>Queued</span><strong><%= @metrics[:status_mix_30d][:queued] %></strong></li>
-      <li><span>Running</span><strong><%= @metrics[:status_mix_30d][:running] %></strong></li>
-      <li><span>Succeeded</span><strong><%= @metrics[:status_mix_30d][:succeeded] %></strong></li>
-      <li><span>Failed</span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
+      <% status_rows.each do |label, value| %>
+        <li><span><%= label %></span><strong><%= value || 0 %></strong></li>
+      <% end %>
     </ul>
-  </section>
+  <% end %>
 </main>

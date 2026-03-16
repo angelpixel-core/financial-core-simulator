@@ -1,0 +1,9 @@
+<%= render Admin::Ui::DataTableComponent.new(
+  columns: @columns,
+  rows: @rows,
+  table_class: @table_class,
+  state: @state,
+  loading_message: @loading_message,
+  error_message: @error_message,
+  empty_message: @empty_message
+) %>

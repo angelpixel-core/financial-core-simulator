@@ -1430,7 +1430,7 @@ body {
 }
 
 .overview__domain {
-  margin: 14px 0;
+  margin: 22px 0 30px;
 }
 
 .overview__domain-title {
@@ -1449,6 +1449,13 @@ body {
   align-items: start;
 }
 
+.overview__domain-description {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  max-width: 78ch;
+}
 .kpi-card,
 .dashboard-card {
   background: var(--surface);
@@ -1482,6 +1489,24 @@ body {
 
 .dashboard-card {
   margin: 12px 0;
+}
+
+.workspace-widget {
+  border-radius: 16px;
+}
+
+.workspace-widget__header {
+  align-items: flex-start;
+}
+
+.workspace-widget__title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.workspace-widget__body {
+  display: grid;
+  gap: 10px;
 }
 
 .dashboard-card__header {
@@ -1547,6 +1572,31 @@ body {
   min-height: 4px;
   border-radius: 6px 6px 0 0;
   background: linear-gradient(180deg, #0f766e, #155e75);
+  position: relative;
+}
+
+.trend-bars__bar:hover::after,
+.trend-bars__bar:focus-visible::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  background: #0f172a;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.26);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.trend-bars__bar:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
 }
 
 .trend-bars__item span {
@@ -1711,6 +1761,38 @@ body {
 
 .top-accounts-table.table--striped tbody tr:hover {
   background: rgba(148, 163, 184, 0.14);
+}
+
+.ingestion-filters {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ingestion-filters__label {
+  font-weight: 600;
+}
+
+.ingestion-filters__input {
+  padding: 4px 8px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+}
+
+.ingestion-filters__button {
+  padding: 4px 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  color: #1a202c;
+  background: #fff;
+}
+
+.ingestion-filters__button--primary {
+  border-color: #1a202c;
+  background: #1a202c;
+  color: #fff;
 }
 
 .ui-empty-state {

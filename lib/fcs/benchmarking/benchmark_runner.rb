@@ -187,7 +187,7 @@ module FCS
         timestamp = completed_at.iso8601.delete(":").delete("-")
         path = File.join(output_dir, "benchmark_report_#{timestamp}.json")
         payload = FCS::Hashing::CanonicalJSON.dump(report)
-        File.write(path, payload + "\n")
+        File.write(path, "#{payload}\n")
         path
       end
     end

@@ -165,12 +165,14 @@ end
 
 puts "Seeding dashboard demo data..."
 
-(0..13).to_a.reverse_each do |day_offset|
+(0..29).to_a.reverse_each do |day_offset|
   upsert_succeeded_run(day_offset: day_offset)
 end
 
 upsert_transient_run(status: :queued, suffix: "main", day_offset: 0, hour_offset: 1)
 upsert_transient_run(status: :running, suffix: "main", day_offset: 0, hour_offset: 2)
+upsert_transient_run(status: :queued, suffix: "backup", day_offset: 1, hour_offset: 3)
+upsert_transient_run(status: :running, suffix: "backup", day_offset: 2, hour_offset: 2)
 
 upsert_validation_failure(
   source: "source.agent.internal",
@@ -192,6 +194,20 @@ upsert_validation_failure(
   message: "risk invalid",
   correlation_id: "seed-corr-c",
   day_offset: 4
+)
+upsert_validation_failure(
+  source: "faucet.erc20.ang",
+  error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING,
+  message: "accounts collateral mismatch",
+  correlation_id: "seed-corr-d",
+  day_offset: 7
+)
+upsert_validation_failure(
+  source: "source.market.snapshots",
+  error_code: Runs::ErrorCodeMapper::VALIDATION_RISK,
+  message: "riskModel stale window",
+  correlation_id: "seed-corr-e",
+  day_offset: 10
 )
 
 puts "Done."

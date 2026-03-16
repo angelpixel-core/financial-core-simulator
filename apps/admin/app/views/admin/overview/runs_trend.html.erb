@@ -10,36 +10,12 @@
       <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
     </nav>
   </header>
-  <section class="dashboard-card">
-    <h2>Run trend (14d)</h2>
-    <div
-      data-controller="run-trend-chart"
-      data-run-trend-chart-points-value="<%= @metrics[:runs_trend_14d].to_json %>"
-      data-run-trend-chart-title-value="Runs trend detail"
-      data-run-trend-chart-chart-kind-value="bar"
-      data-run-trend-chart-tooltip-label-value="Day"
-      data-run-trend-chart-tooltip-count-label-value="Runs"
-      data-run-trend-chart-animation-mode-value="proportional"
-      data-run-trend-chart-base-duration-value="260"
-      data-run-trend-chart-max-extra-duration-value="540"
-    >
-      <div
-        class="trend-chart trend-chart--detail"
-        data-run-trend-chart-target="chart"
-        aria-label="Run trend chart detail for the last 14 days"
-      ></div>
-      <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
-      <div class="trend-bars" data-run-trend-chart-target="fallback">
-        <% @metrics[:runs_trend_14d].each do |point| %>
-          <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
-          <div class="trend-bars__item">
-            <div class="trend-bars__bar-wrap">
-              <div class="trend-bars__bar" style="height: <%= height %>%"></div>
-            </div>
-            <span><%= point[:day] %></span>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </section>
+  <% trend_points = Array(@metrics[:runs_trend_14d]) %>
+  <%= render Admin::Ui::WorkspaceWidgetComponent.new(
+    title: "Run trend (14d)",
+    state: trend_points.empty? ? :empty : :default,
+    empty_message: "No trend points available."
+  ) do %>
+    <%= render Admin::Ui::WorkspaceTrendChartComponent.new(points: trend_points, detail: true) %>
+  <% end %>
 </main>

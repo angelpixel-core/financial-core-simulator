@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FCS
   module Projector
     # Applies events to projections and builds composite read models.

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FCS
   module Application
     # Builds report payloads from simulation results.

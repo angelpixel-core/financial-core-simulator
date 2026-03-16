@@ -11,7 +11,9 @@ on:
       - Gemfile.lock
       - financial-core-simulator.gemspec
   push:
-    branches: [main]
+    branches:
+      - main
+      - development
     paths:
       - .github/workflows/**
       - lib/**
@@ -81,7 +83,7 @@ jobs:
         run: bundle exec reek
 
       - name: Run RubyCritic
-        run: bundle exec rubycritic
+        run: bundle exec rubycritic lib spec --no-browser
 
   gem-security:
     runs-on: ubuntu-latest
@@ -96,28 +98,68 @@ jobs:
         with:
           bundler-cache: true
 
-      - name: Run Brakeman
-        run: bundle exec brakeman
-
       - name: Run Bundler Audit
-        run: bundle exec bundle-audit check --update
+        run: bundle exec bundler-audit --update
 
   admin-tests:
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.admin == 'true'
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/admin_test
     services:
       postgres:
         image: postgres:16
         ports:
           - "5432:5432"
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: admin_test
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: apps/admin
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+
+      - name: Install gems
+        run: bundle install
+        working-directory: apps/admin
+
+      - name: Install node modules
+        run: npm ci
+        working-directory: apps/admin
+
+      - name: Setup DB
+        run: |
+          bundle exec rails db:drop db:create db:schema:load
+        working-directory: apps/admin
+
+      - name: Run specs
+        run: bundle exec rspec
+        working-directory: apps/admin
+
+  admin-security:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.admin == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -132,12 +174,6 @@ jobs:
         run: bundle install
         working-directory: apps/admin
 
-      - name: Setup DB
-        run: |
-          bundle exec rails db:create
-          bundle exec rails db:migrate
-        working-directory: apps/admin
-
-      - name: Run specs
-        run: bundle exec rspec
+      - name: Run Brakeman
+        run: bundle exec brakeman --no-pager
         working-directory: apps/admin

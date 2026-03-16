@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FCS
   module Logging
     # Lightweight logger with severity filtering.

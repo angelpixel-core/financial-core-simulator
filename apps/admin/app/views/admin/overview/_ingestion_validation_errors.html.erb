@@ -1,52 +1,53 @@
-<article class="dashboard-card">
-  <% show_drilldown = local_assigns.fetch(:show_drilldown, false) %>
-  <% navigation_context = local_assigns.fetch(:navigation_context, {}) %>
-  <header class="dashboard-card__header">
-    <h3>Ingestion validation errors</h3>
-    <nav class="dashboard-card__meta-actions" aria-label="Ingestion validation errors actions">
-      <p class="dashboard-card__meta">Updated <%= Time.current.strftime("%H:%M:%S") %></p>
-      <% if show_drilldown %>
-        <a class="overview__link" href="<%= admin_overview_ingestion_validation_errors_path(navigation_context) %>" data-turbo-frame="_top">View ingestion errors</a>
-      <% end %>
-    </nav>
-  </header>
-  <form id="ingestion-errors-filters-form" method="get" action="<%= admin_overview_ingestion_validation_errors_path(navigation_context) %>" data-controller="ingestion-filters" data-turbo-frame="overview-ingestion-validation-errors-panel" data-action="submit->ingestion-filters#syncPollUrl" style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+<% show_drilldown = local_assigns.fetch(:show_drilldown, false) %>
+<% navigation_context = local_assigns.fetch(:navigation_context, {}) %>
+<% drilldown_path = show_drilldown ? admin_overview_ingestion_validation_errors_path(navigation_context) : nil %>
+<%= render Admin::Ui::WorkspaceWidgetComponent.new(
+  title: "Ingestion validation errors",
+  cta_path: drilldown_path,
+  cta_label: "View ingestion errors",
+  updated_at: Time.current.strftime("%H:%M:%S"),
+  actions_label: "Ingestion validation errors actions"
+) do %>
+  <form
+    id="ingestion-errors-filters-form"
+    class="ingestion-filters"
+    method="get"
+    action="<%= admin_overview_ingestion_validation_errors_path(navigation_context) %>"
+    data-controller="ingestion-filters"
+    data-turbo-frame="overview-ingestion-validation-errors-panel"
+    data-action="submit->ingestion-filters#syncPollUrl"
+    >
     <% navigation_context.each do |key, value| %>
       <input type="hidden" name="<%= key %>" value="<%= value %>" />
     <% end %>
-    <label for="source-filter" style="font-weight: 600;">Source</label>
-    <input id="source-filter" name="source" type="text" value="<%= selected_source %>" placeholder="agente.hft.alpha" data-action="input->ingestion-filters#scheduleSubmit" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;" />
-    <label for="field-filter" style="font-weight: 600;">Field</label>
-    <input id="field-filter" name="field" type="text" value="<%= selected_field %>" placeholder="riskModel" data-action="input->ingestion-filters#scheduleSubmit" style="padding: 4px 8px; border: 1px solid #cbd5e0; border-radius: 6px;" />
-    <button type="submit" style="padding: 4px 10px; border: 1px solid #1a202c; border-radius: 6px; background: #1a202c; color: #fff;">Apply</button>
-    <button type="button" data-action="click->ingestion-filters#reset" style="padding: 4px 10px; border: 1px solid #cbd5e0; border-radius: 6px; color: #1a202c; background: #fff;">Reset</button>
+    <label for="source-filter" class="ingestion-filters__label">Source</label>
+    <input id="source-filter" class="ingestion-filters__input" name="source" type="text" value="<%= selected_source %>" placeholder="agente.hft.alpha" data-action="input->ingestion-filters#scheduleSubmit" />
+    <label for="field-filter" class="ingestion-filters__label">Field</label>
+    <input id="field-filter" class="ingestion-filters__input" name="field" type="text" value="<%= selected_field %>" placeholder="riskModel" data-action="input->ingestion-filters#scheduleSubmit" />
+    <button type="submit" class="ingestion-filters__button ingestion-filters__button--primary">Apply</button>
+    <button type="button" class="ingestion-filters__button" data-action="click->ingestion-filters#reset">Reset</button>
   </form>
-  <% if errors.blank? %>
-    <p class="empty-state">No ingestion validation errors.</p>
-  <% else %>
-    <div class="shad-table-wrap">
-      <table class="shad-table top-accounts-table ingestion-errors-table table--striped">
-        <thead class="shad-table__head">
-          <tr class="shad-table__row shad-table__row--head">
-            <th class="shad-table__th">Source</th>
-            <th class="shad-table__th">Field</th>
-            <th class="shad-table__th">Message</th>
-            <th class="shad-table__th">Occurred</th>
-            <th class="shad-table__th">Correlation</th>
-          </tr>
-        </thead>
-        <tbody class="shad-table__body">
-          <% errors.each do |error| %>
-            <tr class="shad-table__row">
-              <td class="shad-table__td"><%= error[:source] %></td>
-              <td class="shad-table__td"><%= error[:field] %></td>
-              <td class="shad-table__td"><%= error[:message] %></td>
-              <td class="shad-table__td"><%= error[:occurred_at] || "-" %></td>
-              <td class="shad-table__td"><%= error[:correlation_id] || "-" %></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-  <% end %>
-</article>
+  <%= render Admin::Ui::WorkspaceTableAdapterComponent.new(
+    columns: [
+      { key: :source, label: "Source" },
+      { key: :field, label: "Field" },
+      { key: :message, label: "Message" },
+      { key: :occurred_at, label: "Occurred" },
+      { key: :correlation_id, label: "Correlation" }
+    ],
+    rows: Array(errors).map do |error|
+      {
+        source: error[:source],
+        field: error[:field],
+        message: error[:message],
+        occurred_at: error[:occurred_at] || "-",
+        correlation_id: error[:correlation_id] || "-"
+      }
+    end,
+    table_class: "top-accounts-table ingestion-errors-table table--striped",
+    state: errors.blank? ? :empty : :default,
+    empty_message: "No ingestion validation errors.",
+    loading_message: "Loading ingestion validation errors...",
+    error_message: "Ingestion validation errors unavailable."
+  ) %>
+<% end %>

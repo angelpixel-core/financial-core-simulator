@@ -6,6 +6,7 @@ output/
 apps/admin/storage/
 coverage/
 tmp/rubycritic/
+tmp/logs/
 
 # BMAD generated planning/runtime artifacts
 .bmad/output

@@ -1,10 +1,34 @@
-# Omakase Ruby styling for Rails
+inherit_gem:
+  rubocop-rails-omakase: rubocop.yml
+
 plugins:
   - rubocop-rspec
   - rubocop-performance
-inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+
 inherit_from:
-  - config/release/rubocop_lint_debt.yml
+  - ./config/release/rubocop_lint_debt.yml
+
+AllCops:
+  # Include:
+  #   - "app/**/*.rb"
+  #   - "lib/**/*.rb"
+  #   - "spec/**/*.rb"
+  #   - "config/**/*.rb"
+  #   - "db/**/*.rb"
+  #   - "bin/*"
+  #   - "Rakefile"
+  #   - "Gemfile"
+  Exclude:
+    - "coverage/**/*.rb"
+    - "tmp/**/*"
+    - "vendor/**/*"
+    - "db/schema.rb"
+    - "db/cache_schema.rb"
+    - "db/cable_schema.rb"
+
+# Disable unsupported or noisy cops locally if needed
+Lint/ConstantDefinitionInBlock:
+  Enabled: false
 
 RSpec/IncludeExamples:
   Enabled: true
@@ -14,7 +38,6 @@ RSpec/LeakyLocalVariable:
 
 RSpec/Output:
   Enabled: true
-
 # Overwrite or add rules to create your own house style
 #
 # # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
