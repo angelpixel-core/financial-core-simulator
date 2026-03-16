@@ -24,24 +24,18 @@ RSpec.describe "FCS.logger" do
 
   it "memoizes the default logger and writes to stderr" do
     original_logger = FCS.logger
-    original_stderr = $stderr
-    io = StringIO.new
+    default_logger = nil
 
-    begin
-      $stderr = io
+    expect do
       FCS.logger = nil
-
       default_logger = FCS.logger
-      expect(default_logger).to be_a(FCS::Logging::SimpleLogger)
-      expect(default_logger.level).to eq(FCS::Logging::SimpleLogger::WARN)
-
       default_logger.warn("hello")
-      expect(io.string).to include("hello")
+    end.to output(/hello/).to_stderr
 
-      expect(FCS.logger).to be(default_logger)
-    ensure
-      FCS.logger = original_logger
-      $stderr = original_stderr
-    end
+    expect(default_logger).to be_a(FCS::Logging::SimpleLogger)
+    expect(default_logger.level).to eq(FCS::Logging::SimpleLogger::WARN)
+    expect(FCS.logger).to be(default_logger)
+  ensure
+    FCS.logger = original_logger
   end
 end
