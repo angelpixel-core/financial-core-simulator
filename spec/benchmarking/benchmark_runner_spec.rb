@@ -78,23 +78,26 @@ RSpec.describe FCS::Benchmarking::BenchmarkRunner do
       { "priceSnapshot" => {}, "accounts" => [], "markets" => [], "trades" => [] }
     )
 
-    allow(runner).to receive(:run_from_input!).and_return(
-      {
-        input_hash: "hash",
-        run_id: "run-id",
-        artifacts: { json_path: "out/result.json", positions_csv_path: "out/positions.csv",
-                     pnl_csv_path: "out/pnl.csv" }
-      }
-    )
-
     benchmark = described_class.new(generator: generator, runner: runner, logger: logger, clock: clock,
                                     gate_seconds: 100)
 
     Dir.mktmpdir do |dir|
-      FileUtils.mkdir_p(File.join(dir, "artifacts", "run_1"))
-      File.write(File.join(dir, "artifacts", "run_1", "result.json"), "{}")
-      File.write(File.join(dir, "artifacts", "run_1", "positions.csv"), "")
-      File.write(File.join(dir, "artifacts", "run_1", "pnl.csv"), "")
+      allow(runner).to receive(:run_from_input!) do |input:, output_dir:, **_|
+        FileUtils.mkdir_p(output_dir)
+        File.write(File.join(output_dir, "result.json"), "{}")
+        File.write(File.join(output_dir, "positions.csv"), "")
+        File.write(File.join(output_dir, "pnl.csv"), "")
+
+        {
+          input_hash: "hash",
+          run_id: "run-id",
+          artifacts: {
+            json_path: File.join(output_dir, "result.json"),
+            positions_csv_path: File.join(output_dir, "positions.csv"),
+            pnl_csv_path: File.join(output_dir, "pnl.csv")
+          }
+        }
+      end
 
       result = benchmark.run!(fixture_path: "fixture.json", output_dir: dir, runs: 1, command: "bench")
 
@@ -103,7 +106,7 @@ RSpec.describe FCS::Benchmarking::BenchmarkRunner do
         "fixture_path" => "fixture.json",
         "input_hash" => "hash",
         "run_id" => "run-id",
-        "artifacts" => include("result_json" => "out/result.json")
+        "artifacts" => include("result_json" => File.join(dir, "artifacts", "run_1", "result.json"))
       )
       expect(File).to exist(result.fetch(:report_path))
     end
