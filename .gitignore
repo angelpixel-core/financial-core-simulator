@@ -7,14 +7,17 @@ apps/admin/storage/
 coverage/
 tmp/rubycritic/
 tmp/logs/
+tmp/
+checkpoint_*.json
+scripts/mutation-unique.sh
 
 # BMAD generated planning/runtime artifacts
-.bmad/output
+.bmad/
 
 .opencode
 .codex
 .cursor
-openspec
+openspec/
 .claude
 
-.private
+.private/
