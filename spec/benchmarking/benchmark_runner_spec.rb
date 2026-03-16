@@ -82,7 +82,7 @@ RSpec.describe FCS::Benchmarking::BenchmarkRunner do
                                     gate_seconds: 100)
 
     Dir.mktmpdir do |dir|
-      allow(runner).to receive(:run_from_input!) do |input:, output_dir:, **_|
+      allow(runner).to receive(:run_from_input!) do |_, output_dir:, **_|
         FileUtils.mkdir_p(output_dir)
         File.write(File.join(output_dir, "result.json"), "{}")
         File.write(File.join(output_dir, "positions.csv"), "")
