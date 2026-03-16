@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../lib/fcs"
 
 RSpec.describe FCS::Engine::RiskEngine do
@@ -209,7 +211,7 @@ RSpec.describe FCS::Engine::RiskEngine do
         position: position,
         accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
       )
-    ).to eq(true)
+    ).to be(true)
   end
 
   it "returns true when projected notional remains within leverage" do
@@ -228,7 +230,7 @@ RSpec.describe FCS::Engine::RiskEngine do
         position: position,
         accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
       )
-    ).to eq(true)
+    ).to be(true)
   end
 
   it "raises with detailed FIFO rejection" do
@@ -668,7 +670,7 @@ RSpec.describe FCS::Engine::RiskEngine do
         position: position_with_qty,
         accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
       )
-    ).to eq(true)
+    ).to be(true)
   end
 
   it "treats tiny negative projected qty as short" do
@@ -741,7 +743,7 @@ RSpec.describe FCS::Engine::RiskEngine do
         position: position,
         accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
       )
-    ).to eq(true)
+    ).to be(true)
   end
 
   it "allows projected notional equal to max" do
@@ -760,7 +762,7 @@ RSpec.describe FCS::Engine::RiskEngine do
         position: position,
         accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
       )
-    ).to eq(true)
+    ).to be(true)
   end
 
   it "uses fully qualified Decimal18 for projected notional" do
@@ -787,7 +789,7 @@ RSpec.describe FCS::Engine::RiskEngine do
         position: position,
         accounting_method: FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_AVERAGE
       )
-    ).to eq(true)
+    ).to be(true)
   end
 
   it "uses fully qualified Error and Errors for invalid values" do

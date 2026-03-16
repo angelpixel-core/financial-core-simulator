@@ -18,7 +18,7 @@ module FCS
       end
 
       def self.from_rational(num, den = 1)
-        raise ArgumentError, "den must be > 0" unless den.is_a?(Integer) && den > 0
+        raise ArgumentError, "den must be > 0" unless den.is_a?(Integer) && den.positive?
         raise ArgumentError, "num must be Integer" unless num.is_a?(Integer)
 
         # floor(num/den * 1e18) determinista
@@ -41,13 +41,13 @@ module FCS
       end
 
       def /(other)
-        raise ZeroDivisionError if other.atoms == 0
+        raise ZeroDivisionError if other.atoms.zero?
 
         # floor((a*SCALE)/b)
         self.class.new((@atoms * SCALE) / other.atoms)
       end
 
-      def zero? = @atoms == 0
+      def zero? = @atoms.zero?
 
       def abs = self.class.new(@atoms.abs)
 

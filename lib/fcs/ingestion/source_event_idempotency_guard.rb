@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FCS
   module Ingestion
     # Detects duplicate and conflicting source events.

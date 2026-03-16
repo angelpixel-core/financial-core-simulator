@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 module FCS
   module Ingestion
     # Normalizes agente intent source events.
     class AgenteIntentMapper
-      SUPPORTED_EVENT_TYPE = "ORDER_INTENT_CREATED".freeze
-      NORMALIZED_EVENT_TYPE = "AGENTE_INTENT_NORMALIZED".freeze
+      SUPPORTED_EVENT_TYPE = "ORDER_INTENT_CREATED"
+      NORMALIZED_EVENT_TYPE = "AGENTE_INTENT_NORMALIZED"
 
       def map!(source_event)
         validate_source_event_shape!(source_event)

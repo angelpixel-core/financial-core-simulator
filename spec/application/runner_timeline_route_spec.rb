@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../lib/fcs"
 require "json"
 require "tmpdir"
@@ -91,7 +93,7 @@ RSpec.describe FCS::Application::Runner do
   let(:checkpoint_store) { instance_double(FCS::Application::CheckpointStore, latest_checkpoint: nil) }
 
   around do |example|
-    previous = ENV["FCS_TIMELINE_ENABLED"]
+    previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
     example.run
     ENV["FCS_TIMELINE_ENABLED"] = previous
   end

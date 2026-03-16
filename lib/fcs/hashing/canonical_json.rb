@@ -17,8 +17,8 @@ module FCS
       def normalize(obj)
         case obj
         when Hash
-          obj.keys.sort.each_with_object({}) do |k, acc|
-            acc[k] = normalize(obj.fetch(k))
+          obj.keys.sort.to_h do |k|
+            [k, normalize(obj.fetch(k))]
           end
         when Array
           obj.map { |v| normalize(v) }

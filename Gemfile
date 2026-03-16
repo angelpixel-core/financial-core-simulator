@@ -10,15 +10,15 @@ gem "bigdecimal", "~> 4.0"
 gem "csv", "~> 3.3"
 
 group :development, :test do
-  gem "rails-mcp-server", "~> 1.5"
   gem "brakeman", require: false
   gem "bundler-audit", require: false
+  gem "rails-mcp-server", "~> 1.5"
   gem "reek", require: false
-  gem "rubycritic", require: false
-  gem "simplecov", require: false
   gem "rubocop", require: false
   gem "rubocop-performance", require: false
   gem "rubocop-rspec", require: false
+  gem "rubycritic", require: false
+  gem "simplecov", require: false
 end
 
 group :test do

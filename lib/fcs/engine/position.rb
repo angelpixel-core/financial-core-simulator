@@ -29,7 +29,7 @@ module FCS
 
       def apply_buy!(buy_qty:, buy_price:)
         raise_invalid_buy_quantity!(buy_qty) if buy_qty.atoms <= 0
-        raise_long_only_violation! if @qty.atoms < 0
+        raise_long_only_violation! if @qty.atoms.negative?
 
         total_cost = (@qty * @avg_cost) + (buy_qty * buy_price)
         new_qty = @qty + buy_qty
@@ -41,7 +41,7 @@ module FCS
       end
 
       def apply_sell!(sell_qty:, sell_price:)
-        raise_long_only_violation! if (@qty - sell_qty).atoms < 0
+        raise_long_only_violation! if (@qty - sell_qty).atoms.negative?
 
         delta = (sell_price - @avg_cost) * sell_qty
         @realized_pnl_quote += delta

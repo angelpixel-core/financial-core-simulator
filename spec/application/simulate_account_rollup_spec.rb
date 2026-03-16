@@ -51,8 +51,8 @@ RSpec.describe FCS::Application::Simulate do
       }
 
       result = described_class.new.call(input)
-      by_account = result.fetch("accounts").each_with_object({}) do |account, acc|
-        acc[account.fetch("accountId")] = account
+      by_account = result.fetch("accounts").to_h do |account|
+        [account.fetch("accountId"), account]
       end
 
       market_a = by_account.fetch("acc-a").fetch("markets").first
@@ -145,10 +145,10 @@ RSpec.describe FCS::Application::Simulate do
       }
 
       result = described_class.new.call(input)
-      by_account = result.fetch("accounts").each_with_object({}) do |account, acc|
-        acc[account.fetch("accountId")] = account.fetch("markets").each_with_object({}) do |market, m|
-          m[market.fetch("marketId")] = market
-        end
+      by_account = result.fetch("accounts").to_h do |account|
+        [account.fetch("accountId"), account.fetch("markets").to_h do |market|
+          [market.fetch("marketId"), market]
+        end]
       end
 
       expect(by_account.fetch("acc-a").fetch("ETH-USD").fetch("avgCost")).to eq("100.0")
@@ -297,10 +297,10 @@ RSpec.describe FCS::Application::Simulate do
 
       expect(result_a).to eq(result_b)
 
-      by_account = result_a.fetch("accounts").each_with_object({}) do |account, acc|
-        acc[account.fetch("accountId")] = account.fetch("markets").each_with_object({}) do |market, m|
-          m[market.fetch("marketId")] = market
-        end
+      by_account = result_a.fetch("accounts").to_h do |account|
+        [account.fetch("accountId"), account.fetch("markets").to_h do |market|
+          [market.fetch("marketId"), market]
+        end]
       end
 
       expect(by_account.fetch("acc-1").fetch("BTC-USD")).to include(

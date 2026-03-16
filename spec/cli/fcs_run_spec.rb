@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "open3"
 require "tmpdir"
 require "rbconfig"
@@ -791,7 +793,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "fails deterministically when timeline payload is provided but timeline mode is disabled" do
-    previous = ENV["FCS_TIMELINE_ENABLED"]
+    previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
     ENV["FCS_TIMELINE_ENABLED"] = "0"
 
     Dir.mktmpdir do |tmp|
@@ -852,7 +854,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "applies timeline trades by timelineSeq order in end-to-end CLI flow" do
-    previous = ENV["FCS_TIMELINE_ENABLED"]
+    previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
     ENV["FCS_TIMELINE_ENABLED"] = "1"
 
     Dir.mktmpdir do |tmp|

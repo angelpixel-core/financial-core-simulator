@@ -153,11 +153,11 @@ RSpec.describe "CSV outputs" do
       expect(positions_rows.size).to eq(4)
       expect(pnl_rows.size).to eq(4)
 
-      positions_by_key = positions_rows.each_with_object({}) do |row, acc|
-        acc[[row["account_id"], row["market_id"]]] = row.to_h
+      positions_by_key = positions_rows.to_h do |row|
+        [[row["account_id"], row["market_id"]], row.to_h]
       end
-      pnl_by_key = pnl_rows.each_with_object({}) do |row, acc|
-        acc[[row["account_id"], row["market_id"]]] = row.to_h
+      pnl_by_key = pnl_rows.to_h do |row|
+        [[row["account_id"], row["market_id"]], row.to_h]
       end
 
       expect(positions_by_key.fetch(%w[acc-a ETH-USD])).to include(

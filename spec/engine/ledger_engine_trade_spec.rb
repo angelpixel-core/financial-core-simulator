@@ -41,7 +41,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
         @position = position
       end
 
-      def position_for(account_id:, market_id:)
+      def position_for(*)
         @position
       end
     end.new(position)

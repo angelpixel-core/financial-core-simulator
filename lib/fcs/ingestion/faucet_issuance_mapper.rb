@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 module FCS
   module Ingestion
     # Normalizes faucet issuance source events.
     class FaucetIssuanceMapper
-      SUPPORTED_EVENT_TYPE = "TOKEN_ISSUED".freeze
-      NORMALIZED_EVENT_TYPE = "FAUCET_ISSUANCE_NORMALIZED".freeze
+      SUPPORTED_EVENT_TYPE = "TOKEN_ISSUED"
+      NORMALIZED_EVENT_TYPE = "FAUCET_ISSUANCE_NORMALIZED"
 
       def map!(source_event)
         validate_source_event_shape!(source_event)

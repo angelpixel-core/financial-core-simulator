@@ -44,7 +44,7 @@ module FCS
 
         normalized_input = deep_copy(raw_input)
         normalized_input["feeModel"] ||= {}
-        normalized_input["feeModel"]["enabled"] = !!fee_enabled
+        normalized_input["feeModel"]["enabled"] = !fee_enabled.nil?
         @validator.validate!(normalized_input)
 
         hash_input = prepare_execution_input(deep_copy(normalized_input))

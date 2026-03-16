@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../lib/fcs"
 
 RSpec.describe "LedgerEngine long-only enforcement" do
