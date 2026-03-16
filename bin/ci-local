@@ -16,7 +16,7 @@ echo "==> Root: bundle exec bundler-audit --update"
 (cd "$root_dir" && bundle exec bundler-audit --update)
 
 echo "==> Root: bundle exec mutant"
-(cd "$root_dir" && bundle exec mutant --use rspec --include lib --require ./lib/fcs --require ./spec/spec_helper -- FCS::Engine)
+(cd "$root_dir" && bundle exec mutant run --integration rspec --include lib --require ./lib/fcs --require ./spec/spec_helper -- FCS::Engine)
 
 if [ -d "$root_dir/apps/admin" ]; then
   echo "==> Admin: install npm deps"
