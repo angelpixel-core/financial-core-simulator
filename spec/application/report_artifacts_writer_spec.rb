@@ -9,6 +9,7 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
   let(:csv_reconciler) { instance_double(FCS::Reporting::CsvArtifactReconciler, validate!: true) }
   let(:account_market_contract_validator) { FCS::Reporting::AccountMarketContractValidator.new }
   let(:result_metadata_contract_validator) { FCS::Reporting::ResultMetadataContractValidator.new }
+  let(:account_market_spy) { instance_spy(FCS::Reporting::AccountMarketContractValidator) }
   let(:metadata) do
     {
       "engineVersion" => "0.1.0",
@@ -136,7 +137,7 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
   end
 
   it "stops early when metadata contract validation fails" do
-    account_market_spy = instance_spy(FCS::Reporting::AccountMarketContractValidator)
+    allow(account_market_spy).to receive(:validate!)
     writer = described_class.new(
       reporter: reporter,
       positions_csv: positions_csv,
