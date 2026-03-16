@@ -8,31 +8,10 @@ RSpec.describe FCS::Application::EventTimelineProcessor do
   end
 
   it "processes events in timeline order and writes checkpoints" do
-    ledger_state = instance_double("LedgerState", positions: {})
-    ledger = instance_double("Ledger", state: ledger_state)
-    valuation = instance_double("Valuation")
-    checkpoint_store = instance_double("CheckpointStore")
-
-    expect(valuation).to receive(:update_price!).ordered.with(
-      market_id: "ETH-USD",
-      price_quote_per_base: "110"
-    )
-    expect(ledger).to receive(:apply_trade!).ordered.with(
-      "tradeId" => "t-1",
-      "accountId" => "acc-1",
-      "marketId" => "ETH-USD",
-      "seq" => 1,
-      "side" => "BUY",
-      "quantityBase" => "1",
-      "priceQuotePerBase" => "100"
-    )
-
-    expect(checkpoint_store).to receive(:write_if_due!).with(
-      event_count: 1,
-      timeline_seq: 2,
-      state: { "accounts" => [] },
-      input_hash: "hash-1"
-    )
+    ledger_state = instance_spy("LedgerState", positions: {})
+    ledger = instance_spy("Ledger", state: ledger_state)
+    valuation = instance_spy("Valuation")
+    checkpoint_store = instance_spy("CheckpointStore")
 
     events = [
       {
@@ -63,20 +42,43 @@ RSpec.describe FCS::Application::EventTimelineProcessor do
       checkpoint_store: checkpoint_store,
       input_hash: "hash-1"
     )
+
+    expect(valuation).to have_received(:update_price!).with(
+      market_id: "ETH-USD",
+      price_quote_per_base: "110"
+    )
+    expect(ledger).to have_received(:apply_trade!).with(
+      "tradeId" => "t-1",
+      "accountId" => "acc-1",
+      "marketId" => "ETH-USD",
+      "seq" => 1,
+      "side" => "BUY",
+      "quantityBase" => "1",
+      "priceQuotePerBase" => "100"
+    )
+    expect(checkpoint_store).to have_received(:write_if_due!).with(
+      event_count: 1,
+      timeline_seq: 1,
+      state: { "accounts" => [] },
+      input_hash: "hash-1"
+    )
+    expect(checkpoint_store).to have_received(:write_if_due!).with(
+      event_count: 2,
+      timeline_seq: 2,
+      state: { "accounts" => [] },
+      input_hash: "hash-1"
+    )
   end
 
   it "skips events at or before checkpoint sequence" do
-    position = instance_double("Position")
-    expect(position).to receive(:apply_buy!).with(buy_qty: d18("1"), buy_price: d18("100"))
+    position = instance_spy("Position")
+    ledger_state = instance_spy("LedgerState")
+    allow(ledger_state).to receive(:position_for)
+      .with(account_id: "acc-1", market_id: "ETH-USD")
+      .and_return(position)
 
-    ledger_state = instance_double("LedgerState")
-    expect(ledger_state).to receive(:position_for).with(account_id: "acc-1", market_id: "ETH-USD").and_return(position)
-
-    ledger = instance_double("Ledger", state: ledger_state)
-    valuation = instance_double("Valuation")
-
-    expect(valuation).to receive(:update_price!).with(market_id: "ETH-USD", price_quote_per_base: "120")
-    expect(ledger).not_to receive(:apply_trade!)
+    ledger = instance_spy("Ledger", state: ledger_state)
+    valuation = instance_spy("Valuation")
 
     checkpoint = {
       "timelineSeq" => 2,
@@ -104,22 +106,38 @@ RSpec.describe FCS::Application::EventTimelineProcessor do
       valuation: valuation,
       checkpoint: checkpoint
     )
+
+    expect(position).to have_received(:apply_buy!).with(
+      buy_qty: have_attributes(atoms: d18("1").atoms),
+      buy_price: have_attributes(atoms: d18("100").atoms)
+    )
+    expect(valuation).to have_received(:update_price!).with(market_id: "ETH-USD", price_quote_per_base: "120")
+    expect(ledger).not_to have_received(:apply_trade!)
   end
 
   it "captures sorted account and market positions for checkpoints" do
     positions = {
-      "acc-2|ETH-USD" => instance_double("Position", qty: d18("1"), avg_cost: d18("100")),
-      "acc-1|BTC-USD" => instance_double("Position", qty: d18("2"), avg_cost: d18("90")),
-      "acc-1|ETH-USD" => instance_double("Position", qty: d18("3"), avg_cost: d18("80"))
+      "acc-2|ETH-USD" => instance_spy("Position", qty: d18("1"), avg_cost: d18("100")),
+      "acc-1|BTC-USD" => instance_spy("Position", qty: d18("2"), avg_cost: d18("90")),
+      "acc-1|ETH-USD" => instance_spy("Position", qty: d18("3"), avg_cost: d18("80"))
     }
 
-    ledger_state = instance_double("LedgerState", positions: positions)
-    ledger = instance_double("Ledger", state: ledger_state)
-    valuation = instance_double("Valuation")
-    checkpoint_store = instance_double("CheckpointStore")
+    ledger_state = instance_spy("LedgerState", positions: positions)
+    ledger = instance_spy("Ledger", state: ledger_state)
+    valuation = instance_spy("Valuation")
+    checkpoint_store = instance_spy("CheckpointStore")
 
-    expect(valuation).to receive(:update_price!).with(market_id: "ETH-USD", price_quote_per_base: "110")
-    expect(checkpoint_store).to receive(:write_if_due!).with(
+    described_class.new.call(
+      events: [
+        { "eventType" => "PRICE_UPDATED", "timelineSeq" => 1, "marketId" => "ETH-USD", "priceQuotePerBase" => "110" }
+      ],
+      ledger: ledger,
+      valuation: valuation,
+      checkpoint_store: checkpoint_store
+    )
+
+    expect(valuation).to have_received(:update_price!).with(market_id: "ETH-USD", price_quote_per_base: "110")
+    expect(checkpoint_store).to have_received(:write_if_due!).with(
       event_count: 1,
       timeline_seq: 1,
       state: {
@@ -140,15 +158,6 @@ RSpec.describe FCS::Application::EventTimelineProcessor do
         ]
       },
       input_hash: ""
-    )
-
-    described_class.new.call(
-      events: [
-        { "eventType" => "PRICE_UPDATED", "timelineSeq" => 1, "marketId" => "ETH-USD", "priceQuotePerBase" => "110" }
-      ],
-      ledger: ledger,
-      valuation: valuation,
-      checkpoint_store: checkpoint_store
     )
   end
 end

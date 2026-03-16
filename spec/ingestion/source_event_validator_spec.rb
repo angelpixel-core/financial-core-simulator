@@ -12,7 +12,7 @@ RSpec.describe FCS::Ingestion::SourceEventValidator do
       "eventType" => "ORDER_FILLED",
       "correlationId" => "corr-1",
       "occurredAt" => "2026-02-25T03:00:00Z",
-      "payload" => { "marketId" => "ETH-USD" }
+      "payload" => { "marketId" => "ETH-USD", "externalId" => "ext-1", "sequence" => 1 }
     }
   end
 

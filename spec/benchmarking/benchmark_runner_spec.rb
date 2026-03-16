@@ -7,7 +7,7 @@ RSpec.describe FCS::Benchmarking::BenchmarkRunner do
   let(:generator) { instance_double(FCS::Benchmarking::InputGenerator) }
   let(:runner) { instance_double(FCS::Application::Runner) }
   let(:logger) { instance_double(FCS::Logging::SimpleLogger, info: nil) }
-  let(:clock) { instance_double(Time) }
+  let(:clock) { class_double(Time, now: Time.parse("2026-02-25T03:00:00Z")) }
 
   def base_fixture
     instance_double(
@@ -86,8 +86,6 @@ RSpec.describe FCS::Benchmarking::BenchmarkRunner do
                      pnl_csv_path: "out/pnl.csv" }
       }
     )
-
-    allow(clock).to receive(:now).and_return(Time.parse("2026-02-25T03:00:00Z"))
 
     benchmark = described_class.new(generator: generator, runner: runner, logger: logger, clock: clock,
                                     gate_seconds: 100)

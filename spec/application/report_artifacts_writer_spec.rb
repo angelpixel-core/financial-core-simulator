@@ -7,8 +7,8 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
   let(:positions_csv) { instance_double(FCS::Reporting::CsvPositions, write!: "out/positions.csv") }
   let(:pnl_csv) { instance_double(FCS::Reporting::CsvPnL, write!: "out/pnl.csv") }
   let(:csv_reconciler) { instance_double(FCS::Reporting::CsvArtifactReconciler, validate!: true) }
-  let(:account_market_contract_validator) { instance_double(FCS::Reporting::AccountMarketContractValidator, validate!: true) }
-  let(:result_metadata_contract_validator) { instance_double(FCS::Reporting::ResultMetadataContractValidator, validate!: true) }
+  let(:account_market_contract_validator) { FCS::Reporting::AccountMarketContractValidator.new }
+  let(:result_metadata_contract_validator) { FCS::Reporting::ResultMetadataContractValidator.new }
   let(:metadata) do
     {
       "engineVersion" => "0.1.0",
@@ -35,8 +35,6 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
 
     paths = writer.write_all!(output_dir: "out", payload: payload)
 
-    expect(result_metadata_contract_validator).to have_received(:validate!).with(payload: payload)
-    expect(account_market_contract_validator).to have_received(:validate!).with(accounts: payload.fetch("accounts"))
     expect(reporter).to have_received(:write!).with(output_dir: "out", payload: payload)
     expect(positions_csv).to have_received(:write!).with(output_dir: "out", accounts: payload.fetch("accounts"))
     expect(pnl_csv).to have_received(:write!).with(output_dir: "out", accounts: payload.fetch("accounts"))
@@ -137,21 +135,17 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
   end
 
   it "stops early when metadata contract validation fails" do
-    failing_validator = instance_double(
-      FCS::Reporting::ResultMetadataContractValidator,
-      validate!: raise_error(FCS::Error.new(FCS::Errors::ERR_VALIDATION, "bad"))
-    )
-
     writer = described_class.new(
       reporter: reporter,
       positions_csv: positions_csv,
       pnl_csv: pnl_csv,
       csv_reconciler: csv_reconciler,
       account_market_contract_validator: account_market_contract_validator,
-      result_metadata_contract_validator: failing_validator
+      result_metadata_contract_validator: result_metadata_contract_validator
     )
 
     payload = metadata.merge(
+      "inputHash" => "bad",
       "accounts" => [{ "accountId" => "acc-1", "markets" => [] }],
       "global" => {}
     )

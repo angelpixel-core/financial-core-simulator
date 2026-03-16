@@ -62,7 +62,9 @@ RSpec.describe FCS::Application::Simulate do
 
   it "sums market fields and includes USD totals when enabled" do
     fx = instance_double("FX", enabled?: true)
-    expect(fx).to receive(:quote_to_usd).with(d18("6")).and_return(d18("12"))
+    expect(fx).to receive(:quote_to_usd)
+      .with(have_attributes(atoms: d18("6").atoms))
+      .and_return(d18("12"))
 
     markets = [
       {
@@ -139,11 +141,9 @@ RSpec.describe FCS::Application::Simulate do
 
     result = described_class.new.send(:extract_risk_config, input)
 
-    expect(result).to include(
-      maxLeverage: d18("5"),
-      maintenanceMarginRatio: d18("0.5"),
-      liquidation: { enabled: true, closeFactor: "0.3" }
-    )
+    expect(result.fetch(:maxLeverage).to_s).to eq("5.0")
+    expect(result.fetch(:maintenanceMarginRatio).to_s).to eq("0.5")
+    expect(result.fetch(:liquidation)).to eq(enabled: true, closeFactor: "0.3")
   end
 
   it "indexes risk events by account" do

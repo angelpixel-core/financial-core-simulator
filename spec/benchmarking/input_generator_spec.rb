@@ -26,6 +26,7 @@ RSpec.describe FCS::Benchmarking::InputGenerator do
     expect(trades.map { |t| t.fetch("tradeId") }).to eq(%w[t-1 t-2 t-3 t-4 t-5 t-6])
     expect(trades.map { |t| t.fetch("quantityBase") }.uniq).to eq(["1"])
     expect(trades.map { |t| t.fetch("seq") }.min).to eq(1)
-    expect(trades.all? { |t| %w[BUY SELL].include?(t.fetch("side")) }).to be(true)
+    valid_sides = %w[BUY SELL]
+    expect(trades.all? { |t| valid_sides.include?(t.fetch("side")) }).to be(true)
   end
 end
