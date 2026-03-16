@@ -60,8 +60,5 @@ RSpec/LeakyConstantDeclaration:
 Style/MultilineBlockChain:
   Enabled: false
 
-Style/ReduceToHash:
-  Enabled: false
-
 Lint/ConstantDefinitionInBlock:
   Enabled: false
