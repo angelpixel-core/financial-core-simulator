@@ -99,6 +99,8 @@ RSpec.describe FCS::Benchmarking::BenchmarkRunner do
         }
       end
 
+      allow(benchmark).to receive(:sha256).and_return("hash")
+
       result = benchmark.run!(fixture_path: "fixture.json", output_dir: dir, runs: 1, command: "bench")
 
       expect(result.fetch(:report)).to include(
