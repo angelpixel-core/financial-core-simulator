@@ -91,6 +91,11 @@ RSpec.describe FCS::Benchmarking::BenchmarkRunner do
                                     gate_seconds: 100)
 
     Dir.mktmpdir do |dir|
+      FileUtils.mkdir_p(File.join(dir, "artifacts", "run_1"))
+      File.write(File.join(dir, "artifacts", "run_1", "result.json"), "{}")
+      File.write(File.join(dir, "artifacts", "run_1", "positions.csv"), "")
+      File.write(File.join(dir, "artifacts", "run_1", "pnl.csv"), "")
+
       result = benchmark.run!(fixture_path: "fixture.json", output_dir: dir, runs: 1, command: "bench")
 
       expect(result.fetch(:report)).to include(

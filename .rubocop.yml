@@ -10,6 +10,7 @@ AllCops:
     - "*.gemspec"
   Exclude:
     - "bin/ci-local"
+    - "bin/mutant-only"
     - "apps/admin/**/*"
     - "coverage/**/*"
     - "tmp/**/*"

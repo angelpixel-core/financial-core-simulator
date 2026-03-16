@@ -52,7 +52,7 @@ RSpec.describe FCS::Ingestion::SourceEventValidator do
   end
 
   it "classifies duplicates with idempotency guard" do
-    events = [valid_event, valid_event.merge("eventVersion" => "1.1")]
+    events = [valid_event, valid_event.merge("payload" => valid_event.fetch("payload").merge("sequence" => 2))]
 
     result = validator.validate_batch!(events)
 
