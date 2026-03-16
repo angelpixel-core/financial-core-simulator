@@ -35,14 +35,16 @@ RSpec.describe FCS::Engine::LedgerEngine do
     end
   end
 
-  class StubState
-    def initialize(position = nil)
-      @position = position || SpyPosition.new
-    end
+  def build_state(position = SpyPosition.new)
+    Class.new do
+      def initialize(position)
+        @position = position
+      end
 
-    def position_for(account_id:, market_id:)
-      @position
-    end
+      def position_for(account_id:, market_id:)
+        @position
+      end
+    end.new(position)
   end
 
   def base_trade
@@ -62,7 +64,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
   it "passes full trade context to risk engine" do
     risk_engine = SpyRiskEngine.new
     position = SpyPosition.new
-    state = StubState.new(position)
+    state = build_state(position)
 
     engine = described_class.new(
       state: state,
@@ -88,7 +90,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
   it "applies fees when enabled and fee amount is provided" do
     risk_engine = SpyRiskEngine.new
     position = SpyPosition.new
-    state = StubState.new(position)
+    state = build_state(position)
 
     engine = described_class.new(
       state: state,
@@ -106,7 +108,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
   it "applies fees by default when enabled is not specified" do
     risk_engine = SpyRiskEngine.new
     position = SpyPosition.new
-    state = StubState.new(position)
+    state = build_state(position)
 
     engine = described_class.new(
       state: state,
@@ -122,7 +124,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
   it "does not apply fees when disabled" do
     risk_engine = SpyRiskEngine.new
     position = SpyPosition.new
-    state = StubState.new(position)
+    state = build_state(position)
 
     engine = described_class.new(
       state: state,
@@ -146,7 +148,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
 
     risk_engine = SpyRiskEngine.new
     position = SpyPosition.new
-    state = StubState.new(position)
+    state = build_state(position)
 
     engine = described_class.new(
       state: state,
@@ -162,7 +164,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
 
   it "applies sell using Decimal18 when inventory is sufficient" do
     position = SpyPosition.new(qty: "2.0")
-    state = StubState.new(position)
+    state = build_state(position)
     engine = described_class.new(state: state, risk_engine: SpyRiskEngine.new)
 
     sell = base_trade.merge(
@@ -180,7 +182,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
 
   it "raises with validation error for unsupported side" do
     position = SpyPosition.new(qty: "2.0")
-    state = StubState.new(position)
+    state = build_state(position)
     engine = described_class.new(state: state, risk_engine: SpyRiskEngine.new)
 
     bad_trade = base_trade.merge("side" => "HOLD")
@@ -198,7 +200,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
 
   it "returns nil when fee is missing or malformed" do
     position = SpyPosition.new
-    state = StubState.new(position)
+    state = build_state(position)
     engine = described_class.new(state: state, risk_engine: SpyRiskEngine.new, fee_enabled: true)
 
     trade_no_fee = base_trade.dup.tap { |t| t.delete("fee") }
@@ -253,7 +255,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
 
     decimal_stub = decimal_klass.from_string("10")
     position = SpyPosition.new(qty_object: decimal_stub)
-    state = StubState.new(position)
+    state = build_state(position)
     engine = described_class.new(state: state, risk_engine: SpyRiskEngine.new, decimal_klass: decimal_klass)
 
     engine.apply_trade!(base_trade)
@@ -268,7 +270,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
     custom_error_klass = Class.new(FCS::Error)
 
     engine = described_class.new(
-      state: StubState.new(SpyPosition.new(qty: "2.0")),
+      state: build_state(SpyPosition.new(qty: "2.0")),
       risk_engine: SpyRiskEngine.new,
       error_klass: custom_error_klass,
       errors: custom_errors
@@ -284,7 +286,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
   end
 
   it "raises when unsupported side tradeId is missing" do
-    engine = described_class.new(state: StubState.new(SpyPosition.new(qty: "2.0")), risk_engine: SpyRiskEngine.new)
+    engine = described_class.new(state: build_state(SpyPosition.new(qty: "2.0")), risk_engine: SpyRiskEngine.new)
     bad_trade = base_trade.merge("side" => "HOLD")
     bad_trade.delete("tradeId")
 
@@ -337,7 +339,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
     stub_const("FCS::Engine::LedgerEngine::Error", Class.new(StandardError))
 
     position = SpyPosition.new(qty: "2.0")
-    state = StubState.new(position)
+    state = build_state(position)
     engine = described_class.new(state: state, risk_engine: SpyRiskEngine.new)
 
     bad_trade = base_trade.merge("side" => "HOLD")
@@ -352,7 +354,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
     end)
 
     position = SpyPosition.new(qty: "2.0")
-    state = StubState.new(position)
+    state = build_state(position)
     engine = described_class.new(state: state, risk_engine: SpyRiskEngine.new)
 
     bad_trade = base_trade.merge("side" => "HOLD")
