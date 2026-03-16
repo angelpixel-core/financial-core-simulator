@@ -1,5 +1,12 @@
 # Financial Core Simulator
 
+[![CI](https://github.com/angelpixel-core/financial-core-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/angelpixel-core/financial-core-simulator/actions/workflows/ci.yml)
+[![Mutation Tests](https://github.com/angelpixel-core/financial-core-simulator/actions/workflows/mutation-nightly.yml/badge.svg)](https://github.com/angelpixel-core/financial-core-simulator/actions/workflows/mutation-nightly.yml)
+![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen)
+![Ruby](https://img.shields.io/badge/ruby-3.4%2B-red)
+![Code Style](https://img.shields.io/badge/code%20style-rubocop-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
 Financial Core Simulator is a deterministic trading infrastructure demo that models the core components of a modern exchange backend:
 
 - Limit order book (price-time priority)
@@ -18,6 +25,22 @@ The project is designed as a technical portfolio piece to demonstrate production
 - Provide auditability via append-only ledger
 - Enable visualization of market depth and trade flow
 - Keep the core engine framework-agnostic
+
+## Quality Tooling
+
+This repo runs CI checks for:
+
+- RSpec
+- Mutant (mutation testing)
+- SimpleCov (coverage)
+- Bullet (N+1 detection)
+- RuboCop
+- Reek
+- RubyCritic
+- Brakeman (admin app)
+- Bundler Audit
+
+Coverage badge is updated manually. If you want it automated, integrate Codecov or Coveralls.
 
 This repository represents the public demo track.
 The engine is intentionally simplified and deterministic.
