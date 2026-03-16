@@ -25,4 +25,4 @@ jobs:
           bundler-cache: true
 
       - name: Run mutation testing
-        run: bundle exec mutant run --integration rspec --ignore-subject FCS::Engine::ValuationEngine# --ignore-subject FCS::Engine::TradeSorter# --ignore-subject FCS::Engine::LedgerState# --ignore-subject FCS::Engine::PositionFifo# "FCS::Engine*"
+        run: bundle exec mutant run --integration rspec "FCS::Engine*"
