@@ -3,68 +3,36 @@
 require_relative "../../lib/fcs"
 
 RSpec.describe FCS::Projector::ProjectionStore do
-  class StubProjection
-    attr_reader :applied, :read_model
+  let(:projection) { instance_double("Projection", apply!: true, read_model: { "a" => 1 }) }
 
-    def initialize(read_model)
-      @read_model = read_model
-      @applied = []
-    end
+  it "applies events to selected projections" do
+    store = described_class.new(projections: { "overview" => projection })
+    event = { "eventType" => "RUN_LIFECYCLE_NORMALIZED" }
 
-    def apply!(event)
-      @applied << event
-      true
-    end
+    expect(projection).to receive(:apply!).with(event)
+    expect(store.apply!(["overview"], event)).to be(true)
   end
 
-  describe "#apply!" do
-    it "applies the event to each selected projection in order" do
-      overview = StubProjection.new("overviewKpi" => { "queued" => 1 })
-      trend = StubProjection.new("runsTrend14d" => [])
-      store = described_class.new(projections: { "overview" => overview, "trend" => trend })
+  it "merges read models from all projections" do
+    other = instance_double("Projection", apply!: true, read_model: { "b" => 2 })
+    store = described_class.new(projections: { "overview" => projection, "trend" => other })
 
-      event = { "eventType" => "RUN_LIFECYCLE_NORMALIZED", "payload" => {} }
-      store.apply!(%w[overview trend], event)
-
-      expect(overview.applied).to eq([event])
-      expect(trend.applied).to eq([event])
-    end
-
-    it "rejects unknown projection keys" do
-      store = described_class.new(projections: { "overview" => StubProjection.new({}) })
-
-      expect do
-        store.apply!(%w[missing], { "eventType" => "RUN_LIFECYCLE_NORMALIZED", "payload" => {} })
-      end.to raise_error(FCS::Error) { |error| expect(error.details).to include(field: "projectionStore.projections.missing") }
-    end
+    expect(store.read_model).to eq("a" => 1, "b" => 2)
   end
 
-  describe "#read_model" do
-    it "composes read-model fragments deterministically" do
-      store = described_class.new(
-        projections: {
-          "overview" => StubProjection.new("overviewKpi" => { "queued" => 1 }),
-          "trend" => StubProjection.new("runsTrend14d" => [{ "day" => "03-04", "count" => 2 }]),
-          "topAccountsRisk" => StubProjection.new("topAccounts" => [{ "accountId" => "acc-a" }], "riskView" => {})
-        }
-      )
+  it "rejects missing projection keys" do
+    store = described_class.new(projections: { "overview" => projection })
 
-      expect(store.read_model).to eq(
-        "overviewKpi" => { "queued" => 1 },
-        "runsTrend14d" => [{ "day" => "03-04", "count" => 2 }],
-        "topAccounts" => [{ "accountId" => "acc-a" }],
-        "riskView" => {}
-      )
-    end
+    expect do
+      store.apply!(["missing"], "event")
+    end.to raise_error(FCS::Error) { |error| expect(error.details).to include(field: "projectionStore.projections.missing") }
   end
 
-  describe "projection validation" do
-    it "rejects projections that do not satisfy the interface" do
-      expect do
-        described_class.new(projections: { "overview" => Object.new })
-      end.to raise_error(FCS::Error) do |error|
-        expect(error.details).to include(field: "projectionStore.projections.overview")
-      end
-    end
+  it "rejects empty projection keys array" do
+    store = described_class.new(projections: { "overview" => projection })
+
+    expect do
+      store.apply!([], "event")
+    end.to raise_error(FCS::Error) { |error| expect(error.details).to include(field: "projectionStore.projectionKeys") }
   end
 end

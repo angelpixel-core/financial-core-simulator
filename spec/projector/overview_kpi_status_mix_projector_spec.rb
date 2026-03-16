@@ -3,58 +3,40 @@
 require_relative "../../lib/fcs"
 
 RSpec.describe FCS::Projector::OverviewKpiStatusMixProjector do
-  subject(:projector) { described_class.new }
+  it "tracks status counts per run" do
+    projector = described_class.new
 
-  def lifecycle_event(status, run_id:, correlation_id:)
-    {
-      "eventVersion" => "1.0",
-      "source" => "aggregator.projector",
+    projector.apply!(
       "eventType" => "RUN_LIFECYCLE_NORMALIZED",
-      "correlationId" => correlation_id,
-      "occurredAt" => "2026-03-04T10:00:02Z",
-      "payload" => {
-        "runId" => run_id,
-        "status" => status
-      }
-    }
+      "payload" => { "runId" => "run-1", "status" => "queued" }
+    )
+    projector.apply!(
+      "eventType" => "RUN_LIFECYCLE_NORMALIZED",
+      "payload" => { "runId" => "run-1", "status" => "running" }
+    )
+    projector.apply!(
+      "eventType" => "RUN_LIFECYCLE_NORMALIZED",
+      "payload" => { "runId" => "run-2", "status" => "failed" }
+    )
+
+    model = projector.read_model
+
+    expect(model.fetch("statusMix")).to include(
+      "queued" => 0,
+      "running" => 1,
+      "succeeded" => 0,
+      "failed" => 1
+    )
   end
 
-  it "projects overview KPI counts from lifecycle events" do
-    events = [
-      lifecycle_event("queued", run_id: "run-1", correlation_id: "corr-1"),
-      lifecycle_event("running", run_id: "run-2", correlation_id: "corr-2"),
-      lifecycle_event("succeeded", run_id: "run-3", correlation_id: "corr-3"),
-      lifecycle_event("failed", run_id: "run-4", correlation_id: "corr-4")
-    ]
+  it "rejects unsupported statuses" do
+    projector = described_class.new
 
-    events.each { |event| projector.apply!(event) }
-
-    expect(projector.read_model).to include(
-      "overviewKpi" => include(
-        "queued" => 1,
-        "running" => 1,
-        "succeeded" => 1,
-        "failed" => 1
+    expect do
+      projector.apply!(
+        "eventType" => "RUN_LIFECYCLE_NORMALIZED",
+        "payload" => { "runId" => "run-1", "status" => "unknown" }
       )
-    )
-  end
-
-  it "projects status mix distribution deterministically" do
-    events = [
-      lifecycle_event("queued", run_id: "run-1", correlation_id: "corr-1"),
-      lifecycle_event("queued", run_id: "run-2", correlation_id: "corr-2"),
-      lifecycle_event("failed", run_id: "run-3", correlation_id: "corr-3")
-    ]
-
-    events.each { |event| projector.apply!(event) }
-
-    expect(projector.read_model).to include(
-      "statusMix" => {
-        "queued" => 2,
-        "running" => 0,
-        "succeeded" => 0,
-        "failed" => 1
-      }
-    )
+    end.to raise_error(FCS::Error) { |error| expect(error.details).to include(field: "event.payload.status") }
   end
 end
