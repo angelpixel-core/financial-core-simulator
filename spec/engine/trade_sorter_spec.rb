@@ -38,4 +38,14 @@ RSpec.describe FCS::Engine::TradeSorter do
     sorted = sorter.sort(trades).map { |t| t["tradeId"] }
     expect(sorted).to eq(%w[t-a t-m t-z])
   end
+
+  it "orders by marketId before tradeId when timestamp, seq, and accountId match" do
+    trades = [
+      { "tradeId" => "t-a", "timestamp" => 5, "seq" => 1, "accountId" => "acc-1", "marketId" => "Z-USD" },
+      { "tradeId" => "t-z", "timestamp" => 5, "seq" => 1, "accountId" => "acc-1", "marketId" => "A-USD" }
+    ]
+
+    sorted = sorter.sort(trades).map { |t| t["tradeId"] }
+    expect(sorted).to eq(%w[t-z t-a])
+  end
 end
