@@ -131,6 +131,15 @@ RSpec.describe FCS::Engine::PositionFifo do
     expect(position.instance_variable_get(:@last_lot_fully_consumed)).to be(true)
   end
 
+  it "records when the last lot is partially consumed" do
+    position = described_class.empty
+
+    position.apply_buy!(buy_qty: d18("2"), buy_price: d18("100"))
+    position.apply_sell!(sell_qty: d18("1"), sell_price: d18("110"))
+
+    expect(position.instance_variable_get(:@last_lot_fully_consumed)).to be(false)
+  end
+
   it "uses injected error dependencies" do
     custom_errors = Module.new
     custom_errors.const_set(:ERR_POSITION_NEGATIVE, "CUSTOM_NEGATIVE")

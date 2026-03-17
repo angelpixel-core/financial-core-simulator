@@ -50,8 +50,13 @@ module FCS
           current_lot = @lots.first
           lot_qty = current_lot.fetch(:qty)
           lot_price = current_lot.fetch(:price)
-          @last_lot_fully_consumed = (lot_qty.atoms == remaining.atoms)
-          consumed = lot_qty.atoms <= remaining.atoms ? lot_qty : remaining
+          consumed = if lot_qty.atoms <= remaining.atoms
+                       @last_lot_fully_consumed = true
+                       lot_qty
+                     else
+                       @last_lot_fully_consumed = false
+                       remaining
+                     end
 
           delta = (sell_price - lot_price) * consumed
           @realized_pnl_quote += delta
