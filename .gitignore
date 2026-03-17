@@ -10,6 +10,12 @@ tmp/logs/
 tmp/
 checkpoint_*.json
 scripts/mutation-unique.sh
+artifacts/
+benchmark_report_*.json
+result.json
+positions.csv
+pnl.csv
+run_*/
 
 # BMAD generated planning/runtime artifacts
 .bmad/
