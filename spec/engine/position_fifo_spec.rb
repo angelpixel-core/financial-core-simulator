@@ -41,6 +41,17 @@ RSpec.describe FCS::Engine::PositionFifo do
     expect(position.avg_cost.to_s).to eq("120.0")
   end
 
+  it "keeps lot price for remaining quantity" do
+    position = described_class.empty
+
+    position.apply_buy!(buy_qty: d18("2"), buy_price: d18("100"))
+    position.apply_buy!(buy_qty: d18("1"), buy_price: d18("120"))
+    position.apply_sell!(sell_qty: d18("1"), sell_price: d18("150"))
+
+    expect(position.qty.to_s).to eq("2.0")
+    expect(position.avg_cost.to_s).to eq("110.0")
+  end
+
   it "resets avg cost to zero when fully sold" do
     position = described_class.empty
 
@@ -88,5 +99,12 @@ RSpec.describe FCS::Engine::PositionFifo do
       expect(error.message).to eq("SELL would make position negative")
       expect(error.details).to include(qty: "0.0", sellQty: "1.0")
     }
+  end
+
+  it "returns self on sell" do
+    position = described_class.empty
+
+    position.apply_buy!(buy_qty: d18("1"), buy_price: d18("100"))
+    expect(position.apply_sell!(sell_qty: d18("1"), sell_price: d18("110"))).to be(position)
   end
 end
