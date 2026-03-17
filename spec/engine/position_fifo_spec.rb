@@ -87,7 +87,11 @@ RSpec.describe FCS::Engine::PositionFifo do
 
     expect do
       position.apply_sell!(sell_qty: d18("1"), sell_price: d18("100"))
-    end.to raise_error(FCS::Error) { |error| expect(error.code).to eq(FCS::Errors::ERR_POSITION_NEGATIVE) }
+    end.to raise_error(FCS::Error) { |error|
+      expect(error.code).to eq(FCS::Errors::ERR_POSITION_NEGATIVE)
+      expect(error.message).to eq("SELL would make position negative")
+      expect(error.details).to eq(qty: "0.0", sellQty: "1.0")
+    }
   end
 
   it "reports sell qty in long-only violation details" do
@@ -97,7 +101,7 @@ RSpec.describe FCS::Engine::PositionFifo do
       position.apply_sell!(sell_qty: d18("1"), sell_price: d18("100"))
     end.to raise_error(FCS::Error) { |error|
       expect(error.message).to eq("SELL would make position negative")
-      expect(error.details).to include(qty: "0.0", sellQty: "1.0")
+      expect(error.details).to eq(qty: "0.0", sellQty: "1.0")
     }
   end
 
