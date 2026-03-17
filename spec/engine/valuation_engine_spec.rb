@@ -59,6 +59,8 @@ RSpec.describe FCS::Engine::ValuationEngine do
       valuation.update_price!(market_id: "BTC-USD", price_quote_per_base: "151.25")
     end.to raise_error(FCS::Error) { |e|
       expect(e.code).to eq(FCS::Errors::ERR_UNKNOWN_REFERENCE)
+      expect(e.message).to eq("Unknown marketId")
+      expect(e.details).to eq(marketId: "BTC-USD")
     }
   end
 
@@ -85,6 +87,32 @@ RSpec.describe FCS::Engine::ValuationEngine do
 
     expect do
       valuation.update_price!(market_id: "ETH-USD", price_quote_per_base: 151.25)
+    end.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
+      expect(e.message).to eq("Float not allowed")
+      expect(e.details).to eq(field: "priceQuotePerBase", marketId: "ETH-USD")
+    }
+  end
+
+  it "rejects float-like inputs that are not instance_of Float" do
+    float_like = Class.new do
+      def is_a?(klass)
+        klass == Float || super
+      end
+
+      def match?(_)
+        true
+      end
+    end.new
+
+    snapshot = {
+      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+    }
+
+    valuation = described_class.new(price_snapshot: snapshot)
+
+    expect do
+      valuation.update_price!(market_id: "ETH-USD", price_quote_per_base: float_like)
     end.to raise_error(FCS::Error) { |e|
       expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
       expect(e.message).to eq("Float not allowed")
