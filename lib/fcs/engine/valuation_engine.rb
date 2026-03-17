@@ -38,7 +38,11 @@ module FCS
       def build_price_map(prices_arr)
         prices_arr.each_with_object({}) do |p, acc|
           mid = p.fetch("marketId")
-          acc[mid] = FCS::Types::Decimal18.from_string(p.fetch("priceQuotePerBase"))
+          acc[mid] = parse_price_decimal!(
+            p.fetch("priceQuotePerBase"),
+            field: "priceQuotePerBase",
+            market_id: mid
+          )
         end
       end
 

@@ -70,4 +70,13 @@ RSpec.describe FCS::Engine::TradeSorter do
 
     expect(sorted).to eq(["", "a"])
   end
+
+  it "does not require tradeId key to exist" do
+    trades = [
+      { "timestamp" => 1, "seq" => 1, "accountId" => "acc-1", "marketId" => "ETH-USD" },
+      { "timestamp" => 1, "seq" => 2, "accountId" => "acc-1", "marketId" => "ETH-USD", "tradeId" => "t-1" }
+    ]
+
+    expect { sorter.sort(trades) }.not_to raise_error
+  end
 end
