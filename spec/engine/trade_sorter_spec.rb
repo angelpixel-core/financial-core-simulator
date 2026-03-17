@@ -59,4 +59,15 @@ RSpec.describe FCS::Engine::TradeSorter do
 
     expect(sorted).to eq(%w[2 1])
   end
+
+  it "sorts even when ids are nil" do
+    trades = [
+      { "tradeId" => nil, "timestamp" => 1, "seq" => 1, "accountId" => nil, "marketId" => nil },
+      { "tradeId" => "a", "timestamp" => 1, "seq" => 1, "accountId" => "", "marketId" => "" }
+    ]
+
+    sorted = sorter.sort(trades).map { |t| t["tradeId"].to_s }
+
+    expect(sorted).to eq(["", "a"])
+  end
 end
