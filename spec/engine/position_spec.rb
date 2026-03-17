@@ -129,4 +129,24 @@ RSpec.describe FCS::Engine::Position do
       expect(error.details).to eq(qty: "0.0")
     }
   end
+
+  it "respects injected error dependencies" do
+    custom_errors = Module.new
+    custom_errors.const_set(:ERR_VALIDATION, "CUSTOM_VALIDATION")
+    custom_error_class = Class.new(FCS::Error)
+
+    deps = FCS::Engine::Dependencies.new(
+      FCS::Types::Decimal18,
+      custom_error_class,
+      custom_errors
+    )
+
+    position = described_class.empty(dependencies: deps)
+
+    expect do
+      position.apply_buy!(buy_qty: d18("0"), buy_price: d18("1"))
+    end.to raise_error(custom_error_class) { |error|
+      expect(error.code).to eq("CUSTOM_VALIDATION")
+    }
+  end
 end
