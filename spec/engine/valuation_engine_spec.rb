@@ -88,7 +88,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
     end.to raise_error(FCS::Error) { |e|
       expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
       expect(e.message).to eq("Float not allowed")
-      expect(e.details).to include(field: "priceQuotePerBase", marketId: "ETH-USD")
+      expect(e.details).to eq(field: "priceQuotePerBase", marketId: "ETH-USD")
     }
   end
 
@@ -102,7 +102,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
     end.to raise_error(FCS::Error) { |e|
       expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
       expect(e.message).to eq("Float not allowed")
-      expect(e.details).to include(field: "priceQuotePerBase", marketId: "ETH-USD")
+      expect(e.details).to eq(field: "priceQuotePerBase", marketId: "ETH-USD")
     }
   end
 
@@ -117,12 +117,16 @@ RSpec.describe FCS::Engine::ValuationEngine do
       valuation.update_price!(market_id: "ETH-USD", price_quote_per_base: "15a.25")
     end.to raise_error(FCS::Error) { |e|
       expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
+      expect(e.message).to eq("Invalid decimal string")
+      expect(e.details).to eq(field: "priceQuotePerBase", marketId: "ETH-USD", value: "15a.25")
     }
 
     expect do
       valuation.update_price!(market_id: "ETH-USD", price_quote_per_base: "0")
     end.to raise_error(FCS::Error) { |e|
       expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
+      expect(e.message).to eq("Must be > 0")
+      expect(e.details).to eq(field: "priceQuotePerBase", marketId: "ETH-USD", value: "0")
     }
   end
 end
