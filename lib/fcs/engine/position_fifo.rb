@@ -6,17 +6,18 @@ module FCS
     class PositionFifo
       attr_reader :qty, :avg_cost, :realized_pnl_quote, :fees_quote
 
-      def initialize(qty:, avg_cost:, realized_pnl_quote:, fees_quote:, lots:)
+      def initialize(qty:, avg_cost:, realized_pnl_quote:, fees_quote:, lots:, dependencies: Dependencies.default)
         @qty = qty
         @avg_cost = avg_cost
         @realized_pnl_quote = realized_pnl_quote
         @fees_quote = fees_quote
         @lots = lots
+        @dependencies = dependencies
       end
 
-      def self.empty
-        z = FCS::Types::Decimal18.new(0)
-        new(qty: z, avg_cost: z, realized_pnl_quote: z, fees_quote: z, lots: [])
+      def self.empty(dependencies: Dependencies.default)
+        z = dependencies.decimal_class.new(0)
+        new(qty: z, avg_cost: z, realized_pnl_quote: z, fees_quote: z, lots: [], dependencies: dependencies)
       end
 
       def apply_fee!(fee_quote)
@@ -37,8 +38,8 @@ module FCS
 
       def apply_sell!(sell_qty:, sell_price:)
         if (@qty - sell_qty).atoms.negative?
-          raise FCS::Error.new(
-            FCS::Errors::ERR_POSITION_NEGATIVE,
+          raise @dependencies.error_class.new(
+            @dependencies.errors_module::ERR_POSITION_NEGATIVE,
             "SELL would make position negative",
             details: { qty: @qty.to_s, sellQty: sell_qty.to_s }
           )
@@ -72,11 +73,11 @@ module FCS
 
       def recompute_avg_cost!
         if @qty.zero?
-          @avg_cost = FCS::Types::Decimal18.new(0)
+          @avg_cost = @dependencies.decimal_class.new(0)
           return
         end
 
-        total_cost = @lots.reduce(FCS::Types::Decimal18.new(0)) do |sum, lot|
+        total_cost = @lots.reduce(@dependencies.decimal_class.new(0)) do |sum, lot|
           sum + (lot.fetch(:qty) * lot.fetch(:price))
         end
 

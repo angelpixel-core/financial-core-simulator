@@ -6,16 +6,17 @@ module FCS
     class Position
       attr_reader :qty, :avg_cost, :realized_pnl_quote, :fees_quote
 
-      def initialize(qty:, avg_cost:, realized_pnl_quote:, fees_quote:)
+      def initialize(qty:, avg_cost:, realized_pnl_quote:, fees_quote:, dependencies: Dependencies.default)
         @qty = qty
         @avg_cost = avg_cost
         @realized_pnl_quote = realized_pnl_quote
         @fees_quote = fees_quote
+        @dependencies = dependencies
       end
 
-      def self.empty
-        z = FCS::Types::Decimal18.new(0)
-        new(qty: z, avg_cost: z, realized_pnl_quote: z, fees_quote: z)
+      def self.empty(dependencies: Dependencies.default)
+        z = dependencies.decimal_class.new(0)
+        new(qty: z, avg_cost: z, realized_pnl_quote: z, fees_quote: z, dependencies: dependencies)
       end
 
       def apply_fee!(fee_quote)
@@ -47,7 +48,7 @@ module FCS
         @realized_pnl_quote += delta
 
         @qty -= sell_qty
-        @avg_cost = FCS::Types::Decimal18.new(0) if @qty.zero?
+        @avg_cost = @dependencies.decimal_class.new(0) if @qty.zero?
 
         self
       end
@@ -55,16 +56,16 @@ module FCS
       private
 
       def raise_invalid_buy_quantity!(buy_qty)
-        raise FCS::Error.new(
-          FCS::Errors::ERR_VALIDATION,
+        raise @dependencies.error_class.new(
+          @dependencies.errors_module::ERR_VALIDATION,
           "BUY quantity must be > 0",
           details: { quantityBase: buy_qty.to_s }
         )
       end
 
       def raise_long_only_violation!
-        raise FCS::Error.new(
-          FCS::Errors::ERR_POSITION_NEGATIVE,
+        raise @dependencies.error_class.new(
+          @dependencies.errors_module::ERR_POSITION_NEGATIVE,
           "SELL would make position negative",
           details: { qty: @qty.to_s }
         )
