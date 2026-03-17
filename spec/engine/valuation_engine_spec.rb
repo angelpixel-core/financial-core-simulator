@@ -129,4 +129,41 @@ RSpec.describe FCS::Engine::ValuationEngine do
       expect(e.details).to eq(field: "priceQuotePerBase", marketId: "ETH-USD", value: "0")
     }
   end
+
+  it "accepts string subclasses for price input" do
+    price_string = Class.new(String).new("151.25")
+    snapshot = {
+      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+    }
+
+    valuation = described_class.new(price_snapshot: snapshot)
+
+    expect do
+      valuation.update_price!(market_id: "ETH-USD", price_quote_per_base: price_string)
+    end.not_to raise_error
+
+    expect(valuation.snapshot_price_for("ETH-USD").to_s).to eq("151.25")
+  end
+
+  it "rejects non-string inputs even if they respond to match?" do
+    matcher = Class.new do
+      def match?(_)
+        true
+      end
+    end.new
+
+    snapshot = {
+      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+    }
+
+    valuation = described_class.new(price_snapshot: snapshot)
+
+    expect do
+      valuation.update_price!(market_id: "ETH-USD", price_quote_per_base: matcher)
+    end.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
+      expect(e.message).to eq("Invalid decimal string")
+      expect(e.details[:value]).to be(matcher)
+    }
+  end
 end
