@@ -121,4 +121,40 @@ RSpec.describe FCS::Engine::PositionFifo do
     position.apply_buy!(buy_qty: d18("1"), buy_price: d18("100"))
     expect(position.apply_sell!(sell_qty: d18("1"), sell_price: d18("110"))).to be(position)
   end
+
+  it "uses injected error dependencies" do
+    custom_errors = Module.new
+    custom_errors.const_set(:ERR_POSITION_NEGATIVE, "CUSTOM_NEGATIVE")
+    custom_error_class = Class.new(FCS::Error)
+
+    deps = FCS::Engine::Dependencies.new(
+      FCS::Types::Decimal18,
+      custom_error_class,
+      custom_errors
+    )
+
+    position = described_class.empty(dependencies: deps)
+
+    expect do
+      position.apply_sell!(sell_qty: d18("1"), sell_price: d18("110"))
+    end.to raise_error(custom_error_class) { |error|
+      expect(error.code).to eq("CUSTOM_NEGATIVE")
+    }
+  end
+
+  it "defaults to FCS dependencies when none are provided" do
+    position = described_class.new(
+      qty: d18("0"),
+      avg_cost: d18("0"),
+      realized_pnl_quote: d18("0"),
+      fees_quote: d18("0"),
+      lots: []
+    )
+
+    expect do
+      position.apply_sell!(sell_qty: d18("1"), sell_price: d18("110"))
+    end.to raise_error(FCS::Error) { |error|
+      expect(error.code).to eq(FCS::Errors::ERR_POSITION_NEGATIVE)
+    }
+  end
 end
