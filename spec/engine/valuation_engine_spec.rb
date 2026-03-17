@@ -76,6 +76,36 @@ RSpec.describe FCS::Engine::ValuationEngine do
     }
   end
 
+  it "rejects float price input with a specific error" do
+    snapshot = {
+      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+    }
+
+    valuation = described_class.new(price_snapshot: snapshot)
+
+    expect do
+      valuation.update_price!(market_id: "ETH-USD", price_quote_per_base: 151.25)
+    end.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
+      expect(e.message).to eq("Float not allowed")
+      expect(e.details).to include(field: "priceQuotePerBase", marketId: "ETH-USD")
+    }
+  end
+
+  it "rejects float values in price snapshots" do
+    snapshot = {
+      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => 150.5 }]
+    }
+
+    expect do
+      described_class.new(price_snapshot: snapshot)
+    end.to raise_error(FCS::Error) { |e|
+      expect(e.code).to eq(FCS::Errors::ERR_INVALID_NUMBER)
+      expect(e.message).to eq("Float not allowed")
+      expect(e.details).to include(field: "priceQuotePerBase", marketId: "ETH-USD")
+    }
+  end
+
   it "rejects invalid decimal strings and zero values" do
     snapshot = {
       "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
