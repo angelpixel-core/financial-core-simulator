@@ -72,6 +72,16 @@ RSpec.describe FCS::Engine::PositionFifo do
     expect(position.avg_cost.to_s).to eq("100.0")
   end
 
+  it "keeps remaining lot quantity when partially consumed" do
+    position = described_class.empty
+
+    position.apply_buy!(buy_qty: d18("2"), buy_price: d18("100"))
+    position.apply_sell!(sell_qty: d18("0.5"), sell_price: d18("150"))
+
+    expect(position.qty.to_s).to eq("1.5")
+    expect(position.avg_cost.to_s).to eq("100.0")
+  end
+
   it "accumulates fees and returns realized net quote" do
     position = described_class.empty
 
