@@ -103,7 +103,30 @@ RSpec.describe FCS::Engine::Position do
     end.to raise_error(FCS::Error) { |error|
       expect(error.code).to eq(FCS::Errors::ERR_VALIDATION)
       expect(error.message).to eq("BUY quantity must be > 0")
-      expect(error.details).to include(quantityBase: "0.0")
+      expect(error.details).to eq(quantityBase: "0.0")
+    }
+  end
+
+  it "rejects negative buy quantity" do
+    position = described_class.empty
+
+    expect do
+      position.apply_buy!(buy_qty: d18("-1"), buy_price: d18("100"))
+    end.to raise_error(FCS::Error) { |error|
+      expect(error.code).to eq(FCS::Errors::ERR_VALIDATION)
+      expect(error.details).to eq(quantityBase: "-1.0")
+    }
+  end
+
+  it "includes long-only violation details on sell" do
+    position = described_class.empty
+
+    expect do
+      position.apply_sell!(sell_qty: d18("1"), sell_price: d18("100"))
+    end.to raise_error(FCS::Error) { |error|
+      expect(error.code).to eq(FCS::Errors::ERR_POSITION_NEGATIVE)
+      expect(error.message).to eq("SELL would make position negative")
+      expect(error.details).to eq(qty: "0.0")
     }
   end
 end
