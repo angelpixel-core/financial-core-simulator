@@ -48,4 +48,15 @@ RSpec.describe FCS::Engine::TradeSorter do
     sorted = sorter.sort(trades).map { |t| t["tradeId"] }
     expect(sorted).to eq(%w[t-z t-a])
   end
+
+  it "coerces ids to strings for deterministic ordering" do
+    trades = [
+      { "tradeId" => 2, "timestamp" => 1, "seq" => 1, "accountId" => nil, "marketId" => nil },
+      { "tradeId" => 1, "timestamp" => 1, "seq" => 1, "accountId" => "acc-1", "marketId" => "ETH-USD" }
+    ]
+
+    sorted = sorter.sort(trades).map { |t| t["tradeId"].to_s }
+
+    expect(sorted).to eq(%w[2 1])
+  end
 end
