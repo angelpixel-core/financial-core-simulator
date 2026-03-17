@@ -28,11 +28,19 @@ RSpec.describe FCS::Engine::Position do
     expect(position.avg_cost.to_s).to eq("120.0")
   end
 
+  it "accepts the smallest positive quantity" do
+    position = described_class.empty
+
+    position.apply_buy!(buy_qty: d18("0.000000000000000001"), buy_price: d18("100"))
+
+    expect(position.qty.to_s).to eq("0.000000000000000001")
+  end
+
   it "accumulates fees and returns realized net quote" do
     position = described_class.empty
 
-    position.apply_fee!(d18("2.5"))
-    position.apply_fee!(d18("1.5"))
+    expect(position.apply_fee!(d18("2.5"))).to be(position)
+    expect(position.apply_fee!(d18("1.5"))).to be(position)
 
     expect(position.fees_quote.to_s).to eq("4.0")
     expect(position.realized_net_quote.to_s).to eq("-4.0")
@@ -49,11 +57,53 @@ RSpec.describe FCS::Engine::Position do
     expect(position.realized_pnl_quote.to_s).to eq("100.0")
   end
 
+  it "keeps avg cost when partially sold" do
+    position = described_class.empty
+
+    position.apply_buy!(buy_qty: d18("2"), buy_price: d18("100"))
+    position.apply_sell!(sell_qty: d18("1"), sell_price: d18("150"))
+
+    expect(position.qty.to_s).to eq("1.0")
+    expect(position.avg_cost.to_s).to eq("100.0")
+  end
+
   it "rejects sells that would make the position negative" do
     position = described_class.empty
 
     expect do
       position.apply_sell!(sell_qty: d18("1"), sell_price: d18("100"))
     end.to raise_error(FCS::Error) { |error| expect(error.code).to eq(FCS::Errors::ERR_POSITION_NEGATIVE) }
+  end
+
+  it "rejects buys when position is already short" do
+    position = described_class.new(
+      qty: d18("-1"),
+      avg_cost: d18("100"),
+      realized_pnl_quote: d18("0"),
+      fees_quote: d18("0")
+    )
+
+    expect do
+      position.apply_buy!(buy_qty: d18("1"), buy_price: d18("100"))
+    end.to raise_error(FCS::Error) { |error| expect(error.code).to eq(FCS::Errors::ERR_POSITION_NEGATIVE) }
+  end
+
+  it "returns self on buy and sell" do
+    position = described_class.empty
+
+    expect(position.apply_buy!(buy_qty: d18("1"), buy_price: d18("100"))).to be(position)
+    expect(position.apply_sell!(sell_qty: d18("1"), sell_price: d18("110"))).to be(position)
+  end
+
+  it "includes quantity details when rejecting buy" do
+    position = described_class.empty
+
+    expect do
+      position.apply_buy!(buy_qty: d18("0"), buy_price: d18("100"))
+    end.to raise_error(FCS::Error) { |error|
+      expect(error.code).to eq(FCS::Errors::ERR_VALIDATION)
+      expect(error.message).to eq("BUY quantity must be > 0")
+      expect(error.details).to include(quantityBase: "0.0")
+    }
   end
 end
