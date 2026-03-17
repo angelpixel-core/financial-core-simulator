@@ -242,6 +242,13 @@ RSpec.describe FCS::Engine::LedgerEngine do
     expect(position).to be_a(FCS::Engine::PositionFifo)
   end
 
+  it "builds average positions when accounting method is average" do
+    engine = described_class.new(accounting_method: described_class::ACCOUNTING_METHOD_AVERAGE)
+    position = engine.state.position_for(account_id: "acc-1", market_id: "ETH-USD")
+
+    expect(position).to be_a(FCS::Engine::Position)
+  end
+
   it "injects a custom decimal class for trade parsing" do
     decimal_klass = Class.new do
       DecimalStub = Struct.new(:atoms) do
