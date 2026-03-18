@@ -47,7 +47,6 @@ module FCS
         end
       end
 
-      # rubocop:disable Metrics/AbcSize
       def parse_price_decimal!(raw_price, field:, market_id:)
         if raw_price.is_a?(Float)
           raise @dependencies.error_class.new(
@@ -75,7 +74,6 @@ module FCS
 
         @dependencies.decimal_class.from_string(raw_price)
       end
-      # rubocop:enable Metrics/AbcSize
     end
   end
 end
