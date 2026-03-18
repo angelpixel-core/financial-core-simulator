@@ -180,8 +180,11 @@
           <header class="dashboard-card__header">
             <h2>Diagrama de flujo operacional</h2>
           </header>
+          <p class="dashboard-card__meta">
+            Ver diagrama global en <%= link_to "System State", admin_docs_section_path("system-state") %>.
+          </p>
           <div class="dashboard-card__media">
-            <%= image_tag "ops_flow_diagram.svg", alt: "Flujo operacional del dashboard" %>
+            <%= image_tag "simulation_context_flow.svg", alt: "Flujo de contexto de simulacion" %>
           </div>
         </section>
 
@@ -189,8 +192,78 @@
           <header class="dashboard-card__header">
             <h2>Diagrama de arquitectura</h2>
           </header>
+          <p class="dashboard-card__meta">
+            Ver diagrama global en <%= link_to "System State", admin_docs_section_path("system-state") %>.
+          </p>
           <div class="dashboard-card__media">
-            <%= image_tag "architecture_diagram.svg", alt: "Arquitectura del sistema" %>
+            <%= image_tag "simulation_context_architecture.svg", alt: "Arquitectura del contexto de simulacion" %>
+          </div>
+        </section>
+      <% end %>
+
+      <% if @section[:slug] == "system-metrics" %>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Como usar System Metrics</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            System Metrics concentra los KPIs que resumen el rendimiento operativo del sistema y permiten
+            evaluar estabilidad, velocidad y salud general.
+          </p>
+          <ul class="detail-list">
+            <li><span>Uso recomendado</span><strong>Antes de tomar decisiones operativas o de capacity</strong></li>
+            <li><span>Objetivo</span><strong>Detectar degradaciones de performance o fiabilidad</strong></li>
+            <li><span>Frecuencia</span><strong>Revisar diario y ante cambios de carga</strong></li>
+          </ul>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Que podemos leer</h2>
+          </header>
+          <ul class="detail-list">
+            <li><span>Total runs (7d/30d)</span><strong>Volumen operativo y tendencia reciente</strong></li>
+            <li><span>Success rate</span><strong>Estabilidad de ejecucion en el tiempo</strong></li>
+            <li><span>Avg duration</span><strong>Performance y posibles cuellos de botella</strong></li>
+            <li><span>KPIs delta</span><strong>Comparacion contra periodos previos</strong></li>
+          </ul>
+          <p class="dashboard-card__meta">
+            Un descenso sostenido en success rate o aumentos de duracion sugieren revisar Activity y Data Quality.
+          </p>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Valor agregado</h2>
+          </header>
+          <ul class="detail-list">
+            <li><span>Visibilidad operativa</span><strong>Señales claras sobre performance y salud</strong></li>
+            <li><span>Deteccion temprana</span><strong>Se anticipa a problemas de confiabilidad</strong></li>
+            <li><span>Prioridad de acciones</span><strong>Ayuda a decidir donde investigar primero</strong></li>
+          </ul>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Diagrama de flujo operacional</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Ver diagrama global en <%= link_to "System State", admin_docs_section_path("system-state") %>.
+          </p>
+          <div class="dashboard-card__media">
+            <%= image_tag "system_metrics_flow.svg", alt: "Flujo operativo de metricas" %>
+          </div>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Diagrama de arquitectura</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Ver diagrama global en <%= link_to "System State", admin_docs_section_path("system-state") %>.
+          </p>
+          <div class="dashboard-card__media">
+            <%= image_tag "system_metrics_architecture.svg", alt: "Arquitectura de metricas" %>
           </div>
         </section>
       <% end %>

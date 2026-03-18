@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 220" width="900" height="220" fill="none">
+  <defs>
+    <style>
+      .bg { fill: #0f172a; opacity: 0.06; }
+      .box { fill: #0b1220; stroke: #1f2a44; stroke-width: 1.4; }
+      .text { fill: #e2e8f0; font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 14px; font-weight: 600; }
+      .sub { fill: #94a3b8; font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 12px; }
+      .arrow { stroke: #38bdf8; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="10" y="10" width="880" height="200" rx="16" />
+
+  <rect class="box" x="40" y="60" width="160" height="80" rx="12" />
+  <text class="text" x="120" y="95" text-anchor="middle">Signals</text>
+  <text class="sub" x="120" y="115" text-anchor="middle">Runs + status</text>
+
+  <rect class="box" x="240" y="60" width="170" height="80" rx="12" />
+  <text class="text" x="325" y="95" text-anchor="middle">KPIs</text>
+  <text class="sub" x="325" y="115" text-anchor="middle">Rate + duration</text>
+
+  <rect class="box" x="440" y="60" width="170" height="80" rx="12" />
+  <text class="text" x="525" y="95" text-anchor="middle">Trends</text>
+  <text class="sub" x="525" y="115" text-anchor="middle">7d / 30d deltas</text>
+
+  <rect class="box" x="650" y="60" width="180" height="80" rx="12" />
+  <text class="text" x="740" y="95" text-anchor="middle">Decision</text>
+  <text class="sub" x="740" y="115" text-anchor="middle">Investigate or scale</text>
+
+  <path class="arrow" d="M200 100 H230" />
+  <path class="arrow" d="M410 100 H430" />
+  <path class="arrow" d="M610 100 H640" />
+
+  <text class="sub" x="450" y="175" text-anchor="middle">Metrics flow: observe -> quantify -> trend -> act</text>
+</svg>
