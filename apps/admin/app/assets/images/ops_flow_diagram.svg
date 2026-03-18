@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 220" width="900" height="220" fill="none">
+  <defs>
+    <style>
+      .bg { fill: #0f172a; opacity: 0.06; }
+      .box { fill: #0b1220; stroke: #1f2a44; stroke-width: 1.4; }
+      .text { fill: #e2e8f0; font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 14px; font-weight: 600; }
+      .sub { fill: #94a3b8; font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 12px; }
+      .arrow { stroke: #38bdf8; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="10" y="10" width="880" height="200" rx="16" />
+
+  <rect class="box" x="40" y="60" width="150" height="80" rx="12" />
+  <text class="text" x="115" y="95" text-anchor="middle">System State</text>
+  <text class="sub" x="115" y="115" text-anchor="middle">Snapshot</text>
+
+  <rect class="box" x="240" y="60" width="160" height="80" rx="12" />
+  <text class="text" x="320" y="95" text-anchor="middle">Activity</text>
+  <text class="sub" x="320" y="115" text-anchor="middle">Runs + status mix</text>
+
+  <rect class="box" x="450" y="60" width="180" height="80" rx="12" />
+  <text class="text" x="540" y="95" text-anchor="middle">Financial Results</text>
+  <text class="sub" x="540" y="115" text-anchor="middle">PnL + accounts</text>
+
+  <rect class="box" x="680" y="60" width="170" height="80" rx="12" />
+  <text class="text" x="765" y="95" text-anchor="middle">Data Quality</text>
+  <text class="sub" x="765" y="115" text-anchor="middle">Validation errors</text>
+
+  <path class="arrow" d="M190 100 H230" />
+  <path class="arrow" d="M400 100 H440" />
+  <path class="arrow" d="M630 100 H670" />
+
+  <text class="sub" x="450" y="175" text-anchor="middle">Operational flow: detect -> investigate -> confirm impact</text>
+</svg>

@@ -1514,6 +1514,20 @@ body {
   margin: 12px 0;
 }
 
+.dashboard-card__media {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+}
+
+.dashboard-card__media img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 .workspace-widget {
   border-radius: 16px;
 }

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 260" width="920" height="260" fill="none">
+  <defs>
+    <style>
+      .bg { fill: #0f172a; opacity: 0.06; }
+      .box { fill: #0b1220; stroke: #1f2a44; stroke-width: 1.4; }
+      .text { fill: #e2e8f0; font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 13px; font-weight: 600; }
+      .sub { fill: #94a3b8; font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 12px; }
+      .arrow { stroke: #38bdf8; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="10" y="10" width="900" height="240" rx="16" />
+
+  <rect class="box" x="40" y="70" width="160" height="80" rx="12" />
+  <text class="text" x="120" y="102" text-anchor="middle">Ingestion</text>
+  <text class="sub" x="120" y="122" text-anchor="middle">Parser + Validator</text>
+
+  <rect class="box" x="240" y="70" width="160" height="80" rx="12" />
+  <text class="text" x="320" y="102" text-anchor="middle">Engine</text>
+  <text class="sub" x="320" y="122" text-anchor="middle">Ledger + Risk</text>
+
+  <rect class="box" x="440" y="70" width="170" height="80" rx="12" />
+  <text class="text" x="525" y="102" text-anchor="middle">Reporting</text>
+  <text class="sub" x="525" y="122" text-anchor="middle">JSON + CSV</text>
+
+  <rect class="box" x="650" y="70" width="230" height="80" rx="12" />
+  <text class="text" x="765" y="102" text-anchor="middle">Admin Workspace</text>
+  <text class="sub" x="765" y="122" text-anchor="middle">Dashboard + Avo</text>
+
+  <path class="arrow" d="M200 110 H230" />
+  <path class="arrow" d="M400 110 H430" />
+  <path class="arrow" d="M610 110 H640" />
+
+  <text class="sub" x="460" y="195" text-anchor="middle">Architecture flow: input -> simulate -> artifacts -> admin UI</text>
+</svg>
