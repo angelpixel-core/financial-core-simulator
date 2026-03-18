@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   root to: "landing#index"
 
   get "/admin/overview", to: "admin/overview#show", as: :admin_overview
+  get "/admin/docs", to: "admin/docs#index", as: :admin_docs
+  get "/admin/docs/:section", to: "admin/docs#show", as: :admin_docs_section
   get "/admin/overview/pnl-trend", to: "admin/overview#pnl_trend", as: :admin_overview_pnl_trend
   get "/admin/overview/runs-trend", to: "admin/overview#runs_trend", as: :admin_overview_runs_trend
   get "/admin/overview/status-mix", to: "admin/overview#status_mix", as: :admin_overview_status_mix

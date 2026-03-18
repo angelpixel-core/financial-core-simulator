@@ -29,7 +29,6 @@ class Admin::OverviewController < ApplicationController
     @ingestion_errors_pagination = ingestion_errors_pagination(errors: ingestion_errors, page: params[:errors_page])
     @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
     @reliable_selection = Admin::Runs::ReliableRunSelector.new.call
-    @documentation_url = "https://docs.ruby-lang.org"
   end
 
   def pnl_trend

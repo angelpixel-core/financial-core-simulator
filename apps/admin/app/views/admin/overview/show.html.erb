@@ -17,12 +17,12 @@
 <% sidebar_items.concat([
   { label: "Validation", path: admin_overview_ingestion_validation_errors_path(navigation_context) },
   { label: "Artifacts", path: artifacts_path },
-  { label: "Docs", path: @documentation_url, external: true }
+  { label: "Docs", path: admin_docs_path(navigation_context) }
 ]) %>
 <%= render Admin::Shell::AppShellComponent.new(
   sidebar_items: sidebar_items,
   topbar_links: [
-    { label: "Docs", path: @documentation_url, external: true }
+    { label: "Docs", path: admin_docs_path(navigation_context) }
   ],
   breadcrumb: [
     { label: "Workspace", path: admin_overview_path(navigation_context) },

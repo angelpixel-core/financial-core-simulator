@@ -24,13 +24,19 @@ module Admin
           "M8 12h8",
           "M8 16h5"
         ],
+        "docs" => [
+          "M4 5h12a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z",
+          "M8 5v12",
+          "M12 9h4",
+          "M12 13h4"
+        ],
         "default" => [
           "M4 12h16",
           "M12 4v16"
         ]
       }.freeze
 
-      def initialize(sidebar_items:, breadcrumb:, environment:, primary_action:, secondary_action: nil, 
+      def initialize(sidebar_items:, breadcrumb:, environment:, primary_action:, secondary_action: nil,
 topbar_links: [], presence_email: nil)
         @sidebar_items = sidebar_items
         @breadcrumb = breadcrumb
@@ -66,6 +72,7 @@ topbar_links: [], presence_email: nil)
         return "runs" if normalized.include?("run")
         return "validation" if normalized.include?("validation")
         return "artifacts" if normalized.include?("artifact")
+        return "docs" if normalized.include?("docs")
 
         "default"
       end
