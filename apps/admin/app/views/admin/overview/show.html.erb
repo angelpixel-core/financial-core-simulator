@@ -229,14 +229,9 @@
                 data-pnl-trend-chart-target="chart"
                 aria-label="PnL trend chart for successful runs"
               ></div>
-              <ul class="trend-line-fallback" data-pnl-trend-chart-target="fallback" aria-label="PnL trend fallback values">
-                <% @metrics[:pnl_trend].each do |point| %>
-                  <li>
-                    <span><%= point[:label] %></span>
-                    <strong><%= point[:total_pnl_quote] %></strong>
-                  </li>
-                <% end %>
-              </ul>
+              <%= turbo_frame_tag "pnl_trend_fallback" do %>
+                <%= render "admin/overview/pnl_trend_list", pagination: @pnl_trend_pagination %>
+              <% end %>
             </div>
           <% end %>
         </section>
@@ -275,12 +270,15 @@
         <section
           class="overview__live"
           data-controller="poll"
-          data-poll-url-value="<%= admin_overview_top_accounts_path(navigation_context) %>"
+          data-poll-url-value="<%= admin_overview_top_accounts_path(navigation_context.merge(page: @top_accounts_pagination[:page])) %>"
           data-poll-interval-value="12000"
         >
-          <div data-poll-target="container">
-            <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: true, navigation_context: navigation_context } %>
-          </div>
+          <%= render partial: "admin/overview/top_accounts_frame", locals: {
+            metrics: @metrics,
+            pagination: @top_accounts_pagination,
+            show_drilldown: true,
+            navigation_context: navigation_context
+          } %>
         </section>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
@@ -323,11 +321,12 @@
         <section
           class="overview__live"
           data-controller="poll"
-          data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path(navigation_context.merge(source: @selected_source, field: @selected_field)) %>"
+          data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path(navigation_context.merge(source: @selected_source, field: @selected_field, errors_page: @ingestion_errors_pagination[:page])) %>"
           data-poll-interval-value="12000"
         >
           <%= render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
             errors: @ingestion_validation_errors,
+            pagination: @ingestion_errors_pagination,
             selected_source: @selected_source,
             selected_field: @selected_field,
             show_drilldown: true,

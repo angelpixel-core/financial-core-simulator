@@ -15,9 +15,11 @@
   <body class="<%= content_for?(:body_class) ? content_for(:body_class) : "auth-page" %>">
     <main class="auth-shell" aria-label="Admin login">
       <section class="auth-hero" aria-hidden="true">
-        <p class="auth-hero__eyebrow">Financial Core Simulator</p>
-        <h1>Operational control for runs, risk and ingestion health.</h1>
-        <p>Secure access for the admin workspace. Sign in with your provisioned account to continue.</p>
+        <div class="auth-hero__copy">
+          <p class="auth-hero__eyebrow">Financial Core Simulator</p>
+          <h1>Operational control for runs, risk and ingestion health.</h1>
+          <p>Secure access for the admin workspace. Sign in with your provisioned account to continue.</p>
+        </div>
       </section>
       <section class="auth-card">
         <header class="auth-card__header">

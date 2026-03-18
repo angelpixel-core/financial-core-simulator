@@ -2,8 +2,15 @@
 <% content_for :body_class, "landing-page-body" %>
 <main class="landing-page">
   <section class="landing-page__hero">
-    <p class="landing-page__eyebrow">Financial Core Simulator</p>
-    <h1>Deterministic financial ledger simulation</h1>
+    <div class="landing-page__hero-header">
+      <div class="landing-page__logo">
+        <%= image_tag "fcs_logo_dark_minimal_with_label.svg", alt: "Financial Core Simulator" %>
+      </div>
+      <div class="landing-page__hero-copy">
+        <p class="landing-page__eyebrow">Financial Core Simulator</p>
+        <h1>Deterministic financial ledger simulation</h1>
+      </div>
+    </div>
     <p class="landing-page__subtitle">
       Simulate accounts, positions, PnL and risk models using a deterministic event-driven financial engine.
       Built for reproducible financial infrastructure experiments.

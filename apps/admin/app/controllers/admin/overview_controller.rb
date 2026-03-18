@@ -21,19 +21,29 @@ class Admin::OverviewController < ApplicationController
 
   def show
     @metrics = dashboard_metrics
+    @pnl_trend_pagination = pnl_trend_pagination(metrics: @metrics, page: params[:pnl_page])
+    @top_accounts_pagination = top_accounts_pagination(metrics: @metrics, page: params[:top_accounts_page])
     @selected_source = normalize_filter_value(params[:source])
     @selected_field = normalize_filter_value(params[:field])
-    @ingestion_validation_errors = dashboard_ingestion_validation_errors(source: @selected_source, 
-field: @selected_field)
+    ingestion_errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
+    @ingestion_errors_pagination = ingestion_errors_pagination(errors: ingestion_errors, page: params[:errors_page])
+    @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
     @reliable_selection = Admin::Runs::ReliableRunSelector.new.call
     @documentation_url = "https://docs.ruby-lang.org"
   end
 
+  def pnl_trend
+    @metrics = dashboard_metrics
+    @pnl_trend_pagination = pnl_trend_pagination(metrics: @metrics, page: params[:page])
+    render partial: "admin/overview/pnl_trend_frame", locals: { pagination: @pnl_trend_pagination }
+  end
+
   def top_accounts
     @metrics = dashboard_metrics
-    if request.xhr?
-      render partial: "admin/overview/top_accounts", 
-locals: { metrics: @metrics, show_drilldown: true, navigation_context: @navigation_context }
+    @top_accounts_pagination = top_accounts_pagination(metrics: @metrics, page: params[:page])
+    if turbo_frame_request? || request.xhr?
+      render partial: "admin/overview/top_accounts_frame",
+locals: { metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: true, navigation_context: @navigation_context }
     else
       render :top_accounts
     end
@@ -88,10 +98,13 @@ locals: { metrics: @metrics, show_drilldown: true, navigation_context: @navigati
   def ingestion_validation_errors_panel
     @selected_source = normalize_filter_value(params[:source])
     @selected_field = normalize_filter_value(params[:field])
-    @errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
+    errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
+    @errors_pagination = ingestion_errors_pagination(errors: errors, page: params[:errors_page])
+    @errors = @errors_pagination[:entries]
     if turbo_frame_request?
       render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
         errors: @errors,
+        pagination: @errors_pagination,
         selected_source: @selected_source,
         selected_field: @selected_field,
         show_drilldown: true,
@@ -100,6 +113,7 @@ locals: { metrics: @metrics, show_drilldown: true, navigation_context: @navigati
     elsif request.xhr?
       render partial: "admin/overview/ingestion_validation_errors", locals: {
         errors: @errors,
+        pagination: @errors_pagination,
         selected_source: @selected_source,
         selected_field: @selected_field,
         show_drilldown: true,
@@ -145,7 +159,11 @@ locals: { metrics: @metrics, show_drilldown: true, navigation_context: @navigati
   end
 
   def dashboard_ingestion_validation_errors(source: nil, field: nil)
-    Admin::DashboardMetrics.new.ingestion_validation_errors(source: source, field: field)
+    if dashboard_read_path_config.seed_enabled?
+      Admin::Dashboard::SeedMetrics.new.ingestion_validation_errors(source: source, field: field)
+    else
+      Admin::DashboardMetrics.new.ingestion_validation_errors(source: source, field: field)
+    end
   end
 
   def render_dashboard_json
@@ -165,6 +183,69 @@ locals: { metrics: @metrics, show_drilldown: true, navigation_context: @navigati
     return nil if normalized.empty?
 
     normalized
+  end
+
+  def pnl_trend_pagination(metrics:, page: nil)
+    points = Array(metrics[:pnl_trend])
+    per_page = 5
+    current = page.to_i
+    current = 1 if current < 1
+    total_pages = (points.length.to_f / per_page).ceil
+    total_pages = 1 if total_pages.zero?
+    current = total_pages if current > total_pages
+
+    start_index = (current - 1) * per_page
+    entries = points.slice(start_index, per_page) || []
+
+    {
+      entries: entries,
+      page: current,
+      total_pages: total_pages,
+      per_page: per_page
+    }
+  end
+
+  def top_accounts_pagination(metrics:, page: nil)
+    accounts = Array(metrics[:top_accounts]).sort_by { |account| -account[:total_pnl_quote].to_f }
+    per_page = 5
+    current = page.to_i
+    current = 1 if current < 1
+    total_pages = (accounts.length.to_f / per_page).ceil
+    total_pages = 1 if total_pages.zero?
+    current = total_pages if current > total_pages
+
+    start_index = (current - 1) * per_page
+    entries = accounts.slice(start_index, per_page) || []
+
+    {
+      entries: entries,
+      page: current,
+      total_pages: total_pages,
+      per_page: per_page
+    }
+  end
+
+  def ingestion_errors_pagination(errors:, page: nil)
+    per_page = 5
+    current = page.to_i
+    current = 1 if current < 1
+    total_pages = (errors.length.to_f / per_page).ceil
+    total_pages = 1 if total_pages.zero?
+    current = total_pages if current > total_pages
+
+    start_index = (current - 1) * per_page
+    entries = errors.slice(start_index, per_page) || []
+
+    {
+      entries: entries,
+      page: current,
+      total_pages: total_pages,
+      per_page: per_page
+    }
+  end
+
+  def dashboard_read_path_config
+    @dashboard_read_path_config ||= Admin::Dashboard::ReadPathConfig.new
   end
 
   def load_navigation_context

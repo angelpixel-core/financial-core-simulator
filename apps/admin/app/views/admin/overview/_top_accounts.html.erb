@@ -1,7 +1,12 @@
 <% show_drilldown = local_assigns.fetch(:show_drilldown, false) %>
 <% navigation_context = local_assigns.fetch(:navigation_context, {}) %>
 <% drilldown_path = show_drilldown ? admin_overview_top_accounts_path(navigation_context) : nil %>
-<% accounts = Array(metrics[:top_accounts]).sort_by { |account| -account[:total_pnl_quote].to_f } %>
+<% pagination = local_assigns[:pagination] %>
+<% accounts = if pagination
+  pagination[:entries]
+else
+  Array(metrics[:top_accounts]).sort_by { |account| -account[:total_pnl_quote].to_f }
+end %>
 <% rows = accounts.map do |account|
   {
     account: account[:account_id],
@@ -29,4 +34,84 @@ end %>
     rows: rows,
     table_class: "top-accounts-table table--striped"
   ) %>
+  <% if pagination && pagination[:total_pages] > 1 %>
+    <nav class="pagination pagination--pnl" aria-label="Top accounts pagination">
+      <ul class="pagination-content">
+        <li class="pagination-item">
+          <% if pagination[:page] > 1 %>
+            <%= link_to admin_overview_top_accounts_path(navigation_context.merge(page: pagination[:page] - 1)), data: { turbo_frame: "overview-top-accounts-panel" }, class: "pagination-link pagination-prev" do %>
+              <span aria-hidden="true">‹</span>
+              <span class="pagination-text">Previous</span>
+            <% end %>
+          <% else %>
+            <span class="pagination-link pagination-prev pagination-disabled">
+              <span aria-hidden="true">‹</span>
+              <span class="pagination-text">Previous</span>
+            </span>
+          <% end %>
+        </li>
+
+        <% total_pages = pagination[:total_pages] %>
+        <% current_page = pagination[:page] %>
+        <% if total_pages <= 5 %>
+          <% (1..total_pages).each do |page_number| %>
+            <li class="pagination-item">
+              <%= link_to page_number, admin_overview_top_accounts_path(navigation_context.merge(page: page_number)),
+                data: { turbo_frame: "overview-top-accounts-panel" },
+                class: "pagination-link#{" is-active" if page_number == current_page}" %>
+            </li>
+          <% end %>
+        <% else %>
+          <li class="pagination-item">
+            <%= link_to 1, admin_overview_top_accounts_path(navigation_context.merge(page: 1)),
+              data: { turbo_frame: "overview-top-accounts-panel" },
+              class: "pagination-link#{" is-active" if current_page == 1}" %>
+          </li>
+
+          <% if current_page > 3 %>
+            <li class="pagination-item">
+              <span class="pagination-ellipsis">…</span>
+            </li>
+          <% end %>
+
+          <% window_start = [2, current_page - 1].max %>
+          <% window_end = [total_pages - 1, current_page + 1].min %>
+          <% (window_start..window_end).each do |page_number| %>
+            <% next if page_number == 1 || page_number == total_pages %>
+            <li class="pagination-item">
+              <%= link_to page_number, admin_overview_top_accounts_path(navigation_context.merge(page: page_number)),
+                data: { turbo_frame: "overview-top-accounts-panel" },
+                class: "pagination-link#{" is-active" if page_number == current_page}" %>
+            </li>
+          <% end %>
+
+          <% if current_page < total_pages - 2 %>
+            <li class="pagination-item">
+              <span class="pagination-ellipsis">…</span>
+            </li>
+          <% end %>
+
+          <li class="pagination-item">
+            <%= link_to total_pages, admin_overview_top_accounts_path(navigation_context.merge(page: total_pages)),
+              data: { turbo_frame: "overview-top-accounts-panel" },
+              class: "pagination-link#{" is-active" if current_page == total_pages}" %>
+          </li>
+        <% end %>
+
+        <li class="pagination-item">
+          <% if pagination[:page] < pagination[:total_pages] %>
+            <%= link_to admin_overview_top_accounts_path(navigation_context.merge(page: pagination[:page] + 1)), data: { turbo_frame: "overview-top-accounts-panel" }, class: "pagination-link pagination-next" do %>
+              <span class="pagination-text">Next</span>
+              <span aria-hidden="true">›</span>
+            <% end %>
+          <% else %>
+            <span class="pagination-link pagination-next pagination-disabled">
+              <span class="pagination-text">Next</span>
+              <span aria-hidden="true">›</span>
+            </span>
+          <% end %>
+        </li>
+      </ul>
+    </nav>
+  <% end %>
 <% end %>

@@ -1,0 +1,8 @@
+<%= turbo_frame_tag "overview-top-accounts-panel", data: { poll_target: "container" } do %>
+  <%= render partial: "admin/overview/top_accounts", locals: {
+    metrics: metrics,
+    pagination: pagination,
+    show_drilldown: show_drilldown,
+    navigation_context: local_assigns.fetch(:navigation_context, {})
+  } %>
+<% end %>

@@ -14,6 +14,7 @@
   <section class="overview__live">
     <%= render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
       errors: @errors,
+      pagination: @errors_pagination,
       selected_source: @selected_source,
       selected_field: @selected_field,
       show_drilldown: false,

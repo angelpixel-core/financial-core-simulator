@@ -1,6 +1,7 @@
 <turbo-frame id="overview-ingestion-validation-errors-panel" data-poll-target="container">
   <%= render partial: "admin/overview/ingestion_validation_errors", locals: {
     errors: errors,
+    pagination: local_assigns[:pagination],
     selected_source: selected_source,
     selected_field: selected_field,
     show_drilldown: show_drilldown,

@@ -10,16 +10,20 @@
     </style>
   </defs>
 
+  <!-- Outer system ring -->
   <circle class="cyan" cx="256" cy="256" r="168" stroke-width="18" opacity="0.96"/>
 
+  <!-- Simulation/equity curve core -->
   <path class="cyan" stroke-width="22"
         d="M146 304 L210 242 L256 266 L360 166"/>
 
+  <!-- Network links -->
   <path class="purple" stroke-width="12" opacity="0.95"
         d="M174 202 L210 242 L146 304"/>
   <path class="green" stroke-width="12" opacity="0.95"
         d="M256 266 L294 330 L360 166"/>
 
+  <!-- Nodes -->
   <circle class="solid-purple" cx="174" cy="202" r="16"/>
   <circle class="solid-cyan" cx="210" cy="242" r="17"/>
   <circle class="solid-cyan" cx="146" cy="304" r="17"/>
@@ -27,6 +31,7 @@
   <circle class="solid-green" cx="294" cy="330" r="16"/>
   <circle class="solid-cyan" cx="360" cy="166" r="18"/>
 
+  <!-- subtle engine/simulation orbit -->
   <path class="purple" stroke-width="14" opacity="0.9"
         d="M348 344 A132 132 0 0 1 168 360"/>
 </svg>

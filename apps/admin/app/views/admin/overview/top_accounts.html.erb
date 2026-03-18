@@ -12,6 +12,11 @@
     </nav>
   </header>
   <section class="overview__live">
-    <%= render partial: "admin/overview/top_accounts", locals: { metrics: @metrics, show_drilldown: false, navigation_context: navigation_context } %>
+    <%= render partial: "admin/overview/top_accounts_frame", locals: {
+      metrics: @metrics,
+      pagination: @top_accounts_pagination,
+      show_drilldown: false,
+      navigation_context: navigation_context
+    } %>
   </section>
 </main>
