@@ -402,6 +402,73 @@
           </div>
         </section>
       <% end %>
+
+      <% if @section[:slug] == "data-quality" %>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Como usar Data Quality</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Data Quality concentra los errores de validacion para detectar entradas defectuosas y
+            patrones de falla recurrentes.
+          </p>
+          <ul class="detail-list">
+            <li><span>Uso recomendado</span><strong>Cuando el success rate cae o hay fallas recurrentes</strong></li>
+            <li><span>Objetivo</span><strong>Identificar rapidamente el origen de errores</strong></li>
+            <li><span>Frecuencia</span><strong>Ante alertas o cambios en inputs</strong></li>
+          </ul>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Que podemos leer</h2>
+          </header>
+          <ul class="detail-list">
+            <li><span>Fuente</span><strong>Origen del error (pipeline o integracion)</strong></li>
+            <li><span>Campo</span><strong>Atributo que falla validacion</strong></li>
+            <li><span>Mensaje</span><strong>Descripcion del problema</strong></li>
+            <li><span>Correlation</span><strong>Run o lote asociado</strong></li>
+          </ul>
+          <p class="dashboard-card__meta">
+            Filtrar por source/field ayuda a priorizar correcciones.
+          </p>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Valor agregado</h2>
+          </header>
+          <ul class="detail-list">
+            <li><span>Calidad de inputs</span><strong>Evita contaminar resultados</strong></li>
+            <li><span>Feedback rapido</span><strong>Reduce tiempo de correccion</strong></li>
+            <li><span>Prevencion</span><strong>Detecta patrones antes de escalar</strong></li>
+          </ul>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Diagrama de flujo operacional</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Ver diagrama global en <%= link_to "System State", admin_docs_section_path("system-state") %>.
+          </p>
+          <div class="dashboard-card__media">
+            <%= image_tag "data_quality_flow.svg", alt: "Flujo operativo de calidad" %>
+          </div>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Diagrama de arquitectura</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Ver diagrama global en <%= link_to "System State", admin_docs_section_path("system-state") %>.
+          </p>
+          <div class="dashboard-card__media">
+            <%= image_tag "data_quality_architecture.svg", alt: "Arquitectura de calidad" %>
+          </div>
+        </section>
+      <% end %>
     </section>
   </main>
 <% end %>
