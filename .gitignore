@@ -23,6 +23,7 @@ run_*/
 .opencode
 .codex
 .cursor
+.openspec/
 openspec/
 .claude
 
