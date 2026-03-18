@@ -1,24 +1,53 @@
-<main class="overview">
-  <% navigation_context = @navigation_context || {} %>
-  <header class="overview__header">
-    <div>
-      <p class="overview__eyebrow">Admin</p>
-      <h1>Ingestion Validation Errors</h1>
-      <p class="overview__subtitle">Standalone view for latest envelope validation failures.</p>
-    </div>
-    <nav class="overview__nav">
-      <a class="overview__link" href="<%= admin_overview_path(navigation_context) %>">Back to overview</a>
-      <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
-    </nav>
-  </header>
-  <section class="overview__live">
-    <%= render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
-      errors: @errors,
-      pagination: @errors_pagination,
-      selected_source: @selected_source,
-      selected_field: @selected_field,
-      show_drilldown: false,
-      navigation_context: navigation_context
-    } %>
-  </section>
-</main>
+<% navigation_context = @navigation_context || {} %>
+<% shell_role = admin_shell_role %>
+<% secondary_action = shell_role == "operator" ? nil : { label: "Open Runs", path: avo.resources_runs_path } %>
+<% artifacts_path = avo.resources_runs_path %>
+<% sidebar_items = [
+  { label: "Overview", path: admin_overview_path(navigation_context) }
+] %>
+<% if shell_role != "operator" %>
+  <% runs_item = { label: "Runs", path: avo.resources_runs_path } %>
+  <% runs_item[:icon_variant] = "sensitive" if shell_role == "admin" %>
+  <% sidebar_items << runs_item %>
+<% end %>
+<% sidebar_items.concat([
+  { label: "Validation", path: admin_overview_ingestion_validation_errors_path(navigation_context), active: true },
+  { label: "Artifacts", path: artifacts_path },
+  { label: "Docs", path: admin_docs_path(navigation_context) }
+]) %>
+<%= render Admin::Shell::AppShellComponent.new(
+  sidebar_items: sidebar_items,
+  topbar_links: [
+    { label: "Docs", path: admin_docs_path(navigation_context) }
+  ],
+  breadcrumb: [
+    { label: "Workspace", path: admin_overview_path(navigation_context) },
+    { label: "Validation" }
+  ],
+  environment: nil,
+  presence_email: admin_shell_account_email,
+  primary_action: nil,
+  secondary_action: secondary_action
+) do %>
+  <main class="workspace">
+    <section class="workspace__hero">
+      <div class="workspace__intro">
+        <p class="workspace__eyebrow">VALIDATION</p>
+        <h1>Ingestion validation errors</h1>
+        <p class="workspace__subtitle">Latest envelope validation failures and quality signals.</p>
+      </div>
+    </section>
+    <section class="workspace__overview">
+      <section class="overview__live">
+        <%= render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
+          errors: @errors,
+          pagination: @errors_pagination,
+          selected_source: @selected_source,
+          selected_field: @selected_field,
+          show_drilldown: false,
+          navigation_context: navigation_context
+        } %>
+      </section>
+    </section>
+  </main>
+<% end %>
