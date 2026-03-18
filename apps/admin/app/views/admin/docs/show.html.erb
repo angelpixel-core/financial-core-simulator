@@ -267,6 +267,72 @@
           </div>
         </section>
       <% end %>
+
+      <% if @section[:slug] == "activity" %>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Como usar Activity</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Activity resume el comportamiento de ejecucion en ventanas recientes y permite detectar
+            cambios de ritmo o distribucion de estados.
+          </p>
+          <ul class="detail-list">
+            <li><span>Uso recomendado</span><strong>Cuando cambian patrones de ejecucion</strong></li>
+            <li><span>Objetivo</span><strong>Identificar caidas, spikes o degradacion</strong></li>
+            <li><span>Frecuencia</span><strong>Monitoreo continuo durante operaciones</strong></li>
+          </ul>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Que podemos leer</h2>
+          </header>
+          <ul class="detail-list">
+            <li><span>Run trend (14d)</span><strong>Cadencia y volumen reciente</strong></li>
+            <li><span>Status mix (30d)</span><strong>Distribucion de success vs fallas</strong></li>
+            <li><span>Picos o huecos</span><strong>Eventos operativos anormales</strong></li>
+          </ul>
+          <p class="dashboard-card__meta">
+            Una mezcla de estados degradada suele anticipar issues en Data Quality.
+          </p>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Valor agregado</h2>
+          </header>
+          <ul class="detail-list">
+            <li><span>Contexto temporal</span><strong>Ubica el problema en una linea de tiempo</strong></li>
+            <li><span>Deteccion de tendencia</span><strong>Permite ver cambios sostenidos</strong></li>
+            <li><span>Priorizacion</span><strong>Indica si investigar o escalar capacidad</strong></li>
+          </ul>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Diagrama de flujo operacional</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Ver diagrama global en <%= link_to "System State", admin_docs_section_path("system-state") %>.
+          </p>
+          <div class="dashboard-card__media">
+            <%= image_tag "activity_flow.svg", alt: "Flujo operacional de actividad" %>
+          </div>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Diagrama de arquitectura</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Ver diagrama global en <%= link_to "System State", admin_docs_section_path("system-state") %>.
+          </p>
+          <div class="dashboard-card__media">
+            <%= image_tag "activity_architecture.svg", alt: "Arquitectura de actividad" %>
+          </div>
+        </section>
+      <% end %>
     </section>
   </main>
 <% end %>
