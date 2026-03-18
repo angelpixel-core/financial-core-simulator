@@ -333,6 +333,75 @@
           </div>
         </section>
       <% end %>
+
+      <% if @section[:slug] == "financial-results" %>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Como usar Financial Results</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Financial Results traduce las corridas en señales financieras concretas para entender
+            impacto, riesgo y exposicion por cuenta.
+          </p>
+          <ul class="detail-list">
+            <li><span>Uso recomendado</span><strong>Despues de validar que el sistema esta estable</strong></li>
+            <li><span>Objetivo</span><strong>Interpretar PnL y exposicion en contexto</strong></li>
+            <li><span>Frecuencia</span><strong>Post-run y revisiones de cierre</strong></li>
+          </ul>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Que podemos leer</h2>
+          </header>
+          <ul class="detail-list">
+            <li><span>PnL trend</span><strong>Tendencia y direccion del resultado</strong></li>
+            <li><span>Latest succeeded run</span><strong>Referencia base para comparacion</strong></li>
+            <li><span>Global PnL</span><strong>Impacto consolidado del ultimo run</strong></li>
+            <li><span>Top accounts</span><strong>Exposicion y peso relativo</strong></li>
+            <li><span>Run comparison</span><strong>Cambios entre runs recientes</strong></li>
+            <li><span>Input traceability</span><strong>Relacion entre input y salida</strong></li>
+          </ul>
+          <p class="dashboard-card__meta">
+            Usar esta seccion despues de entender contexto y actividad evita interpretaciones sesgadas.
+          </p>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Valor agregado</h2>
+          </header>
+          <ul class="detail-list">
+            <li><span>Contexto financiero</span><strong>Convierte datos tecnicos en impacto</strong></li>
+            <li><span>Prioridad de riesgo</span><strong>Enfoca en cuentas y resultados clave</strong></li>
+            <li><span>Seguimiento</span><strong>Permite comparar run sobre run</strong></li>
+          </ul>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Diagrama de flujo operacional</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Ver diagrama global en <%= link_to "System State", admin_docs_section_path("system-state") %>.
+          </p>
+          <div class="dashboard-card__media">
+            <%= image_tag "financial_results_flow.svg", alt: "Flujo operacional de resultados" %>
+          </div>
+        </section>
+
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2>Diagrama de arquitectura</h2>
+          </header>
+          <p class="dashboard-card__meta">
+            Ver diagrama global en <%= link_to "System State", admin_docs_section_path("system-state") %>.
+          </p>
+          <div class="dashboard-card__media">
+            <%= image_tag "financial_results_architecture.svg", alt: "Arquitectura de resultados" %>
+          </div>
+        </section>
+      <% end %>
     </section>
   </main>
 <% end %>
