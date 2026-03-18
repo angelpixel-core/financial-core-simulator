@@ -15,6 +15,7 @@ module Admin
       end
 
       def call
+        return read_from_seed if @read_path_config.seed_enabled?
         return read_from_bff_with_optional_fallback if @read_path_config.bff_read_enabled?
 
         read_from_artifact
@@ -32,6 +33,10 @@ module Admin
 
       def read_from_artifact
         @artifact_reader.call
+      end
+
+      def read_from_seed
+        Admin::Dashboard::SeedMetrics.new.call
       end
     end
   end

@@ -1,0 +1,259 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "json"
+require "csv"
+require "fileutils"
+require "optparse"
+require "time"
+
+class DashboardSeedGenerator
+  STATUS_SUCCESS = "success"
+  STATUS_FAILED = "failed"
+  STATUS_VALIDATION = "validation_error"
+
+  SeedResult = Struct.new(:runs, :daily_points)
+
+  def initialize(seed: nil)
+    @seed = seed
+    @rng = seed.nil? ? Random.new : Random.new(seed)
+  end
+
+  def generate(days: 30)
+    days = days.to_i
+    raise ArgumentError, "days must be >= 1" if days < 1
+
+    dates = (0...days).map { |i| (Date.today - (days - 1 - i)) }
+    runs_per_day = dates.map { random_runs_for_day }
+
+    status_plan = build_status_plan(runs_per_day.sum)
+
+    daily_points = build_daily_pnl(dates)
+    runs = build_runs(dates, runs_per_day, daily_points, status_plan)
+
+    SeedResult.new(runs, daily_points)
+  end
+
+  private
+
+  def random_runs_for_day
+    @rng.rand(1..5)
+  end
+
+  def build_status_plan(total_runs)
+    success_ratio = nil
+    failed_ratio = nil
+    validation_ratio = nil
+
+    loop do
+      success_ratio = rand_float(0.60, 0.75)
+      failed_ratio = rand_float(0.10, 0.20)
+      validation_ratio = 1.0 - success_ratio - failed_ratio
+      next unless validation_ratio >= 0.10 && validation_ratio <= 0.20
+      break
+    end
+
+    counts = {
+      STATUS_SUCCESS => (total_runs * success_ratio).round,
+      STATUS_FAILED => (total_runs * failed_ratio).round,
+      STATUS_VALIDATION => (total_runs * validation_ratio).round
+    }
+
+    total_assigned = counts.values.sum
+    if total_assigned != total_runs
+      counts[STATUS_SUCCESS] += (total_runs - total_assigned)
+    end
+
+    statuses = []
+    counts.each do |status, count|
+      statuses.concat([status] * count)
+    end
+
+    statuses.shuffle(random: @rng)
+  end
+
+  def build_daily_pnl(dates)
+    total = rand_float(-40.0, 40.0)
+    realized = total * 0.6
+
+    shock_days = dates.sample(@rng.rand(5..7), random: @rng)
+    volatile_days = phase_day_counts(dates.length).fetch(:volatile)
+    extra_shocks = dates.last(volatile_days).sample(@rng.rand(3..4), random: @rng)
+    shock_days.concat(extra_shocks).uniq!
+
+    dates.map.with_index do |date, idx|
+      phase = phase_for_index(idx, dates.length)
+      drift, vol = drift_and_vol_for_phase(phase)
+
+      total += drift + rand_normal(0, vol)
+      realized += (drift * 0.45) + rand_normal(0, vol * 0.18)
+
+      if shock_days.include?(date)
+        shock = rand_float(0.30, 0.55) * rand_sign
+        total *= (1.0 + shock)
+        realized *= (1.0 + shock * 0.3)
+      end
+
+      if phase == :volatile && @rng.rand < 0.55
+        total -= rand_float(60.0, 220.0)
+      end
+
+      if idx % 5 == 0
+        total -= rand_float(0.06, 0.14) * (total.abs + 60)
+      end
+
+      total = clamp(total, -2800.0, 2800.0)
+      realized = clamp(realized, -1800.0, 1800.0)
+
+      unrealized = total - realized
+
+      {
+        date: date,
+        total: total,
+        realized: realized,
+        unrealized: unrealized
+      }
+    end
+  end
+
+  def build_runs(dates, runs_per_day, daily_points, status_plan)
+    runs = []
+    run_id = 1
+
+    dates.each_with_index do |date, idx|
+      day_point = daily_points[idx]
+      runs_today = runs_per_day[idx]
+
+      runs_today.times do
+        status = status_plan.shift || STATUS_SUCCESS
+        timestamp = random_timestamp_in_day(date)
+
+        pnl_total = day_point[:total] + rand_normal(0, 40)
+        pnl_realized = day_point[:realized] + rand_normal(0, 20)
+
+        if status != STATUS_SUCCESS
+          pnl_total *= 0.2
+          pnl_realized *= 0.3
+        end
+
+        pnl_unrealized = pnl_total - pnl_realized
+
+        duration_ms = @rng.rand(100..5000)
+        duration_ms = (duration_ms * 0.6).to_i if status != STATUS_SUCCESS
+
+        runs << {
+          "id" => run_id,
+          "created_at" => timestamp.iso8601,
+          "status" => status,
+          "duration_ms" => duration_ms,
+          "pnl_total" => round2(pnl_total),
+          "pnl_realized" => round2(pnl_realized),
+          "pnl_unrealized" => round2(pnl_unrealized)
+        }
+
+        run_id += 1
+      end
+    end
+
+    runs
+  end
+
+  def phase_for_index(idx, total_days)
+    counts = phase_day_counts(total_days)
+    return :stable if idx < counts.fetch(:stable)
+    return :growth if idx < counts.fetch(:stable) + counts.fetch(:growth)
+    :volatile
+  end
+
+  def phase_day_counts(total_days)
+    stable = (total_days * 0.34).round
+    growth = (total_days * 0.33).round
+    volatile = total_days - stable - growth
+    { stable: stable, growth: growth, volatile: volatile }
+  end
+
+  def drift_and_vol_for_phase(phase)
+    case phase
+    when :stable
+      [rand_float(-8.0, 10.0), 35.0]
+    when :growth
+      [rand_float(18.0, 36.0), 45.0]
+    else
+      [rand_float(-45.0, -10.0), 95.0]
+    end
+  end
+
+  def random_timestamp_in_day(date)
+    seconds = @rng.rand(0..86_399)
+    Time.utc(date.year, date.month, date.day) + seconds
+  end
+
+  def rand_float(min, max)
+    min + @rng.rand * (max - min)
+  end
+
+  def rand_sign
+    @rng.rand < 0.5 ? -1.0 : 1.0
+  end
+
+  def rand_normal(mean, stddev)
+    u1 = @rng.rand
+    u2 = @rng.rand
+    z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math::PI * u2)
+    mean + z0 * stddev
+  end
+
+  def clamp(value, min, max)
+    [[value, min].max, max].min
+  end
+
+  def round2(value)
+    value.round(2)
+  end
+end
+
+options = { seed: nil }
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: bin/generate_dashboard_seed [--seed=123]"
+  opts.on("--seed=SEED", Integer, "Deterministic seed") do |seed|
+    options[:seed] = seed
+  end
+end.parse!
+
+seed_dir = File.expand_path("../apps/admin/storage/runs/dashboard_seed", __dir__)
+FileUtils.rm_rf(seed_dir)
+FileUtils.mkdir_p(seed_dir)
+
+result = DashboardSeedGenerator.new(seed: options[:seed]).generate(days: 30)
+
+runs_path = File.join(seed_dir, "runs.json")
+File.write(runs_path, JSON.pretty_generate(result.runs))
+
+pnl_path = File.join(seed_dir, "pnl.csv")
+CSV.open(pnl_path, "w", write_headers: true, headers: ["date", "total_pnl", "realized_pnl", "unrealized_pnl", "runs", "success_runs"]) do |csv|
+  result.daily_points.each do |point|
+    day_runs = result.runs.select { |run| run["created_at"].start_with?(point[:date].to_s) }
+    success_count = day_runs.count { |run| run["status"] == DashboardSeedGenerator::STATUS_SUCCESS }
+    csv << [
+      point[:date].to_s,
+      point[:total].round(2),
+      point[:realized].round(2),
+      point[:unrealized].round(2),
+      day_runs.length,
+      success_count
+    ]
+  end
+end
+
+positions_path = File.join(seed_dir, "positions.csv")
+CSV.open(positions_path, "w", write_headers: true, headers: ["account_id", "market_id", "quantity", "avg_cost"]) do |csv|
+  csv << ["acc-1", "ETH-USD", "1.5", "2400.00"]
+  csv << ["acc-1", "BTC-USD", "0.2", "52000.00"]
+  csv << ["acc-2", "ETH-USD", "-0.7", "2550.00"]
+  csv << ["acc-3", "SOL-USD", "10", "95.00"]
+end
+
+puts "OK: wrote #{runs_path}"
+puts "OK: wrote #{pnl_path}"
+puts "OK: wrote #{positions_path}"
