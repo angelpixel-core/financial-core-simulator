@@ -1,7 +1,7 @@
 <% navigation_context = @navigation_context || {} %>
 <% shell_role = admin_shell_role %>
 <% secondary_action = shell_role == "operator" ? nil : { label: "Open Runs", path: avo.resources_runs_path } %>
-<% artifacts_path = avo.resources_runs_path %>
+<% artifacts_path = run_latest_result_path(navigation_context) %>
 <% sidebar_items = [
   { label: "Overview", path: admin_overview_path(navigation_context) }
 ] %>
@@ -12,7 +12,7 @@
 <% end %>
 <% sidebar_items.concat([
   { label: "Validation", path: admin_overview_ingestion_validation_errors_path(navigation_context) },
-  { label: "Artifacts", path: artifacts_path },
+  { label: "Artifacts", path: artifacts_path, external: false },
   { label: "Docs", path: admin_docs_path(navigation_context), active: true }
 ]) %>
 <%= render Admin::Shell::AppShellComponent.new(

@@ -1,7 +1,7 @@
 <% navigation_context = @navigation_context || {} %>
 <% shell_role = admin_shell_role %>
 <% secondary_action = shell_role == "operator" ? nil : { label: "Open Runs", path: avo.resources_runs_path } %>
-<% artifacts_path = avo.resources_runs_path %>
+<% artifacts_path = run_latest_result_path(navigation_context) %>
 <% sidebar_items = [
   { label: "Overview", path: admin_overview_path(navigation_context) }
 ] %>
@@ -12,7 +12,7 @@
 <% end %>
 <% sidebar_items.concat([
   { label: "Validation", path: admin_overview_ingestion_validation_errors_path(navigation_context) },
-  { label: "Artifacts", path: artifacts_path },
+  { label: "Artifacts", path: artifacts_path, external: false },
   { label: "Docs", path: admin_docs_path(navigation_context), active: true }
 ]) %>
 <%= render Admin::Shell::AppShellComponent.new(
@@ -67,7 +67,6 @@
           <p class="empty-state">This section aggregates multiple workspace panels.</p>
         <% end %>
       </section>
-
       <% if @section[:slug] == "system-state" %>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
@@ -83,7 +82,6 @@
             <li><span>Frecuencia</span><strong>Continuo en operaciones, puntual para auditorias</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Que podemos leer</h2>
@@ -97,7 +95,6 @@
             Si algo se ve inestable aqui, se recomienda saltar a Activity o Data Quality para entender la causa.
           </p>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Valor agregado</h2>
@@ -108,7 +105,6 @@
             <li><span>Prevencion</span><strong>Detecta degradaciones antes de que escalen</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de flujo operacional</h2>
@@ -120,7 +116,6 @@
             <%= image_tag "simulation_context_flow.svg", alt: "Flujo de contexto de simulacion" %>
           </div>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de arquitectura</h2>
@@ -133,7 +128,6 @@
           </div>
         </section>
       <% end %>
-
       <% if @section[:slug] == "simulation-context" %>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
@@ -149,7 +143,6 @@
             <li><span>Frecuencia</span><strong>Siempre que cambien inputs o version de engine</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Que podemos leer</h2>
@@ -164,7 +157,6 @@
             Si cambia el contexto, los resultados no son comparables sin ajustes.
           </p>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Valor agregado</h2>
@@ -175,7 +167,6 @@
             <li><span>Auditoria</span><strong>Deja claro que supuestos estaban activos</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de flujo operacional</h2>
@@ -187,7 +178,6 @@
             <%= image_tag "simulation_context_flow.svg", alt: "Flujo de contexto de simulacion" %>
           </div>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de arquitectura</h2>
@@ -200,7 +190,6 @@
           </div>
         </section>
       <% end %>
-
       <% if @section[:slug] == "system-metrics" %>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
@@ -216,7 +205,6 @@
             <li><span>Frecuencia</span><strong>Revisar diario y ante cambios de carga</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Que podemos leer</h2>
@@ -231,7 +219,6 @@
             Un descenso sostenido en success rate o aumentos de duracion sugieren revisar Activity y Data Quality.
           </p>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Valor agregado</h2>
@@ -242,7 +229,6 @@
             <li><span>Prioridad de acciones</span><strong>Ayuda a decidir donde investigar primero</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de flujo operacional</h2>
@@ -254,7 +240,6 @@
             <%= image_tag "system_metrics_flow.svg", alt: "Flujo operativo de metricas" %>
           </div>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de arquitectura</h2>
@@ -267,7 +252,6 @@
           </div>
         </section>
       <% end %>
-
       <% if @section[:slug] == "activity" %>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
@@ -283,7 +267,6 @@
             <li><span>Frecuencia</span><strong>Monitoreo continuo durante operaciones</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Que podemos leer</h2>
@@ -297,7 +280,6 @@
             Una mezcla de estados degradada suele anticipar issues en Data Quality.
           </p>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Valor agregado</h2>
@@ -308,7 +290,6 @@
             <li><span>Priorizacion</span><strong>Indica si investigar o escalar capacidad</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de flujo operacional</h2>
@@ -320,7 +301,6 @@
             <%= image_tag "activity_flow.svg", alt: "Flujo operacional de actividad" %>
           </div>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de arquitectura</h2>
@@ -333,7 +313,6 @@
           </div>
         </section>
       <% end %>
-
       <% if @section[:slug] == "financial-results" %>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
@@ -349,7 +328,6 @@
             <li><span>Frecuencia</span><strong>Post-run y revisiones de cierre</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Que podemos leer</h2>
@@ -366,7 +344,6 @@
             Usar esta seccion despues de entender contexto y actividad evita interpretaciones sesgadas.
           </p>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Valor agregado</h2>
@@ -377,7 +354,6 @@
             <li><span>Seguimiento</span><strong>Permite comparar run sobre run</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de flujo operacional</h2>
@@ -389,7 +365,6 @@
             <%= image_tag "financial_results_flow.svg", alt: "Flujo operacional de resultados" %>
           </div>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de arquitectura</h2>
@@ -402,7 +377,6 @@
           </div>
         </section>
       <% end %>
-
       <% if @section[:slug] == "data-quality" %>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
@@ -418,7 +392,6 @@
             <li><span>Frecuencia</span><strong>Ante alertas o cambios en inputs</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Que podemos leer</h2>
@@ -433,7 +406,6 @@
             Filtrar por source/field ayuda a priorizar correcciones.
           </p>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Valor agregado</h2>
@@ -444,7 +416,6 @@
             <li><span>Prevencion</span><strong>Detecta patrones antes de escalar</strong></li>
           </ul>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de flujo operacional</h2>
@@ -456,7 +427,6 @@
             <%= image_tag "data_quality_flow.svg", alt: "Flujo operativo de calidad" %>
           </div>
         </section>
-
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2>Diagrama de arquitectura</h2>

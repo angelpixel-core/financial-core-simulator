@@ -10,6 +10,10 @@ Rails.application.routes.draw do
   get "/admin/overview/top-accounts", to: "admin/overview#top_accounts", as: :admin_overview_top_accounts
   get "/admin/overview/ingestion-validation-errors", to: "admin/overview#ingestion_validation_errors_panel",
 as: :admin_overview_ingestion_validation_errors
+  get "/runs/latest/result", to: "run_artifacts#latest", as: :run_latest_result
+  get "/runs/latest/positions", to: "run_artifacts#latest_positions", as: :run_latest_positions
+  get "/runs/latest/pnl", to: "run_artifacts#latest_pnl", as: :run_latest_pnl
+  get "/runs/latest/risk", to: "run_artifacts#latest_risk", as: :run_latest_risk
   get "/dashboard/overview", to: "admin/overview#dashboard_overview", as: :dashboard_overview
   get "/dashboard/top-accounts", to: "admin/overview#dashboard_top_accounts", as: :dashboard_top_accounts
   get "/dashboard/risk", to: "admin/overview#dashboard_risk", as: :dashboard_risk

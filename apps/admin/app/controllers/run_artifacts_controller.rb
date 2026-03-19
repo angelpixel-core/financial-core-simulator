@@ -8,7 +8,8 @@ class RunArtifactsController < ApplicationController
   require "json"
   require "rack/utils"
 
-  before_action :load_run
+  before_action :load_latest_run, only: [ :latest, :latest_positions, :latest_pnl, :latest_risk ]
+  before_action :load_run, except: [ :latest, :latest_positions, :latest_pnl, :latest_risk ]
   before_action :authorize_artifact_access!
 
   def result
@@ -53,13 +54,40 @@ class RunArtifactsController < ApplicationController
     render plain: "Invalid result.json artifact", status: :unprocessable_entity
   end
 
+  def latest
+    render_latest(:result)
+  end
+
+  def latest_positions
+    render_latest(:positions)
+  end
+
+  def latest_pnl
+    render_latest(:pnl)
+  end
+
+  def latest_risk
+    render_latest(:risk)
+  end
+
   private
 
   def load_run
     @run = Run.find(params[:id])
   end
 
+  def load_latest_run
+    @run = Run.order(created_at: :desc).find_by(status: "succeeded")
+  end
+
   def authorize_artifact_access!
+    if @run.nil?
+      if request.format.html?
+        return redirect_to avo.resources_runs_path
+      end
+
+      return render plain: "Artifact not found", status: :not_found
+    end
     return if artifact_access_policy.allowed?
 
     if request.format.html?
@@ -71,6 +99,10 @@ class RunArtifactsController < ApplicationController
 
   def artifact_access_policy
     @artifact_access_policy ||= Artifacts::AccessPolicy.new(run: @run, request: request)
+  end
+
+  def render_latest(kind)
+    send(kind)
   end
 
   def preview_requested?

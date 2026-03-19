@@ -3,7 +3,7 @@
 <% navigation_context = @navigation_context || {} %>
 <% run_details_path = ->(run_id) { avo.resources_run_path({ id: run_id }.merge(navigation_context)) } %>
 <% artifacts_run = reliable_run || candidate_run %>
-<% artifacts_path = artifacts_run.nil? ? avo.resources_runs_path : run_result_path({ id: artifacts_run.id }.merge(navigation_context)) %>
+<% artifacts_path = artifacts_run.nil? ? run_latest_result_path(navigation_context) : run_result_path({ id: artifacts_run.id }.merge(navigation_context)) %>
 <% shell_role = admin_shell_role %>
 <% secondary_action = shell_role == "operator" ? nil : { label: "Open Runs", path: avo.resources_runs_path } %>
 <% sidebar_items = [
