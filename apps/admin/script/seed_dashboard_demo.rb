@@ -8,6 +8,18 @@ def decimal_str(value)
   format("%.2f", value)
 end
 
+def computed_input_hash(input_json)
+  normalized = JSON.parse(JSON.generate(input_json))
+  fee_enabled = normalized.dig("feeModel", "enabled")
+  fee_enabled = true if fee_enabled.nil?
+  normalized["feeModel"] ||= {}
+  normalized["feeModel"]["enabled"] = !!fee_enabled
+  normalized["trades"] = FCS::Engine::TradeSorter.new.sort(normalized.fetch("trades", []))
+
+  canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
+  FCS::Hashing::SHA256.hex(canonical)
+end
+
 def write_artifacts(run:, global:, accounts:)
   base_dir = Rails.root.join("storage", "runs", "dashboard_seed", "run_#{run.id}")
   FileUtils.mkdir_p(base_dir)
@@ -93,6 +105,13 @@ def upsert_succeeded_run(day_offset:)
   input_hash = "#{SEED_NAMESPACE}-hash-#{day_offset}"
 
   run = Run.find_or_initialize_by(run_uuid: run_uuid)
+  input_json = {
+    "schemaVersion" => "1.0",
+    "seededFrom" => created_at.utc.iso8601,
+    "accounts" => TOP_ACCOUNT_IDS.map { |account_id| { "accountId" => account_id } }
+  }
+  input_hash = computed_input_hash(input_json)
+
   run.assign_attributes(
     status: :succeeded,
     created_at: created_at,
@@ -101,11 +120,11 @@ def upsert_succeeded_run(day_offset:)
     input_hash: input_hash,
     schema_version: "1.0",
     engine_version: "1.1",
-    input_json: {
-      "schemaVersion" => "1.0",
-      "seededFrom" => created_at.utc.iso8601,
-      "accounts" => TOP_ACCOUNT_IDS.map { |account_id| { "accountId" => account_id } }
-    }
+    input_json: input_json,
+    verification_status: "verified",
+    verified_at: created_at,
+    verification_input_hash: input_hash,
+    verification_error: nil
   )
   run.save!
 
