@@ -3,10 +3,26 @@
 module FCS
   module Engine
     # Applies trades and maintains ledger state.
+    #
+    # Exposes the core trade application interface used by the simulator.
+    #
+    # @example
+    #   ledger = FCS::Engine::LedgerEngine.new
+    #   ledger.apply_trade!(trade)
     class LedgerEngine
       ACCOUNTING_METHOD_AVERAGE = "AVERAGE_COST"
       ACCOUNTING_METHOD_FIFO = "FIFO"
 
+      # @param state [FCS::Engine::LedgerState, nil] optional initial ledger state
+      # @param fee_enabled [Boolean] apply fee model if available
+      # @param accounting_method [String] accounting method constant
+      # @param account_collateral [Hash] collateral per accountId
+      # @param max_leverage [FCS::Types::Decimal18, nil] max leverage for risk engine
+      # @param risk_engine [FCS::Engine::RiskEngine, nil] custom risk engine
+      # @param risk_engine_klass [Class] risk engine class
+      # @param decimal_klass [Class] decimal type
+      # @param error_klass [Class] error class
+      # @param errors [Module] error constants module
       def initialize(
         state: nil,
         fee_enabled: true,
@@ -33,6 +49,23 @@ module FCS
 
       attr_reader :state
 
+      # Applies a single trade event to the ledger state.
+      #
+      # Expected trade shape (minimum):
+      # - accountId, marketId, side, quantityBase, priceQuotePerBase
+      #
+      # @param trade [Hash] trade payload
+      # @return [void]
+      # @raise [FCS::Error] on validation or risk violations
+      # @example
+      #   ledger.apply_trade!(
+      #     "tradeId" => "t1",
+      #     "accountId" => "acc-1",
+      #     "marketId" => "btc-usd",
+      #     "side" => "BUY",
+      #     "quantityBase" => "1.25",
+      #     "priceQuotePerBase" => "55000"
+      #   )
       def apply_trade!(trade)
         pos = @state.position_for(account_id: trade.fetch("accountId"), market_id: trade.fetch("marketId"))
         validate_long_only_sell!(pos: pos, trade: trade)

@@ -16,10 +16,18 @@ loader.ignore("#{__dir__}/financial")
 loader.setup
 
 # Core namespace and entrypoint for the simulator.
+#
+# @example Configure a custom logger
+#   FCS.logger = Logger.new($stdout)
 module FCS
   class << self
     attr_writer :logger
 
+    # Returns the logger used across the engine.
+    #
+    # @return [Logger, FCS::Logging::SimpleLogger]
+    # @example Use the default logger
+    #   FCS.logger.info("ready")
     def logger
       @logger ||= begin
         logger = FCS::Logging::SimpleLogger.new(io: $stderr)

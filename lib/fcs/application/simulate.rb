@@ -3,7 +3,19 @@
 module FCS
   module Application
     # Builds the simulation result payload for the given input.
+    #
+    # This is the core execution path used by Runner. It assumes the input is
+    # already validated and normalized for determinism.
+    #
+    # @example
+    #   result = FCS::Application::Simulate.new.call(input)
+    #   result.fetch("accounts")
     class Simulate
+      # @param input [Hash] validated input payload
+      # @param explain [Boolean] include explain payload in output
+      # @param checkpoint_store [FCS::Application::CheckpointStore, nil] checkpointing support
+      # @param input_hash [String, nil] deterministic input hash
+      # @return [Hash] result payload
       def call(input, explain: false, checkpoint_store: nil, input_hash: nil)
         fx = FCS::Engine::FXConverter.new(
           price_snapshot: input.fetch("priceSnapshot"),

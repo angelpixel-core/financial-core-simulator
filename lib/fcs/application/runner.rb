@@ -3,7 +3,26 @@
 module FCS
   module Application
     # Coordinates parsing, validation, simulation, and artifact generation.
+    #
+    # Public entrypoint for CLI-style runs. This object is responsible for
+    # normalizing inputs, enforcing determinism, and producing artifacts.
+    #
+    # @example Run with input file
+    #   runner = FCS::Application::Runner.new
+    #   runner.run!(
+    #     input_path: "data/input.json",
+    #     output_dir: "tmp/fcs",
+    #     fee_enabled: true,
+    #     verbose: true
+    #   )
     class Runner
+      # @param parser [FCS::Ingestion::Parser]
+      # @param validator [FCS::Ingestion::Validator]
+      # @param sorter [FCS::Engine::TradeSorter]
+      # @param simulate [FCS::Application::Simulate]
+      # @param artifacts_writer [FCS::Application::ReportArtifactsWriter]
+      # @param cli [FCS::Reporting::CliSummary]
+      # @param logger [Logger, FCS::Logging::SimpleLogger]
       def initialize(
         parser: FCS::Ingestion::Parser.new,
         validator: FCS::Ingestion::Validator.new,
@@ -22,6 +41,20 @@ module FCS
         @logger = logger
       end
 
+      # Runs a simulation from an input file and writes artifacts to disk.
+      #
+      # @param input_path [String] JSON input path
+      # @param output_dir [String] output directory for artifacts
+      # @param fee_enabled [Boolean, nil] override for feeModel.enabled
+      # @param explain [Boolean] include explain payload in market output
+      # @param verbose [Boolean] print CLI summary
+      # @return [String] path to the JSON artifact
+      # @example
+      #   json_path = runner.run!(
+      #     input_path: "data/input.json",
+      #     output_dir: "tmp/fcs",
+      #     fee_enabled: false
+      #   )
       def run!(input_path:, output_dir:, fee_enabled:, explain: false, verbose: false)
         raw_input = @parser.parse_file(input_path)
 
@@ -37,6 +70,22 @@ module FCS
         result.fetch(:json_path)
       end
 
+      # Runs a simulation from a Ruby Hash input and writes artifacts.
+      #
+      # @param input [Hash] parsed input payload
+      # @param output_dir [String] output directory for artifacts
+      # @param fee_enabled [Boolean, nil] override for feeModel.enabled
+      # @param explain [Boolean] include explain payload in market output
+      # @param verbose [Boolean] print CLI summary
+      # @param input_source [String] label used for logging
+      # @return [Hash] artifact metadata
+      # @example
+      #   result = runner.run_from_input!(
+      #     input: payload,
+      #     output_dir: "tmp/fcs",
+      #     fee_enabled: true
+      #   )
+      #   result[:run_id]
       def run_from_input!(input:, output_dir:, fee_enabled:, explain: false, verbose: false, input_source: "input")
         @logger.info("fcs.run.start input=#{input_source} output=#{output_dir}")
 
