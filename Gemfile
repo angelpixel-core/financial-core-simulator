@@ -12,6 +12,8 @@ gem "csv", "~> 3.3"
 group :development, :test do
   gem "brakeman", require: false
   gem "bundler-audit", require: false
+  gem "benchmark", require: false
+  gem "railties", "~> 8.1", require: false
   gem "packwerk", require: false
   gem "rails-mcp-server", "~> 1.5"
   gem "reek", require: false
