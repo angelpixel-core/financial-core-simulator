@@ -6,6 +6,9 @@ require "fileutils"
 module FCS
   module Reporting
     # Writes positions CSV artifacts.
+    #
+    # @example
+    #   FCS::Reporting::CsvPositions.new.write!(output_dir: "tmp/fcs", accounts: accounts)
     class CsvPositions
       HEADER = %w[
         account_id
@@ -14,6 +17,9 @@ module FCS
         avg_cost
       ].freeze
 
+      # @param output_dir [String]
+      # @param accounts [Array<Hash>]
+      # @return [String] path to positions.csv
       def write!(output_dir:, accounts:)
         FileUtils.mkdir_p(output_dir)
         path = File.join(output_dir, "positions.csv")

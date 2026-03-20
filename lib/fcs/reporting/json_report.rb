@@ -7,7 +7,13 @@ require "fileutils"
 module FCS
   module Reporting
     # Writes canonical JSON report output.
+    #
+    # @example
+    #   FCS::Reporting::JsonReport.new.write!(output_dir: "tmp/fcs", payload: payload)
     class JsonReport
+      # @param output_dir [String]
+      # @param payload [Hash]
+      # @return [String] path to result.json
       def write!(output_dir:, payload:)
         FileUtils.mkdir_p(output_dir)
 

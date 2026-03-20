@@ -3,12 +3,18 @@
 module FCS
   module Reporting
     # Validates required metadata fields on result payloads.
+    #
+    # @example
+    #   FCS::Reporting::ResultMetadataContractValidator.new.validate!(payload: payload)
     class ResultMetadataContractValidator
       REQUIRED_FIELDS = %w[engineVersion schemaVersion inputHash runId valuationTimestamp].freeze
       INPUT_HASH_REGEX = /\A[0-9a-f]{64}\z/
       RUN_ID_REGEX = /\A[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\z/
       ISO_UTC_REGEX = /\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\z/
 
+      # @param payload [Hash]
+      # @return [void]
+      # @raise [FCS::Error]
       def validate!(payload:)
         REQUIRED_FIELDS.each do |field|
           value = payload[field]

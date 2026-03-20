@@ -3,6 +3,9 @@
 module FCS
   module Reporting
     # Prints a CLI-friendly summary of a run.
+    #
+    # @example
+    #   FCS::Reporting::CliSummary.new.print(payload, artifacts: artifacts)
     class CliSummary
       REQUIRED_ARTIFACT_KEYS = [
         [:json_path, "result_json"],
@@ -10,10 +13,16 @@ module FCS
         [:pnl_csv_path, "pnl_csv"]
       ].freeze
 
+      # @param io [IO]
       def initialize(io: $stdout)
         @io = io
       end
 
+      # @param result_json_payload [Hash]
+      # @param artifacts [Hash]
+      # @param status [String]
+      # @param validate_artifacts [Boolean]
+      # @return [void]
       def print(result_json_payload, artifacts: {}, status: "success", validate_artifacts: true)
         validate_artifacts!(artifacts) if validate_artifacts
 

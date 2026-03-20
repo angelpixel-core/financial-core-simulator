@@ -6,6 +6,9 @@ require "fileutils"
 module FCS
   module Reporting
     # Writes PnL CSV artifacts.
+    #
+    # @example
+    #   FCS::Reporting::CsvPnL.new.write!(output_dir: "tmp/fcs", accounts: accounts)
     class CsvPnL
       HEADER = %w[
         account_id
@@ -18,6 +21,9 @@ module FCS
         total_pnl_usd
       ].freeze
 
+      # @param output_dir [String]
+      # @param accounts [Array<Hash>]
+      # @return [String] path to pnl.csv
       def write!(output_dir:, accounts:)
         FileUtils.mkdir_p(output_dir)
         path = File.join(output_dir, "pnl.csv")

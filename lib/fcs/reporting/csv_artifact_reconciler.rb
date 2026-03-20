@@ -6,6 +6,10 @@ require "json"
 module FCS
   module Reporting
     # Validates CSV artifacts against the canonical JSON payload.
+    #
+    # @example
+    #   reconciler = FCS::Reporting::CsvArtifactReconciler.new
+    #   reconciler.validate!(json_path: json_path, positions_path: positions_path, pnl_path: pnl_path)
     class CsvArtifactReconciler
       POSITION_NUMERIC_FIELDS = %w[quantity avg_cost].freeze
       PNL_NUMERIC_FIELDS = %w[
@@ -17,6 +21,11 @@ module FCS
         total_pnl_usd
       ].freeze
 
+      # @param json_path [String]
+      # @param positions_path [String]
+      # @param pnl_path [String]
+      # @return [void]
+      # @raise [FCS::Error]
       def validate!(json_path:, positions_path:, pnl_path:)
         payload = JSON.parse(File.read(json_path))
         accounts = payload.fetch("accounts")

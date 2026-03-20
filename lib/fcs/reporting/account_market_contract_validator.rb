@@ -3,9 +3,15 @@
 module FCS
   module Reporting
     # Validates account-market metrics presence and format.
+    #
+    # @example
+    #   FCS::Reporting::AccountMarketContractValidator.new.validate!(accounts: accounts)
     class AccountMarketContractValidator
       REQUIRED_MARKET_FIELDS = %w[quantity avgCost realizedPnL unrealizedPnL].freeze
 
+      # @param accounts [Array<Hash>]
+      # @return [void]
+      # @raise [FCS::Error]
       def validate!(accounts:)
         accounts.each_with_index do |account, account_index|
           markets = account.fetch("markets")
