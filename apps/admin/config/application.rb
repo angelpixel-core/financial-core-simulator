@@ -28,6 +28,19 @@ module Admin
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    domain_roots = Dir[Rails.root.join("app/domains/*/app")]
+    domain_subdirs = %w[models services serializers components jobs mailers helpers]
+    domain_roots.each do |root|
+      domain_subdirs.each do |subdir|
+        path = File.join(root, subdir)
+        next unless Dir.exist?(path)
+
+        config.autoload_paths << path
+        config.eager_load_paths << path
+        config.paths["app/helpers"] << path if subdir == "helpers"
+      end
+    end
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
