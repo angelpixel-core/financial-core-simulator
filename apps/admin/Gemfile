@@ -47,6 +47,9 @@ group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 
+  # Required by packwerk under Ruby 4
+  gem "benchmark", require: false
+
   # N+1 query detection
   gem "bullet"
 
