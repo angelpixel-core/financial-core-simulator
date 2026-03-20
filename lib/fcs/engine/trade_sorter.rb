@@ -3,7 +3,12 @@
 module FCS
   module Engine
     # Sorts trades deterministically for stable execution.
+    #
+    # @example
+    #   sorted = FCS::Engine::TradeSorter.new.sort(trades)
     class TradeSorter
+      # @param trades [Array<Hash>]
+      # @return [Array<Hash>]
       def sort(trades)
         trades.sort_by { |trade| sort_key_for(trade) }
       end

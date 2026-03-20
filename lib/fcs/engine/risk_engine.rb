@@ -3,6 +3,10 @@
 module FCS
   module Engine
     # Evaluates margin requirements and liquidation risk.
+    #
+    # @example
+    #   engine = FCS::Engine::RiskEngine.new(account_collateral: {}, risk_config: {})
+    #   health = engine.evaluate_accounts!(state: ledger.state, valuation: valuation)
     class RiskEngine
       AccountEntry = Struct.new(
         :maintenance_margin_quote,
@@ -16,11 +20,24 @@ module FCS
       STATUS_MARGIN_CALL = "MARGIN_CALL"
       STATUS_LIQUIDATABLE = "LIQUIDATABLE"
 
+      # @param account_collateral [Hash] collateral per accountId
+      # @param risk_config [Hash] risk model configuration
       def initialize(account_collateral:, risk_config:)
         @account_collateral = normalize_collateral(account_collateral)
         @risk_config = normalize_config(risk_config)
       end
 
+      # Enforces pre-trade risk constraints for shorting and leverage.
+      #
+      # @param account_id [String]
+      # @param market_id [String]
+      # @param side [String]
+      # @param quantity [String, FCS::Types::Decimal18]
+      # @param price [String, FCS::Types::Decimal18]
+      # @param position [FCS::Engine::Position, FCS::Engine::PositionFifo]
+      # @param accounting_method [String]
+      # @return [true]
+      # @raise [FCS::Error]
       def pre_trade_check!(account_id:, market_id:, side:, quantity:, price:, position:, accounting_method:)
         qty = coerce_decimal18(quantity)
         projected_qty_atoms = projected_qty_atoms(position: position, side: side, quantity: qty)
@@ -63,6 +80,11 @@ module FCS
         )
       end
 
+      # Evaluates account risk health and liquidation candidates.
+      #
+      # @param state [FCS::Engine::LedgerState]
+      # @param valuation [FCS::Engine::ValuationEngine]
+      # @return [Hash]
       def evaluate_accounts!(state:, valuation:)
         maintenance_ratio = @risk_config[:maintenance_margin_ratio]
         accounts = Hash.new do |hash, key|
@@ -114,6 +136,10 @@ module FCS
         end
       end
 
+      # Returns liquidation candidates sorted by severity.
+      #
+      # @param health [Hash]
+      # @return [Array<Hash>]
       def liquidation_candidates(health)
         health.each_value.flat_map do |entry|
           next [] unless entry[:status] == STATUS_LIQUIDATABLE

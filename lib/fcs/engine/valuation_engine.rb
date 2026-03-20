@@ -3,12 +3,23 @@
 module FCS
   module Engine
     # Computes valuations from price snapshots.
+    #
+    # @example
+    #   valuation = FCS::Engine::ValuationEngine.new(price_snapshot: snapshot)
+    #   valuation.unrealized_pnl_quote(market_id: "btc-usd", position: position)
     class ValuationEngine
+      # @param price_snapshot [Hash] snapshot payload with prices
+      # @param dependencies [FCS::Engine::Dependencies]
       def initialize(price_snapshot:, dependencies: Dependencies.default)
         @dependencies = dependencies
         @prices = build_price_map(price_snapshot.fetch("prices"))
       end
 
+      # Updates the current snapshot price for a market.
+      #
+      # @param market_id [String]
+      # @param price_quote_per_base [String]
+      # @return [void]
       def update_price!(market_id:, price_quote_per_base:)
         unless @prices.key?(market_id)
           raise @dependencies.error_class.new(
@@ -25,11 +36,20 @@ module FCS
         )
       end
 
+      # Computes unrealized PnL in quote currency for a position.
+      #
+      # @param market_id [String]
+      # @param position [FCS::Engine::Position, FCS::Engine::PositionFifo]
+      # @return [FCS::Types::Decimal18]
       def unrealized_pnl_quote(market_id:, position:)
         price = @prices.fetch(market_id) # validator ya garantizó que existe
         (price - position.avg_cost) * position.qty
       end
 
+      # Returns the snapshot price for the market.
+      #
+      # @param market_id [String]
+      # @return [FCS::Types::Decimal18]
       def snapshot_price_for(market_id)
         @prices.fetch(market_id)
       end

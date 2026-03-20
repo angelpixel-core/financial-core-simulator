@@ -3,7 +3,16 @@
 module FCS
   module Engine
     # Converts quote currency values to USD when enabled.
+    #
+    # @example
+    #   fx = FCS::Engine::FXConverter.new(price_snapshot: snapshot, usd_enabled: true)
+    #   fx.quote_to_usd(total)
     class FXConverter
+      # @param price_snapshot [Hash]
+      # @param usd_enabled [Boolean]
+      # @param decimal_klass [Class]
+      # @param error_klass [Class]
+      # @param errors [Module]
       def initialize(
         price_snapshot:,
         usd_enabled:,
@@ -22,10 +31,18 @@ module FCS
         raise_missing_fx_for_usd_enabled! if @usd_enabled && @quote_usd.nil?
       end
 
+      # Returns true if USD conversion is enabled and configured.
+      #
+      # @return [Boolean]
       def enabled?
         @usd_enabled && !@quote_usd.nil?
       end
 
+      # Converts quote currency amount to USD.
+      #
+      # @param amount_quote [FCS::Types::Decimal18]
+      # @return [FCS::Types::Decimal18]
+      # @raise [FCS::Error]
       def quote_to_usd(amount_quote)
         raise_missing_fx_for_usd_enabled! unless enabled?
 
