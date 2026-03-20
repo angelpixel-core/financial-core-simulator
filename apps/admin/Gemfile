@@ -62,6 +62,9 @@ group :development, :test do
   # Code quality reports [https://github.com/whitesmith/rubycritic]
   gem "rubycritic", require: false
 
+  # Package boundaries enforcement
+  gem "packwerk", require: false
+
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
   gem "rubocop-performance", require: false
