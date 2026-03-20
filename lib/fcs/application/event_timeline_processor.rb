@@ -3,7 +3,21 @@
 module FCS
   module Application
     # Applies timeline events to ledger and valuation, persisting checkpoints.
+    #
+    # Consumes timeline events in order and updates ledger state, valuation
+    # snapshots, and checkpoints.
+    #
+    # @example Process timeline events
+    #   processor = FCS::Application::EventTimelineProcessor.new
+    #   processor.call(events: events, ledger: ledger, valuation: valuation)
     class EventTimelineProcessor
+      # @param events [Array<Hash>] timeline events
+      # @param ledger [FCS::Engine::LedgerEngine]
+      # @param valuation [FCS::Engine::ValuationEngine]
+      # @param checkpoint [Hash, nil] previous checkpoint payload
+      # @param checkpoint_store [FCS::Application::CheckpointStore, nil]
+      # @param input_hash [String, nil] deterministic input hash
+      # @return [void]
       def call(events:, ledger:, valuation:, checkpoint: nil, checkpoint_store: nil, input_hash: nil)
         checkpoint_seq = restore_checkpoint_state!(checkpoint: checkpoint, ledger: ledger)
         processed_events = 0

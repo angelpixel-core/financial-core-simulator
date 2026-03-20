@@ -6,7 +6,21 @@ require "fileutils"
 module FCS
   module Application
     # Persists and retrieves simulation checkpoints.
+    #
+    # Checkpoints are JSON snapshots of ledger state tied to a timelineSeq.
+    #
+    # @example
+    #   store = FCS::Application::CheckpointStore.new(
+    #     output_dir: "tmp/fcs",
+    #     checkpoint_every: 100,
+    #     engine_version: FCS::VERSION,
+    #     schema_version: "1"
+    #   )
     class CheckpointStore
+      # @param output_dir [String]
+      # @param checkpoint_every [Integer]
+      # @param engine_version [String]
+      # @param schema_version [String]
       def initialize(output_dir:, checkpoint_every:, engine_version:, schema_version:)
         @output_dir = output_dir
         @checkpoint_every = checkpoint_every
@@ -14,6 +28,13 @@ module FCS
         @schema_version = schema_version
       end
 
+      # Writes a checkpoint when the event count hits the configured interval.
+      #
+      # @param event_count [Integer]
+      # @param timeline_seq [Integer]
+      # @param state [Hash]
+      # @param input_hash [String]
+      # @return [Hash, nil]
       def write_if_due!(event_count:, timeline_seq:, state:, input_hash:)
         return nil unless checkpoint_due?(event_count)
 
@@ -27,6 +48,10 @@ module FCS
         checkpoint
       end
 
+      # Returns the newest checkpoint on disk, if any.
+      #
+      # @return [Hash, nil]
+      # @raise [FCS::Error] when versions are incompatible
       def latest_checkpoint
         path = latest_checkpoint_path
         return nil if path.nil?
