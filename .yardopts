@@ -1,0 +1,6 @@
+--markup markdown
+--output-dir docs/yard
+--no-private
+--embed-mixins
+--title "FCS API"
+lib/**/*.rb

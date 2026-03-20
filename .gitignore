@@ -28,3 +28,7 @@ openspec/
 .claude
 
 .private/
+
+# YARD artifacts
+.yardoc/
+docs/yard/
