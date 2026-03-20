@@ -13,6 +13,7 @@ loader.inflector.inflect(
   "csv_pnl" => "CsvPnL"
 )
 loader.ignore("#{__dir__}/financial")
+loader.ignore("#{__dir__}/config")
 loader.setup
 
 # Core namespace and entrypoint for the simulator.
