@@ -1,0 +1,4 @@
+package_paths:
+  - fcs/*
+enforce_dependencies: true
+enforce_privacy: true
