@@ -3,6 +3,10 @@
 module FCS
   module Ingestion
     # Normalizes venue execution source events.
+    #
+    # @example
+    #   mapper = FCS::Ingestion::VenueExecutionMapper.new
+    #   mapper.map!(source_event)
     class VenueExecutionMapper
       SUPPORTED_EVENT_TYPES = %w[
         ORDER_ACKNOWLEDGED
@@ -13,6 +17,9 @@ module FCS
 
       NORMALIZED_EVENT_TYPE = "VENUE_EXECUTION_NORMALIZED"
 
+      # @param source_event [Hash]
+      # @return [Hash]
+      # @raise [FCS::Error]
       def map!(source_event)
         validate_source_event_shape!(source_event)
         validate_supported_event_type!(source_event)

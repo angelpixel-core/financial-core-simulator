@@ -3,10 +3,17 @@
 module FCS
   module Ingestion
     # Normalizes faucet issuance source events.
+    #
+    # @example
+    #   mapper = FCS::Ingestion::FaucetIssuanceMapper.new
+    #   mapper.map!(source_event)
     class FaucetIssuanceMapper
       SUPPORTED_EVENT_TYPE = "TOKEN_ISSUED"
       NORMALIZED_EVENT_TYPE = "FAUCET_ISSUANCE_NORMALIZED"
 
+      # @param source_event [Hash]
+      # @return [Hash]
+      # @raise [FCS::Error]
       def map!(source_event)
         validate_source_event_shape!(source_event)
         validate_supported_event_type!(source_event)

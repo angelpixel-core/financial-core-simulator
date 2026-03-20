@@ -3,6 +3,10 @@
 module FCS
   module Ingestion
     # Detects duplicate and conflicting source events.
+    #
+    # @example
+    #   guard = FCS::Ingestion::SourceEventIdempotencyGuard.new
+    #   guard.classify!(event)
     class SourceEventIdempotencyGuard
       # Invariants:
       # 1) Identity key is [source, payload.externalId, payload.sequence].
@@ -12,6 +16,9 @@ module FCS
         @seen_fingerprints = {}
       end
 
+      # @param event [Hash]
+      # @return [Symbol] :accepted, :duplicate, or :collision
+      # @raise [FCS::Error]
       def classify!(event)
         key = idempotency_key_for(event)
         fingerprint = FCS::Hashing::CanonicalJSON.dump(event)

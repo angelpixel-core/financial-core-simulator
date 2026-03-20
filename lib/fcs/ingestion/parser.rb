@@ -5,7 +5,13 @@ require "json"
 module FCS
   module Ingestion
     # Parses input JSON from disk.
+    #
+    # @example
+    #   input = FCS::Ingestion::Parser.new.parse_file("data/input.json")
     class Parser
+      # @param path [String]
+      # @return [Hash]
+      # @raise [FCS::Error]
       def parse_file(path)
         raw = File.read(path)
         JSON.parse(raw)

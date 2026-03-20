@@ -3,10 +3,17 @@
 module FCS
   module Ingestion
     # Validates source event payloads and batches.
+    #
+    # @example
+    #   validator = FCS::Ingestion::SourceEventValidator.new
+    #   validator.validate!(event)
     class SourceEventValidator
       REQUIRED_FIELDS = %w[eventVersion source eventType correlationId occurredAt payload].freeze
       REQUIRED_STRING_FIELDS = %w[eventVersion source eventType correlationId occurredAt].freeze
 
+      # @param event [Hash]
+      # @return [true]
+      # @raise [FCS::Error]
       def validate!(event)
         validate_event_shape!(event)
         validate_required_fields!(event)
@@ -16,6 +23,9 @@ module FCS
         true
       end
 
+      # @param events [Array<Hash>]
+      # @return [Hash] { accepted:, duplicates: }
+      # @raise [FCS::Error]
       def validate_batch!(events)
         validate_batch_shape!(events)
 

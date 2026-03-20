@@ -3,6 +3,10 @@
 module FCS
   module Ingestion
     # Dispatches source events to the right normalization mapper.
+    #
+    # @example
+    #   pipeline = FCS::Ingestion::SourceEventNormalizationPipeline.new
+    #   pipeline.normalize!(event)
     class SourceEventNormalizationPipeline
       SOURCE_MAPPERS = {
         "agente." => FCS::Ingestion::AgenteIntentMapper,
@@ -10,12 +14,18 @@ module FCS
         "faucet." => FCS::Ingestion::FaucetIssuanceMapper
       }.freeze
 
+      # @param source_event [Hash]
+      # @return [Hash]
+      # @raise [FCS::Error]
       def normalize!(source_event)
         validate_source_event_shape!(source_event)
 
         mapper_for(source_event).map!(source_event)
       end
 
+      # @param source_events [Array<Hash>]
+      # @return [Array<Hash>]
+      # @raise [FCS::Error]
       def normalize_batch!(source_events)
         validate_source_events_shape!(source_events)
 

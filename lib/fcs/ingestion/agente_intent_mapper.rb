@@ -3,10 +3,17 @@
 module FCS
   module Ingestion
     # Normalizes agente intent source events.
+    #
+    # @example
+    #   mapper = FCS::Ingestion::AgenteIntentMapper.new
+    #   mapper.map!(source_event)
     class AgenteIntentMapper
       SUPPORTED_EVENT_TYPE = "ORDER_INTENT_CREATED"
       NORMALIZED_EVENT_TYPE = "AGENTE_INTENT_NORMALIZED"
 
+      # @param source_event [Hash]
+      # @return [Hash]
+      # @raise [FCS::Error]
       def map!(source_event)
         validate_source_event_shape!(source_event)
         validate_supported_event_type!(source_event)

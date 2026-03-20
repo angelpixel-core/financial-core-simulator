@@ -3,6 +3,9 @@
 module FCS
   module Ingestion
     # Validates ingestion payloads and raises on invalid input.
+    #
+    # @example
+    #   FCS::Ingestion::Validator.new.validate!(payload)
     class Validator
       SUPPORTED_SCHEMA_VERSIONS = ["1.0"].freeze
       SUPPORTED_ACCOUNTING_METHODS = [
@@ -10,6 +13,9 @@ module FCS
         FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_FIFO
       ].freeze
 
+      # @param h [Hash]
+      # @return [true]
+      # @raise [FCS::Error]
       def validate!(h)
         validate_schema_version!(h)
         validate_shape!(h)
