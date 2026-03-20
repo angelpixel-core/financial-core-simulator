@@ -67,6 +67,7 @@ group :development, :test do
 
   # Package boundaries enforcement
   gem "packwerk", require: false
+  gem "packwerk-extensions", require: false
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false

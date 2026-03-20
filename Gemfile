@@ -15,6 +15,7 @@ group :development, :test do
   gem "benchmark", require: false
   gem "railties", "~> 8.1", require: false
   gem "packwerk", require: false
+  gem "packwerk-extensions", require: false
   gem "rails-mcp-server", "~> 1.5"
   gem "reek", require: false
   gem "rubocop", require: false
