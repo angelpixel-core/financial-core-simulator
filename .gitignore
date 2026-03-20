@@ -8,6 +8,7 @@ coverage/
 tmp/rubycritic/
 tmp/logs/
 tmp/
+lib/log/
 checkpoint_*.json
 scripts/mutation-unique.sh
 artifacts/
