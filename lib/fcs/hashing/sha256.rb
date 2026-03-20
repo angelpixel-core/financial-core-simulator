@@ -5,9 +5,14 @@ require "digest"
 module FCS
   module Hashing
     # SHA256 helpers for deterministic IDs.
+    #
+    # @example
+    #   digest = FCS::Hashing::SHA256.hex("payload")
     module SHA256
       module_function
 
+      # @param str [String]
+      # @return [String]
       def hex(str)
         Digest::SHA256.hexdigest(str)
       end
