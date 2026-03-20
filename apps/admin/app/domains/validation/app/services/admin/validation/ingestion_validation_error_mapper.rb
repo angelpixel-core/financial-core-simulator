@@ -1,5 +1,5 @@
 module Admin
-  module Dashboard
+  module Validation
     class IngestionValidationErrorMapper
       def map(run:)
         input_json = run.input_json.is_a?(Hash) ? run.input_json : {}

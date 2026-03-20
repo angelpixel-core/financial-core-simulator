@@ -1,5 +1,7 @@
 enforce_dependencies: true
 enforce_privacy: true
+public_path: app
 dependencies:
   - "app/domains/runs"
   - "app/domains/ui"
+  - "app/domains/validation"

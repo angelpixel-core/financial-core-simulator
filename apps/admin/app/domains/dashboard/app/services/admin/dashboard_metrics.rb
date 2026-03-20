@@ -21,7 +21,7 @@ module Admin
       ::Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
     ].freeze
 
-    def initialize(ingestion_validation_error_mapper: Admin::Dashboard::IngestionValidationErrorMapper.new)
+    def initialize(ingestion_validation_error_mapper: Admin::Validation::IngestionValidationErrorMapper.new)
       @ingestion_validation_error_mapper = ingestion_validation_error_mapper
     end
 
