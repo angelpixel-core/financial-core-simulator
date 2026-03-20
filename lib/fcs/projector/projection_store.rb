@@ -3,11 +3,22 @@
 module FCS
   module Projector
     # Applies events to projections and builds composite read models.
+    #
+    # @example
+    #   store = FCS::Projector::ProjectionStore.new(projections: projections)
+    #   store.apply!(%w[overview], event)
     class ProjectionStore
+      # @param projections [Hash{String => #apply!, #read_model}]
       def initialize(projections:)
         @projections = normalize_projections!(projections)
       end
 
+      # Applies an event to the selected projections.
+      #
+      # @param projection_keys [Array<String>]
+      # @param event [Hash]
+      # @return [true]
+      # @raise [FCS::Error]
       def apply!(projection_keys, event)
         validate_projection_keys!(projection_keys)
 
@@ -18,6 +29,9 @@ module FCS
         true
       end
 
+      # Returns the merged read model across projections.
+      #
+      # @return [Hash]
       def read_model
         @projections.values.each_with_object({}) do |projection, composite|
           composite.merge!(projection.read_model)

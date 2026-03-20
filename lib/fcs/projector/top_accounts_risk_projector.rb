@@ -6,6 +6,10 @@ require "time"
 module FCS
   module Projector
     # Projects top account totals and risk snapshots.
+    #
+    # @example
+    #   projector = FCS::Projector::TopAccountsRiskProjector.new
+    #   projector.apply!(event)
     class TopAccountsRiskProjector
       ACCOUNT_TOTALS_EVENT_TYPE = "ACCOUNT_TOTALS_NORMALIZED"
       RISK_SNAPSHOT_EVENT_TYPE = "RISK_SNAPSHOT_NORMALIZED"
@@ -18,6 +22,9 @@ module FCS
         @risk_view_occurred_at = {}
       end
 
+      # @param event [Hash]
+      # @return [true]
+      # @raise [FCS::Error]
       def apply!(event)
         validate_event_shape!(event)
 
@@ -36,6 +43,7 @@ module FCS
         true
       end
 
+      # @return [Hash]
       def read_model
         {
           "topAccounts" => sorted_top_accounts,

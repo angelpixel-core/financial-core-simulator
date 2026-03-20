@@ -3,6 +3,10 @@
 module FCS
   module Projector
     # Projects lifecycle KPI and status mix data.
+    #
+    # @example
+    #   projector = FCS::Projector::OverviewKpiStatusMixProjector.new
+    #   projector.apply!(event)
     class OverviewKpiStatusMixProjector
       SUPPORTED_EVENT_TYPE = "RUN_LIFECYCLE_NORMALIZED"
       SUPPORTED_STATUSES = %w[queued running succeeded failed].freeze
@@ -11,6 +15,9 @@ module FCS
         @run_statuses = {}
       end
 
+      # @param event [Hash]
+      # @return [true]
+      # @raise [FCS::Error]
       def apply!(event)
         validate_event_shape!(event)
         validate_event_type!(event)
@@ -26,6 +33,7 @@ module FCS
         true
       end
 
+      # @return [Hash]
       def read_model
         status_mix = base_status_mix
         @run_statuses.each_value { |status| status_mix[status] += 1 }

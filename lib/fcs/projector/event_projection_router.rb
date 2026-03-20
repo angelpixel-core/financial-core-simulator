@@ -3,6 +3,10 @@
 module FCS
   module Projector
     # Routes normalized events to projection keys.
+    #
+    # @example
+    #   router = FCS::Projector::EventProjectionRouter.new
+    #   router.projections_for("RUN_LIFECYCLE_NORMALIZED")
     class EventProjectionRouter
       DEFAULT_ROUTES = {
         "RUN_LIFECYCLE_NORMALIZED" => %w[overview trend],
@@ -10,10 +14,15 @@ module FCS
         "RISK_SNAPSHOT_NORMALIZED" => ["topAccountsRisk"]
       }.freeze
 
+      # @param routes [Hash{String => Array<String>}]
       def initialize(routes: DEFAULT_ROUTES)
         @routes = normalize_routes!(routes)
       end
 
+      # Returns projection keys for the given event type.
+      #
+      # @param event_type [String]
+      # @return [Array<String>, nil]
       def projections_for(event_type)
         @routes.fetch(event_type, nil)
       end

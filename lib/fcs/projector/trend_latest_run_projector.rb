@@ -6,10 +6,15 @@ require "time"
 module FCS
   module Projector
     # Projects 14-day run trends and latest run metadata.
+    #
+    # @example
+    #   projector = FCS::Projector::TrendLatestRunProjector.new(today: Date.today)
+    #   projector.apply!(event)
     class TrendLatestRunProjector
       SUPPORTED_EVENT_TYPE = "RUN_LIFECYCLE_NORMALIZED"
       SUPPORTED_STATUSES = %w[queued running succeeded failed].freeze
 
+      # @param today [Date]
       def initialize(today: Date.today)
         @today = today
         @event_counts_by_day = Hash.new(0)
@@ -17,6 +22,9 @@ module FCS
         @latest_run_occurred_at = nil
       end
 
+      # @param event [Hash]
+      # @return [true]
+      # @raise [FCS::Error]
       def apply!(event)
         validate_event_shape!(event)
         validate_event_type!(event)
@@ -47,6 +55,7 @@ module FCS
         true
       end
 
+      # @return [Hash]
       def read_model
         {
           "runsTrend14d" => runs_trend_14d,

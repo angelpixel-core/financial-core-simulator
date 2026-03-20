@@ -5,7 +5,15 @@ require "active_support/core_ext/module/delegation"
 module FCS
   module Projector
     # Replays event streams into read models (pure Ruby).
+    #
+    # @example
+    #   replay = FCS::Projector::ReadModelReplay.new
+    #   replay.apply_stream!(events)
     class ReadModelReplay
+      # @param today [Date]
+      # @param projection_store [#apply!, #read_model, nil]
+      # @param projection_store_factory [#call, nil]
+      # @param event_projection_router [#projections_for]
       def initialize(
         today: Date.today,
         projection_store: nil,
@@ -25,6 +33,9 @@ module FCS
         validate_projection_store_interface!(@projection_store)
       end
 
+      # @param stream [Array<Hash>]
+      # @return [Hash]
+      # @raise [FCS::Error]
       def apply_stream!(stream)
         validate_stream_shape!(stream)
 
@@ -32,6 +43,9 @@ module FCS
         read_model
       end
 
+      # @param stream [Array<Hash>]
+      # @return [Hash]
+      # @raise [FCS::Error]
       def rebuild_from_stream!(stream)
         self.class.new(
           today: @today,
