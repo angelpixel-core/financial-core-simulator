@@ -10,5 +10,8 @@ module PackwerkLib
     config.eager_load = false
     config.autoload_paths << config.root.join("fcs").to_s
     config.eager_load_paths << config.root.join("fcs").to_s
+    ActiveSupport::Inflector.inflections(:en) do |inflect|
+      inflect.acronym "FCS"
+    end
   end
 end
