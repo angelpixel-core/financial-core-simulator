@@ -62,6 +62,21 @@ jobs:
       - name: Run RubyCritic
         run: bundle exec rubycritic lib spec --no-browser
 
+  gem-packwerk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Run Packwerk (lib)
+        run: bundle exec packwerk check
+        working-directory: lib
+
   gem-docs:
     runs-on: ubuntu-latest
     steps:
@@ -147,6 +162,26 @@ jobs:
 
       - name: Run specs
         run: bundle exec rspec
+        working-directory: apps/admin
+
+  admin-packwerk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: apps/admin
+
+      - name: Install gems
+        run: bundle install
+        working-directory: apps/admin
+
+      - name: Run Packwerk (admin)
+        run: bundle exec packwerk check
         working-directory: apps/admin
 
   admin-security:
