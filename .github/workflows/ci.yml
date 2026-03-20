@@ -62,6 +62,26 @@ jobs:
       - name: Run RubyCritic
         run: bundle exec rubycritic lib spec --no-browser
 
+  gem-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Build YARD docs
+        run: bundle exec yard doc
+
+      - name: Upload YARD HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: yard-docs
+          path: docs/yard
+
   gem-security:
     runs-on: ubuntu-latest
     steps:
