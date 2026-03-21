@@ -16,7 +16,7 @@ RSpec.describe "dashboard demo seed script" do
     expect(metrics[:runs_trend_14d].all? { |point| point[:count].positive? }).to be(true)
 
     total_pnl = BigDecimal(metrics.fetch(:latest_global).fetch("totalPnLQuote").to_s)
-    expect(total_pnl).not_to eq(BigDecimal("0"))
+    expect(total_pnl).not_to eq(BigDecimal(0))
 
     top_account_ids = metrics.fetch(:top_accounts).map { |entry| entry.fetch(:account_id) }
     expect(top_account_ids.size).to be >= 3

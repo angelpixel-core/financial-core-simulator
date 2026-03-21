@@ -105,7 +105,7 @@ module FCS
       def decimal_value(value)
         BigDecimal(value.to_s)
       rescue ArgumentError
-        BigDecimal("0")
+        BigDecimal(0)
       end
 
       def validate_event_shape!(event)

@@ -58,6 +58,6 @@ class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
   def decimal_value(value)
     BigDecimal(value.to_s)
   rescue ArgumentError
-    BigDecimal("0")
+    BigDecimal(0)
   end
 end
