@@ -45,10 +45,10 @@ module Runs
       run
     rescue => e
       duration_ms = begin
-                      ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).to_i
-                    rescue
-                      nil
-                    end
+        ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).to_i
+      rescue
+        nil
+      end
       run.update!(
         status: :failed,
         duration_ms: duration_ms,

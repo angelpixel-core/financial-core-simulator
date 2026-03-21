@@ -24,11 +24,9 @@ Dir.chdir(APP_ROOT) do
 
     shutdown = proc do
       pids.each do |pid|
-        
-          Process.kill("TERM", pid)
-        rescue Errno::ESRCH
-          nil
-        
+        Process.kill("TERM", pid)
+      rescue Errno::ESRCH
+        nil
       end
     end
 
