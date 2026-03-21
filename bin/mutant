@@ -4,8 +4,8 @@ set -euo pipefail
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [ "$#" -eq 0 ]; then
-  set -- "FCS*"
+  set -- "FCS::Engine*"
 fi
 
 echo "==> Root: bundle exec mutant"
-(cd "$root_dir" && bundle exec mutant run --integration rspec --include lib --require ./lib/fcs --require ./spec/spec_helper -- "$@")
+(cd "$root_dir" && bundle exec mutant run "$@")
