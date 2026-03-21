@@ -212,7 +212,7 @@ RSpec.describe "Admin overview", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include('data-controller="pnl-trend-chart"')
       expect(response.body).to include('data-pnl-trend-chart-target="chart"')
-      expect(response.body).to include('data-pnl-trend-chart-target="fallback"')
+      expect(response.body).to include('<turbo-frame id="pnl_trend_fallback"')
       expect(response.body).to include('data-pnl-trend-chart-tooltip-label-value="Total PnL Quote"')
       expect(response.body).to include("Global total PnL quote over successful runs")
     end

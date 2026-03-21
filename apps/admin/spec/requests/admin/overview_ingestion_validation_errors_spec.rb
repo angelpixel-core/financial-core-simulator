@@ -39,7 +39,7 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(
-      "data-poll-url-value=\"/admin/overview/ingestion-validation-errors?field=riskModel&amp;" \
+      "data-poll-url-value=\"/admin/overview/ingestion-validation-errors?errors_page=1&amp;field=riskModel&amp;" \
       "source=source.venue.external\""
     )
   end

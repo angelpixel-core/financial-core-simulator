@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Admin::Dashboard::IngestionValidationErrorMapper do
+RSpec.describe Admin::Validation::IngestionValidationErrorMapper do
   it "maps validation failed run into stable ingestion error shape" do
     run = Run.create!(
       status: :failed,

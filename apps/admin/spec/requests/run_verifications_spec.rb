@@ -7,7 +7,8 @@ RSpec.describe "Run verifications", type: :request do
       "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
       "feeModel" => { "enabled" => true }
     }
-    canonical = FCS::Hashing::CanonicalJSON.dump(input)
+    normalized = Runs::VerifyInputHash.new.send(:normalize_input, input)
+    canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
     hash = FCS::Hashing::SHA256.hex(canonical)
     run = Run.create!(status: :succeeded, input_json: input, input_hash: hash)
 
@@ -41,7 +42,8 @@ RSpec.describe "Run verifications", type: :request do
       "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
       "feeModel" => { "enabled" => true }
     }
-    canonical = FCS::Hashing::CanonicalJSON.dump(input)
+    normalized = Runs::VerifyInputHash.new.send(:normalize_input, input)
+    canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
     hash = FCS::Hashing::SHA256.hex(canonical)
     run = Run.create!(status: :succeeded, input_json: input, input_hash: hash)
 
@@ -60,7 +62,8 @@ RSpec.describe "Run verifications", type: :request do
       "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
       "feeModel" => { "enabled" => true }
     }
-    canonical = FCS::Hashing::CanonicalJSON.dump(input)
+    normalized = Runs::VerifyInputHash.new.send(:normalize_input, input)
+    canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
     hash = FCS::Hashing::SHA256.hex(canonical)
     run = Run.create!(status: :succeeded, input_json: input, input_hash: hash)
 
@@ -79,7 +82,8 @@ RSpec.describe "Run verifications", type: :request do
       "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
       "feeModel" => { "enabled" => true }
     }
-    canonical = FCS::Hashing::CanonicalJSON.dump(input)
+    normalized = Runs::VerifyInputHash.new.send(:normalize_input, input)
+    canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
     hash = FCS::Hashing::SHA256.hex(canonical)
     run = Run.create!(status: :succeeded, input_json: input, input_hash: hash)
 
@@ -98,7 +102,8 @@ RSpec.describe "Run verifications", type: :request do
       "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
       "feeModel" => { "enabled" => true }
     }
-    canonical = FCS::Hashing::CanonicalJSON.dump(input)
+    normalized = Runs::VerifyInputHash.new.send(:normalize_input, input)
+    canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
     hash = FCS::Hashing::SHA256.hex(canonical)
     run = Run.create!(status: :succeeded, input_json: input, input_hash: hash)
 
