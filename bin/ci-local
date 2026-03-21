@@ -9,6 +9,9 @@ echo "==> Root: bundle exec rspec"
 echo "==> Root: bundle exec rubocop"
 (cd "$root_dir" && bundle exec rubocop)
 
+echo "==> Root: bundle exec standardrb"
+(cd "$root_dir" && bundle exec standardrb)
+
 echo "==> Root: bundle exec rubycritic lib spec --no-browser"
 (cd "$root_dir" && bundle exec rubycritic lib spec --no-browser)
 
@@ -27,6 +30,9 @@ if [ -d "$root_dir/apps/admin" ]; then
 
   echo "==> Admin: bundle exec rubocop --config .rubocop.yml"
   (cd "$root_dir/apps/admin" && bundle exec rubocop --config .rubocop.yml)
+
+  echo "==> Admin: bundle exec standardrb"
+  (cd "$root_dir/apps/admin" && bundle exec standardrb)
 
   echo "==> Admin: bundle exec brakeman --no-pager"
   (cd "$root_dir/apps/admin" && bundle exec brakeman --no-pager)
