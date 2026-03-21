@@ -1,5 +1,5 @@
 class Admin::Ui::EmptyStateComponent < ViewComponent::Base
-  def initialize(title: nil, message:, icon: nil, tone: :default)
+  def initialize(message:, title: nil, icon: nil, tone: :default)
     @title = title
     @message = message
     @icon = icon

@@ -17,7 +17,7 @@ class RunExecutionsController < ApplicationController
       format.json { render json: payload, status: :ok }
       format.html { redirect_back fallback_location: "/admin/resources/runs/#{@run.id}" }
     end
-  rescue StandardError => error
+  rescue => error
     payload = execution_payload(status: "failed").merge("error" => error.message)
 
     respond_to do |format|

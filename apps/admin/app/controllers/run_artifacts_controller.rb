@@ -178,7 +178,7 @@ class RunArtifactsController < ApplicationController
 
     options = ["ALL"] + RISK_STATUSES
     option_html = options.map do |status|
-      selected = status == status_filter ? " selected" : ""
+      selected = (status == status_filter) ? " selected" : ""
       "<option value=\"#{h(status)}\"#{selected}>#{h(status)}</option>"
     end.join
 
@@ -189,7 +189,7 @@ class RunArtifactsController < ApplicationController
                  "color:#1a202c;" \
                  "font-weight:600;"
     summary_chips = options.map do |status|
-      key = status == "ALL" ? "ALL" : status
+      key = (status == "ALL") ? "ALL" : status
       value = counters.fetch(key, 0)
       "<span style=\"#{chip_style}\">#{h(status)}: #{value}</span>"
     end.join(" ")
@@ -229,10 +229,10 @@ class RunArtifactsController < ApplicationController
 
     items = events.map do |event|
       "<li>" \
-        "<strong>#{h(event.fetch('reasonCode', '-'))}</strong>" \
-        " - type: #{h(event.fetch('type',
-          '-'))}, market: #{h(event.fetch('marketId',
-            '-'))}, seq: #{h(event.fetch('seq', '-'))}, severity: #{h(event.fetch('severity', '-'))}" \
+        "<strong>#{h(event.fetch("reasonCode", "-"))}</strong>" \
+        " - type: #{h(event.fetch("type",
+          "-"))}, market: #{h(event.fetch("marketId",
+            "-"))}, seq: #{h(event.fetch("seq", "-"))}, severity: #{h(event.fetch("severity", "-"))}" \
       "</li>"
     end.join
 
@@ -311,9 +311,9 @@ class RunArtifactsController < ApplicationController
         <div aria-label="risk-pie-chart" style="width: 120px; height: 120px; border-radius: 50%; border: 1px solid #cbd5e0; background: conic-gradient(#0f766e 0% #{stop_a}%, #c2410c #{stop_a}% #{stop_b}%, #b91c1c #{stop_b}% 100%);"></div>
         <div>
           <div style="font-weight: 700; margin-bottom: 4px;">Risk distribution</div>
-          <div style="color:#0f766e;">HEALTHY: #{healthy} (#{format('%.2f', healthy_pct)}%)</div>
-          <div style="color:#c2410c;">MARGIN_CALL: #{margin_call} (#{format('%.2f', margin_call_pct)}%)</div>
-          <div style="color:#b91c1c;">LIQUIDATABLE: #{liquidatable} (#{format('%.2f', liquidatable_pct)}%)</div>
+          <div style="color:#0f766e;">HEALTHY: #{healthy} (#{format("%.2f", healthy_pct)}%)</div>
+          <div style="color:#c2410c;">MARGIN_CALL: #{margin_call} (#{format("%.2f", margin_call_pct)}%)</div>
+          <div style="color:#b91c1c;">LIQUIDATABLE: #{liquidatable} (#{format("%.2f", liquidatable_pct)}%)</div>
         </div>
       </section>
     HTML

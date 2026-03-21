@@ -5,7 +5,7 @@ class CreateRodauth < ActiveRecord::Migration[8.1]
     create_table :accounts do |t|
       t.integer :status, null: false, default: 1
       t.citext :email, null: false
-      t.check_constraint "email ~ '^[^,;@ \r\n]+@[^,@; \r\n]+\.[^,@; \r\n]+$'", name: "valid_email"
+      t.check_constraint "email ~ '^[^,;@ \r\n]+@[^,@; \r\n]+.[^,@; \r\n]+$'", name: "valid_email"
       t.index :email, unique: true, where: "status IN (1, 2)"
       t.string :password_hash
     end

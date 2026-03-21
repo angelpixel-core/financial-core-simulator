@@ -73,7 +73,7 @@ module Admin
         missing = required_keys.reject { |key| payload.key?(key) }
         return if missing.empty?
 
-        raise ArgumentError, "Missing required compatibility keys for #{field}: #{missing.join(', ')}"
+        raise ArgumentError, "Missing required compatibility keys for #{field}: #{missing.join(", ")}"
       end
     end
   end

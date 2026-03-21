@@ -285,7 +285,7 @@ RSpec.describe FCS::Engine::RiskEngine do
   it "normalizes risk config keys and coerces string values" do
     engine = described_class.new(
       account_collateral: {},
-      risk_config: {"maxLeverage" => "2", maintenanceMarginRatio: "0.25"}
+      risk_config: {"maxLeverage" => "2", :maintenanceMarginRatio => "0.25"}
     )
 
     risk_config = engine.instance_variable_get(:@risk_config)

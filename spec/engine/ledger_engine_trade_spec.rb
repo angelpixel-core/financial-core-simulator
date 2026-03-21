@@ -334,12 +334,14 @@ RSpec.describe FCS::Engine::LedgerEngine do
 
   it "prefers fully qualified RiskEngine for defaults" do
     stub_const("FCS::Engine::LedgerEngine::RiskEngine", Class.new do
-      def initialize(*); end
+      def initialize(*)
+      end
     end)
 
     local_engine = Module.new do
       const_set(:RiskEngine, Class.new do
-        def initialize(*); end
+        def initialize(*)
+        end
       end)
     end
 

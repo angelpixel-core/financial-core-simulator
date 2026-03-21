@@ -206,7 +206,7 @@ module Admin
         end
 
         if inverse_good
-          direction = direction == "up" ? "down" : "up" unless direction == "flat"
+          direction = (direction == "up") ? "down" : "up" unless direction == "flat"
         end
 
         {

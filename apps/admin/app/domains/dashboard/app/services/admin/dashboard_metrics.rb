@@ -174,7 +174,7 @@ module Admin
 
       return raw_direction unless inverse_good
 
-      raw_direction == "up" ? "down" : "up"
+      (raw_direction == "up") ? "down" : "up"
     end
 
     def latest_run
@@ -286,7 +286,7 @@ module Admin
 
     def live_state_metrics
       Admin::LiveStateMetrics.new.call
-    rescue StandardError
+    rescue
       nil
     end
 

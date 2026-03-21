@@ -57,7 +57,7 @@ module FCS
 
         begin
           FCS::Types::Decimal18.from_string(value.to_s)
-        rescue StandardError
+        rescue
           raise_contract_error!(
             message: "account-market row has invalid metric format",
             missing_field: path,

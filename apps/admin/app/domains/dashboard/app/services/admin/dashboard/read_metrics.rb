@@ -25,7 +25,7 @@ module Admin
 
       def read_from_bff_with_optional_fallback
         @bff_reader.call
-      rescue StandardError => error
+      rescue => error
         return read_from_artifact if @read_path_config.fallback_enabled?
 
         raise ReadPathUnavailableError, "BFF read failed and fallback is disabled: #{error.message}"

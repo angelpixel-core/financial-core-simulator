@@ -304,7 +304,7 @@ RSpec.describe "Admin overview", type: :request do
       expect(response.body).to include('data-controller="run-trend-chart"')
       expect(response.body).to include('data-run-trend-chart-target="chart"')
       expect(response.body).to include('data-run-trend-chart-target="fallback"')
-      expect(response.body).to include('trend-chart trend-chart--detail')
+      expect(response.body).to include("trend-chart trend-chart--detail")
     end
   end
 

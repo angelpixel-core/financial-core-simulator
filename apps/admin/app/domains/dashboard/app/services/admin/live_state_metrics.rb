@@ -24,7 +24,7 @@ module Admin
         latest_global: state["global"],
         top_accounts: top_accounts_data(state["accounts"])
       }
-    rescue StandardError
+    rescue
       nil
     end
 

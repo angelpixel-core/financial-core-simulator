@@ -18,7 +18,7 @@ module FCS
       def validate!(payload:)
         REQUIRED_FIELDS.each do |field|
           value = payload[field]
-          next unless value.nil? || (value.is_a?(String) && value.strip.empty?)
+          next if value && (!value.is_a?(String) || !value.strip.empty?)
 
           raise_contract_error!(
             message: "result metadata missing required field",

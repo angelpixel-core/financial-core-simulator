@@ -13,7 +13,7 @@ module Runs
       normalized = normalize_input(run.input_json)
       canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
       recomputed_hash = FCS::Hashing::SHA256.hex(canonical)
-      status = recomputed_hash == run.input_hash ? :verified : :mismatch
+      status = (recomputed_hash == run.input_hash) ? :verified : :mismatch
 
       run.update!(
         verification_status: status,
@@ -28,7 +28,7 @@ module Runs
         recomputed_input_hash: recomputed_hash,
         verified_at: run.verified_at
       }
-    rescue StandardError => e
+    rescue => e
       run.update!(
         verification_status: :verification_error,
         verified_at: Time.current,
