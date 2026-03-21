@@ -6,9 +6,6 @@ root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 echo "==> Root: bundle exec rspec"
 (cd "$root_dir" && bundle exec rspec)
 
-echo "==> Root: bundle exec rubocop"
-(cd "$root_dir" && bundle exec rubocop)
-
 echo "==> Root: bundle exec standardrb"
 (cd "$root_dir" && bundle exec standardrb)
 
@@ -27,9 +24,6 @@ if [ -d "$root_dir/apps/admin" ]; then
 
   echo "==> Admin: bundle exec rspec"
   (cd "$root_dir/apps/admin" && bundle exec rspec)
-
-  echo "==> Admin: bundle exec rubocop --config .rubocop.yml"
-  (cd "$root_dir/apps/admin" && bundle exec rubocop --config .rubocop.yml)
 
   echo "==> Admin: bundle exec standardrb"
   (cd "$root_dir/apps/admin" && bundle exec standardrb)

@@ -69,11 +69,6 @@ group :development, :test do
   gem "packwerk", require: false
   gem "packwerk-extensions", require: false
 
-  # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
-  gem "rubocop-rails-omakase", require: false
-  gem "rubocop-performance", require: false
-  gem "rubocop-rspec", require: false
-
   # Ruby style formatter/linter
   gem "standard", require: false
 

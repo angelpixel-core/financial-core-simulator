@@ -41,8 +41,8 @@ smoke-manual: ## Ejecutar smoke manual asistido (requiere server en :3000)
 seed-dashboard: ## Poblar datos demo para dashboard admin
 	BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rails runner apps/admin/script/seed_dashboard_demo.rb
 
-lint-admin: ## Ejecutar RuboCop en apps/admin
-	BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rubocop apps/admin
+lint-admin: ## Ejecutar StandardRB en apps/admin
+	BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec standardrb
 
 coverage-admin: ## Ejecutar tests admin con cobertura SimpleCov
 	ADMIN_COVERAGE=1 ADMIN_COVERAGE_MODE=report ADMIN_COVERAGE_DIR=coverage/admin BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rspec -Iapps/admin/spec apps/admin/spec

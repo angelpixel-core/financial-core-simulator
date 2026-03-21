@@ -4,7 +4,7 @@
 [![Mutation Tests](https://github.com/angelpixel-core/financial-core-simulator/actions/workflows/mutation-nightly.yml/badge.svg)](https://github.com/angelpixel-core/financial-core-simulator/actions/workflows/mutation-nightly.yml)
 ![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen)
 ![Ruby](https://img.shields.io/badge/ruby-3.4%2B-red)
-![Code Style](https://img.shields.io/badge/code%20style-rubocop-brightgreen)
+![Code Style](https://img.shields.io/badge/code%20style-standardrb-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 Financial Core Simulator is a deterministic trading infrastructure demo that models the core components of a modern exchange backend:
@@ -34,7 +34,7 @@ This repo runs CI checks for:
 - Mutant (mutation testing)
 - SimpleCov (coverage)
 - Bullet (N+1 detection)
-- RuboCop
+- StandardRB
 - Reek
 - RubyCritic
 - Brakeman (admin app)

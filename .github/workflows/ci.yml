@@ -8,7 +8,6 @@ on:
       - lib/**
       - spec/**
       - apps/admin/**
-      - .rubocop.yml
       - Gemfile
       - Gemfile.lock
       - financial-core-simulator.gemspec
@@ -22,7 +21,6 @@ on:
       - lib/**
       - spec/**
       - apps/admin/**
-      - .rubocop.yml
       - Gemfile
       - Gemfile.lock
       - financial-core-simulator.gemspec
@@ -53,8 +51,8 @@ jobs:
         with:
           bundler-cache: true
 
-      - name: Run RuboCop
-        run: bundle exec rubocop
+      - name: Run StandardRB
+        run: bundle exec standardrb
 
       - name: Run Reek
         run: bundle exec reek
