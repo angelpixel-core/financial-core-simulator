@@ -45,6 +45,36 @@ Coverage badge is updated manually. If you want it automated, integrate Codecov 
 This repository represents the public demo track.
 The engine is intentionally simplified and deterministic.
 
+## Packwerk Boundaries
+
+Admin app (Rails, `apps/admin`) uses Packwerk to enforce domain boundaries:
+
+- Domain packages live under `apps/admin/app/domains/*` with `package.yml`.
+- Controllers, views, and assets stay in `apps/admin/app` for now.
+- All admin packages set `public_path: app` and enforce dependencies/privacy.
+- Base Rails classes live in `apps/admin/app/domains/core` (e.g. `ApplicationRecord`, `ApplicationJob`).
+- Avoid depending on the root package (`.`); depend on explicit domain packages instead.
+
+Lib gem (core engine, `lib`) uses Packwerk packages:
+
+- Packages live under `lib/fcs/*` with `package.yml`.
+- `lib/fcs/ports` is the boundary for cross-package interfaces.
+- Packwerk config: `lib/packwerk.yml` with a minimal Rails harness in `lib/config` for validation.
+
+Common commands:
+
+```bash
+# Admin app
+cd apps/admin
+bundle exec packwerk check
+bundle exec packwerk validate
+
+# Lib gem
+cd lib
+bundle exec packwerk check
+bundle exec packwerk validate
+```
+
 ## Reproducible Bootstrap (Story 1.1)
 
 Prerequisites:
