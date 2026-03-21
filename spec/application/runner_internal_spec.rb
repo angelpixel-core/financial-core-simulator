@@ -20,17 +20,17 @@ RSpec.describe FCS::Application::Runner do
 
     input = {
       "accounts" => [
-        { "accountId" => "b" },
-        { "accountId" => "a" }
+        {"accountId" => "b"},
+        {"accountId" => "a"}
       ],
       "markets" => [
-        { "marketId" => "m-2" },
-        { "marketId" => "m-1" }
+        {"marketId" => "m-2"},
+        {"marketId" => "m-1"}
       ],
       "priceSnapshot" => {
         "prices" => [
-          { "marketId" => "m-2" },
-          { "marketId" => "m-1" }
+          {"marketId" => "m-2"},
+          {"marketId" => "m-1"}
         ]
       }
     }
@@ -47,8 +47,8 @@ RSpec.describe FCS::Application::Runner do
     runner = runner_with(sorter: sorter)
 
     input = {
-      "timeline" => { "events" => [] },
-      "trades" => [{ "tradeId" => "t-1" }]
+      "timeline" => {"events" => []},
+      "trades" => [{"tradeId" => "t-1"}]
     }
 
     expect(sorter).to receive(:sort).with(input.fetch("trades")).and_return(["sorted"])
@@ -65,9 +65,9 @@ RSpec.describe FCS::Application::Runner do
     input = {
       "timeline" => {
         "events" => [
-          { "timelineSeq" => 2, "eventType" => "TRADE_APPLIED", "trade" => { "tradeId" => "t-2" } },
-          { "timelineSeq" => 1, "eventType" => "PRICE_UPDATED" },
-          { "timelineSeq" => 3, "eventType" => "TRADE_APPLIED", "trade" => { "tradeId" => "t-3" } }
+          {"timelineSeq" => 2, "eventType" => "TRADE_APPLIED", "trade" => {"tradeId" => "t-2"}},
+          {"timelineSeq" => 1, "eventType" => "PRICE_UPDATED"},
+          {"timelineSeq" => 3, "eventType" => "TRADE_APPLIED", "trade" => {"tradeId" => "t-3"}}
         ]
       }
     }
@@ -75,19 +75,19 @@ RSpec.describe FCS::Application::Runner do
     result = runner.send(:prepare_timeline_input, input)
 
     expect(result.dig("timeline", "events").map { |e| e.fetch("timelineSeq") }).to eq([1, 2, 3])
-    expect(result.fetch("trades")).to eq([{ "tradeId" => "t-2" }, { "tradeId" => "t-3" }])
+    expect(result.fetch("trades")).to eq([{"tradeId" => "t-2"}, {"tradeId" => "t-3"}])
   end
 
   it "builds replay metadata only when timeline events exist" do
     runner = runner_with(sorter: instance_double(FCS::Engine::TradeSorter))
 
-    input = { "timeline" => { "events" => [{}] } }
-    metadata = runner.send(:build_replay_metadata, input: input, checkpoint: { "timelineSeq" => 5 })
+    input = {"timeline" => {"events" => [{}]}}
+    metadata = runner.send(:build_replay_metadata, input: input, checkpoint: {"timelineSeq" => 5})
 
     expect(metadata).to include("mode" => "timeline", "checkpointTimelineSeq" => 5)
 
     expect(
-      runner.send(:build_replay_metadata, input: { "timeline" => nil }, checkpoint: nil)
+      runner.send(:build_replay_metadata, input: {"timeline" => nil}, checkpoint: nil)
     ).to be_nil
   end
 

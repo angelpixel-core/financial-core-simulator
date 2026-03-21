@@ -69,7 +69,7 @@ module Admin
       return nil if role.empty? && user.empty?
       return nil unless ROLE_ORDER.key?(role)
 
-      { id: user.presence || "header-user", role: role }
+      {id: user.presence || "header-user", role: role}
     end
 
     def account_from_session
@@ -82,7 +82,7 @@ module Admin
       role = Admin::SessionRoleResolver.call(account)
       role = "viewer" unless ROLE_ORDER.key?(role)
 
-      { id: account.id.to_s, role: role }
+      {id: account.id.to_s, role: role}
     end
 
     def session_account_id

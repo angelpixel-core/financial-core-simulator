@@ -55,7 +55,7 @@ RSpec.describe FCS::Benchmarking::Fixture do
 
   it "raises when required fields are missing" do
     Dir.mktmpdir do |dir|
-      path = write_fixture(dir, { "schemaVersion" => "1.0" })
+      path = write_fixture(dir, {"schemaVersion" => "1.0"})
 
       expect do
         described_class.load(path: path)

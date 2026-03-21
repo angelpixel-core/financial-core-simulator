@@ -10,7 +10,7 @@ RSpec.describe "Run executions", type: :request do
   end
 
   it "executes run synchronously by default" do
-    run = Run.create!(status: :queued, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
     service = instance_double(Runs::Execute)
     allow(Runs::Execute).to receive(:new).and_return(service)
@@ -26,9 +26,9 @@ RSpec.describe "Run executions", type: :request do
   end
 
   it "enqueues run execution when async=1" do
-    run = Run.create!(status: :queued, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
-    post "/runs/#{run.id}/execute", params: { async: 1 }, as: :json
+    post "/runs/#{run.id}/execute", params: {async: 1}, as: :json
 
     expect(response).to have_http_status(:ok)
     parsed = JSON.parse(response.body)
@@ -42,7 +42,7 @@ RSpec.describe "Run executions", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    run = Run.create!(status: :queued, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
     post "/runs/#{run.id}/execute", as: :json
 
@@ -53,13 +53,13 @@ RSpec.describe "Run executions", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    run = Run.create!(status: :queued, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
     service = instance_double(Runs::Execute)
     allow(Runs::Execute).to receive(:new).and_return(service)
     expect(service).to receive(:call).with(run, fee_enabled: true, explain: true, verbose: false)
 
-    post "/runs/#{run.id}/execute", headers: { "X-Admin-Token" => "ui-secret" }, as: :json
+    post "/runs/#{run.id}/execute", headers: {"X-Admin-Token" => "ui-secret"}, as: :json
 
     expect(response).to have_http_status(:ok)
   end
@@ -68,13 +68,13 @@ RSpec.describe "Run executions", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    run = Run.create!(status: :queued, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
     service = instance_double(Runs::Execute)
     allow(Runs::Execute).to receive(:new).and_return(service)
     expect(service).to receive(:call).with(run, fee_enabled: true, explain: true, verbose: false)
 
-    post "/runs/#{run.id}/execute", headers: { "Authorization" => "Bearer ui-secret" }, as: :json
+    post "/runs/#{run.id}/execute", headers: {"Authorization" => "Bearer ui-secret"}, as: :json
 
     expect(response).to have_http_status(:ok)
   end
@@ -83,13 +83,13 @@ RSpec.describe "Run executions", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    run = Run.create!(status: :queued, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
     service = instance_double(Runs::Execute)
     allow(Runs::Execute).to receive(:new).and_return(service)
     expect(service).to receive(:call).with(run, fee_enabled: true, explain: true, verbose: false)
 
-    post "/runs/#{run.id}/execute", headers: { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }, as: :json
+    post "/runs/#{run.id}/execute", headers: {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}, as: :json
 
     expect(response).to have_http_status(:ok)
   end
@@ -98,9 +98,9 @@ RSpec.describe "Run executions", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    run = Run.create!(status: :queued, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
-    post "/runs/#{run.id}/execute", headers: { "X-Admin-User" => "viewer", "X-Admin-Role" => "viewer" }, as: :json
+    post "/runs/#{run.id}/execute", headers: {"X-Admin-User" => "viewer", "X-Admin-Role" => "viewer"}, as: :json
 
     expect(response).to have_http_status(:forbidden)
   end

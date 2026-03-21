@@ -6,13 +6,13 @@ RSpec.describe "Timeline processing integration" do
   def base_input
     {
       "schemaVersion" => "1.0",
-      "accounts" => [{ "accountId" => "acc-1" }],
-      "markets" => [{ "marketId" => "ETH-USD" }],
-      "feeModel" => { "enabled" => false },
+      "accounts" => [{"accountId" => "acc-1"}],
+      "markets" => [{"marketId" => "ETH-USD"}],
+      "feeModel" => {"enabled" => false},
       "trades" => [],
       "priceSnapshot" => {
         "valuationTimestamp" => "2026-03-03T12:00:00Z",
-        "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }]
+        "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}]
       }
     }
   end

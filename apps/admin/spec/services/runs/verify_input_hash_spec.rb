@@ -5,8 +5,8 @@ RSpec.describe Runs::VerifyInputHash do
     it "marks run as verified when recomputed hash matches" do
       input = {
         "schemaVersion" => "1.0",
-        "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
-        "feeModel" => { "enabled" => true }
+        "trades" => [{"timestamp" => "2026-01-01T00:00:00Z", "seq" => 1}],
+        "feeModel" => {"enabled" => true}
       }
       normalized = described_class.new.send(:normalize_input, input)
       canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
@@ -27,8 +27,8 @@ RSpec.describe Runs::VerifyInputHash do
     it "marks run as mismatch when recomputed hash differs" do
       input = {
         "schemaVersion" => "1.0",
-        "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
-        "feeModel" => { "enabled" => true }
+        "trades" => [{"timestamp" => "2026-01-01T00:00:00Z", "seq" => 1}],
+        "feeModel" => {"enabled" => true}
       }
       normalized = described_class.new.send(:normalize_input, input)
       canonical = FCS::Hashing::CanonicalJSON.dump(normalized)

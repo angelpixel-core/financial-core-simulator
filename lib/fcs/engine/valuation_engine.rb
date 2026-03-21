@@ -25,7 +25,7 @@ module FCS
           raise @dependencies.error_class.new(
             @dependencies.errors_module::ERR_UNKNOWN_REFERENCE,
             "Unknown marketId",
-            details: { marketId: market_id }
+            details: {marketId: market_id}
           )
         end
 
@@ -72,7 +72,7 @@ module FCS
           raise @dependencies.error_class.new(
             @dependencies.errors_module::ERR_INVALID_NUMBER,
             "Float not allowed",
-            details: { field: field, marketId: market_id }
+            details: {field: field, marketId: market_id}
           )
         end
 
@@ -80,7 +80,7 @@ module FCS
           raise @dependencies.error_class.new(
             @dependencies.errors_module::ERR_INVALID_NUMBER,
             "Invalid decimal string",
-            details: { field: field, marketId: market_id, value: raw_price }
+            details: {field: field, marketId: market_id, value: raw_price}
           )
         end
 
@@ -88,7 +88,7 @@ module FCS
           raise @dependencies.error_class.new(
             @dependencies.errors_module::ERR_INVALID_NUMBER,
             "Must be > 0",
-            details: { field: field, marketId: market_id, value: raw_price }
+            details: {field: field, marketId: market_id, value: raw_price}
           )
         end
 

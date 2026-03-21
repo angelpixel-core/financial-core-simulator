@@ -8,15 +8,15 @@ RSpec.describe FCS::Projector::OverviewKpiStatusMixProjector do
 
     projector.apply!(
       "eventType" => "RUN_LIFECYCLE_NORMALIZED",
-      "payload" => { "runId" => "run-1", "status" => "queued" }
+      "payload" => {"runId" => "run-1", "status" => "queued"}
     )
     projector.apply!(
       "eventType" => "RUN_LIFECYCLE_NORMALIZED",
-      "payload" => { "runId" => "run-1", "status" => "running" }
+      "payload" => {"runId" => "run-1", "status" => "running"}
     )
     projector.apply!(
       "eventType" => "RUN_LIFECYCLE_NORMALIZED",
-      "payload" => { "runId" => "run-2", "status" => "failed" }
+      "payload" => {"runId" => "run-2", "status" => "failed"}
     )
 
     model = projector.read_model
@@ -35,7 +35,7 @@ RSpec.describe FCS::Projector::OverviewKpiStatusMixProjector do
     expect do
       projector.apply!(
         "eventType" => "RUN_LIFECYCLE_NORMALIZED",
-        "payload" => { "runId" => "run-1", "status" => "unknown" }
+        "payload" => {"runId" => "run-1", "status" => "unknown"}
       )
     end.to raise_error(FCS::Error) { |error| expect(error.details).to include(field: "event.payload.status") }
   end

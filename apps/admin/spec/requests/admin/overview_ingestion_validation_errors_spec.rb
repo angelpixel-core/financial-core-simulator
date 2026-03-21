@@ -34,8 +34,8 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
 
   it "keeps selected filters in panel polling url on overview" do
     get "/admin/overview",
-        params: { source: "source.venue.external", field: "riskModel" },
-        headers: admin_session_headers
+      params: {source: "source.venue.external", field: "riskModel"},
+      headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(
@@ -46,7 +46,7 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
 
   it "renders ingestion validation errors fragment for xhr polling" do
     get "/admin/overview/ingestion-validation-errors",
-        headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
+      headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Ingestion validation errors")
@@ -56,7 +56,7 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
 
   it "renders turbo-frame response for hotwire filter submit" do
     get "/admin/overview/ingestion-validation-errors",
-        headers: admin_session_headers.merge("Turbo-Frame" => "overview-ingestion-validation-errors-panel")
+      headers: admin_session_headers.merge("Turbo-Frame" => "overview-ingestion-validation-errors-panel")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("<turbo-frame id=\"overview-ingestion-validation-errors-panel\"")
@@ -73,13 +73,13 @@ RSpec.describe "Admin ingestion validation errors", type: :request do
 
   it "filters by source in the ingestion validation errors panel" do
     create_validation_failed_run(source: "source.agent.internal", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK,
-message: "risk invalid")
+      message: "risk invalid")
     create_validation_failed_run(source: "source.venue.external",
-error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
+      error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
 
-      get "/admin/overview/ingestion-validation-errors",
-        params: { source: "source.venue.external" },
-        headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
+    get "/admin/overview/ingestion-validation-errors",
+      params: {source: "source.venue.external"},
+      headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("source.venue.external")
@@ -88,13 +88,13 @@ error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting i
 
   it "filters by partial source match in the ingestion validation errors panel" do
     create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK,
-message: "risk invalid")
+      message: "risk invalid")
     create_validation_failed_run(source: "source.venue.external",
-error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
+      error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
 
-      get "/admin/overview/ingestion-validation-errors",
-        params: { source: "agen" },
-        headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
+    get "/admin/overview/ingestion-validation-errors",
+      params: {source: "agen"},
+      headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("agente.hft.alpha")
@@ -103,13 +103,13 @@ error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting i
 
   it "filters by source alias match in the ingestion validation errors panel" do
     create_validation_failed_run(source: "source.venue.external",
-error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
+      error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING, message: "accounting invalid")
     create_validation_failed_run(source: "source.agent.internal", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK,
-message: "risk invalid")
+      message: "risk invalid")
 
-      get "/admin/overview/ingestion-validation-errors",
-        params: { source: "src" },
-        headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
+    get "/admin/overview/ingestion-validation-errors",
+      params: {source: "src"},
+      headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("source.venue.external")
@@ -118,13 +118,13 @@ message: "risk invalid")
 
   it "filters by field in the ingestion validation errors panel" do
     create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK,
-message: "risk invalid")
+      message: "risk invalid")
     create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING,
-message: "accounting invalid")
+      message: "accounting invalid")
 
-      get "/admin/overview/ingestion-validation-errors",
-        params: { field: "riskModel" },
-        headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
+    get "/admin/overview/ingestion-validation-errors",
+      params: {field: "riskModel"},
+      headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("riskModel")
@@ -133,15 +133,15 @@ message: "accounting invalid")
 
   it "filters by partial case-insensitive field in the ingestion validation errors panel" do
     create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK,
-message: "risk invalid")
+      message: "risk invalid")
     create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING,
-message: "accounting invalid")
+      message: "accounting invalid")
     create_validation_failed_run(source: "agente.hft.alpha",
-error_code: Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL, message: "trade decimal invalid")
+      error_code: Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL, message: "trade decimal invalid")
 
-      get "/admin/overview/ingestion-validation-errors",
-        params: { field: "Model" },
-        headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
+    get "/admin/overview/ingestion-validation-errors",
+      params: {field: "Model"},
+      headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("riskModel")
@@ -151,11 +151,11 @@ error_code: Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL, message: "trade dec
 
   it "renders empty-state for non-matching source+field filter" do
     create_validation_failed_run(source: "agente.hft.alpha", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK,
-message: "risk invalid")
+      message: "risk invalid")
 
-      get "/admin/overview/ingestion-validation-errors",
-        params: { source: "faucet.erc20.ang", field: "accounts.collateralQuote" },
-        headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
+    get "/admin/overview/ingestion-validation-errors",
+      params: {source: "faucet.erc20.ang", field: "accounts.collateralQuote"},
+      headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("No ingestion validation errors.")
@@ -164,10 +164,10 @@ message: "risk invalid")
 
   it "renders striped table markup when ingestion errors are present" do
     create_validation_failed_run(source: "source.agent.internal", error_code: Runs::ErrorCodeMapper::VALIDATION_RISK,
-message: "risk invalid")
+      message: "risk invalid")
 
     get "/admin/overview/ingestion-validation-errors",
-headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
+      headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("table--striped")
@@ -182,7 +182,7 @@ headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
         "correlationId" => "corr-#{SecureRandom.hex(4)}",
         "timeline" => {
           "events" => [
-            { "source" => source }
+            {"source" => source}
           ]
         }
       }
@@ -190,6 +190,6 @@ headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
   end
 
   def admin_session_headers
-    { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+    {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}
   end
 end

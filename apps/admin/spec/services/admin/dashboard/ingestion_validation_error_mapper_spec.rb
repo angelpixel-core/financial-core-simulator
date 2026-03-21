@@ -11,7 +11,7 @@ RSpec.describe Admin::Validation::IngestionValidationErrorMapper do
         "correlationId" => "corr-001",
         "timeline" => {
           "events" => [
-            { "source" => "source.venue.external" }
+            {"source" => "source.venue.external"}
           ]
         }
       }
@@ -37,7 +37,7 @@ RSpec.describe Admin::Validation::IngestionValidationErrorMapper do
       input_json: {
         "timeline" => {
           "events" => [
-            { "source" => "agente.hft.alpha" }
+            {"source" => "agente.hft.alpha"}
           ]
         }
       }

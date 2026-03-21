@@ -24,20 +24,20 @@ module FCS
         fixture.validate!(path: path)
         fixture
       rescue Errno::ENOENT
-        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "Fixture file not found", details: { path: path })
+        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "Fixture file not found", details: {path: path})
       rescue Errno::EACCES
-        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "Fixture file is not readable", details: { path: path })
+        raise FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "Fixture file is not readable", details: {path: path})
       rescue JSON::ParserError
         raise FCS::Error.new(
           FCS::Errors::ERR_INVALID_INPUT,
           "Fixture JSON is invalid",
-          details: { path: path, errorClass: "JSON::ParserError", errorCode: "INVALID_JSON_SYNTAX" }
+          details: {path: path, errorClass: "JSON::ParserError", errorCode: "INVALID_JSON_SYNTAX"}
         )
       rescue KeyError => e
         raise FCS::Error.new(
           FCS::Errors::ERR_INVALID_INPUT,
           "Fixture missing required field",
-          details: { path: path, field: e.message }
+          details: {path: path, field: e.message}
         )
       end
 
@@ -70,7 +70,7 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_INVALID_INPUT,
             "Fixture must define at least 100,000 trades",
-            details: { path: path, trades: trades }
+            details: {path: path, trades: trades}
           )
         end
 
@@ -78,7 +78,7 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_INVALID_INPUT,
             "Fixture schemaVersion must be a non-empty string",
-            details: { path: path, schemaVersion: schema_version }
+            details: {path: path, schemaVersion: schema_version}
           )
         end
 
@@ -87,7 +87,7 @@ module FCS
         raise FCS::Error.new(
           FCS::Errors::ERR_INVALID_INPUT,
           "Fixture valuationTimestamp must be a non-empty string",
-          details: { path: path, valuationTimestamp: valuation_timestamp }
+          details: {path: path, valuationTimestamp: valuation_timestamp}
         )
       end
 
@@ -99,7 +99,7 @@ module FCS
         raise FCS::Error.new(
           FCS::Errors::ERR_INVALID_INPUT,
           "Fixture #{field} must be a positive integer",
-          details: { path: path, field: field, value: value }
+          details: {path: path, field: field, value: value}
         )
       end
     end

@@ -48,10 +48,10 @@ module FCS
           end
 
           raise_invalid!("source event idempotency key conflict for duplicate event",
-                         field: "sourceEvent.idempotencyKey")
+            field: "sourceEvent.idempotencyKey")
         end
 
-        { accepted: accepted, duplicates: duplicates }
+        {accepted: accepted, duplicates: duplicates}
       end
 
       private
@@ -95,7 +95,7 @@ module FCS
       end
 
       def raise_invalid!(message, field:)
-        raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: { field: field })
+        raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: {field: field})
       end
     end
   end

@@ -47,70 +47,70 @@ module Runs
 
     private
 
-  def normalize_input(input_json)
-    normalized = deep_copy(input_json)
+    def normalize_input(input_json)
+      normalized = deep_copy(input_json)
 
-    fee_enabled = normalized.dig("feeModel", "enabled")
-    fee_enabled = true if fee_enabled.nil?
-    normalized["feeModel"] ||= {}
-    normalized["feeModel"]["enabled"] = !!fee_enabled
+      fee_enabled = normalized.dig("feeModel", "enabled")
+      fee_enabled = true if fee_enabled.nil?
+      normalized["feeModel"] ||= {}
+      normalized["feeModel"]["enabled"] = !!fee_enabled
 
-    normalized = prepare_execution_input(normalized)
-    normalize_collections_for_determinism!(normalized)
-    normalized
-  end
-
-  def prepare_execution_input(input)
-    return prepare_batch_input(input) unless timeline_present?(input)
-
-    if timeline_feature_enabled?
-      prepare_timeline_input(input)
-    else
-      raise FCS::Error.new(
-        FCS::Errors::ERR_VALIDATION,
-        "timeline input requires FCS_TIMELINE_ENABLED=1",
-        details: { field: "timeline" }
-      )
+      normalized = prepare_execution_input(normalized)
+      normalize_collections_for_determinism!(normalized)
+      normalized
     end
-  end
 
-  def prepare_batch_input(input)
-    input.delete("timeline")
-    input["trades"] = @sorter.sort(input.fetch("trades"))
-    input
-  end
+    def prepare_execution_input(input)
+      return prepare_batch_input(input) unless timeline_present?(input)
 
-  def prepare_timeline_input(input)
-    events = input.fetch("timeline").fetch("events").sort_by { |event| event.fetch("timelineSeq") }
-    input["timeline"]["events"] = events
-    input["trades"] = events.select { |event| event.fetch("eventType") == "TRADE_APPLIED" }
-                            .map { |event| event.fetch("trade") }
-    input
-  end
+      if timeline_feature_enabled?
+        prepare_timeline_input(input)
+      else
+        raise FCS::Error.new(
+          FCS::Errors::ERR_VALIDATION,
+          "timeline input requires FCS_TIMELINE_ENABLED=1",
+          details: {field: "timeline"}
+        )
+      end
+    end
 
-  def normalize_collections_for_determinism!(input)
-    input["accounts"] = sort_collection(input["accounts"]) { |item| item.fetch("accountId") }
-    input["markets"] = sort_collection(input["markets"]) { |item| item.fetch("marketId") }
+    def prepare_batch_input(input)
+      input.delete("timeline")
+      input["trades"] = @sorter.sort(input.fetch("trades"))
+      input
+    end
 
-    prices = input.dig("priceSnapshot", "prices")
-    return unless prices.is_a?(Array)
+    def prepare_timeline_input(input)
+      events = input.fetch("timeline").fetch("events").sort_by { |event| event.fetch("timelineSeq") }
+      input["timeline"]["events"] = events
+      input["trades"] = events.select { |event| event.fetch("eventType") == "TRADE_APPLIED" }
+        .map { |event| event.fetch("trade") }
+      input
+    end
 
-    input["priceSnapshot"]["prices"] = sort_collection(prices) { |item| item.fetch("marketId") }
-  end
+    def normalize_collections_for_determinism!(input)
+      input["accounts"] = sort_collection(input["accounts"]) { |item| item.fetch("accountId") }
+      input["markets"] = sort_collection(input["markets"]) { |item| item.fetch("marketId") }
 
-  def sort_collection(collection, &)
-    return collection unless collection.is_a?(Array)
+      prices = input.dig("priceSnapshot", "prices")
+      return unless prices.is_a?(Array)
 
-    collection.sort_by(&)
-  end
+      input["priceSnapshot"]["prices"] = sort_collection(prices) { |item| item.fetch("marketId") }
+    end
 
-  def timeline_present?(input)
-    input["timeline"].is_a?(Hash) && input["timeline"]["events"].is_a?(Array)
-  end
+    def sort_collection(collection, &)
+      return collection unless collection.is_a?(Array)
 
-  def timeline_feature_enabled?
-    ENV["FCS_TIMELINE_ENABLED"] == "1"
-  end
+      collection.sort_by(&)
+    end
+
+    def timeline_present?(input)
+      input["timeline"].is_a?(Hash) && input["timeline"]["events"].is_a?(Array)
+    end
+
+    def timeline_feature_enabled?
+      ENV["FCS_TIMELINE_ENABLED"] == "1"
+    end
 
     def deep_copy(data)
       JSON.parse(JSON.generate(data))

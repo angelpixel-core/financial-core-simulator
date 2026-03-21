@@ -5,7 +5,7 @@ require_relative "../../lib/fcs"
 RSpec.describe FCS::Engine::ValuationEngine do
   it "computes unrealized pnl as (snapshot - avgCost) * qty" do
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
     }
 
     valuation = described_class.new(price_snapshot: snapshot)
@@ -23,7 +23,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
 
   it "updates snapshot price for market with decimal-string input" do
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
     }
 
     valuation = described_class.new(price_snapshot: snapshot)
@@ -34,7 +34,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
 
   it "keeps Decimal18 precision when updating price" do
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
     }
 
     valuation = described_class.new(price_snapshot: snapshot)
@@ -50,7 +50,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
 
   it "raises when updating an unknown market" do
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
     }
 
     valuation = described_class.new(price_snapshot: snapshot)
@@ -66,7 +66,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
 
   it "rejects invalid update_price! input for price_quote_per_base" do
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
     }
 
     valuation = described_class.new(price_snapshot: snapshot)
@@ -80,7 +80,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
 
   it "rejects float price input with a specific error" do
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
     }
 
     valuation = described_class.new(price_snapshot: snapshot)
@@ -106,7 +106,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
     end.new
 
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
     }
 
     valuation = described_class.new(price_snapshot: snapshot)
@@ -122,7 +122,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
 
   it "rejects float values in price snapshots" do
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => 150.5 }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => 150.5}]
     }
 
     expect do
@@ -136,7 +136,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
 
   it "rejects invalid decimal strings and zero values" do
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
     }
 
     valuation = described_class.new(price_snapshot: snapshot)
@@ -161,7 +161,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
   it "accepts string subclasses for price input" do
     price_string = Class.new(String).new("151.25")
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
     }
 
     valuation = described_class.new(price_snapshot: snapshot)
@@ -181,7 +181,7 @@ RSpec.describe FCS::Engine::ValuationEngine do
     end.new
 
     snapshot = {
-      "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+      "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
     }
 
     valuation = described_class.new(price_snapshot: snapshot)

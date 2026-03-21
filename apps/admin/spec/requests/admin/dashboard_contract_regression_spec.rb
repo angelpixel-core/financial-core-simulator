@@ -37,8 +37,8 @@ RSpec.describe "Dashboard contract regression", type: :request do
     ingestion_errors = get_json("/dashboard/ingestion-validation-errors")
     expect(ingestion_errors.fetch("contractVersion")).to eq("v1")
     expect(ingestion_errors.keys).to contain_exactly("contractVersion", "errors")
-    expect(ingestion_errors.fetch("errors")).to all(include("source", "field", "message", "occurred_at", 
-"correlation_id"))
+    expect(ingestion_errors.fetch("errors")).to all(include("source", "field", "message", "occurred_at",
+      "correlation_id"))
 
     risk = get_json("/dashboard/risk")
     expect(risk.fetch("contractVersion")).to eq("v1")
@@ -94,8 +94,8 @@ RSpec.describe "Dashboard contract regression", type: :request do
       "/dashboard/latest-run"
     ].each do |path|
       get path, as: :json
-      expect(response).to have_http_status(:forbidden), 
-"Expected #{path} to require auth when ADMIN_UI_TOKEN is configured"
+      expect(response).to have_http_status(:forbidden),
+        "Expected #{path} to require auth when ADMIN_UI_TOKEN is configured"
     end
   end
 
@@ -103,7 +103,7 @@ RSpec.describe "Dashboard contract regression", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    get "/dashboard/overview", headers: { "Authorization" => "Bearer ui-secret" }, as: :json
+    get "/dashboard/overview", headers: {"Authorization" => "Bearer ui-secret"}, as: :json
 
     expect(response).to have_http_status(:ok)
     parsed = JSON.parse(response.body)
@@ -116,14 +116,14 @@ RSpec.describe "Dashboard contract regression", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    get "/admin/overview", headers: { "X-Admin-Token" => "ui-secret" }
+    get "/admin/overview", headers: {"X-Admin-Token" => "ui-secret"}
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/")
 
-    get "/admin/overview", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
+    get "/admin/overview", headers: {"X-Admin-User" => "alice", "X-Admin-Role" => "viewer"}
     expect(response).to have_http_status(:ok)
 
-    get "/dashboard/overview", headers: { "X-Admin-Token" => "ui-secret" }, as: :json
+    get "/dashboard/overview", headers: {"X-Admin-Token" => "ui-secret"}, as: :json
     expect(response).to have_http_status(:ok)
   end
 

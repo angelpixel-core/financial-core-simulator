@@ -1,9 +1,9 @@
 class Admin::Dashboard::TopAccountsTableComponent < ViewComponent::Base
   COLUMNS = [
-    { key: :account, label: "Account" },
-    { key: :total_pnl_quote, label: "Total PnL Quote" },
-    { key: :realized_net, label: "Realized Net" },
-    { key: :unrealized, label: "Unrealized" }
+    {key: :account, label: "Account"},
+    {key: :total_pnl_quote, label: "Total PnL Quote"},
+    {key: :realized_net, label: "Realized Net"},
+    {key: :unrealized, label: "Unrealized"}
   ].freeze
 
   def initialize(accounts:)

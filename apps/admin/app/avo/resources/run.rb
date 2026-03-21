@@ -28,7 +28,7 @@ class Avo::Resources::Run < Avo::BaseResource
         view_context.link_to(
           "Execute now",
           view_context.main_app.run_execute_path(id: record.id),
-          data: { turbo_method: :post },
+          data: {turbo_method: :post},
           rel: "noopener"
         )
       end
@@ -37,7 +37,7 @@ class Avo::Resources::Run < Avo::BaseResource
         view_context.link_to(
           "Enqueue execution",
           view_context.main_app.run_execute_path(id: record.id, async: 1),
-          data: { turbo_method: :post },
+          data: {turbo_method: :post},
           rel: "noopener"
         )
       end
@@ -58,7 +58,7 @@ class Avo::Resources::Run < Avo::BaseResource
         view_context.link_to(
           "Verify now",
           view_context.main_app.run_verify_path(id: record.id),
-          data: { turbo_method: :post },
+          data: {turbo_method: :post},
           rel: "noopener"
         )
       end
@@ -70,37 +70,37 @@ class Avo::Resources::Run < Avo::BaseResource
       end
     end
 
-      panel "Triage drilldown" do
-        field :overview_drilldown, as: :text, as_html: true, only_on: :show, name: "overview" do
-          context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters, 
-run: record)
-          view_context.link_to("Open admin overview", view_context.main_app.admin_overview_path(context_params), 
-rel: "noopener")
-        end
-
-        field :top_accounts_drilldown, as: :text, as_html: true, only_on: :show, name: "top accounts" do
-          context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters, 
-run: record)
-          view_context.link_to("Open top accounts", 
-view_context.main_app.admin_overview_top_accounts_path(context_params), rel: "noopener")
-        end
-
-        field :ingestion_errors_drilldown, as: :text, as_html: true, only_on: :show, name: "ingestion errors" do
-          context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters, 
-run: record)
-          view_context.link_to("Open ingestion validation errors", 
-view_context.main_app.admin_overview_ingestion_validation_errors_path(context_params), rel: "noopener")
-        end
+    panel "Triage drilldown" do
+      field :overview_drilldown, as: :text, as_html: true, only_on: :show, name: "overview" do
+        context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters,
+          run: record)
+        view_context.link_to("Open admin overview", view_context.main_app.admin_overview_path(context_params),
+          rel: "noopener")
       end
 
-      panel "Artifacts viewer" do
-        field :artifact_evidence, as: :text, as_html: true, only_on: :show, name: "artifact evidence" do
-          context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters, 
-run: record)
-          view_context.render(Admin::Runs::ArtifactEvidencePanelComponent.new(run: record, 
-context_params: context_params))
-        end
+      field :top_accounts_drilldown, as: :text, as_html: true, only_on: :show, name: "top accounts" do
+        context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters,
+          run: record)
+        view_context.link_to("Open top accounts",
+          view_context.main_app.admin_overview_top_accounts_path(context_params), rel: "noopener")
       end
+
+      field :ingestion_errors_drilldown, as: :text, as_html: true, only_on: :show, name: "ingestion errors" do
+        context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters,
+          run: record)
+        view_context.link_to("Open ingestion validation errors",
+          view_context.main_app.admin_overview_ingestion_validation_errors_path(context_params), rel: "noopener")
+      end
+    end
+
+    panel "Artifacts viewer" do
+      field :artifact_evidence, as: :text, as_html: true, only_on: :show, name: "artifact evidence" do
+        context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters,
+          run: record)
+        view_context.render(Admin::Runs::ArtifactEvidencePanelComponent.new(run: record,
+          context_params: context_params))
+      end
+    end
   end
 
   def filters

@@ -21,7 +21,7 @@ RSpec.describe FCS::Projector::ReadModelReplay do
   end
 
   def account_totals_event(account_id:, total_pnl_quote:, realized_net_pnl_quote:, unrealized_pnl_quote:,
-                           correlation_id:, occurred_at:)
+    correlation_id:, occurred_at:)
     {
       "eventVersion" => "1.0",
       "source" => "aggregator.projector",
@@ -59,20 +59,20 @@ RSpec.describe FCS::Projector::ReadModelReplay do
       lifecycle_event("succeeded", run_id: "run-1", correlation_id: "corr-3", occurred_at: "2026-03-03T10:10:00Z"),
       lifecycle_event("failed", run_id: "run-2", correlation_id: "corr-4", occurred_at: "2026-03-04T10:00:00Z"),
       account_totals_event(account_id: "acc-a", total_pnl_quote: "5.0", realized_net_pnl_quote: "3.0",
-                           unrealized_pnl_quote: "2.0", correlation_id: "corr-a", occurred_at: "2026-03-04T10:00:30Z"),
+        unrealized_pnl_quote: "2.0", correlation_id: "corr-a", occurred_at: "2026-03-04T10:00:30Z"),
       account_totals_event(account_id: "acc-b", total_pnl_quote: "15.0", realized_net_pnl_quote: "11.0",
-                           unrealized_pnl_quote: "4.0", correlation_id: "corr-b", occurred_at: "2026-03-04T10:01:00Z"),
+        unrealized_pnl_quote: "4.0", correlation_id: "corr-b", occurred_at: "2026-03-04T10:01:00Z"),
       risk_snapshot_event(account_id: "acc-a", status: "HEALTHY", margin_ratio: "1.50", correlation_id: "corr-r1",
-                          occurred_at: "2026-03-04T10:01:30Z"),
+        occurred_at: "2026-03-04T10:01:30Z"),
       risk_snapshot_event(account_id: "acc-b", status: "MARGIN_CALL", margin_ratio: "0.95", correlation_id: "corr-r2",
-                          occurred_at: "2026-03-04T10:02:00Z")
+        occurred_at: "2026-03-04T10:02:00Z")
     ]
 
     online_state = projector_runtime.apply_stream!(stream)
 
     replay_state = described_class
-                   .new(today: Date.new(2026, 3, 4))
-                   .rebuild_from_stream!(stream)
+      .new(today: Date.new(2026, 3, 4))
+      .rebuild_from_stream!(stream)
 
     expect(replay_state).to eq(online_state)
   end

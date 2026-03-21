@@ -73,7 +73,7 @@ RSpec.describe FCS::Reporting::CsvArtifactReconciler do
       positions_path = File.join(dir, "positions.csv")
       pnl_path = File.join(dir, "pnl.csv")
 
-      File.write(json_path, JSON.pretty_generate({ "accounts" => [], "global" => {} }))
+      File.write(json_path, JSON.pretty_generate({"accounts" => [], "global" => {}}))
 
       write_csv(positions_path, ["bad"], [])
       write_csv(pnl_path, FCS::Reporting::CsvPnL::HEADER, [])

@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Run artifacts redirect", type: :request do
   it "redirects admin-like result path to app artifact endpoint" do
-    run = Run.create!(input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(input_json: {"schemaVersion" => "1.0"})
 
     get "/admin/resources/runs/#{run.id}/result"
 
@@ -11,7 +11,7 @@ RSpec.describe "Run artifacts redirect", type: :request do
   end
 
   it "keeps legacy /avo result path redirect for compatibility" do
-    run = Run.create!(input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(input_json: {"schemaVersion" => "1.0"})
 
     get "/avo/resources/runs/#{run.id}/result"
 
@@ -20,7 +20,7 @@ RSpec.describe "Run artifacts redirect", type: :request do
   end
 
   it "redirects admin-like risk path to app artifact endpoint" do
-    run = Run.create!(input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(input_json: {"schemaVersion" => "1.0"})
 
     get "/admin/resources/runs/#{run.id}/risk"
 
@@ -29,7 +29,7 @@ RSpec.describe "Run artifacts redirect", type: :request do
   end
 
   it "keeps legacy /avo risk path redirect for compatibility" do
-    run = Run.create!(input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(input_json: {"schemaVersion" => "1.0"})
 
     get "/avo/resources/runs/#{run.id}/risk"
 
@@ -38,7 +38,7 @@ RSpec.describe "Run artifacts redirect", type: :request do
   end
 
   it "redirects admin-like positions path to app artifact endpoint" do
-    run = Run.create!(input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(input_json: {"schemaVersion" => "1.0"})
 
     get "/admin/resources/runs/#{run.id}/positions"
 
@@ -47,7 +47,7 @@ RSpec.describe "Run artifacts redirect", type: :request do
   end
 
   it "keeps legacy /avo positions path redirect for compatibility" do
-    run = Run.create!(input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(input_json: {"schemaVersion" => "1.0"})
 
     get "/avo/resources/runs/#{run.id}/positions"
 
@@ -56,7 +56,7 @@ RSpec.describe "Run artifacts redirect", type: :request do
   end
 
   it "redirects admin-like pnl path to app artifact endpoint" do
-    run = Run.create!(input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(input_json: {"schemaVersion" => "1.0"})
 
     get "/admin/resources/runs/#{run.id}/pnl"
 
@@ -65,7 +65,7 @@ RSpec.describe "Run artifacts redirect", type: :request do
   end
 
   it "keeps legacy /avo pnl path redirect for compatibility" do
-    run = Run.create!(input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(input_json: {"schemaVersion" => "1.0"})
 
     get "/avo/resources/runs/#{run.id}/pnl"
 
@@ -74,9 +74,9 @@ RSpec.describe "Run artifacts redirect", type: :request do
   end
 
   it "keeps admin risk redirect target stable when query params are present" do
-    run = Run.create!(input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(input_json: {"schemaVersion" => "1.0"})
 
-    get "/admin/resources/runs/#{run.id}/risk", params: { status: "MARGIN_CALL" }
+    get "/admin/resources/runs/#{run.id}/risk", params: {status: "MARGIN_CALL"}
 
     expect(response).to have_http_status(:moved_permanently)
     expect(response.headers["Location"]).to end_with("/runs/#{run.id}/risk")

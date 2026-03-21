@@ -7,8 +7,8 @@ RSpec.describe "Dashboard compatibility contract", type: :request do
     expect(response).to have_http_status(:ok)
 
     parsed = JSON.parse(response.body)
-    expect(parsed).to include("contractVersion", "runKpis", "runsTrend14d", "statusMix30d", "latestRun", 
-"globalSummary", "topAccounts", "legacy")
+    expect(parsed).to include("contractVersion", "runKpis", "runsTrend14d", "statusMix30d", "latestRun",
+      "globalSummary", "topAccounts", "legacy")
     expect(parsed.fetch("contractVersion")).to eq("v1")
     expect(parsed.fetch("legacy")).to include(
       "total_runs_7d",

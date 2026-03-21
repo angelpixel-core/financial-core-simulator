@@ -7,8 +7,8 @@ RSpec.describe FCS::Application::Runner do
     {
       "schemaVersion" => "1.0",
       "trades" => [],
-      "priceSnapshot" => { "valuationTimestamp" => "2026-02-25T03:00:00Z" },
-      "feeModel" => { "enabled" => false }
+      "priceSnapshot" => {"valuationTimestamp" => "2026-02-25T03:00:00Z"},
+      "feeModel" => {"enabled" => false}
     }
   end
 

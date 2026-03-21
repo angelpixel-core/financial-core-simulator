@@ -17,7 +17,7 @@ RSpec.describe FCS::Projector::EventProjectionRouter do
 
   it "rejects route entries with invalid projection keys" do
     expect do
-      described_class.new(routes: { "RUN_LIFECYCLE_NORMALIZED" => [""] })
+      described_class.new(routes: {"RUN_LIFECYCLE_NORMALIZED" => [""]})
     end.to raise_error(FCS::Error) { |error| expect(error.details[:field]).to include("eventProjectionRouter.routes") }
   end
 end

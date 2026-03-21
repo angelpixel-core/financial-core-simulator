@@ -89,7 +89,7 @@ module FCS
         raise @dependencies.error_class.new(
           @dependencies.errors_module::ERR_VALIDATION,
           "BUY quantity must be > 0",
-          details: { quantityBase: buy_qty.to_s }
+          details: {quantityBase: buy_qty.to_s}
         )
       end
 
@@ -97,7 +97,7 @@ module FCS
         raise @dependencies.error_class.new(
           @dependencies.errors_module::ERR_POSITION_NEGATIVE,
           "SELL would make position negative",
-          details: { qty: @qty.to_s }
+          details: {qty: @qty.to_s}
         )
       end
 

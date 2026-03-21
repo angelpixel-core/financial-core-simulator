@@ -23,11 +23,11 @@ RSpec.describe FCS::Engine::LedgerEngine do
     end
 
     def apply_buy!(buy_qty:, buy_price:)
-      @buy_args = { buy_qty: buy_qty, buy_price: buy_price }
+      @buy_args = {buy_qty: buy_qty, buy_price: buy_price}
     end
 
     def apply_sell!(sell_qty:, sell_price:)
-      @sell_args = { sell_qty: sell_qty, sell_price: sell_price }
+      @sell_args = {sell_qty: sell_qty, sell_price: sell_price}
     end
 
     def apply_fee!(fee_quote)
@@ -57,7 +57,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
       "side" => "BUY",
       "quantityBase" => "1.5",
       "priceQuotePerBase" => "10",
-      "fee" => { "amountQuote" => "0.25" }
+      "fee" => {"amountQuote" => "0.25"}
     }
   end
 
@@ -321,7 +321,7 @@ RSpec.describe FCS::Engine::LedgerEngine do
     end
 
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("10") },
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("10")},
       max_leverage: FCS::Types::Decimal18.from_string("2"),
       risk_engine_klass: risk_engine_klass
     )

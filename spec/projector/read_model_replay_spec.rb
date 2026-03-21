@@ -4,8 +4,8 @@ require_relative "../../lib/fcs"
 
 RSpec.describe FCS::Projector::ReadModelReplay do
   it "applies event stream and returns read model" do
-    instance_double("Projection", apply!: true, read_model: { "kpi" => {} })
-    store = instance_double("ProjectionStore", apply!: true, read_model: { "kpi" => {} })
+    instance_double("Projection", apply!: true, read_model: {"kpi" => {}})
+    store = instance_double("ProjectionStore", apply!: true, read_model: {"kpi" => {}})
     router = instance_double(FCS::Projector::EventProjectionRouter, projections_for: ["overview"])
 
     replay = described_class.new(
@@ -14,7 +14,7 @@ RSpec.describe FCS::Projector::ReadModelReplay do
       projection_store_factory: instance_double("StoreFactory", call: store)
     )
 
-    events = [{ "eventType" => "RUN_LIFECYCLE_NORMALIZED" }]
+    events = [{"eventType" => "RUN_LIFECYCLE_NORMALIZED"}]
 
     expect(store).to receive(:apply!).with(["overview"], events.first)
     expect(replay.apply_stream!(events)).to eq("kpi" => {})
@@ -31,7 +31,7 @@ RSpec.describe FCS::Projector::ReadModelReplay do
     )
 
     expect do
-      replay.apply_stream!([{ "eventType" => "UNKNOWN" }])
+      replay.apply_stream!([{"eventType" => "UNKNOWN"}])
     end.to raise_error(FCS::Error) { |error| expect(error.details).to include(field: "event.eventType") }
   end
 

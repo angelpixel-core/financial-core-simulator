@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 class RunArtifactsController < ApplicationController
-  RISK_STATUSES = [ "HEALTHY", "MARGIN_CALL", "LIQUIDATABLE" ].freeze
+  RISK_STATUSES = ["HEALTHY", "MARGIN_CALL", "LIQUIDATABLE"].freeze
 
   require "csv"
   require "cgi"
   require "json"
   require "rack/utils"
 
-  before_action :load_latest_run, only: [ :latest, :latest_positions, :latest_pnl, :latest_risk ]
-  before_action :load_run, except: [ :latest, :latest_positions, :latest_pnl, :latest_risk ]
+  before_action :load_latest_run, only: [:latest, :latest_positions, :latest_pnl, :latest_risk]
+  before_action :load_run, except: [:latest, :latest_positions, :latest_pnl, :latest_risk]
   before_action :authorize_artifact_access!
 
   def result
@@ -176,7 +176,7 @@ class RunArtifactsController < ApplicationController
                   "No accounts for selected filter.</td></tr>"
     end
 
-    options = [ "ALL" ] + RISK_STATUSES
+    options = ["ALL"] + RISK_STATUSES
     option_html = options.map do |status|
       selected = status == status_filter ? " selected" : ""
       "<option value=\"#{h(status)}\"#{selected}>#{h(status)}</option>"
@@ -231,8 +231,8 @@ class RunArtifactsController < ApplicationController
       "<li>" \
         "<strong>#{h(event.fetch('reasonCode', '-'))}</strong>" \
         " - type: #{h(event.fetch('type',
-'-'))}, market: #{h(event.fetch('marketId',
-'-'))}, seq: #{h(event.fetch('seq', '-'))}, severity: #{h(event.fetch('severity', '-'))}" \
+          '-'))}, market: #{h(event.fetch('marketId',
+            '-'))}, seq: #{h(event.fetch('seq', '-'))}, severity: #{h(event.fetch('severity', '-'))}" \
       "</li>"
     end.join
 
@@ -242,13 +242,13 @@ class RunArtifactsController < ApplicationController
   def risk_status_badge_html(status)
     css_class, bg, fg = case status
     when "HEALTHY"
-                          [ "badge--healthy", "#e6fffa", "#0f766e" ]
+      ["badge--healthy", "#e6fffa", "#0f766e"]
     when "MARGIN_CALL"
-                          [ "badge--margin-call", "#fff7ed", "#c2410c" ]
+      ["badge--margin-call", "#fff7ed", "#c2410c"]
     when "LIQUIDATABLE"
-                          [ "badge--liquidatable", "#fee2e2", "#b91c1c" ]
+      ["badge--liquidatable", "#fee2e2", "#b91c1c"]
     else
-                          [ "badge--unknown", "#edf2f7", "#2d3748" ]
+      ["badge--unknown", "#edf2f7", "#2d3748"]
     end
 
     badge_style = "display:inline-block;" \

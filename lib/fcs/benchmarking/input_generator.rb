@@ -6,13 +6,13 @@ module FCS
     class InputGenerator
       def generate(trades:, accounts:, markets:)
         account_ids = (1..accounts).map { |i| "acc-#{i}" }
-        market_ids  = (1..markets).map { |i| "MKT-#{i}" }
+        market_ids = (1..markets).map { |i| "MKT-#{i}" }
 
         {
           "schemaVersion" => "1.0",
-          "accounts" => account_ids.map { |id| { "accountId" => id } },
-          "markets" => market_ids.map { |id| { "marketId" => id } },
-          "feeModel" => { "enabled" => true },
+          "accounts" => account_ids.map { |id| {"accountId" => id} },
+          "markets" => market_ids.map { |id| {"marketId" => id} },
+          "feeModel" => {"enabled" => true},
           "trades" => build_trades(trades, account_ids, market_ids),
           "priceSnapshot" => build_snapshot(market_ids)
         }
@@ -66,7 +66,7 @@ module FCS
             "side" => side,
             "quantityBase" => "1",
             "priceQuotePerBase" => price,
-            "fee" => { "amountQuote" => "0.01" }
+            "fee" => {"amountQuote" => "0.01"}
           }
 
           i += 1
@@ -79,8 +79,8 @@ module FCS
       def build_snapshot(market_ids)
         {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => market_ids.map { |m| { "marketId" => m, "priceQuotePerBase" => "100" } },
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => market_ids.map { |m| {"marketId" => m, "priceQuotePerBase" => "100"} },
+          "fx" => {"quoteUsd" => "1"}
         }
       end
     end

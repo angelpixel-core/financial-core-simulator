@@ -65,7 +65,7 @@ RSpec.describe "Admin overview", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "ops-shell@example.com", password: "secret-pass" }
+    post "/admin/login", params: {email: "ops-shell@example.com", password: "secret-pass"}
     expect(response).to have_http_status(:found)
 
     get "/admin/overview"
@@ -82,7 +82,7 @@ RSpec.describe "Admin overview", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "ops@example.com", password: "secret-pass" }
+    post "/admin/login", params: {email: "ops@example.com", password: "secret-pass"}
     expect(response).to have_http_status(:found)
 
     get "/admin/overview"
@@ -106,7 +106,7 @@ RSpec.describe "Admin overview", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "admin@example.com", password: "secret-pass" }
+    post "/admin/login", params: {email: "admin@example.com", password: "secret-pass"}
     expect(response).to have_http_status(:found)
 
     get "/admin/overview"
@@ -199,13 +199,13 @@ RSpec.describe "Admin overview", type: :request do
     run = Run.create!(
       status: :succeeded,
       valuation_timestamp: Time.zone.parse("2026-03-14T04:00:00Z"),
-      input_json: { "schemaVersion" => "1.0" }
+      input_json: {"schemaVersion" => "1.0"}
     )
 
     Dir.mktmpdir do |dir|
       path = File.join(dir, "result.json")
-      File.write(path, JSON.pretty_generate({ "global" => { "totalPnLQuote" => "42.25" }, "accounts" => [] }))
-      run.update!(artifacts: { "result_json_path" => path })
+      File.write(path, JSON.pretty_generate({"global" => {"totalPnLQuote" => "42.25"}, "accounts" => []}))
+      run.update!(artifacts: {"result_json_path" => path})
 
       get "/admin/overview", headers: admin_session_headers
 
@@ -227,10 +227,10 @@ RSpec.describe "Admin overview", type: :request do
         "schemaVersion" => "1.0",
         "dataset" => "demo_input.json",
         "events" => [
-          { "eventId" => "evt-1", "marketId" => "BTC-USD" },
-          { "eventId" => "evt-2", "marketId" => "ETH-USD" }
+          {"eventId" => "evt-1", "marketId" => "BTC-USD"},
+          {"eventId" => "evt-2", "marketId" => "ETH-USD"}
         ],
-        "accounts" => [ { "accountId" => "acc-1" }, { "accountId" => "acc-2" } ]
+        "accounts" => [{"accountId" => "acc-1"}, {"accountId" => "acc-2"}]
       }
     )
 
@@ -244,10 +244,10 @@ RSpec.describe "Admin overview", type: :request do
         "schemaVersion" => "1.0",
         "dataset" => "demo_input.json",
         "events" => [
-          { "eventId" => "evt-1", "marketId" => "BTC-USD" },
-          { "eventId" => "evt-2", "marketId" => "ETH-USD" }
+          {"eventId" => "evt-1", "marketId" => "BTC-USD"},
+          {"eventId" => "evt-2", "marketId" => "ETH-USD"}
         ],
-        "accounts" => [ { "accountId" => "acc-1" }, { "accountId" => "acc-2" } ]
+        "accounts" => [{"accountId" => "acc-1"}, {"accountId" => "acc-2"}]
       }
     )
 
@@ -264,8 +264,8 @@ RSpec.describe "Admin overview", type: :request do
           "unrealizedPnLQuote" => "21.25"
         },
         "accounts" => [
-          { "accountId" => "acc-1", "totals" => { "totalPnLQuote" => "20.0" } },
-          { "accountId" => "acc-2", "totals" => { "totalPnLQuote" => "22.25" } }
+          {"accountId" => "acc-1", "totals" => {"totalPnLQuote" => "20.0"}},
+          {"accountId" => "acc-2", "totals" => {"totalPnLQuote" => "22.25"}}
         ]
       }
 
@@ -274,7 +274,7 @@ RSpec.describe "Admin overview", type: :request do
       File.write(positions_path, "account,qty\nacc-1,10\n")
       File.write(pnl_path, "account,total\nacc-1,42.25\n")
 
-      previous_run.update!(artifacts: { "result_json_path" => previous_path })
+      previous_run.update!(artifacts: {"result_json_path" => previous_path})
       latest_run.update!(artifacts: {
         "result_json_path" => latest_path,
         "positions_csv_path" => positions_path,
@@ -296,9 +296,9 @@ RSpec.describe "Admin overview", type: :request do
   end
 
   it "keeps run trend chart and fallback markup across mobile and desktop detail views" do
-    [ 375, 1280 ].each do |viewport_width|
+    [375, 1280].each do |viewport_width|
       get admin_overview_runs_trend_path,
-headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
+        headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include('data-controller="run-trend-chart"')
@@ -309,7 +309,7 @@ headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
   end
 
   it "renders count-up data hooks for all system KPI cards with numeric values" do
-    run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: {"schemaVersion" => "1.0"})
     run.update!(duration_ms: 123)
 
     get "/admin/overview", headers: admin_session_headers
@@ -407,7 +407,7 @@ headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    get "/admin/overview/top-accounts", headers: { "X-Requested-With" => "XMLHttpRequest" }
+    get "/admin/overview/top-accounts", headers: {"X-Requested-With" => "XMLHttpRequest"}
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/")
@@ -459,7 +459,7 @@ headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    get "/admin/overview", headers: { "X-Admin-Token" => "ui-secret" }
+    get "/admin/overview", headers: {"X-Admin-Token" => "ui-secret"}
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/")
@@ -469,7 +469,7 @@ headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    get "/admin/overview", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
+    get "/admin/overview", headers: {"X-Admin-User" => "alice", "X-Admin-Role" => "viewer"}
 
     expect(response).to have_http_status(:ok)
   end
@@ -481,7 +481,7 @@ headers: admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
 
         live_provider = class_double("Admin::LiveStateMetrics").as_stubbed_const
         live_instance = instance_double("Admin::LiveStateMetrics",
-call: live_metrics_for(account_id: "acc-live", total_pnl_quote: "77.0"))
+          call: live_metrics_for(account_id: "acc-live", total_pnl_quote: "77.0"))
         expect(live_provider).to receive(:new).and_return(live_instance)
 
         get "/admin/overview", headers: admin_session_headers
@@ -510,10 +510,10 @@ call: live_metrics_for(account_id: "acc-live", total_pnl_quote: "77.0"))
   end
 
   def run_with_accounts_json(dir:, account_id:, total_pnl_quote:)
-    run = Run.create!(status: :succeeded, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :succeeded, input_json: {"schemaVersion" => "1.0"})
     path = File.join(dir, "result.json")
     File.write(path, JSON.pretty_generate(result_payload(account_id: account_id, total_pnl_quote: total_pnl_quote)))
-    run.update!(artifacts: { "result_json_path" => path })
+    run.update!(artifacts: {"result_json_path" => path})
     run
   end
 
@@ -544,8 +544,8 @@ call: live_metrics_for(account_id: "acc-live", total_pnl_quote: "77.0"))
       total_runs_30d: 0,
       success_rate_last_50: 0,
       avg_duration_ms_last_50: nil,
-      runs_trend_14d: (0...14).map { |offset| { day: (Date.current - (13 - offset)).strftime("%m-%d"), count: 0 } },
-      status_mix_30d: { queued: 0, running: 0, succeeded: 0, failed: 0 },
+      runs_trend_14d: (0...14).map { |offset| {day: (Date.current - (13 - offset)).strftime("%m-%d"), count: 0} },
+      status_mix_30d: {queued: 0, running: 0, succeeded: 0, failed: 0},
       latest_run: nil,
       latest_global: nil,
       top_accounts: [
@@ -560,6 +560,6 @@ call: live_metrics_for(account_id: "acc-live", total_pnl_quote: "77.0"))
   end
 
   def admin_session_headers
-    { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
+    {"X-Admin-User" => "alice", "X-Admin-Role" => "viewer"}
   end
 end

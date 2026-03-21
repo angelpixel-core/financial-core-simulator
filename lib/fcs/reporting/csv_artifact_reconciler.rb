@@ -139,7 +139,7 @@ module FCS
           message: "CSV contains unexpected rows for #{label}",
           mismatch: "csv_row_unexpected",
           details: {
-            "unexpected_rows" => extra.map { |row| { "account_id" => row[0], "market_id" => row[1] } }
+            "unexpected_rows" => extra.map { |row| {"account_id" => row[0], "market_id" => row[1]} }
           }
         )
       end

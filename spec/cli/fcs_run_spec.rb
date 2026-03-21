@@ -237,8 +237,8 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       input_a = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-2" }, { "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "BTC-USD" }, { "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-2"}, {"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "BTC-USD"}, {"marketId" => "ETH-USD"}],
         "trades" => [
           {
             "tradeId" => "t-2",
@@ -264,21 +264,21 @@ RSpec.describe "bin/fcs run" do
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
           "prices" => [
-            { "marketId" => "BTC-USD", "priceQuotePerBase" => "50000" },
-            { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }
+            {"marketId" => "BTC-USD", "priceQuotePerBase" => "50000"},
+            {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}
           ],
-          "fx" => { "quoteUsd" => "1" }
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
       input_b = {
-        "markets" => [{ "marketId" => "ETH-USD" }, { "marketId" => "BTC-USD" }],
+        "markets" => [{"marketId" => "ETH-USD"}, {"marketId" => "BTC-USD"}],
         "priceSnapshot" => {
-          "fx" => { "quoteUsd" => "1" },
+          "fx" => {"quoteUsd" => "1"},
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
           "prices" => [
-            { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" },
-            { "marketId" => "BTC-USD", "priceQuotePerBase" => "50000" }
+            {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"},
+            {"marketId" => "BTC-USD", "priceQuotePerBase" => "50000"}
           ]
         },
         "schemaVersion" => "1.0",
@@ -304,7 +304,7 @@ RSpec.describe "bin/fcs run" do
             "priceQuotePerBase" => "120"
           }
         ],
-        "accounts" => [{ "accountId" => "acc-1" }, { "accountId" => "acc-2" }]
+        "accounts" => [{"accountId" => "acc-1"}, {"accountId" => "acc-2"}]
       }
 
       path_a = File.join(tmp, "input_a.json")
@@ -346,9 +346,9 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
-        "feeModel" => { "enabled" => true },
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
+        "feeModel" => {"enabled" => true},
         "trades" => [
           {
             "tradeId" => "t-1",
@@ -359,13 +359,13 @@ RSpec.describe "bin/fcs run" do
             "side" => "BUY",
             "quantityBase" => "1",
             "priceQuotePerBase" => "100",
-            "fee" => { "amountQuote" => "1" }
+            "fee" => {"amountQuote" => "1"}
           }
         ],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -409,9 +409,9 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
-        "feeModel" => { "enabled" => true },
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
+        "feeModel" => {"enabled" => true},
         "trades" => [
           {
             "tradeId" => "t-1",
@@ -422,13 +422,13 @@ RSpec.describe "bin/fcs run" do
             "side" => "BUY",
             "quantityBase" => "1",
             "priceQuotePerBase" => "100",
-            "fee" => { "amountQuote" => "invalid-fee" }
+            "fee" => {"amountQuote" => "invalid-fee"}
           }
         ],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -465,20 +465,20 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       bad_schema = {
         "schemaVersion" => "9.9",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
         "trades" => [],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "2500" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "2500"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
       broken_refs = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
         "trades" => [
           {
             "tradeId" => "t-1",
@@ -493,8 +493,8 @@ RSpec.describe "bin/fcs run" do
         ],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "2500" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "2500"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -531,9 +531,9 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       oversell_input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
-        "feeModel" => { "enabled" => false },
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
+        "feeModel" => {"enabled" => false},
         "trades" => [
           {
             "tradeId" => "b1",
@@ -558,8 +558,8 @@ RSpec.describe "bin/fcs run" do
         ],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -596,12 +596,12 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       missing_fx_input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
         "trades" => [],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }],
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}],
           "fx" => {}
         }
       }
@@ -632,12 +632,12 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       missing_ts_input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
         "trades" => [],
         "priceSnapshot" => {
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -666,12 +666,12 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       malformed_fx_input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
         "trades" => [],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }],
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}],
           "fx" => "invalid-fx"
         }
       }
@@ -702,8 +702,8 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       invalid_zero_equivalent = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
         "trades" => [
           {
             "tradeId" => "t-1",
@@ -718,15 +718,15 @@ RSpec.describe "bin/fcs run" do
         ],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
       valid_min_positive = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
         "trades" => [
           {
             "tradeId" => "t-1",
@@ -741,8 +741,8 @@ RSpec.describe "bin/fcs run" do
         ],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -799,8 +799,8 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       timeline_input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
         "trades" => [],
         "timeline" => {
           "events" => [
@@ -825,8 +825,8 @@ RSpec.describe "bin/fcs run" do
         },
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -860,8 +860,8 @@ RSpec.describe "bin/fcs run" do
     Dir.mktmpdir do |tmp|
       timeline_input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
         "trades" => [],
         "timeline" => {
           "events" => [
@@ -903,8 +903,8 @@ RSpec.describe "bin/fcs run" do
         },
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "110" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "110"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 

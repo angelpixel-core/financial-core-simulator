@@ -13,7 +13,7 @@ RSpec.describe "Admin keyboard navigation flow", type: :request do
       status: :succeeded,
       verification_status: :verified,
       input_hash: "hash-keyboard",
-      artifacts: { "result_json_path" => result_path.to_s }
+      artifacts: {"result_json_path" => result_path.to_s}
     )
 
     context = {
@@ -55,6 +55,6 @@ RSpec.describe "Admin keyboard navigation flow", type: :request do
   end
 
   def admin_session_headers
-    { "X-Admin-User" => "alice", "X-Admin-Role" => "admin" }
+    {"X-Admin-User" => "alice", "X-Admin-Role" => "admin"}
   end
 end

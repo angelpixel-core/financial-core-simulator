@@ -39,7 +39,7 @@ module FCS
 
           unless projection_keys.is_a?(Array) && !projection_keys.empty?
             raise_invalid!("event projection routes must map to a non-empty array",
-                           field: "eventProjectionRouter.routes.#{event_type}")
+              field: "eventProjectionRouter.routes.#{event_type}")
           end
 
           normalized[event_type] = projection_keys.map do |projection_key|
@@ -56,7 +56,7 @@ module FCS
       end
 
       def raise_invalid!(message, field:)
-        raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: { field: field })
+        raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: {field: field})
       end
     end
   end

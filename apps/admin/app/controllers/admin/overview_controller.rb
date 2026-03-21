@@ -34,7 +34,7 @@ class Admin::OverviewController < ApplicationController
   def pnl_trend
     @metrics = dashboard_metrics
     @pnl_trend_pagination = pnl_trend_pagination(metrics: @metrics, page: params[:page])
-    render partial: "admin/overview/pnl_trend_frame", locals: { pagination: @pnl_trend_pagination }
+    render partial: "admin/overview/pnl_trend_frame", locals: {pagination: @pnl_trend_pagination}
   end
 
   def top_accounts
@@ -42,7 +42,7 @@ class Admin::OverviewController < ApplicationController
     @top_accounts_pagination = top_accounts_pagination(metrics: @metrics, page: params[:page])
     if turbo_frame_request? || request.xhr?
       render partial: "admin/overview/top_accounts_frame",
-locals: { metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: true, navigation_context: @navigation_context }
+        locals: {metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: true, navigation_context: @navigation_context}
     else
       render :top_accounts
     end

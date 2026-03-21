@@ -4,7 +4,7 @@ require_relative "../lib/fcs"
 
 RSpec.describe FCS::Error do
   it "stores code and details" do
-    error = described_class.new("ERR_TEST", "message", details: { "a" => 1 })
+    error = described_class.new("ERR_TEST", "message", details: {"a" => 1})
 
     expect(error.code).to eq("ERR_TEST")
     expect(error.details).to eq("a" => 1)

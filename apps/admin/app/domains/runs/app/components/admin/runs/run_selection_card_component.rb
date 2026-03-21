@@ -28,7 +28,7 @@ module Admin
       end
 
       def card_classes
-        classes = [ "run-selection-card" ]
+        classes = ["run-selection-card"]
         classes << "run-selection-card--highlight" if @highlight
         classes.join(" ")
       end

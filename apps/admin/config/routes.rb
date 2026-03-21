@@ -9,7 +9,7 @@ Rails.application.routes.draw do
   get "/admin/overview/status-mix", to: "admin/overview#status_mix", as: :admin_overview_status_mix
   get "/admin/overview/top-accounts", to: "admin/overview#top_accounts", as: :admin_overview_top_accounts
   get "/admin/overview/ingestion-validation-errors", to: "admin/overview#ingestion_validation_errors_panel",
-as: :admin_overview_ingestion_validation_errors
+    as: :admin_overview_ingestion_validation_errors
   get "/runs/latest/result", to: "run_artifacts#latest", as: :run_latest_result
   get "/runs/latest/positions", to: "run_artifacts#latest_positions", as: :run_latest_positions
   get "/runs/latest/pnl", to: "run_artifacts#latest_pnl", as: :run_latest_pnl
@@ -20,7 +20,7 @@ as: :admin_overview_ingestion_validation_errors
   get "/dashboard/trend", to: "admin/overview#dashboard_trend", as: :dashboard_trend
   get "/dashboard/latest-run", to: "admin/overview#dashboard_latest_run", as: :dashboard_latest_run
   get "/dashboard/ingestion-validation-errors", to: "admin/overview#ingestion_validation_errors",
-as: :dashboard_ingestion_validation_errors
+    as: :dashboard_ingestion_validation_errors
   get "/admin/resources/runs/:id/result", to: redirect("/runs/%{id}/result")
   get "/admin/resources/runs/:id/positions", to: redirect("/runs/%{id}/positions")
   get "/admin/resources/runs/:id/pnl", to: redirect("/runs/%{id}/pnl")

@@ -25,7 +25,7 @@ module FCS
       # @param replay [Hash, nil]
       # @return [Hash]
       def self.build(engine_version:, schema_version:, input_hash:, run_id:, valuation_timestamp:, accounts:, global:,
-                     replay: nil)
+        replay: nil)
         payload = {
           "engineVersion" => engine_version,
           "schemaVersion" => schema_version,

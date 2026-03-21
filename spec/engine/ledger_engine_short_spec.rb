@@ -3,7 +3,7 @@
 require_relative "../../lib/fcs"
 
 RSpec.describe "LedgerEngine long-only enforcement" do
-  let(:collateral) { { "acc-1" => FCS::Types::Decimal18.from_string("100") } }
+  let(:collateral) { {"acc-1" => FCS::Types::Decimal18.from_string("100")} }
   let(:max_leverage) { FCS::Types::Decimal18.from_string("2") }
 
   def sell_trade(qty:, price:, seq: 1)

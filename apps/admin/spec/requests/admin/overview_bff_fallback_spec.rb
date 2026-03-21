@@ -59,10 +59,10 @@ RSpec.describe "Admin overview BFF fallback", type: :request do
   end
 
   def run_with_accounts_json(dir:, account_id:, total_pnl_quote:)
-    run = Run.create!(status: :succeeded, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :succeeded, input_json: {"schemaVersion" => "1.0"})
     path = File.join(dir, "result.json")
     File.write(path, JSON.pretty_generate(result_payload(account_id: account_id, total_pnl_quote: total_pnl_quote)))
-    run.update!(artifacts: { "result_json_path" => path })
+    run.update!(artifacts: {"result_json_path" => path})
     run
   end
 
@@ -88,6 +88,6 @@ RSpec.describe "Admin overview BFF fallback", type: :request do
   end
 
   def admin_session_headers
-    { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+    {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}
   end
 end

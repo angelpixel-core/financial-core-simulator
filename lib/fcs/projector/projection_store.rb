@@ -69,7 +69,7 @@ module FCS
         return if projection.respond_to?(:apply!) && projection.respond_to?(:read_model)
 
         raise_invalid!("projection must implement apply! and read_model",
-                       field: "projectionStore.projections.#{projection_key}")
+          field: "projectionStore.projections.#{projection_key}")
       end
 
       def validate_non_empty_string!(value, field:)
@@ -79,7 +79,7 @@ module FCS
       end
 
       def raise_invalid!(message, field:)
-        raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: { field: field })
+        raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: {field: field})
       end
     end
   end

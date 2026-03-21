@@ -2,12 +2,12 @@ require "rails_helper"
 
 RSpec.describe Runs::ErrorCodeMapper do
   it "maps validation field subtypes for richer analytics" do
-    risk_error = FCS::Error.new(FCS::Errors::ERR_VALIDATION, "bad risk", details: { field: "riskModel.maxLeverage" })
-    accounting_error = FCS::Error.new(FCS::Errors::ERR_VALIDATION, "bad accounting", 
-details: { field: "accountingModel.method" })
-    collateral_error = FCS::Error.new(FCS::Errors::ERR_VALIDATION, "bad collateral", 
-details: { field: "accounts.collateralQuote" })
-    number_error = FCS::Error.new(FCS::Errors::ERR_VALIDATION, "bad qty", details: { field: "quantityBase" })
+    risk_error = FCS::Error.new(FCS::Errors::ERR_VALIDATION, "bad risk", details: {field: "riskModel.maxLeverage"})
+    accounting_error = FCS::Error.new(FCS::Errors::ERR_VALIDATION, "bad accounting",
+      details: {field: "accountingModel.method"})
+    collateral_error = FCS::Error.new(FCS::Errors::ERR_VALIDATION, "bad collateral",
+      details: {field: "accounts.collateralQuote"})
+    number_error = FCS::Error.new(FCS::Errors::ERR_VALIDATION, "bad qty", details: {field: "quantityBase"})
 
     expect(described_class.call(risk_error)).to eq("ERR_VALIDATION_RISK_MODEL")
     expect(described_class.call(accounting_error)).to eq("ERR_VALIDATION_ACCOUNTING_MODEL")

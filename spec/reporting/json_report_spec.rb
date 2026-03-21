@@ -9,8 +9,8 @@ RSpec.describe FCS::Reporting::JsonReport do
     Dir.mktmpdir do |dir|
       payload = {
         "b" => 1,
-        "a" => { "d" => 2, "c" => 3 },
-        "list" => [{ "b" => 1, "a" => 2 }]
+        "a" => {"d" => 2, "c" => 3},
+        "list" => [{"b" => 1, "a" => 2}]
       }
 
       path = described_class.new.write!(output_dir: dir, payload: payload)

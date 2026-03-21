@@ -30,6 +30,6 @@ class Admin::Ui::DataTableComponent < ViewComponent::Base
   end
 
   def column_count
-    [ @columns.length, 1 ].max
+    [@columns.length, 1].max
   end
 end

@@ -9,15 +9,15 @@ RSpec.describe "result.json schema contract" do
     Dir.mktmpdir do |dir|
       input = {
         "schemaVersion" => "1.0",
-        "usdModel" => { "enabled" => true },
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
-        "feeModel" => { "enabled" => true },
+        "usdModel" => {"enabled" => true},
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
+        "feeModel" => {"enabled" => true},
         "trades" => [],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -27,7 +27,7 @@ RSpec.describe "result.json schema contract" do
       out_dir = File.join(dir, "out")
       runner = FCS::Application::Runner.new
       json_path = runner.run!(input_path: input_path, output_dir: out_dir, fee_enabled: true, explain: explain,
-                              verbose: false)
+        verbose: false)
 
       JSON.parse(File.read(json_path))
     end
@@ -37,7 +37,7 @@ RSpec.describe "result.json schema contract" do
     payload = run_with(explain: false)
 
     expect(payload.keys).to include("engineVersion", "schemaVersion", "inputHash", "runId", "valuationTimestamp",
-                                    "accounts", "global")
+      "accounts", "global")
     expect(payload["schemaVersion"]).to eq("1.0")
     expect(payload["accounts"]).to be_a(Array)
     expect(payload["global"]).to be_a(Hash)
@@ -58,7 +58,7 @@ RSpec.describe "result.json schema contract" do
 
     gt = payload["global"]
     expect(gt.keys).to include("realizedPnLQuote", "feesQuote", "realizedNetPnLQuote", "unrealizedPnLQuote",
-                               "totalPnLQuote", "totalPnLUsd")
+      "totalPnLQuote", "totalPnLUsd")
     expect(payload).not_to have_key("replay")
   end
 
@@ -79,7 +79,7 @@ RSpec.describe "result.json schema contract" do
     expect(m).to have_key("explain")
     expect(m["explain"]).to be_a(Hash)
     expect(m["explain"].keys).to include("snapshotPrice", "avgCost", "qty", "realizedPnLQuote", "feesQuote",
-                                         "unrealizedPnLQuote", "totalPnLQuote")
+      "unrealizedPnLQuote", "totalPnLQuote")
   end
 
   it "adds replay metadata in timeline mode without breaking required shape" do
@@ -89,9 +89,9 @@ RSpec.describe "result.json schema contract" do
     Dir.mktmpdir do |dir|
       input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
-        "feeModel" => { "enabled" => true },
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
+        "feeModel" => {"enabled" => true},
         "trades" => [],
         "timeline" => {
           "events" => [
@@ -116,8 +116,8 @@ RSpec.describe "result.json schema contract" do
         },
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -127,11 +127,11 @@ RSpec.describe "result.json schema contract" do
       out_dir = File.join(dir, "out")
       runner = FCS::Application::Runner.new
       json_path = runner.run!(input_path: input_path, output_dir: out_dir, fee_enabled: true, explain: false,
-                              verbose: false)
+        verbose: false)
       payload = JSON.parse(File.read(json_path))
 
       expect(payload.keys).to include("engineVersion", "schemaVersion", "inputHash", "runId", "valuationTimestamp",
-                                      "accounts", "global")
+        "accounts", "global")
       expect(payload).to have_key("replay")
       expect(payload["replay"]).to include("mode" => "timeline")
     end
@@ -143,31 +143,31 @@ RSpec.describe "result.json schema contract" do
     Dir.mktmpdir do |dir|
       input_a = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-2" }, { "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "BTC-USD" }, { "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-2"}, {"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "BTC-USD"}, {"marketId" => "ETH-USD"}],
         "trades" => [],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
           "prices" => [
-            { "marketId" => "BTC-USD", "priceQuotePerBase" => "50000" },
-            { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }
+            {"marketId" => "BTC-USD", "priceQuotePerBase" => "50000"},
+            {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}
           ],
-          "fx" => { "quoteUsd" => "1" }
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
       input_b = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }, { "accountId" => "acc-2" }],
-        "markets" => [{ "marketId" => "ETH-USD" }, { "marketId" => "BTC-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}, {"accountId" => "acc-2"}],
+        "markets" => [{"marketId" => "ETH-USD"}, {"marketId" => "BTC-USD"}],
         "trades" => [],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
           "prices" => [
-            { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" },
-            { "marketId" => "BTC-USD", "priceQuotePerBase" => "50000" }
+            {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"},
+            {"marketId" => "BTC-USD", "priceQuotePerBase" => "50000"}
           ],
-          "fx" => { "quoteUsd" => "1" }
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -180,9 +180,9 @@ RSpec.describe "result.json schema contract" do
       out_a = File.join(dir, "out_a")
       out_b = File.join(dir, "out_b")
       json_a = runner.run!(input_path: input_a_path, output_dir: out_a, fee_enabled: true, explain: false,
-                           verbose: false)
+        verbose: false)
       json_b = runner.run!(input_path: input_b_path, output_dir: out_b, fee_enabled: true, explain: false,
-                           verbose: false)
+        verbose: false)
 
       payload_a = JSON.parse(File.read(json_a))
       payload_b = JSON.parse(File.read(json_b))
@@ -195,15 +195,15 @@ RSpec.describe "result.json schema contract" do
     Dir.mktmpdir do |dir|
       input = {
         "schemaVersion" => "1.0",
-        "usdModel" => { "enabled" => true },
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
-        "feeModel" => { "enabled" => true },
+        "usdModel" => {"enabled" => true},
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
+        "feeModel" => {"enabled" => true},
         "trades" => [],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -214,9 +214,9 @@ RSpec.describe "result.json schema contract" do
       out_a = File.join(dir, "out_a")
       out_b = File.join(dir, "out_b")
       json_a = runner.run!(input_path: input_path, output_dir: out_a, fee_enabled: true, explain: false,
-                           verbose: false)
+        verbose: false)
       json_b = runner.run!(input_path: input_path, output_dir: out_b, fee_enabled: true, explain: false,
-                           verbose: false)
+        verbose: false)
 
       expect(File.read(json_a)).to eq(File.read(json_b))
     end
@@ -226,7 +226,7 @@ RSpec.describe "result.json schema contract" do
     validator = FCS::Reporting::ResultMetadataContractValidator.new
 
     expect do
-      validator.validate!(payload: { "schemaVersion" => "1.0" })
+      validator.validate!(payload: {"schemaVersion" => "1.0"})
     end.to raise_error(FCS::Error) { |error|
       expect(error.code).to eq(FCS::Errors::ERR_VALIDATION)
       expect(error.details).to include("impact", "next_action")

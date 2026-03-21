@@ -56,7 +56,7 @@ module FCS
       # @param buy_price [FCS::Types::Decimal18]
       # @return [FCS::Engine::PositionFifo]
       def apply_buy!(buy_qty:, buy_price:)
-        @lots << { qty: buy_qty, price: buy_price }
+        @lots << {qty: buy_qty, price: buy_price}
         @qty += buy_qty
         recompute_avg_cost!
         self
@@ -72,7 +72,7 @@ module FCS
           raise @dependencies.error_class.new(
             @dependencies.errors_module::ERR_POSITION_NEGATIVE,
             "SELL would make position negative",
-            details: { qty: @qty.to_s, sellQty: sell_qty.to_s }
+            details: {qty: @qty.to_s, sellQty: sell_qty.to_s}
           )
         end
 
@@ -82,12 +82,12 @@ module FCS
           lot_qty = current_lot.fetch(:qty)
           lot_price = current_lot.fetch(:price)
           consumed = if lot_qty.atoms <= remaining.atoms
-                       @last_lot_fully_consumed = true
-                       lot_qty
-                     else
-                       @last_lot_fully_consumed = false
-                       remaining
-                     end
+            @last_lot_fully_consumed = true
+            lot_qty
+          else
+            @last_lot_fully_consumed = false
+            remaining
+          end
 
           delta = (sell_price - lot_price) * consumed
           @realized_pnl_quote += delta

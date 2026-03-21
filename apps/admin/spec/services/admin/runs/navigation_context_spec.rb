@@ -37,7 +37,7 @@ RSpec.describe Admin::Runs::NavigationContext do
       session = {}
 
       first = described_class.new(
-        params: { selected_run: "run-99", validation_status: "verified" },
+        params: {selected_run: "run-99", validation_status: "verified"},
         session: session
       ).resolve
 
@@ -57,7 +57,7 @@ RSpec.describe Admin::Runs::NavigationContext do
       }
 
       resolved = described_class.new(
-        params: { validation_status: "", date_range: " " },
+        params: {validation_status: "", date_range: " "},
         session: session
       ).resolve
 

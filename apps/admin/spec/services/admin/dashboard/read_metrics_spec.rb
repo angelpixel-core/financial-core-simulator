@@ -3,20 +3,20 @@ require "rails_helper"
 RSpec.describe Admin::Dashboard::ReadMetrics do
   it "uses artifact provider when BFF read flag is disabled" do
     bff_reader = instance_double("Admin::Dashboard::BffReadMetrics")
-    artifact_reader = instance_double("Admin::DashboardMetrics", call: { total_runs_7d: 7 })
+    artifact_reader = instance_double("Admin::DashboardMetrics", call: {total_runs_7d: 7})
 
-    metrics = described_class.new(env: { "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "0" }, bff_reader: bff_reader, 
-artifact_reader: artifact_reader).call
+    metrics = described_class.new(env: {"ADMIN_DASHBOARD_BFF_READ_ENABLED" => "0"}, bff_reader: bff_reader,
+      artifact_reader: artifact_reader).call
 
     expect(metrics).to eq(total_runs_7d: 7)
   end
 
   it "uses BFF provider when BFF read flag is enabled" do
-    bff_reader = instance_double("Admin::Dashboard::BffReadMetrics", call: { total_runs_7d: 9 })
+    bff_reader = instance_double("Admin::Dashboard::BffReadMetrics", call: {total_runs_7d: 9})
     artifact_reader = instance_double("Admin::DashboardMetrics")
 
-    metrics = described_class.new(env: { "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "1" }, bff_reader: bff_reader, 
-artifact_reader: artifact_reader).call
+    metrics = described_class.new(env: {"ADMIN_DASHBOARD_BFF_READ_ENABLED" => "1"}, bff_reader: bff_reader,
+      artifact_reader: artifact_reader).call
 
     expect(metrics).to eq(total_runs_7d: 9)
   end
@@ -24,7 +24,7 @@ artifact_reader: artifact_reader).call
   it "falls back to artifact provider when BFF fails and fallback is enabled" do
     bff_reader = instance_double("Admin::Dashboard::BffReadMetrics")
     allow(bff_reader).to receive(:call).and_raise(StandardError, "bff unavailable")
-    artifact_reader = instance_double("Admin::DashboardMetrics", call: { total_runs_7d: 3 })
+    artifact_reader = instance_double("Admin::DashboardMetrics", call: {total_runs_7d: 3})
 
     metrics = described_class.new(
       env: {
@@ -44,10 +44,10 @@ artifact_reader: artifact_reader).call
     artifact_reader = instance_double("Admin::DashboardMetrics")
 
     expect do
-      described_class.new(env: { "ADMIN_DASHBOARD_BFF_READ_ENABLED" => "1" }, bff_reader: bff_reader, 
-artifact_reader: artifact_reader).call
-    end.to raise_error(described_class::ReadPathUnavailableError, 
-"BFF read failed and fallback is disabled: bff unavailable")
+      described_class.new(env: {"ADMIN_DASHBOARD_BFF_READ_ENABLED" => "1"}, bff_reader: bff_reader,
+        artifact_reader: artifact_reader).call
+    end.to raise_error(described_class::ReadPathUnavailableError,
+      "BFF read failed and fallback is disabled: bff unavailable")
   end
 
   it "raises read-path unavailable when BFF fails and fallback is explicitly disabled" do
@@ -64,7 +64,7 @@ artifact_reader: artifact_reader).call
         bff_reader: bff_reader,
         artifact_reader: artifact_reader
       ).call
-    end.to raise_error(described_class::ReadPathUnavailableError, 
-"BFF read failed and fallback is disabled: bff unavailable")
+    end.to raise_error(described_class::ReadPathUnavailableError,
+      "BFF read failed and fallback is disabled: bff unavailable")
   end
 end

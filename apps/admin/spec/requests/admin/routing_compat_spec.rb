@@ -83,7 +83,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    get "/admin/resources/runs", headers: { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+    get "/admin/resources/runs", headers: {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/")
@@ -93,7 +93,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    get "/admin/resources/runs", headers: { "X-Admin-User" => "alice", "X-Admin-Role" => "admin" }
+    get "/admin/resources/runs", headers: {"X-Admin-User" => "alice", "X-Admin-Role" => "admin"}
 
     expect(response).not_to have_http_status(:forbidden)
   end
@@ -102,7 +102,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    get "/admin/resources/runs", as: :json, headers: { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+    get "/admin/resources/runs", as: :json, headers: {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}
 
     expect(response).to have_http_status(:forbidden)
   end
@@ -123,7 +123,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "ops@example.com", password: "secret-pass" }
+    post "/admin/login", params: {email: "ops@example.com", password: "secret-pass"}
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/admin/overview")
@@ -141,7 +141,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "ops4@example.com", password: "secret-pass" }
+    post "/admin/login", params: {email: "ops4@example.com", password: "secret-pass"}
     expect(response).to have_http_status(:found)
 
     get "/admin/overview/runs-trend"
@@ -165,7 +165,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "ops2@example.com", password: "wrong-pass" }
+    post "/admin/login", params: {email: "ops2@example.com", password: "wrong-pass"}
 
     expect(response).not_to have_http_status(:ok)
     expect(response).not_to have_http_status(:found)
@@ -178,7 +178,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "ops3@example.com", password: "secret-pass" }
+    post "/admin/login", params: {email: "ops3@example.com", password: "secret-pass"}
     expect(response).to have_http_status(:found)
 
     post "/admin/logout"
@@ -199,7 +199,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "ops5@example.com", password: "secret-pass" }
+    post "/admin/login", params: {email: "ops5@example.com", password: "secret-pass"}
     expect(response).to have_http_status(:found)
 
     get "/admin/logout"

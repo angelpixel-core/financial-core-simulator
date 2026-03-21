@@ -43,7 +43,7 @@ module FCS
         @state = state || LedgerState.new(position_builder: position_builder_for(accounting_method))
         @risk_engine = risk_engine || risk_engine_klass.new(
           account_collateral: account_collateral,
-          risk_config: { maxLeverage: max_leverage }
+          risk_config: {maxLeverage: max_leverage}
         )
       end
 
@@ -94,7 +94,7 @@ module FCS
           raise @error_klass.new(
             @errors::ERR_VALIDATION,
             "Unsupported side",
-            details: { side: trade.fetch("side"), tradeId: trade.fetch("tradeId") }
+            details: {side: trade.fetch("side"), tradeId: trade.fetch("tradeId")}
           )
         end
       end
@@ -111,7 +111,7 @@ module FCS
           raise @error_klass.new(
             @errors::ERR_VALIDATION,
             "Unsupported accounting method",
-            details: { accountingMethod: accounting_method }
+            details: {accountingMethod: accounting_method}
           )
         end
       end

@@ -7,13 +7,13 @@ RSpec.describe Runs::Execute do
   let(:input_json) do
     {
       "schemaVersion" => "1.0",
-      "accounts" => [ { "accountId" => "acc-1" } ],
-      "markets" => [ { "marketId" => "ETH-USD" } ],
-      "feeModel" => { "enabled" => true },
+      "accounts" => [{"accountId" => "acc-1"}],
+      "markets" => [{"marketId" => "ETH-USD"}],
+      "feeModel" => {"enabled" => true},
       "trades" => [],
       "priceSnapshot" => {
         "valuationTimestamp" => "2026-02-25T03:00:00Z",
-        "prices" => [ { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" } ]
+        "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
       }
     }
   end
@@ -34,7 +34,7 @@ RSpec.describe Runs::Execute do
               "runId" => "run-123",
               "inputHash" => "abc123",
               "valuationTimestamp" => "2026-02-25T03:00:00Z",
-              "global" => { "totalPnLQuote" => "0.0" }
+              "global" => {"totalPnLQuote" => "0.0"}
             }
           ) + "\n"
         )

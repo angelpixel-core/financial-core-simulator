@@ -3,12 +3,12 @@
 RSpec.describe FCS::Engine::FXConverter do
   def build_snapshot(quote_usd: nil, include_fx: true, include_quote_key: false)
     fx = if quote_usd.nil?
-           include_quote_key ? { "quoteUsd" => nil } : {}
-         else
-           { "quoteUsd" => quote_usd }
-         end
+      include_quote_key ? {"quoteUsd" => nil} : {}
+    else
+      {"quoteUsd" => quote_usd}
+    end
 
-    include_fx ? { "fx" => fx } : {}
+    include_fx ? {"fx" => fx} : {}
   end
 
   describe "#enabled?" do

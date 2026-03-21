@@ -26,9 +26,9 @@ RSpec.describe "CSV reconciliation" do
   def base_input
     {
       "schemaVersion" => "1.0",
-      "accounts" => [{ "accountId" => "acc-1" }],
-      "markets" => [{ "marketId" => "ETH-USD" }],
-      "feeModel" => { "enabled" => true },
+      "accounts" => [{"accountId" => "acc-1"}],
+      "markets" => [{"marketId" => "ETH-USD"}],
+      "feeModel" => {"enabled" => true},
       "trades" => [
         {
           "tradeId" => "t-1",
@@ -39,13 +39,13 @@ RSpec.describe "CSV reconciliation" do
           "side" => "BUY",
           "quantityBase" => "2",
           "priceQuotePerBase" => "100",
-          "fee" => { "amountQuote" => "1" }
+          "fee" => {"amountQuote" => "1"}
         }
       ],
       "priceSnapshot" => {
         "valuationTimestamp" => "2026-02-25T03:00:00Z",
-        "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }],
-        "fx" => { "quoteUsd" => "1" }
+        "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}],
+        "fx" => {"quoteUsd" => "1"}
       }
     }
   end
@@ -112,10 +112,10 @@ RSpec.describe "CSV reconciliation" do
 
   it "fails when CSV has partial USD totals across rows" do
     input = base_input
-    input["markets"] = [{ "marketId" => "ETH-USD" }, { "marketId" => "BTC-USD" }]
+    input["markets"] = [{"marketId" => "ETH-USD"}, {"marketId" => "BTC-USD"}]
     input["priceSnapshot"]["prices"] = [
-      { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" },
-      { "marketId" => "BTC-USD", "priceQuotePerBase" => "60" }
+      {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"},
+      {"marketId" => "BTC-USD", "priceQuotePerBase" => "60"}
     ]
 
     run_with(input: input) do |paths|

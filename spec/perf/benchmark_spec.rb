@@ -20,7 +20,7 @@ RSpec.describe "Performance benchmark", :perf do
     input["riskModel"] = {
       "maxLeverage" => "50",
       "maintenanceMarginRatio" => "0.25",
-      "liquidation" => { "enabled" => true, "closeFactor" => "0.5" }
+      "liquidation" => {"enabled" => true, "closeFactor" => "0.5"}
     }
 
     simulate = FCS::Application::Simulate.new

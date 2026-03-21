@@ -6,13 +6,13 @@ RSpec.describe "USD badge disabled" do
   it "keeps totalPnLUsd null when fx is missing" do
     input = {
       "schemaVersion" => "1.0",
-      "accounts" => [{ "accountId" => "acc-1" }],
-      "markets" => [{ "marketId" => "ETH-USD" }],
-      "feeModel" => { "enabled" => false },
+      "accounts" => [{"accountId" => "acc-1"}],
+      "markets" => [{"marketId" => "ETH-USD"}],
+      "feeModel" => {"enabled" => false},
       "trades" => [],
       "priceSnapshot" => {
         "valuationTimestamp" => "2026-02-25T03:00:00Z",
-        "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+        "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
       }
     }
 
@@ -24,10 +24,10 @@ RSpec.describe "USD badge disabled" do
   it "keeps totalPnLUsd null when usdModel.enabled is false" do
     input = {
       "schemaVersion" => "1.0",
-      "usdModel" => { "enabled" => false },
-      "accounts" => [{ "accountId" => "acc-1" }],
-      "markets" => [{ "marketId" => "ETH-USD" }],
-      "feeModel" => { "enabled" => false },
+      "usdModel" => {"enabled" => false},
+      "accounts" => [{"accountId" => "acc-1"}],
+      "markets" => [{"marketId" => "ETH-USD"}],
+      "feeModel" => {"enabled" => false},
       "trades" => [
         {
           "tradeId" => "b1",
@@ -42,8 +42,8 @@ RSpec.describe "USD badge disabled" do
       ],
       "priceSnapshot" => {
         "valuationTimestamp" => "2026-02-25T03:00:00Z",
-        "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }],
-        "fx" => { "quoteUsd" => "2" }
+        "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}],
+        "fx" => {"quoteUsd" => "2"}
       }
     }
 

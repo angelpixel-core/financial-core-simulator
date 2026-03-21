@@ -12,7 +12,7 @@ RSpec.describe FCS::Application::Simulate do
     valuation = instance_double("Valuation")
     timeline_processor = instance_double("TimelineProcessor")
 
-    input = { "timeline" => { "events" => [{ "timelineSeq" => 1 }] } }
+    input = {"timeline" => {"events" => [{"timelineSeq" => 1}]}}
 
     expect(timeline_processor).to receive(:call).with(
       events: input.fetch("timeline").fetch("events"),
@@ -40,11 +40,11 @@ RSpec.describe FCS::Application::Simulate do
     timeline_processor = instance_double("TimelineProcessor")
 
     trades = [
-      { "tradeId" => "t-2", "timestamp" => 2, "seq" => 2 },
-      { "tradeId" => "t-1", "timestamp" => 1, "seq" => 1 }
+      {"tradeId" => "t-2", "timestamp" => 2, "seq" => 2},
+      {"tradeId" => "t-1", "timestamp" => 1, "seq" => 1}
     ]
 
-    input = { "trades" => trades }
+    input = {"trades" => trades}
 
     expect(ledger).to receive(:apply_trade!).with(trades[1])
     expect(ledger).to receive(:apply_trade!).with(trades[0])
@@ -98,10 +98,10 @@ RSpec.describe FCS::Application::Simulate do
   it "consolidates global totals across accounts" do
     fx = instance_double("FX", enabled?: false)
     accounts = [
-      { "totals" => { "realizedPnLQuote" => "1", "feesQuote" => "0", "realizedNetPnLQuote" => "1",
-                      "unrealizedPnLQuote" => "2", "totalPnLQuote" => "3" } },
-      { "totals" => { "realizedPnLQuote" => "2", "feesQuote" => "1", "realizedNetPnLQuote" => "1",
-                      "unrealizedPnLQuote" => "1", "totalPnLQuote" => "2" } }
+      {"totals" => {"realizedPnLQuote" => "1", "feesQuote" => "0", "realizedNetPnLQuote" => "1",
+                    "unrealizedPnLQuote" => "2", "totalPnLQuote" => "3"}},
+      {"totals" => {"realizedPnLQuote" => "2", "feesQuote" => "1", "realizedNetPnLQuote" => "1",
+                    "unrealizedPnLQuote" => "1", "totalPnLQuote" => "2"}}
     ]
 
     totals = described_class.new.send(:consolidate_global, accounts, fx)
@@ -119,8 +119,8 @@ RSpec.describe FCS::Application::Simulate do
   it "extracts account collateral when provided" do
     input = {
       "accounts" => [
-        { "accountId" => "acc-1", "collateralQuote" => "10" },
-        { "accountId" => "acc-2" }
+        {"accountId" => "acc-1", "collateralQuote" => "10"},
+        {"accountId" => "acc-2"}
       ]
     }
 
@@ -135,7 +135,7 @@ RSpec.describe FCS::Application::Simulate do
       "riskModel" => {
         "maxLeverage" => "5",
         "maintenanceMarginRatio" => "0.5",
-        "liquidation" => { "closeFactor" => "0.3" }
+        "liquidation" => {"closeFactor" => "0.3"}
       }
     }
 
@@ -148,8 +148,8 @@ RSpec.describe FCS::Application::Simulate do
 
   it "indexes risk events by account" do
     candidates = [
-      { account_id: "acc-1", market_id: "ETH-USD", seq: 1, severity: d18("0.9") },
-      { account_id: "acc-2", market_id: "BTC-USD", seq: 2, severity: d18("0.7") }
+      {account_id: "acc-1", market_id: "ETH-USD", seq: 1, severity: d18("0.9")},
+      {account_id: "acc-2", market_id: "BTC-USD", seq: 2, severity: d18("0.7")}
     ]
 
     result = described_class.new.send(:index_risk_events, candidates)
@@ -165,9 +165,9 @@ RSpec.describe FCS::Application::Simulate do
   end
 
   it "detects USD conversion based on model or fx quote" do
-    with_model = { "usdModel" => { "enabled" => true } }
-    with_fx = { "priceSnapshot" => { "fx" => { "quoteUsd" => "1.0" } } }
-    without = { "priceSnapshot" => { "fx" => {} } }
+    with_model = {"usdModel" => {"enabled" => true}}
+    with_fx = {"priceSnapshot" => {"fx" => {"quoteUsd" => "1.0"}}}
+    without = {"priceSnapshot" => {"fx" => {}}}
 
     simulator = described_class.new
 

@@ -10,14 +10,14 @@ RSpec.describe FCS::Reporting::CsvPositions do
       {
         "accountId" => "b",
         "markets" => [
-          { "marketId" => "m-2", "quantity" => "1", "avgCost" => "100" },
-          { "marketId" => "m-1", "quantity" => "2", "avgCost" => "110" }
+          {"marketId" => "m-2", "quantity" => "1", "avgCost" => "100"},
+          {"marketId" => "m-1", "quantity" => "2", "avgCost" => "110"}
         ]
       },
       {
         "accountId" => "a",
         "markets" => [
-          { "marketId" => "m-1", "quantity" => "3", "avgCost" => "120" }
+          {"marketId" => "m-1", "quantity" => "3", "avgCost" => "120"}
         ]
       }
     ]

@@ -10,7 +10,7 @@ RSpec.describe FCS::Benchmarking::InputGenerator do
 
     expect(input).to include(
       "schemaVersion" => "1.0",
-      "feeModel" => { "enabled" => true }
+      "feeModel" => {"enabled" => true}
     )
     expect(input.fetch("accounts").map { |a| a.fetch("accountId") }).to eq(%w[acc-1 acc-2])
     expect(input.fetch("markets").map { |m| m.fetch("marketId") }).to eq(["MKT-1"])

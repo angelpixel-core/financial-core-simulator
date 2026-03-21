@@ -8,9 +8,9 @@ RSpec.describe FCS::Application::Simulate do
   describe "#call" do
     it "keeps account state isolated for interleaved trades in the same market" do
       input = {
-        "accounts" => [{ "accountId" => "acc-a" }, { "accountId" => "acc-b" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
-        "feeModel" => { "enabled" => false },
+        "accounts" => [{"accountId" => "acc-a"}, {"accountId" => "acc-b"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
+        "feeModel" => {"enabled" => false},
         "trades" => [
           {
             "tradeId" => "t-1",
@@ -45,8 +45,8 @@ RSpec.describe FCS::Application::Simulate do
         ],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -79,9 +79,9 @@ RSpec.describe FCS::Application::Simulate do
 
     it "keeps account state isolated for interleaved trades across shared markets" do
       input = {
-        "accounts" => [{ "accountId" => "acc-a" }, { "accountId" => "acc-b" }],
-        "markets" => [{ "marketId" => "ETH-USD" }, { "marketId" => "BTC-USD" }],
-        "feeModel" => { "enabled" => false },
+        "accounts" => [{"accountId" => "acc-a"}, {"accountId" => "acc-b"}],
+        "markets" => [{"marketId" => "ETH-USD"}, {"marketId" => "BTC-USD"}],
+        "feeModel" => {"enabled" => false},
         "trades" => [
           {
             "tradeId" => "t-1",
@@ -137,10 +137,10 @@ RSpec.describe FCS::Application::Simulate do
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
           "prices" => [
-            { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" },
-            { "marketId" => "BTC-USD", "priceQuotePerBase" => "60" }
+            {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"},
+            {"marketId" => "BTC-USD", "priceQuotePerBase" => "60"}
           ],
-          "fx" => { "quoteUsd" => "1" }
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -165,9 +165,9 @@ RSpec.describe FCS::Application::Simulate do
 
     it "builds global totals from account totals and emits deterministic account/market ordering" do
       input = {
-        "accounts" => [{ "accountId" => "acc-2" }, { "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "BTC-USD" }, { "marketId" => "ETH-USD" }],
-        "feeModel" => { "enabled" => false },
+        "accounts" => [{"accountId" => "acc-2"}, {"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "BTC-USD"}, {"marketId" => "ETH-USD"}],
+        "feeModel" => {"enabled" => false},
         "trades" => [
           {
             "tradeId" => "t-1",
@@ -193,10 +193,10 @@ RSpec.describe FCS::Application::Simulate do
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
           "prices" => [
-            { "marketId" => "BTC-USD", "priceQuotePerBase" => "50010" },
-            { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }
+            {"marketId" => "BTC-USD", "priceQuotePerBase" => "50010"},
+            {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}
           ],
-          "fx" => { "quoteUsd" => "1" }
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -236,7 +236,7 @@ RSpec.describe FCS::Application::Simulate do
           "side" => "BUY",
           "quantityBase" => "1",
           "priceQuotePerBase" => "100",
-          "fee" => { "amountQuote" => "1" }
+          "fee" => {"amountQuote" => "1"}
         },
         {
           "tradeId" => "t-a",
@@ -247,7 +247,7 @@ RSpec.describe FCS::Application::Simulate do
           "side" => "BUY",
           "quantityBase" => "2",
           "priceQuotePerBase" => "50",
-          "fee" => { "amountQuote" => "1" }
+          "fee" => {"amountQuote" => "1"}
         },
         {
           "tradeId" => "t-m",
@@ -258,7 +258,7 @@ RSpec.describe FCS::Application::Simulate do
           "side" => "BUY",
           "quantityBase" => "1",
           "priceQuotePerBase" => "120",
-          "fee" => { "amountQuote" => "1" }
+          "fee" => {"amountQuote" => "1"}
         },
         {
           "tradeId" => "t-sell",
@@ -269,24 +269,24 @@ RSpec.describe FCS::Application::Simulate do
           "side" => "SELL",
           "quantityBase" => "1",
           "priceQuotePerBase" => "65",
-          "fee" => { "amountQuote" => "1" }
+          "fee" => {"amountQuote" => "1"}
         }
       ]
 
       trades_b = trades_a.reverse
 
       input_a = {
-        "accounts" => [{ "accountId" => "acc-2" }, { "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }, { "marketId" => "BTC-USD" }],
-        "feeModel" => { "enabled" => true },
+        "accounts" => [{"accountId" => "acc-2"}, {"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}, {"marketId" => "BTC-USD"}],
+        "feeModel" => {"enabled" => true},
         "trades" => trades_a,
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
           "prices" => [
-            { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" },
-            { "marketId" => "BTC-USD", "priceQuotePerBase" => "60" }
+            {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"},
+            {"marketId" => "BTC-USD", "priceQuotePerBase" => "60"}
           ],
-          "fx" => { "quoteUsd" => "1" }
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -315,9 +315,9 @@ RSpec.describe FCS::Application::Simulate do
       Dir.mktmpdir do |tmp|
         input = {
           "schemaVersion" => "1.0",
-          "accounts" => [{ "accountId" => "acc-2" }, { "accountId" => "acc-1" }],
-          "markets" => [{ "marketId" => "BTC-USD" }, { "marketId" => "ETH-USD" }],
-          "feeModel" => { "enabled" => false },
+          "accounts" => [{"accountId" => "acc-2"}, {"accountId" => "acc-1"}],
+          "markets" => [{"marketId" => "BTC-USD"}, {"marketId" => "ETH-USD"}],
+          "feeModel" => {"enabled" => false},
           "trades" => [
             {
               "tradeId" => "t-1",
@@ -343,10 +343,10 @@ RSpec.describe FCS::Application::Simulate do
           "priceSnapshot" => {
             "valuationTimestamp" => "2026-02-25T03:00:00Z",
             "prices" => [
-              { "marketId" => "BTC-USD", "priceQuotePerBase" => "50010" },
-              { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }
+              {"marketId" => "BTC-USD", "priceQuotePerBase" => "50010"},
+              {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}
             ],
-            "fx" => { "quoteUsd" => "1" }
+            "fx" => {"quoteUsd" => "1"}
           }
         }
 
@@ -376,9 +376,9 @@ RSpec.describe FCS::Application::Simulate do
       Dir.mktmpdir do |tmp|
         input = {
           "schemaVersion" => "1.0",
-          "accounts" => [{ "accountId" => "acc-2" }, { "accountId" => "acc-1" }],
-          "markets" => [{ "marketId" => "BTC-USD" }, { "marketId" => "ETH-USD" }],
-          "feeModel" => { "enabled" => false },
+          "accounts" => [{"accountId" => "acc-2"}, {"accountId" => "acc-1"}],
+          "markets" => [{"marketId" => "BTC-USD"}, {"marketId" => "ETH-USD"}],
+          "feeModel" => {"enabled" => false},
           "trades" => [],
           "timeline" => {
             "events" => [
@@ -421,10 +421,10 @@ RSpec.describe FCS::Application::Simulate do
           "priceSnapshot" => {
             "valuationTimestamp" => "2026-02-25T03:00:00Z",
             "prices" => [
-              { "marketId" => "BTC-USD", "priceQuotePerBase" => "50010" },
-              { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }
+              {"marketId" => "BTC-USD", "priceQuotePerBase" => "50010"},
+              {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}
             ],
-            "fx" => { "quoteUsd" => "1" }
+            "fx" => {"quoteUsd" => "1"}
           }
         }
 

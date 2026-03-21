@@ -13,6 +13,6 @@ class Admin::Ui::WorkspaceTrendChartComponent < ViewComponent::Base
   end
 
   def max_trend
-    [ @points.map { |point| point[:count] }.max.to_i, 1 ].max
+    [@points.map { |point| point[:count] }.max.to_i, 1].max
   end
 end

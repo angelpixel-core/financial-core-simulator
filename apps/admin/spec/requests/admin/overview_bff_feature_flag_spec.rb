@@ -38,10 +38,10 @@ RSpec.describe "Admin overview BFF feature flag", type: :request do
   end
 
   def run_with_accounts_json(dir:, account_id:, total_pnl_quote:)
-    run = Run.create!(status: :succeeded, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :succeeded, input_json: {"schemaVersion" => "1.0"})
     path = File.join(dir, "result.json")
     File.write(path, JSON.pretty_generate(result_payload(account_id: account_id, total_pnl_quote: total_pnl_quote)))
-    run.update!(artifacts: { "result_json_path" => path })
+    run.update!(artifacts: {"result_json_path" => path})
     run
   end
 
@@ -72,8 +72,8 @@ RSpec.describe "Admin overview BFF feature flag", type: :request do
       total_runs_30d: 0,
       success_rate_last_50: 0,
       avg_duration_ms_last_50: nil,
-      runs_trend_14d: (0...14).map { |offset| { day: (Date.current - (13 - offset)).strftime("%m-%d"), count: 0 } },
-      status_mix_30d: { queued: 0, running: 0, succeeded: 0, failed: 0 },
+      runs_trend_14d: (0...14).map { |offset| {day: (Date.current - (13 - offset)).strftime("%m-%d"), count: 0} },
+      status_mix_30d: {queued: 0, running: 0, succeeded: 0, failed: 0},
       latest_run: nil,
       latest_global: {
         "totalPnLQuote" => "777.0",
@@ -93,6 +93,6 @@ RSpec.describe "Admin overview BFF feature flag", type: :request do
   end
 
   def admin_session_headers
-    { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+    {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}
   end
 end

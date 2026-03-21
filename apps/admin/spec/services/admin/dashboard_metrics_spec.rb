@@ -22,18 +22,18 @@ RSpec.describe Admin::DashboardMetrics do
       expect(metrics[:top_accounts]).to eq([])
       expect(metrics[:pnl_trend]).to eq([])
       expect(metrics[:kpi_deltas]).to eq(
-        total_runs_7d: { direction: "unknown", delta_abs: nil, delta_pct: nil },
-        total_runs_30d: { direction: "unknown", delta_abs: nil, delta_pct: nil },
-        success_rate_last_50: { direction: "unknown", delta_abs: nil, delta_pct: nil },
-        avg_duration_ms_last_50: { direction: "unknown", delta_abs: nil, delta_pct: nil }
+        total_runs_7d: {direction: "unknown", delta_abs: nil, delta_pct: nil},
+        total_runs_30d: {direction: "unknown", delta_abs: nil, delta_pct: nil},
+        success_rate_last_50: {direction: "unknown", delta_abs: nil, delta_pct: nil},
+        avg_duration_ms_last_50: {direction: "unknown", delta_abs: nil, delta_pct: nil}
       )
     end
 
     it "computes run KPIs and top accounts from latest succeeded result" do
-      old_run = Run.create!(status: :failed, created_at: 40.days.ago, input_json: { "schemaVersion" => "1.0" })
+      old_run = Run.create!(status: :failed, created_at: 40.days.ago, input_json: {"schemaVersion" => "1.0"})
       old_run.update!(duration_ms: 100)
 
-      run = Run.create!(status: :succeeded, created_at: 2.days.ago, input_json: { "schemaVersion" => "1.0" })
+      run = Run.create!(status: :succeeded, created_at: 2.days.ago, input_json: {"schemaVersion" => "1.0"})
       run.update!(duration_ms: 200, input_hash: "abc123", schema_version: "1.0", engine_version: "0.1.0")
 
       Dir.mktmpdir do |dir|
@@ -49,16 +49,16 @@ RSpec.describe Admin::DashboardMetrics do
                 "totalPnLUsd" => "10.5"
               },
               "accounts" => [
-                { "accountId" => "acc-1", 
-"totals" => { "totalPnLQuote" => "5.5", "realizedNetPnLQuote" => "4.0", "unrealizedPnLQuote" => "1.5" } },
-                { "accountId" => "acc-2", 
-"totals" => { "totalPnLQuote" => "8.0", "realizedNetPnLQuote" => "5.0", "unrealizedPnLQuote" => "3.0" } }
+                {"accountId" => "acc-1",
+                 "totals" => {"totalPnLQuote" => "5.5", "realizedNetPnLQuote" => "4.0", "unrealizedPnLQuote" => "1.5"}},
+                {"accountId" => "acc-2",
+                 "totals" => {"totalPnLQuote" => "8.0", "realizedNetPnLQuote" => "5.0", "unrealizedPnLQuote" => "3.0"}}
               ]
             }
           )
         )
 
-        run.update!(artifacts: { "result_json_path" => json_path })
+        run.update!(artifacts: {"result_json_path" => json_path})
 
         metrics = described_class.new.call
         expect(metrics[:total_runs_7d]).to eq(1)
@@ -108,7 +108,7 @@ RSpec.describe Admin::DashboardMetrics do
     end
 
     it "prefers live state metrics for latest global and top accounts when available" do
-      run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+      run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: {"schemaVersion" => "1.0"})
       run.update!(duration_ms: 120, input_hash: "hash-live", schema_version: "1.0", engine_version: "0.1.0")
 
       Dir.mktmpdir do |dir|
@@ -117,23 +117,23 @@ RSpec.describe Admin::DashboardMetrics do
           json_path,
           JSON.pretty_generate(
             {
-              "global" => { "totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "3.0", "unrealizedPnLQuote" => "2.0" },
+              "global" => {"totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "3.0", "unrealizedPnLQuote" => "2.0"},
               "accounts" => [
-                { "accountId" => "acc-artifact", 
-"totals" => { "totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "3.0", "unrealizedPnLQuote" => "2.0" } }
+                {"accountId" => "acc-artifact",
+                 "totals" => {"totalPnLQuote" => "5.0", "realizedNetPnLQuote" => "3.0", "unrealizedPnLQuote" => "2.0"}}
               ]
             }
           )
         )
-        run.update!(artifacts: { "result_json_path" => json_path })
+        run.update!(artifacts: {"result_json_path" => json_path})
 
         live_provider = class_double("Admin::LiveStateMetrics").as_stubbed_const
         live_instance = instance_double(
           "Admin::LiveStateMetrics",
           call: {
             checkpoint_timeline_seq: 10,
-            latest_global: { "totalPnLQuote" => "77.0", "realizedNetPnLQuote" => "70.0", 
-"unrealizedPnLQuote" => "7.0" },
+            latest_global: {"totalPnLQuote" => "77.0", "realizedNetPnLQuote" => "70.0",
+                            "unrealizedPnLQuote" => "7.0"},
             top_accounts: [
               {
                 account_id: "acc-live",
@@ -149,12 +149,12 @@ RSpec.describe Admin::DashboardMetrics do
         metrics = described_class.new.call
 
         expect(metrics[:latest_global]["totalPnLQuote"]).to eq("77.0")
-        expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq([ "acc-live" ])
+        expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq(["acc-live"])
       end
     end
 
     it "falls back to artifact-backed metrics when live source raises" do
-      run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+      run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: {"schemaVersion" => "1.0"})
 
       Dir.mktmpdir do |dir|
         json_path = File.join(dir, "result.json")
@@ -162,15 +162,15 @@ RSpec.describe Admin::DashboardMetrics do
           json_path,
           JSON.pretty_generate(
             {
-              "global" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" },
+              "global" => {"totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0"},
               "accounts" => [
-                { "accountId" => "acc-fallback", 
-"totals" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" } }
+                {"accountId" => "acc-fallback",
+                 "totals" => {"totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0"}}
               ]
             }
           )
         )
-        run.update!(artifacts: { "result_json_path" => json_path })
+        run.update!(artifacts: {"result_json_path" => json_path})
 
         live_provider = class_double("Admin::LiveStateMetrics").as_stubbed_const
         live_instance = instance_double("Admin::LiveStateMetrics")
@@ -180,12 +180,12 @@ RSpec.describe Admin::DashboardMetrics do
         metrics = described_class.new.call
 
         expect(metrics[:latest_global]["totalPnLQuote"]).to eq("9.0")
-        expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq([ "acc-fallback" ])
+        expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq(["acc-fallback"])
       end
     end
 
     it "falls back to artifact-backed top accounts when live data has no totals" do
-      run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+      run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: {"schemaVersion" => "1.0"})
 
       Dir.mktmpdir do |dir|
         json_path = File.join(dir, "result.json")
@@ -193,15 +193,15 @@ RSpec.describe Admin::DashboardMetrics do
           json_path,
           JSON.pretty_generate(
             {
-              "global" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" },
+              "global" => {"totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0"},
               "accounts" => [
-                { "accountId" => "acc-fallback", 
-"totals" => { "totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0" } }
+                {"accountId" => "acc-fallback",
+                 "totals" => {"totalPnLQuote" => "9.0", "realizedNetPnLQuote" => "8.0", "unrealizedPnLQuote" => "1.0"}}
               ]
             }
           )
         )
-        run.update!(artifacts: { "result_json_path" => json_path })
+        run.update!(artifacts: {"result_json_path" => json_path})
 
         live_provider = class_double("Admin::LiveStateMetrics").as_stubbed_const
         live_instance = instance_double(
@@ -216,18 +216,18 @@ RSpec.describe Admin::DashboardMetrics do
 
         metrics = described_class.new.call
 
-        expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq([ "acc-fallback" ])
+        expect(metrics[:top_accounts].map { |entry| entry[:account_id] }).to eq(["acc-fallback"])
       end
     end
 
     it "reports avg duration delta direction with inverse-good semantics" do
       50.times do
-        run = Run.create!(status: :succeeded, created_at: 80.days.ago, input_json: { "schemaVersion" => "1.0" })
+        run = Run.create!(status: :succeeded, created_at: 80.days.ago, input_json: {"schemaVersion" => "1.0"})
         run.update!(duration_ms: 200)
       end
 
       50.times do
-        run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+        run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: {"schemaVersion" => "1.0"})
         run.update!(duration_ms: 100)
       end
 
@@ -239,31 +239,31 @@ RSpec.describe Admin::DashboardMetrics do
     end
 
     it "includes only succeeded runs with canonical result and valid totalPnLQuote in pnl trend" do
-      failed_run = Run.create!(status: :failed, created_at: 3.days.ago, input_json: { "schemaVersion" => "1.0" })
-      failed_run.update!(artifacts: { "result_json_path" => "/tmp/missing.json" })
+      failed_run = Run.create!(status: :failed, created_at: 3.days.ago, input_json: {"schemaVersion" => "1.0"})
+      failed_run.update!(artifacts: {"result_json_path" => "/tmp/missing.json"})
 
-      missing_artifact_run = Run.create!(status: :succeeded, created_at: 2.days.ago, 
-input_json: { "schemaVersion" => "1.0" })
-      missing_artifact_run.update!(artifacts: { "result_json_path" => "/tmp/missing.json" })
+      missing_artifact_run = Run.create!(status: :succeeded, created_at: 2.days.ago,
+        input_json: {"schemaVersion" => "1.0"})
+      missing_artifact_run.update!(artifacts: {"result_json_path" => "/tmp/missing.json"})
 
-      invalid_pnl_run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: { "schemaVersion" => "1.0" })
+      invalid_pnl_run = Run.create!(status: :succeeded, created_at: 1.day.ago, input_json: {"schemaVersion" => "1.0"})
 
       valid_run = Run.create!(
         status: :succeeded,
         created_at: Time.zone.parse("2026-03-14T03:00:00Z"),
         valuation_timestamp: Time.zone.parse("2026-03-14T04:00:00Z"),
-        input_json: { "schemaVersion" => "1.0" }
+        input_json: {"schemaVersion" => "1.0"}
       )
 
       Dir.mktmpdir do |dir|
         invalid_path = File.join(dir, "invalid.json")
         valid_path = File.join(dir, "valid.json")
 
-        File.write(invalid_path, JSON.pretty_generate({ "global" => { "totalPnLQuote" => "bad" } }))
-        File.write(valid_path, JSON.pretty_generate({ "global" => { "totalPnLQuote" => "42.25" } }))
+        File.write(invalid_path, JSON.pretty_generate({"global" => {"totalPnLQuote" => "bad"}}))
+        File.write(valid_path, JSON.pretty_generate({"global" => {"totalPnLQuote" => "42.25"}}))
 
-        invalid_pnl_run.update!(artifacts: { "result_json_path" => invalid_path })
-        valid_run.update!(artifacts: { "result_json_path" => valid_path })
+        invalid_pnl_run.update!(artifacts: {"result_json_path" => invalid_path})
+        valid_run.update!(artifacts: {"result_json_path" => valid_path})
 
         metrics = described_class.new.call
 
@@ -283,8 +283,8 @@ input_json: { "schemaVersion" => "1.0" })
         input_hash: "same-hash",
         input_json: {
           "dataset" => "demo_input.json",
-          "events" => [ { "marketId" => "BTC-USD" }, { "marketId" => "ETH-USD" } ],
-          "accounts" => [ { "accountId" => "acc-1" }, { "accountId" => "acc-2" } ]
+          "events" => [{"marketId" => "BTC-USD"}, {"marketId" => "ETH-USD"}],
+          "accounts" => [{"accountId" => "acc-1"}, {"accountId" => "acc-2"}]
         }
       )
       latest_run = Run.create!(
@@ -293,8 +293,8 @@ input_json: { "schemaVersion" => "1.0" })
         input_hash: "same-hash",
         input_json: {
           "dataset" => "demo_input.json",
-          "events" => [ { "marketId" => "BTC-USD" }, { "marketId" => "ETH-USD" } ],
-          "accounts" => [ { "accountId" => "acc-1" }, { "accountId" => "acc-2" } ]
+          "events" => [{"marketId" => "BTC-USD"}, {"marketId" => "ETH-USD"}],
+          "accounts" => [{"accountId" => "acc-1"}, {"accountId" => "acc-2"}]
         }
       )
 
@@ -321,7 +321,7 @@ input_json: { "schemaVersion" => "1.0" })
         File.write(positions_path, "account,qty\nacc-1,10\n")
         File.write(pnl_path, "account,total\nacc-1,42.25\n")
 
-        previous_run.update!(artifacts: { "result_json_path" => previous_path })
+        previous_run.update!(artifacts: {"result_json_path" => previous_path})
         latest_run.update!(artifacts: {
           "result_json_path" => latest_path,
           "positions_csv_path" => positions_path,

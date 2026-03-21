@@ -9,9 +9,9 @@ RSpec.describe FCS::Application::Runner do
     Dir.mktmpdir do |dir|
       input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
-        "feeModel" => { "enabled" => false },
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
+        "feeModel" => {"enabled" => false},
         "trades" => [
           {
             "tradeId" => "b1",
@@ -26,7 +26,7 @@ RSpec.describe FCS::Application::Runner do
         ],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }]
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}]
         }
       }
 

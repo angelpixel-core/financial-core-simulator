@@ -64,8 +64,8 @@ module FCS
         end
 
         extra_keys = artifacts.keys.map(&:to_s)
-                              .sort
-                              .reject { |key| REQUIRED_ARTIFACT_KEYS.any? { |required, _| required.to_s == key } }
+          .sort
+          .reject { |key| REQUIRED_ARTIFACT_KEYS.any? { |required, _| required.to_s == key } }
         extra_keys.each do |key|
           lines << "  #{key}: #{format_value(artifacts[key.to_sym] || artifacts[key])}"
         end

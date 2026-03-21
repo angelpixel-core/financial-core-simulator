@@ -47,7 +47,7 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_RISK_REJECTION,
             "Short selling is not supported with FIFO accounting",
-            details: { accountingMethod: accounting_method, reason: "FIFO_SHORT_FORBIDDEN" }
+            details: {accountingMethod: accounting_method, reason: "FIFO_SHORT_FORBIDDEN"}
           )
         end
 
@@ -57,7 +57,7 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_RISK_CONFIG_INVALID,
             "Short selling requires collateralQuote and riskModel.maxLeverage",
-            details: { accountId: account_id }
+            details: {accountId: account_id}
           )
         end
 
@@ -147,7 +147,7 @@ module FCS
           entry[:candidates]
         end.sort_by do |candidate|
           [-candidate.fetch(:severity).atoms, candidate.fetch(:account_id), candidate.fetch(:market_id),
-           candidate.fetch(:seq)]
+            candidate.fetch(:seq)]
         end
       end
 
@@ -202,7 +202,7 @@ module FCS
         raise FCS::Error.new(
           FCS::Errors::ERR_RISK_CONFIG_INVALID,
           "RiskEngine expects Decimal18-compatible values",
-          details: { valueClass: value.class.to_s }
+          details: {valueClass: value.class.to_s}
         )
       end
     end

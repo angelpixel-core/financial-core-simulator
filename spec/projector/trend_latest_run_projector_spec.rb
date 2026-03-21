@@ -12,14 +12,14 @@ RSpec.describe FCS::Projector::TrendLatestRunProjector do
       "eventType" => "RUN_LIFECYCLE_NORMALIZED",
       "correlationId" => "corr-1",
       "occurredAt" => "2026-02-20T12:00:00Z",
-      "payload" => { "runId" => "run-1", "status" => "queued" }
+      "payload" => {"runId" => "run-1", "status" => "queued"}
     )
 
     projector.apply!(
       "eventType" => "RUN_LIFECYCLE_NORMALIZED",
       "correlationId" => "corr-2",
       "occurredAt" => "2026-02-25T12:00:00Z",
-      "payload" => { "runId" => "run-2", "status" => "succeeded" }
+      "payload" => {"runId" => "run-2", "status" => "succeeded"}
     )
 
     model = projector.read_model
@@ -36,7 +36,7 @@ RSpec.describe FCS::Projector::TrendLatestRunProjector do
         "eventType" => "RUN_LIFECYCLE_NORMALIZED",
         "correlationId" => "corr-1",
         "occurredAt" => "bad",
-        "payload" => { "runId" => "run-1", "status" => "queued" }
+        "payload" => {"runId" => "run-1", "status" => "queued"}
       )
     end.to raise_error(FCS::Error) { |error| expect(error.details).to include(field: "event.occurredAt") }
   end

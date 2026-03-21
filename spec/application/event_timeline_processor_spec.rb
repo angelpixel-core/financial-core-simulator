@@ -59,13 +59,13 @@ RSpec.describe FCS::Application::EventTimelineProcessor do
     expect(checkpoint_store).to have_received(:write_if_due!).with(
       event_count: 1,
       timeline_seq: 1,
-      state: { "accounts" => [] },
+      state: {"accounts" => []},
       input_hash: "hash-1"
     )
     expect(checkpoint_store).to have_received(:write_if_due!).with(
       event_count: 2,
       timeline_seq: 2,
-      state: { "accounts" => [] },
+      state: {"accounts" => []},
       input_hash: "hash-1"
     )
   end
@@ -87,7 +87,7 @@ RSpec.describe FCS::Application::EventTimelineProcessor do
           {
             "accountId" => "acc-1",
             "markets" => [
-              { "marketId" => "ETH-USD", "quantity" => "1", "avgCost" => "100" }
+              {"marketId" => "ETH-USD", "quantity" => "1", "avgCost" => "100"}
             ]
           }
         ]
@@ -95,9 +95,9 @@ RSpec.describe FCS::Application::EventTimelineProcessor do
     }
 
     events = [
-      { "eventType" => "TRADE_APPLIED", "timelineSeq" => 1, "trade" => {} },
-      { "eventType" => "TRADE_APPLIED", "timelineSeq" => 2, "trade" => {} },
-      { "eventType" => "PRICE_UPDATED", "timelineSeq" => 3, "marketId" => "ETH-USD", "priceQuotePerBase" => "120" }
+      {"eventType" => "TRADE_APPLIED", "timelineSeq" => 1, "trade" => {}},
+      {"eventType" => "TRADE_APPLIED", "timelineSeq" => 2, "trade" => {}},
+      {"eventType" => "PRICE_UPDATED", "timelineSeq" => 3, "marketId" => "ETH-USD", "priceQuotePerBase" => "120"}
     ]
 
     described_class.new.call(
@@ -129,7 +129,7 @@ RSpec.describe FCS::Application::EventTimelineProcessor do
 
     described_class.new.call(
       events: [
-        { "eventType" => "PRICE_UPDATED", "timelineSeq" => 1, "marketId" => "ETH-USD", "priceQuotePerBase" => "110" }
+        {"eventType" => "PRICE_UPDATED", "timelineSeq" => 1, "marketId" => "ETH-USD", "priceQuotePerBase" => "110"}
       ],
       ledger: ledger,
       valuation: valuation,
@@ -145,14 +145,14 @@ RSpec.describe FCS::Application::EventTimelineProcessor do
           {
             "accountId" => "acc-1",
             "markets" => [
-              { "marketId" => "BTC-USD", "quantity" => "2.0", "avgCost" => "90.0" },
-              { "marketId" => "ETH-USD", "quantity" => "3.0", "avgCost" => "80.0" }
+              {"marketId" => "BTC-USD", "quantity" => "2.0", "avgCost" => "90.0"},
+              {"marketId" => "ETH-USD", "quantity" => "3.0", "avgCost" => "80.0"}
             ]
           },
           {
             "accountId" => "acc-2",
             "markets" => [
-              { "marketId" => "ETH-USD", "quantity" => "1.0", "avgCost" => "100.0" }
+              {"marketId" => "ETH-USD", "quantity" => "1.0", "avgCost" => "100.0"}
             ]
           }
         ]

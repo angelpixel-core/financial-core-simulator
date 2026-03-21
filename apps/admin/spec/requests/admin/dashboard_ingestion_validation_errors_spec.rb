@@ -10,7 +10,7 @@ RSpec.describe "Dashboard ingestion validation errors", type: :request do
         "correlationId" => "corr-001",
         "timeline" => {
           "events" => [
-            { "source" => "agente.hft.alpha" }
+            {"source" => "agente.hft.alpha"}
           ]
         }
       }
@@ -28,7 +28,7 @@ RSpec.describe "Dashboard ingestion validation errors", type: :request do
   end
 
   it "returns empty list when no validation failures exist" do
-    Run.create!(status: :succeeded, input_json: { "schemaVersion" => "1.0" })
+    Run.create!(status: :succeeded, input_json: {"schemaVersion" => "1.0"})
 
     get "/dashboard/ingestion-validation-errors", as: :json
 

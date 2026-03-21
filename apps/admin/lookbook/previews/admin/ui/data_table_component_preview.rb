@@ -47,10 +47,10 @@ class Admin::Ui::DataTableComponentPreview < ViewComponent::Preview
 
   def columns
     [
-      { key: :account, label: "Account" },
-      { key: :total_pnl_quote, label: "Total PnL Quote" },
-      { key: :realized_net, label: "Realized Net" },
-      { key: :unrealized, label: "Unrealized" }
+      {key: :account, label: "Account"},
+      {key: :total_pnl_quote, label: "Total PnL Quote"},
+      {key: :realized_net, label: "Realized Net"},
+      {key: :unrealized, label: "Unrealized"}
     ]
   end
 end

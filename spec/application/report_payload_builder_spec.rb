@@ -10,8 +10,8 @@ RSpec.describe FCS::Application::ReportPayloadBuilder do
       input_hash: "abc123",
       run_id: "run-1",
       valuation_timestamp: "2026-02-25T03:00:00Z",
-      accounts: [{ "accountId" => "acc-1" }],
-      global: { "totalPnLQuote" => "0.0" }
+      accounts: [{"accountId" => "acc-1"}],
+      global: {"totalPnLQuote" => "0.0"}
     )
 
     expect(payload).to eq(
@@ -20,8 +20,8 @@ RSpec.describe FCS::Application::ReportPayloadBuilder do
       "inputHash" => "abc123",
       "runId" => "run-1",
       "valuationTimestamp" => "2026-02-25T03:00:00Z",
-      "accounts" => [{ "accountId" => "acc-1" }],
-      "global" => { "totalPnLQuote" => "0.0" }
+      "accounts" => [{"accountId" => "acc-1"}],
+      "global" => {"totalPnLQuote" => "0.0"}
     )
   end
 
@@ -32,8 +32,8 @@ RSpec.describe FCS::Application::ReportPayloadBuilder do
       input_hash: "abc123",
       run_id: "run-1",
       valuation_timestamp: "2026-02-25T03:00:00Z",
-      accounts: [{ "accountId" => "acc-1" }],
-      global: { "totalPnLQuote" => "0.0" },
+      accounts: [{"accountId" => "acc-1"}],
+      global: {"totalPnLQuote" => "0.0"},
       replay: {
         "mode" => "timeline",
         "checkpointTimelineSeq" => 42

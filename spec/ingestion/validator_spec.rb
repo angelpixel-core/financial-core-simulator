@@ -8,15 +8,15 @@ RSpec.describe FCS::Ingestion::Validator do
   def base_input
     {
       "schemaVersion" => "1.0",
-      "accounts" => [{ "accountId" => "acc-1" }],
-      "markets" => [{ "marketId" => "ETH-USD" }],
+      "accounts" => [{"accountId" => "acc-1"}],
+      "markets" => [{"marketId" => "ETH-USD"}],
       "trades" => [],
       "priceSnapshot" => {
         "valuationTimestamp" => "2026-02-25T03:00:00Z",
         "prices" => [
-          { "marketId" => "ETH-USD", "priceQuotePerBase" => "2500" }
+          {"marketId" => "ETH-USD", "priceQuotePerBase" => "2500"}
         ],
-        "fx" => { "quoteUsd" => "1" }
+        "fx" => {"quoteUsd" => "1"}
       }
     }
   end
@@ -96,10 +96,10 @@ RSpec.describe FCS::Ingestion::Validator do
 
   it "falla si falta precio para un market" do
     input = base_input
-    input["markets"] = [{ "marketId" => "ETH-USD" }, { "marketId" => "BTC-USD" }]
+    input["markets"] = [{"marketId" => "ETH-USD"}, {"marketId" => "BTC-USD"}]
     # Snapshot solo tiene ETH-USD
     input["priceSnapshot"]["prices"] = [
-      { "marketId" => "ETH-USD", "priceQuotePerBase" => "2500" }
+      {"marketId" => "ETH-USD", "priceQuotePerBase" => "2500"}
     ]
 
     expect { validator.validate!(input) }
@@ -123,7 +123,7 @@ RSpec.describe FCS::Ingestion::Validator do
 
   it "acepta fx incompleto cuando usdModel.enabled es false" do
     input = base_input
-    input["usdModel"] = { "enabled" => false }
+    input["usdModel"] = {"enabled" => false}
     input["priceSnapshot"]["fx"] = {}
 
     expect { validator.validate!(input) }.not_to raise_error
@@ -131,7 +131,7 @@ RSpec.describe FCS::Ingestion::Validator do
 
   it "falla con diagnostico accionable cuando usdModel.enabled requiere FX y quoteUsd no existe" do
     input = base_input
-    input["usdModel"] = { "enabled" => true }
+    input["usdModel"] = {"enabled" => true}
     input["priceSnapshot"].delete("fx")
 
     expect { validator.validate!(input) }
@@ -149,8 +149,8 @@ RSpec.describe FCS::Ingestion::Validator do
   it "falla si snapshot prices contiene marketId duplicado" do
     input = base_input
     input["priceSnapshot"]["prices"] = [
-      { "marketId" => "ETH-USD", "priceQuotePerBase" => "2500" },
-      { "marketId" => "ETH-USD", "priceQuotePerBase" => "2550" }
+      {"marketId" => "ETH-USD", "priceQuotePerBase" => "2500"},
+      {"marketId" => "ETH-USD", "priceQuotePerBase" => "2550"}
     ]
 
     expect { validator.validate!(input) }
@@ -304,7 +304,7 @@ RSpec.describe FCS::Ingestion::Validator do
 
   it "falla si fx quoteUsd usa cero equivalente con leading zeros" do
     input = base_input
-    input["priceSnapshot"]["fx"] = { "quoteUsd" => "000" }
+    input["priceSnapshot"]["fx"] = {"quoteUsd" => "000"}
 
     expect { validator.validate!(input) }
       .to raise_error(FCS::Error) { |e|
@@ -369,11 +369,11 @@ RSpec.describe FCS::Ingestion::Validator do
 
   it "no colisiona seq uniqueness cuando ids contienen separadores" do
     input = base_input
-    input["accounts"] = [{ "accountId" => "a|b" }, { "accountId" => "a" }]
-    input["markets"] = [{ "marketId" => "c" }, { "marketId" => "b|c" }]
+    input["accounts"] = [{"accountId" => "a|b"}, {"accountId" => "a"}]
+    input["markets"] = [{"marketId" => "c"}, {"marketId" => "b|c"}]
     input["priceSnapshot"]["prices"] = [
-      { "marketId" => "c", "priceQuotePerBase" => "100" },
-      { "marketId" => "b|c", "priceQuotePerBase" => "200" }
+      {"marketId" => "c", "priceQuotePerBase" => "100"},
+      {"marketId" => "b|c", "priceQuotePerBase" => "200"}
     ]
     input["trades"] = [
       {
@@ -758,7 +758,7 @@ RSpec.describe FCS::Ingestion::Validator do
 
   it "falla si fee amountQuote es negativo" do
     input = base_input
-    input["feeModel"] = { "enabled" => true }
+    input["feeModel"] = {"enabled" => true}
     input["trades"] = [
       {
         "tradeId" => "t-1",
@@ -769,7 +769,7 @@ RSpec.describe FCS::Ingestion::Validator do
         "side" => "BUY",
         "quantityBase" => "1",
         "priceQuotePerBase" => "100",
-        "fee" => { "amountQuote" => "-1" }
+        "fee" => {"amountQuote" => "-1"}
       }
     ]
 

@@ -15,7 +15,7 @@ RSpec.describe Admin::Runs::RunValidationDiagnostics do
         status: :failed,
         error_code: Runs::ErrorCodeMapper::VALIDATION_RISK,
         error_message: "Invalid risk model",
-        input_json: { "source" => "ingest.alpha" },
+        input_json: {"source" => "ingest.alpha"},
         run_uuid: "run-1"
       )
 

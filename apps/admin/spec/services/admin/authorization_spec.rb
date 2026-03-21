@@ -75,7 +75,7 @@ RSpec.describe Admin::Authorization do
       session_request = instance_double(
         ActionDispatch::Request,
         headers: {},
-        session: { "admin_account_id" => account.id },
+        session: {"admin_account_id" => account.id},
         params: {}
       )
 
@@ -93,7 +93,7 @@ RSpec.describe Admin::Authorization do
       session_request = instance_double(
         ActionDispatch::Request,
         headers: {},
-        session: { "account_id" => account.id },
+        session: {"account_id" => account.id},
         params: {}
       )
 
@@ -111,7 +111,7 @@ RSpec.describe Admin::Authorization do
       session_request = instance_double(
         ActionDispatch::Request,
         headers: {},
-        session: { admin_account_id: account.id },
+        session: {admin_account_id: account.id},
         params: {}
       )
 
@@ -140,7 +140,7 @@ RSpec.describe Admin::Authorization do
       session_request = instance_double(
         ActionDispatch::Request,
         headers: {},
-        session: { "admin_account_id" => admin_account.id },
+        session: {"admin_account_id" => admin_account.id},
         params: {}
       )
 

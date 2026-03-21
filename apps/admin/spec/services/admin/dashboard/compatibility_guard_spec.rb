@@ -20,7 +20,7 @@ RSpec.describe Admin::Dashboard::CompatibilityGuard do
         success_rate_last_50: 0,
         avg_duration_ms_last_50: nil,
         runs_trend_14d: [],
-        status_mix_30d: { queued: 0, running: 0, succeeded: 0, failed: 0 },
+        status_mix_30d: {queued: 0, running: 0, succeeded: 0, failed: 0},
         latest_run: nil,
         latest_global: nil,
         top_accounts: []
@@ -36,7 +36,7 @@ RSpec.describe Admin::Dashboard::CompatibilityGuard do
       guard = described_class.new
 
       expect do
-        guard.overview_payload(payload: { "runKpis" => {} }, metrics: {})
+        guard.overview_payload(payload: {"runKpis" => {}}, metrics: {})
       end.to raise_error(ArgumentError, /Missing required compatibility keys/)
     end
   end
@@ -45,7 +45,7 @@ RSpec.describe Admin::Dashboard::CompatibilityGuard do
     it "adds contract version and validates required widget key" do
       guard = described_class.new
 
-      result = guard.widget_payload(payload: { "topAccounts" => [] }, required_widget_keys: [ "topAccounts" ])
+      result = guard.widget_payload(payload: {"topAccounts" => []}, required_widget_keys: ["topAccounts"])
 
       expect(result).to include("contractVersion" => "v1", "topAccounts" => [])
     end

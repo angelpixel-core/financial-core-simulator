@@ -9,30 +9,30 @@ RSpec.describe "Run artifacts", type: :request do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result.json")
-    File.write(path, JSON.generate({ ok: true }))
+    File.write(path, JSON.generate({ok: true}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
     get "/runs/#{run.id}/result"
 
     expect(response).to have_http_status(:ok)
     expect(response.media_type).to eq("application/json")
-    expect(JSON.parse(response.body)).to eq({ "ok" => true })
+    expect(JSON.parse(response.body)).to eq({"ok" => true})
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
 
   it "returns not_found when artifact path is outside storage/runs" do
-    run = Run.create!(status: :succeeded, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :succeeded, input_json: {"schemaVersion" => "1.0"})
 
     Dir.mktmpdir do |dir|
       outside_path = File.join(dir, "result.json")
-      File.write(outside_path, JSON.generate({ leaked: true }))
-      run.update!(artifacts: { "result_json_path" => outside_path })
+      File.write(outside_path, JSON.generate({leaked: true}))
+      run.update!(artifacts: {"result_json_path" => outside_path})
 
       get "/runs/#{run.id}/result"
 
@@ -42,7 +42,7 @@ RSpec.describe "Run artifacts", type: :request do
   end
 
   it "redirects to root when run status is not succeeded" do
-    run = Run.create!(status: :running, input_json: { "schemaVersion" => "1.0" })
+    run = Run.create!(status: :running, input_json: {"schemaVersion" => "1.0"})
 
     get "/runs/#{run.id}/result"
 
@@ -57,12 +57,12 @@ RSpec.describe "Run artifacts", type: :request do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result-token.json")
-    File.write(path, JSON.generate({ ok: true }))
+    File.write(path, JSON.generate({ok: true}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
     get "/runs/#{run.id}/result"
@@ -80,19 +80,19 @@ RSpec.describe "Run artifacts", type: :request do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result-token-ok.json")
-    File.write(path, JSON.generate({ ok: true }))
+    File.write(path, JSON.generate({ok: true}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
-    get "/runs/#{run.id}/result", headers: { "Authorization" => "Bearer secret-token" }
+    get "/runs/#{run.id}/result", headers: {"Authorization" => "Bearer secret-token"}
 
     expect(response).to have_http_status(:ok)
     expect(response.media_type).to eq("application/json")
-    expect(JSON.parse(response.body)).to eq({ "ok" => true })
+    expect(JSON.parse(response.body)).to eq({"ok" => true})
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
@@ -104,19 +104,19 @@ RSpec.describe "Run artifacts", type: :request do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result-token-header.json")
-    File.write(path, JSON.generate({ ok: true }))
+    File.write(path, JSON.generate({ok: true}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
-    get "/runs/#{run.id}/result", headers: { "X-Admin-Artifact-Token" => "secret-token" }
+    get "/runs/#{run.id}/result", headers: {"X-Admin-Artifact-Token" => "secret-token"}
 
     expect(response).to have_http_status(:ok)
     expect(response.media_type).to eq("application/json")
-    expect(JSON.parse(response.body)).to eq({ "ok" => true })
+    expect(JSON.parse(response.body)).to eq({"ok" => true})
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
@@ -128,15 +128,15 @@ RSpec.describe "Run artifacts", type: :request do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result-token-ui-header.json")
-    File.write(path, JSON.generate({ ok: true }))
+    File.write(path, JSON.generate({ok: true}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
-    get "/runs/#{run.id}/result", headers: { "X-Admin-Token" => "secret-token" }
+    get "/runs/#{run.id}/result", headers: {"X-Admin-Token" => "secret-token"}
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/")
@@ -151,15 +151,15 @@ RSpec.describe "Run artifacts", type: :request do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result-token-mismatch.json")
-    File.write(path, JSON.generate({ ok: true }))
+    File.write(path, JSON.generate({ok: true}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
-    get "/runs/#{run.id}/result", headers: { "Authorization" => "Bearer ui-secret" }
+    get "/runs/#{run.id}/result", headers: {"Authorization" => "Bearer ui-secret"}
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/")
@@ -174,18 +174,18 @@ RSpec.describe "Run artifacts", type: :request do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result-token-operator-role.json")
-    File.write(path, JSON.generate({ ok: true }))
+    File.write(path, JSON.generate({ok: true}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
-    get "/runs/#{run.id}/result", headers: { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+    get "/runs/#{run.id}/result", headers: {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}
 
     expect(response).to have_http_status(:ok)
-    expect(JSON.parse(response.body)).to eq({ "ok" => true })
+    expect(JSON.parse(response.body)).to eq({"ok" => true})
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
@@ -200,24 +200,24 @@ RSpec.describe "Run artifacts", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "ops@example.com", password: "secret-pass" }
+    post "/admin/login", params: {email: "ops@example.com", password: "secret-pass"}
     expect(response).to have_http_status(:found)
 
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result-token-operator-session.json")
-    File.write(path, JSON.generate({ ok: true }))
+    File.write(path, JSON.generate({ok: true}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
     get "/runs/#{run.id}/result"
 
     expect(response).to have_http_status(:ok)
-    expect(JSON.parse(response.body)).to eq({ "ok" => true })
+    expect(JSON.parse(response.body)).to eq({"ok" => true})
   ensure
     FileUtils.rm_f(path) if defined?(path)
   end
@@ -229,15 +229,15 @@ RSpec.describe "Run artifacts", type: :request do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result-token-viewer-role.json")
-    File.write(path, JSON.generate({ ok: true }))
+    File.write(path, JSON.generate({ok: true}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
-    get "/runs/#{run.id}/result", headers: { "X-Admin-User" => "viewer", "X-Admin-Role" => "viewer" }
+    get "/runs/#{run.id}/result", headers: {"X-Admin-User" => "viewer", "X-Admin-Role" => "viewer"}
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/")
@@ -252,15 +252,15 @@ RSpec.describe "Run artifacts", type: :request do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result-token-basic-auth.json")
-    File.write(path, JSON.generate({ ok: true }))
+    File.write(path, JSON.generate({ok: true}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
-    get "/runs/#{run.id}/result", headers: { "Authorization" => "Basic c2VjcmV0LXRva2Vu" }
+    get "/runs/#{run.id}/result", headers: {"Authorization" => "Basic c2VjcmV0LXRva2Vu"}
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/")
@@ -276,11 +276,11 @@ RSpec.describe "Run artifacts", type: :request do
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "positions_csv_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"positions_csv_path" => path.to_s}
     )
 
-    get "/runs/#{run.id}/positions", params: { preview: 1 }
+    get "/runs/#{run.id}/positions", params: {preview: 1}
 
     expect(response).to have_http_status(:ok)
     expect(response.media_type).to eq("text/html")
@@ -300,8 +300,8 @@ RSpec.describe "Run artifacts", type: :request do
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "positions_csv_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"positions_csv_path" => path.to_s}
     )
 
     get "/runs/#{run.id}/positions", params: {
@@ -332,8 +332,8 @@ RSpec.describe "Run artifacts", type: :request do
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "pnl_csv_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"pnl_csv_path" => path.to_s}
     )
 
     get "/runs/#{run.id}/pnl", params: {
@@ -385,8 +385,8 @@ RSpec.describe "Run artifacts", type: :request do
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
     get "/runs/#{run.id}/risk"
@@ -437,11 +437,11 @@ RSpec.describe "Run artifacts", type: :request do
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
-      artifacts: { "result_json_path" => path.to_s }
+      input_json: {"schemaVersion" => "1.0"},
+      artifacts: {"result_json_path" => path.to_s}
     )
 
-    get "/runs/#{run.id}/risk", params: { status: "MARGIN_CALL" }
+    get "/runs/#{run.id}/risk", params: {status: "MARGIN_CALL"}
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("acc-mc")
@@ -458,13 +458,13 @@ RSpec.describe "Run artifacts", type: :request do
     base_dir = Rails.root.join("storage", "runs", "spec_artifacts")
     FileUtils.mkdir_p(base_dir)
     path = base_dir.join("result-risk-context.json")
-    File.write(path, JSON.generate({ "accounts" => [] }))
+    File.write(path, JSON.generate({"accounts" => []}))
 
     run = Run.create!(
       status: :succeeded,
-      input_json: { "schemaVersion" => "1.0" },
+      input_json: {"schemaVersion" => "1.0"},
       input_hash: "hash-context",
-      artifacts: { "result_json_path" => path.to_s }
+      artifacts: {"result_json_path" => path.to_s}
     )
 
     get "/runs/#{run.id}/risk", params: {

@@ -6,10 +6,10 @@ RSpec.describe "Long-only integration guardrails" do
   it "rejects short opening attempts even when risk model and collateral are provided" do
     input = {
       "schemaVersion" => "1.0",
-      "accounts" => [{ "accountId" => "acc-1", "collateralQuote" => "100" }],
-      "markets" => [{ "marketId" => "ETH-USD" }],
-      "feeModel" => { "enabled" => false },
-      "riskModel" => { "maxLeverage" => "2" },
+      "accounts" => [{"accountId" => "acc-1", "collateralQuote" => "100"}],
+      "markets" => [{"marketId" => "ETH-USD"}],
+      "feeModel" => {"enabled" => false},
+      "riskModel" => {"maxLeverage" => "2"},
       "trades" => [
         {
           "tradeId" => "s1",
@@ -24,7 +24,7 @@ RSpec.describe "Long-only integration guardrails" do
       ],
       "priceSnapshot" => {
         "valuationTimestamp" => "2026-02-25T03:00:00Z",
-        "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "80" }]
+        "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "80"}]
       }
     }
 
@@ -36,13 +36,13 @@ RSpec.describe "Long-only integration guardrails" do
   it "keeps risk events empty on regular long-only flow" do
     input = {
       "schemaVersion" => "1.0",
-      "accounts" => [{ "accountId" => "acc-1", "collateralQuote" => "100" }],
-      "markets" => [{ "marketId" => "ETH-USD" }],
-      "feeModel" => { "enabled" => false },
+      "accounts" => [{"accountId" => "acc-1", "collateralQuote" => "100"}],
+      "markets" => [{"marketId" => "ETH-USD"}],
+      "feeModel" => {"enabled" => false},
       "riskModel" => {
         "maxLeverage" => "2",
         "maintenanceMarginRatio" => "0.25",
-        "liquidation" => { "enabled" => true, "closeFactor" => "0.5" }
+        "liquidation" => {"enabled" => true, "closeFactor" => "0.5"}
       },
       "trades" => [
         {
@@ -58,7 +58,7 @@ RSpec.describe "Long-only integration guardrails" do
       ],
       "priceSnapshot" => {
         "valuationTimestamp" => "2026-02-25T03:00:00Z",
-        "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "90" }]
+        "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "90"}]
       }
     }
 

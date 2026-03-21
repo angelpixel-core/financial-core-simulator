@@ -37,10 +37,10 @@ RSpec.describe FCS::Reporting::CliSummary do
       File.write(pnl_path, "")
 
       summary.print(payload, artifacts: {
-                      json_path: json_path,
-                      positions_csv_path: positions_path,
-                      pnl_csv_path: pnl_path
-                    })
+        json_path: json_path,
+        positions_csv_path: positions_path,
+        pnl_csv_path: pnl_path
+      })
     end
 
     output = io.string
@@ -55,7 +55,7 @@ RSpec.describe FCS::Reporting::CliSummary do
     summary = described_class.new(io: io)
 
     expect do
-      summary.print(payload, artifacts: { json_path: "missing.json" })
+      summary.print(payload, artifacts: {json_path: "missing.json"})
     end.to raise_error(FCS::Error) { |error| expect(error.code).to eq(FCS::Errors::ERR_VALIDATION) }
   end
 end

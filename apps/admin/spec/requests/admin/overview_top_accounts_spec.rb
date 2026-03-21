@@ -32,7 +32,7 @@ RSpec.describe "Admin top accounts", type: :request do
   end
 
   it "renders empty-state text when top account data is missing" do
-    dashboard = instance_double("Admin::DashboardMetrics", call: { top_accounts: nil })
+    dashboard = instance_double("Admin::DashboardMetrics", call: {top_accounts: nil})
     allow(Admin::DashboardMetrics).to receive(:new).and_return(dashboard)
 
     get "/admin/overview/top-accounts", headers: admin_session_headers.merge("X-Requested-With" => "XMLHttpRequest")
@@ -44,7 +44,7 @@ RSpec.describe "Admin top accounts", type: :request do
   end
 
   it "does not render self drilldown CTA on standalone top accounts page" do
-    dashboard = instance_double("Admin::DashboardMetrics", call: { top_accounts: [] })
+    dashboard = instance_double("Admin::DashboardMetrics", call: {top_accounts: []})
     allow(Admin::DashboardMetrics).to receive(:new).and_return(dashboard)
 
     get "/admin/overview/top-accounts", headers: admin_session_headers
@@ -54,6 +54,6 @@ RSpec.describe "Admin top accounts", type: :request do
   end
 
   def admin_session_headers
-    { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }
+    {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}
   end
 end

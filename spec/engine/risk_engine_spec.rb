@@ -43,8 +43,8 @@ RSpec.describe FCS::Engine::RiskEngine do
 
   it "rejects FIFO short selling" do
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect do
@@ -66,8 +66,8 @@ RSpec.describe FCS::Engine::RiskEngine do
     end)
 
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect do
@@ -91,8 +91,8 @@ RSpec.describe FCS::Engine::RiskEngine do
     end)
 
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect do
@@ -130,8 +130,8 @@ RSpec.describe FCS::Engine::RiskEngine do
 
   it "rejects trade when projected notional exceeds leverage limit" do
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect do
@@ -161,7 +161,7 @@ RSpec.describe FCS::Engine::RiskEngine do
   it "returns deterministic liquidation candidates ordered by severity" do
     engine = described_class.new(
       account_collateral: {},
-      risk_config: { maintenanceMarginRatio: FCS::Types::Decimal18.from_string("0.25") }
+      risk_config: {maintenanceMarginRatio: FCS::Types::Decimal18.from_string("0.25")}
     )
 
     health = {
@@ -216,8 +216,8 @@ RSpec.describe FCS::Engine::RiskEngine do
 
   it "returns true when projected notional remains within leverage" do
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("3") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("3")}
     )
 
     expect(
@@ -235,8 +235,8 @@ RSpec.describe FCS::Engine::RiskEngine do
 
   it "raises with detailed FIFO rejection" do
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect do
@@ -261,8 +261,8 @@ RSpec.describe FCS::Engine::RiskEngine do
 
   it "raises when collateral is zero" do
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("0") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("0")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect do
@@ -285,7 +285,7 @@ RSpec.describe FCS::Engine::RiskEngine do
   it "normalizes risk config keys and coerces string values" do
     engine = described_class.new(
       account_collateral: {},
-      risk_config: { "maxLeverage" => "2", maintenanceMarginRatio: "0.25" }
+      risk_config: {"maxLeverage" => "2", maintenanceMarginRatio: "0.25"}
     )
 
     risk_config = engine.instance_variable_get(:@risk_config)
@@ -303,7 +303,7 @@ RSpec.describe FCS::Engine::RiskEngine do
     leverage = FCS::Types::Decimal18.from_string("2")
     engine = described_class.new(
       account_collateral: {},
-      risk_config: { maxLeverage: leverage, maintenanceMarginRatio: 5 }
+      risk_config: {maxLeverage: leverage, maintenanceMarginRatio: 5}
     )
 
     risk_config = engine.instance_variable_get(:@risk_config)
@@ -315,7 +315,7 @@ RSpec.describe FCS::Engine::RiskEngine do
   it "normalizes config via to_h" do
     config = Class.new do
       def to_h
-        { "maxLeverage" => "2" }
+        {"maxLeverage" => "2"}
       end
     end.new
 
@@ -330,7 +330,7 @@ RSpec.describe FCS::Engine::RiskEngine do
     custom_string = Class.new(String).new("3")
     engine = described_class.new(
       account_collateral: {},
-      risk_config: { maxLeverage: custom_string }
+      risk_config: {maxLeverage: custom_string}
     )
 
     risk_config = engine.instance_variable_get(:@risk_config)
@@ -340,7 +340,7 @@ RSpec.describe FCS::Engine::RiskEngine do
 
   it "normalizes collateral values using Decimal18" do
     engine = described_class.new(
-      account_collateral: { "acc-1" => "10" },
+      account_collateral: {"acc-1" => "10"},
       risk_config: {}
     )
 
@@ -353,8 +353,8 @@ RSpec.describe FCS::Engine::RiskEngine do
 
   it "evaluates account health with maintenance and candidates" do
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maintenanceMarginRatio: FCS::Types::Decimal18.from_string("0.1") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maintenanceMarginRatio: FCS::Types::Decimal18.from_string("0.1")}
     )
 
     positions = {
@@ -462,8 +462,8 @@ RSpec.describe FCS::Engine::RiskEngine do
     }
     state = StubState.new(positions)
     valuation = StubValuation.new(
-      snapshot_prices: { "ETH-USD" => FCS::Types::Decimal18.from_string("10") },
-      unrealized_pnls: { "ETH-USD" => FCS::Types::Decimal18.from_string("0") }
+      snapshot_prices: {"ETH-USD" => FCS::Types::Decimal18.from_string("10")},
+      unrealized_pnls: {"ETH-USD" => FCS::Types::Decimal18.from_string("0")}
     )
 
     health = engine.evaluate_accounts!(state: state, valuation: valuation)
@@ -492,22 +492,22 @@ RSpec.describe FCS::Engine::RiskEngine do
       "acc-b" => {
         status: FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE,
         candidates: [
-          { account_id: "acc-b", market_id: "AAA-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 0 },
-          { account_id: "acc-b", market_id: "BTC-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 1 }
+          {account_id: "acc-b", market_id: "AAA-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 0},
+          {account_id: "acc-b", market_id: "BTC-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 1}
         ]
       },
       "acc-a" => {
         status: FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE,
         candidates: [
-          { account_id: "acc-a", market_id: "AAA-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 1 },
-          { account_id: "acc-a", market_id: "BBB-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 2 },
-          { account_id: "acc-a", market_id: "BBB-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 0 }
+          {account_id: "acc-a", market_id: "AAA-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 1},
+          {account_id: "acc-a", market_id: "BBB-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 2},
+          {account_id: "acc-a", market_id: "BBB-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 0}
         ]
       },
       "acc-c" => {
         status: FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE,
         candidates: [
-          { account_id: "acc-c", market_id: "ETH-USD", severity: FCS::Types::Decimal18.from_string("11"), seq: 0 }
+          {account_id: "acc-c", market_id: "ETH-USD", severity: FCS::Types::Decimal18.from_string("11"), seq: 0}
         ]
       }
     }
@@ -533,13 +533,13 @@ RSpec.describe FCS::Engine::RiskEngine do
       "acc-a" => {
         status: FCS::Engine::RiskEngine::STATUS_HEALTHY,
         candidates: [
-          { account_id: "acc-a", market_id: "ETH-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 0 }
+          {account_id: "acc-a", market_id: "ETH-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 0}
         ]
       },
       "acc-b" => {
         status: FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE,
         candidates: [
-          { account_id: "acc-b", market_id: "ETH-USD", severity: FCS::Types::Decimal18.from_string("20"), seq: 0 }
+          {account_id: "acc-b", market_id: "ETH-USD", severity: FCS::Types::Decimal18.from_string("20"), seq: 0}
         ]
       }
     }
@@ -555,7 +555,7 @@ RSpec.describe FCS::Engine::RiskEngine do
     health = {
       "acc-a" => {
         candidates: [
-          { account_id: "acc-a", market_id: "ETH-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 0 }
+          {account_id: "acc-a", market_id: "ETH-USD", severity: FCS::Types::Decimal18.from_string("10"), seq: 0}
         ]
       }
     }
@@ -567,7 +567,7 @@ RSpec.describe FCS::Engine::RiskEngine do
     engine = described_class.new(account_collateral: {}, risk_config: {})
 
     health = {
-      "acc-a" => { status: FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE }
+      "acc-a" => {status: FCS::Engine::RiskEngine::STATUS_LIQUIDATABLE}
     }
 
     expect { engine.liquidation_candidates(health) }.to raise_error(NoMethodError)
@@ -691,7 +691,7 @@ RSpec.describe FCS::Engine::RiskEngine do
 
   it "requires max leverage when collateral is present" do
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("10") },
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("10")},
       risk_config: {}
     )
 
@@ -711,7 +711,7 @@ RSpec.describe FCS::Engine::RiskEngine do
   it "requires collateral when max leverage is present" do
     engine = described_class.new(
       account_collateral: {},
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect do
@@ -729,8 +729,8 @@ RSpec.describe FCS::Engine::RiskEngine do
 
   it "allows leverage when projected notional is below max" do
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect(
@@ -748,8 +748,8 @@ RSpec.describe FCS::Engine::RiskEngine do
 
   it "allows projected notional equal to max" do
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect(
@@ -775,8 +775,8 @@ RSpec.describe FCS::Engine::RiskEngine do
     end)
 
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect(
@@ -813,8 +813,8 @@ RSpec.describe FCS::Engine::RiskEngine do
     end)
 
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect do
@@ -839,8 +839,8 @@ RSpec.describe FCS::Engine::RiskEngine do
     end)
 
     engine = described_class.new(
-      account_collateral: { "acc-1" => FCS::Types::Decimal18.from_string("100") },
-      risk_config: { maxLeverage: FCS::Types::Decimal18.from_string("2") }
+      account_collateral: {"acc-1" => FCS::Types::Decimal18.from_string("100")},
+      risk_config: {maxLeverage: FCS::Types::Decimal18.from_string("2")}
     )
 
     expect do

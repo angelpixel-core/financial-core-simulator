@@ -6,10 +6,10 @@ RSpec.describe "FIFO option" do
   it "uses FIFO accounting when accountingModel.method is FIFO" do
     input = {
       "schemaVersion" => "1.0",
-      "accounts" => [{ "accountId" => "acc-1" }],
-      "markets" => [{ "marketId" => "ETH-USD" }],
-      "feeModel" => { "enabled" => false },
-      "accountingModel" => { "method" => "FIFO" },
+      "accounts" => [{"accountId" => "acc-1"}],
+      "markets" => [{"marketId" => "ETH-USD"}],
+      "feeModel" => {"enabled" => false},
+      "accountingModel" => {"method" => "FIFO"},
       "trades" => [
         {
           "tradeId" => "b1",
@@ -44,7 +44,7 @@ RSpec.describe "FIFO option" do
       ],
       "priceSnapshot" => {
         "valuationTimestamp" => "2026-02-25T03:00:00Z",
-        "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "130" }]
+        "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "130"}]
       }
     }
 

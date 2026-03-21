@@ -39,8 +39,8 @@ module Admin
 
       def ingestion_validation_errors(limit: 50, source: nil, field: nil)
         entries = load_runs
-                  .select { |run| run.fetch("status") == VALIDATION_STATUS }
-                  .map { |run| validation_error_entry(run) }
+          .select { |run| run.fetch("status") == VALIDATION_STATUS }
+          .map { |run| validation_error_entry(run) }
 
         entries = filter_by_source(entries, source)
         entries = filter_by_field(entries, field)
@@ -128,7 +128,7 @@ module Admin
         end
 
         (start_date..Date.current).map do |day|
-          { day: day.strftime("%m-%d"), count: counts[day] }
+          {day: day.strftime("%m-%d"), count: counts[day]}
         end
       end
 
@@ -178,10 +178,10 @@ module Admin
           total_runs_7d: delta_metadata(recent_7.length, previous_7.length),
           total_runs_30d: delta_metadata(recent_30.length, previous_30.length),
           success_rate_last_50: delta_metadata(success_rate_last_50(recent_runs(runs, limit: 50)),
-                                               success_rate_last_50(recent_runs(runs, limit: 100))),
+            success_rate_last_50(recent_runs(runs, limit: 100))),
           avg_duration_ms_last_50: delta_metadata(avg_duration_ms_last_50(recent_runs(runs, limit: 50)),
-                                                  avg_duration_ms_last_50(recent_runs(runs, limit: 100)),
-                                                  inverse_good: true)
+            avg_duration_ms_last_50(recent_runs(runs, limit: 100)),
+            inverse_good: true)
         }
       end
 
@@ -195,8 +195,8 @@ module Admin
       end
 
       def delta_metadata(current_value, previous_value, inverse_good: false)
-        return { direction: "unknown", delta_abs: nil, delta_pct: nil } if previous_value.nil?
-        return { direction: "unknown", delta_abs: nil, delta_pct: nil } if previous_value.to_f.zero?
+        return {direction: "unknown", delta_abs: nil, delta_pct: nil} if previous_value.nil?
+        return {direction: "unknown", delta_abs: nil, delta_pct: nil} if previous_value.to_f.zero?
 
         difference = current_value.to_f - previous_value.to_f
         direction = if difference.zero?
@@ -248,7 +248,7 @@ module Admin
 
       def run_comparison_data(runs)
         success_runs = runs.select { |run| run.fetch("status") == SUCCESS_STATUS }
-                            .sort_by { |run| parse_time(run["created_at"]) }
+          .sort_by { |run| parse_time(run["created_at"]) }
         return nil if success_runs.length < 2
 
         current = success_runs[-1]

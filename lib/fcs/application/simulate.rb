@@ -39,9 +39,9 @@ module FCS
         valuation = FCS::Engine::ValuationEngine.new(price_snapshot: input.fetch("priceSnapshot"))
         timeline_processor = FCS::Application::EventTimelineProcessor.new
         apply_execution_flow!(input: input, ledger: ledger, valuation: valuation,
-                              timeline_processor: timeline_processor,
-                              checkpoint_store: checkpoint_store,
-                              input_hash: input_hash)
+          timeline_processor: timeline_processor,
+          checkpoint_store: checkpoint_store,
+          input_hash: input_hash)
         risk_health = risk_engine.evaluate_accounts!(state: ledger.state, valuation: valuation)
         liquidation_candidates = risk_engine.liquidation_candidates(risk_health)
         risk_events_by_account = index_risk_events(liquidation_candidates)
@@ -57,7 +57,7 @@ module FCS
         )
         global = consolidate_global(accounts, fx)
 
-        { "accounts" => accounts, "global" => global }
+        {"accounts" => accounts, "global" => global}
       end
 
       private

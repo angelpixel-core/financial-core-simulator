@@ -30,9 +30,9 @@ def build_input(seed:, offset_days: 0)
 
   {
     "schemaVersion" => "1.0",
-    "accounts" => ACCOUNT_IDS.map { |account_id| { "accountId" => account_id } },
-    "markets" => MARKET_IDS.map { |market_id| { "marketId" => market_id } },
-    "feeModel" => { "enabled" => true },
+    "accounts" => ACCOUNT_IDS.map { |account_id| {"accountId" => account_id} },
+    "markets" => MARKET_IDS.map { |market_id| {"marketId" => market_id} },
+    "feeModel" => {"enabled" => true},
     "trades" => [
       {
         "tradeId" => "#{SEED_NAMESPACE}-trade-#{seed}",
@@ -43,16 +43,16 @@ def build_input(seed:, offset_days: 0)
         "side" => "BUY",
         "quantityBase" => "0.4",
         "priceQuotePerBase" => (2200 + price_shift).to_s,
-        "fee" => { "amountQuote" => "2" }
+        "fee" => {"amountQuote" => "2"}
       }
     ],
     "priceSnapshot" => {
       "valuationTimestamp" => timestamp,
       "prices" => [
-        { "marketId" => "ETH-USD", "priceQuotePerBase" => (2300 + price_shift).to_s },
-        { "marketId" => "BTC-USD", "priceQuotePerBase" => (52000 + price_shift * 8).to_s }
+        {"marketId" => "ETH-USD", "priceQuotePerBase" => (2300 + price_shift).to_s},
+        {"marketId" => "BTC-USD", "priceQuotePerBase" => (52000 + price_shift * 8).to_s}
       ],
-      "fx" => { "quoteUsd" => "1" }
+      "fx" => {"quoteUsd" => "1"}
     }
   }
 end
@@ -123,7 +123,7 @@ end
 3.times do |i|
   run = Run.create!(
     run_uuid: "#{SEED_NAMESPACE}-failed-#{i}",
-    input_json: { "schemaVersion" => "1.0" },
+    input_json: {"schemaVersion" => "1.0"},
     status: :failed,
     error_code: "ERR_VALIDATION_GENERAL",
     error_message: "Missing required field",

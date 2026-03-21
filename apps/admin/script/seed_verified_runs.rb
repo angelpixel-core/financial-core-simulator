@@ -17,7 +17,6 @@ PASSWORD = "secret-pass"
 ACCOUNT_IDS = %w[acc-1 acc-2 acc-3].freeze
 MARKET_IDS = %w[ETH-USD BTC-USD].freeze
 
-
 def upsert_account(email:, password:, status: :verified)
   account = Account.find_or_initialize_by(email: email)
   account.password_hash = BCrypt::Password.create(password)
@@ -32,9 +31,9 @@ def build_input(day_offset:)
 
   {
     "schemaVersion" => "1.0",
-    "accounts" => ACCOUNT_IDS.map { |account_id| { "accountId" => account_id } },
-    "markets" => MARKET_IDS.map { |market_id| { "marketId" => market_id } },
-    "feeModel" => { "enabled" => true },
+    "accounts" => ACCOUNT_IDS.map { |account_id| {"accountId" => account_id} },
+    "markets" => MARKET_IDS.map { |market_id| {"marketId" => market_id} },
+    "feeModel" => {"enabled" => true},
     "trades" => [
       {
         "tradeId" => "#{SEED_NAMESPACE}-trade-#{day_offset}",
@@ -45,16 +44,16 @@ def build_input(day_offset:)
         "side" => "BUY",
         "quantityBase" => "0.5",
         "priceQuotePerBase" => (2200 + price_shift).to_s,
-        "fee" => { "amountQuote" => "3" }
+        "fee" => {"amountQuote" => "3"}
       }
     ],
     "priceSnapshot" => {
       "valuationTimestamp" => timestamp,
       "prices" => [
-        { "marketId" => "ETH-USD", "priceQuotePerBase" => (2300 + price_shift).to_s },
-        { "marketId" => "BTC-USD", "priceQuotePerBase" => (52000 + price_shift * 10).to_s }
+        {"marketId" => "ETH-USD", "priceQuotePerBase" => (2300 + price_shift).to_s},
+        {"marketId" => "BTC-USD", "priceQuotePerBase" => (52000 + price_shift * 10).to_s}
       ],
-      "fx" => { "quoteUsd" => "1" }
+      "fx" => {"quoteUsd" => "1"}
     }
   }
 end

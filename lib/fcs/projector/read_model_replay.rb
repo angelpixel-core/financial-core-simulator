@@ -22,7 +22,7 @@ module FCS
       )
         @today = today
         @projection_store_factory = projection_store_factory ||
-                                    FCS::Projector::DefaultProjectionStoreFactory.new(today: @today)
+          FCS::Projector::DefaultProjectionStoreFactory.new(today: @today)
         @event_projection_router = event_projection_router
 
         validate_projection_store_factory_interface!(@projection_store_factory)
@@ -109,7 +109,7 @@ module FCS
       end
 
       def raise_invalid!(message, field:)
-        raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: { field: field })
+        raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: {field: field})
       end
     end
   end

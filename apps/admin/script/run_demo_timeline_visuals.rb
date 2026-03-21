@@ -1,15 +1,15 @@
 input = {
   "schemaVersion" => "1.0",
   "accounts" => [
-    { "accountId" => "acc-1", "collateralQuote" => "15000" },
-    { "accountId" => "acc-2", "collateralQuote" => "15000" },
-    { "accountId" => "acc-3", "collateralQuote" => "15000" }
+    {"accountId" => "acc-1", "collateralQuote" => "15000"},
+    {"accountId" => "acc-2", "collateralQuote" => "15000"},
+    {"accountId" => "acc-3", "collateralQuote" => "15000"}
   ],
   "markets" => [
-    { "marketId" => "BTC-USD" },
-    { "marketId" => "ETH-USD" }
+    {"marketId" => "BTC-USD"},
+    {"marketId" => "ETH-USD"}
   ],
-  "feeModel" => { "enabled" => true },
+  "feeModel" => {"enabled" => true},
   "accountingModel" => {
     "allowShort" => true,
     "shortMode" => "MARGIN"
@@ -58,7 +58,7 @@ input = {
           "side" => "BUY",
           "quantityBase" => "0.5",
           "priceQuotePerBase" => "59000",
-          "fee" => { "amountQuote" => "5" }
+          "fee" => {"amountQuote" => "5"}
         }
       },
       {
@@ -76,7 +76,7 @@ input = {
           "side" => "BUY",
           "quantityBase" => "4",
           "priceQuotePerBase" => "2800",
-          "fee" => { "amountQuote" => "4" }
+          "fee" => {"amountQuote" => "4"}
         }
       },
       {
@@ -94,7 +94,7 @@ input = {
           "side" => "SELL",
           "quantityBase" => "3",
           "priceQuotePerBase" => "3000",
-          "fee" => { "amountQuote" => "3" }
+          "fee" => {"amountQuote" => "3"}
         }
       },
       {
@@ -120,10 +120,10 @@ input = {
   "priceSnapshot" => {
     "valuationTimestamp" => "2026-03-03T12:00:00Z",
     "prices" => [
-      { "marketId" => "BTC-USD", "priceQuotePerBase" => "60000" },
-      { "marketId" => "ETH-USD", "priceQuotePerBase" => "3000" }
+      {"marketId" => "BTC-USD", "priceQuotePerBase" => "60000"},
+      {"marketId" => "ETH-USD", "priceQuotePerBase" => "3000"}
     ],
-    "fx" => { "quoteUsd" => "1" }
+    "fx" => {"quoteUsd" => "1"}
   }
 }
 

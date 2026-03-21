@@ -31,7 +31,7 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
       result_metadata_contract_validator: result_metadata_contract_validator
     )
     payload = metadata.merge(
-      "accounts" => [{ "accountId" => "acc-1", "markets" => [] }],
+      "accounts" => [{"accountId" => "acc-1", "markets" => []}],
       "global" => {}
     )
 
@@ -149,7 +149,7 @@ RSpec.describe FCS::Application::ReportArtifactsWriter do
 
     payload = metadata.merge(
       "inputHash" => "bad",
-      "accounts" => [{ "accountId" => "acc-1", "markets" => [] }],
+      "accounts" => [{"accountId" => "acc-1", "markets" => []}],
       "global" => {}
     )
 

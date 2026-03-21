@@ -37,7 +37,7 @@ module Admin
       }.freeze
 
       def initialize(sidebar_items:, breadcrumb:, environment:, primary_action:, secondary_action: nil,
-topbar_links: [], presence_email: nil)
+        topbar_links: [], presence_email: nil)
         @sidebar_items = sidebar_items
         @breadcrumb = breadcrumb
         @environment = environment

@@ -16,22 +16,22 @@ def build_valid_input
   {
     "schemaVersion" => "1.0",
     "accounts" => [
-      { "accountId" => "acc-1" },
-      { "accountId" => "acc-2" }
+      {"accountId" => "acc-1"},
+      {"accountId" => "acc-2"}
     ],
     "markets" => [
-      { "marketId" => "ETH-USD" },
-      { "marketId" => "BTC-USD" }
+      {"marketId" => "ETH-USD"},
+      {"marketId" => "BTC-USD"}
     ],
-    "feeModel" => { "enabled" => true },
+    "feeModel" => {"enabled" => true},
     "trades" => [],
     "priceSnapshot" => {
       "valuationTimestamp" => Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
       "prices" => [
-        { "marketId" => "ETH-USD", "priceQuotePerBase" => "2500" },
-        { "marketId" => "BTC-USD", "priceQuotePerBase" => "52000" }
+        {"marketId" => "ETH-USD", "priceQuotePerBase" => "2500"},
+        {"marketId" => "BTC-USD", "priceQuotePerBase" => "52000"}
       ],
-      "fx" => { "quoteUsd" => "1" }
+      "fx" => {"quoteUsd" => "1"}
     }
   }
 end

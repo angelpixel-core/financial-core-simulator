@@ -6,14 +6,14 @@ RSpec.describe Admin::Shell::AppShellComponent, type: :component do
 
   it "renders sidebar links and topbar actions" do
     sidebar_items = [
-      { label: "Overview", path: "/admin/overview", active: true },
-      { label: "Runs", path: "/admin/runs" }
+      {label: "Overview", path: "/admin/overview", active: true},
+      {label: "Runs", path: "/admin/runs"}
     ]
     breadcrumb = [
-      { label: "Workspace", path: "/admin/overview" },
-      { label: "Overview" }
+      {label: "Workspace", path: "/admin/overview"},
+      {label: "Overview"}
     ]
-    primary_action = { label: "Open Latest Reliable Run", path: "/runs/12" }
+    primary_action = {label: "Open Latest Reliable Run", path: "/runs/12"}
 
     render_inline(described_class.new(
       sidebar_items: sidebar_items,

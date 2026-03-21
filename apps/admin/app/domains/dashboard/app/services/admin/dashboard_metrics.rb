@@ -95,7 +95,7 @@ module Admin
 
     def expanded_source_aliases(value)
       normalized = normalize_filter_query(value)
-      variants = [ normalized ]
+      variants = [normalized]
       variants << normalized.gsub("source", "src") if normalized.include?("source")
       variants << normalized.gsub("src", "source") if normalized.include?("src")
       variants.uniq
@@ -152,8 +152,8 @@ module Admin
     end
 
     def delta_metadata(current_value, previous_value, inverse_good: false)
-      return { direction: "unknown", delta_abs: nil, delta_pct: nil } if previous_value.nil?
-      return { direction: "unknown", delta_abs: nil, delta_pct: nil } if previous_value.to_f.zero?
+      return {direction: "unknown", delta_abs: nil, delta_pct: nil} if previous_value.nil?
+      return {direction: "unknown", delta_abs: nil, delta_pct: nil} if previous_value.to_f.zero?
 
       difference = current_value.to_f - previous_value.to_f
       {
@@ -306,7 +306,7 @@ module Admin
 
       (start_date..Date.current).map do |day|
         count = counts[day] || counts[day.to_s] || 0
-        { day: day.strftime("%m-%d"), count: count }
+        {day: day.strftime("%m-%d"), count: count}
       end
     end
 
@@ -398,7 +398,8 @@ module Admin
           next unless risk_events.is_a?(Array)
 
           risk_events.filter_map { |risk_event|
- risk_event.is_a?(Hash) ? risk_event["marketId"].to_s.strip.presence : nil }
+            risk_event.is_a?(Hash) ? risk_event["marketId"].to_s.strip.presence : nil
+          }
         end.flatten.uniq
         return from_payload.join(", ") if from_payload.any?
       end
@@ -418,13 +419,13 @@ module Admin
 
     def deterministic_result_label(current_run:, previous_run:, total_delta:, realized_delta:, unrealized_delta:)
       return "Comparison unavailable (need at least two succeeded runs)." if previous_run.nil?
-      return "Comparison unavailable (missing canonical artifacts)." if [ total_delta, realized_delta,
-unrealized_delta ].all?(&:nil?)
+      return "Comparison unavailable (missing canonical artifacts)." if [total_delta, realized_delta,
+        unrealized_delta].all?(&:nil?)
 
       same_input = current_run.input_hash.present? &&
         previous_run.input_hash.present? &&
         current_run.input_hash == previous_run.input_hash
-      deltas_zero = [ total_delta, realized_delta, unrealized_delta ].compact.all? { |value| BigDecimal(value).zero? }
+      deltas_zero = [total_delta, realized_delta, unrealized_delta].compact.all? { |value| BigDecimal(value).zero? }
 
       return "Identical output for matching input hash." if same_input && deltas_zero
 

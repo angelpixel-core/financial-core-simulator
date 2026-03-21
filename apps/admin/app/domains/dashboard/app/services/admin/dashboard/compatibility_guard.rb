@@ -33,15 +33,15 @@ module Admin
         )
 
         validate_required_keys!(compatible_payload, OVERVIEW_REQUIRED_KEYS, field: "overview")
-        validate_required_keys!(compatible_payload.fetch("legacy"), LEGACY_OVERVIEW_REQUIRED_KEYS, 
-field: "overview.legacy")
+        validate_required_keys!(compatible_payload.fetch("legacy"), LEGACY_OVERVIEW_REQUIRED_KEYS,
+          field: "overview.legacy")
 
         compatible_payload
       end
 
       def widget_payload(payload:, required_widget_keys:)
         compatible_payload = normalize_hash(payload).merge("contractVersion" => CONTRACT_VERSION)
-        required_keys = Array(required_widget_keys) + [ "contractVersion" ]
+        required_keys = Array(required_widget_keys) + ["contractVersion"]
         validate_required_keys!(compatible_payload, required_keys, field: "widget")
         compatible_payload
       end

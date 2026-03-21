@@ -9,7 +9,7 @@ RSpec.describe "Admin Avo shell parity", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "ops@example.com", password: "secret-pass" }
+    post "/admin/login", params: {email: "ops@example.com", password: "secret-pass"}
     expect(response).to have_http_status(:found)
 
     get "/admin/resources/runs"
@@ -25,7 +25,7 @@ RSpec.describe "Admin Avo shell parity", type: :request do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    post "/admin/login", params: { email: "admin@example.com", password: "secret-pass" }
+    post "/admin/login", params: {email: "admin@example.com", password: "secret-pass"}
     expect(response).to have_http_status(:found)
 
     get "/admin/resources/runs"

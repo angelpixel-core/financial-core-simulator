@@ -45,7 +45,7 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,
             "source event idempotency identity requires payload.externalId and payload.sequence",
-            details: { field: "sourceEvent.idempotencyKey" }
+            details: {field: "sourceEvent.idempotencyKey"}
           )
         end
 

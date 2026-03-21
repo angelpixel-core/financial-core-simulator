@@ -62,7 +62,7 @@ module FCS
       end
 
       def raise_invalid!(message, field:)
-        raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: { field: field })
+        raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: {field: field})
       end
     end
   end

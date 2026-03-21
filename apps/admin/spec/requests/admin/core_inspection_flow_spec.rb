@@ -25,7 +25,7 @@ RSpec.describe "Admin core inspection flow", type: :request do
       }
     )
 
-    [ 375, 834, 1280 ].each do |viewport_width|
+    [375, 834, 1280].each do |viewport_width|
       headers = admin_session_headers.merge("X-Viewport-Width" => viewport_width.to_s)
       context = {
         selected_run: run.id,
@@ -56,6 +56,6 @@ RSpec.describe "Admin core inspection flow", type: :request do
   end
 
   def admin_session_headers
-    { "X-Admin-User" => "alice", "X-Admin-Role" => "viewer" }
+    {"X-Admin-User" => "alice", "X-Admin-Role" => "viewer"}
   end
 end

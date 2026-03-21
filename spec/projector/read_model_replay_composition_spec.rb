@@ -28,7 +28,7 @@ RSpec.describe FCS::Projector::ReadModelReplay do
 
     def call
       @calls += 1
-      FCS::Projector::ProjectionStore.new(projections: { "custom" => StubProjection.new(@read_model) })
+      FCS::Projector::ProjectionStore.new(projections: {"custom" => StubProjection.new(@read_model)})
     end
   end
 
@@ -47,13 +47,13 @@ RSpec.describe FCS::Projector::ReadModelReplay do
       "eventType" => "CUSTOM_NORMALIZED",
       "correlationId" => "corr-custom",
       "occurredAt" => "2026-03-04T10:00:00Z",
-      "payload" => { "runId" => "run-custom" }
+      "payload" => {"runId" => "run-custom"}
     }
   end
 
   it "routes events through projection store and router interfaces" do
-    projection = StubProjection.new("customModel" => { "ok" => true })
-    store = FCS::Projector::ProjectionStore.new(projections: { "custom" => projection })
+    projection = StubProjection.new("customModel" => {"ok" => true})
+    store = FCS::Projector::ProjectionStore.new(projections: {"custom" => projection})
 
     replay = described_class.new(
       today: Date.new(2026, 3, 4),
@@ -65,11 +65,11 @@ RSpec.describe FCS::Projector::ReadModelReplay do
     read_model = replay.apply_stream!([custom_event])
 
     expect(projection.applied).to eq([custom_event])
-    expect(read_model).to eq("customModel" => { "ok" => true })
+    expect(read_model).to eq("customModel" => {"ok" => true})
   end
 
   it "uses projection store factory when rebuilding from stream" do
-    factory = StubProjectionStoreFactory.new("customModel" => { "ok" => true })
+    factory = StubProjectionStoreFactory.new("customModel" => {"ok" => true})
 
     replay = described_class.new(
       today: Date.new(2026, 3, 4),

@@ -35,8 +35,8 @@ def write_artifacts(run:, global:, accounts:)
     "accounts" => accounts
   }
 
-  positions_rows = [ "account_id,market_id,quantity_base,mark_price_quote" ]
-  pnl_rows = [ "account_id,total_pnl_quote,realized_net_pnl_quote,unrealized_pnl_quote" ]
+  positions_rows = ["account_id,market_id,quantity_base,mark_price_quote"]
+  pnl_rows = ["account_id,total_pnl_quote,realized_net_pnl_quote,unrealized_pnl_quote"]
   accounts.each_with_index do |account, index|
     account_id = account.fetch("accountId")
     totals = account.fetch("totals", {})
@@ -108,7 +108,7 @@ def upsert_succeeded_run(day_offset:)
   input_json = {
     "schemaVersion" => "1.0",
     "seededFrom" => created_at.utc.iso8601,
-    "accounts" => TOP_ACCOUNT_IDS.map { |account_id| { "accountId" => account_id } }
+    "accounts" => TOP_ACCOUNT_IDS.map { |account_id| {"accountId" => account_id} }
   }
   input_hash = computed_input_hash(input_json)
 
@@ -155,7 +155,7 @@ def upsert_validation_failure(source:, error_code:, message:, correlation_id:, d
       "correlationId" => correlation_id,
       "timeline" => {
         "events" => [
-          { "source" => source }
+          {"source" => source}
         ]
       }
     }

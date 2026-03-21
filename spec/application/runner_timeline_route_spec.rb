@@ -61,12 +61,12 @@ RSpec.describe FCS::Application::Runner do
   let(:base_input) do
     {
       "schemaVersion" => "1.0",
-      "accounts" => [{ "accountId" => "acc-1" }],
-      "markets" => [{ "marketId" => "ETH-USD" }],
+      "accounts" => [{"accountId" => "acc-1"}],
+      "markets" => [{"marketId" => "ETH-USD"}],
       "trades" => [],
       "priceSnapshot" => {
         "valuationTimestamp" => "2026-03-03T12:00:00Z",
-        "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "100" }]
+        "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "100"}]
       },
       "timeline" => {
         "events" => timeline_events
@@ -145,7 +145,7 @@ RSpec.describe FCS::Application::Runner do
 
     parser_a = instance_double(FCS::Ingestion::Parser, parse_file: base_input)
     parser_b = instance_double(FCS::Ingestion::Parser,
-                               parse_file: base_input.merge("timeline" => { "events" => timeline_events.reverse }))
+      parse_file: base_input.merge("timeline" => {"events" => timeline_events.reverse}))
 
     input_hashes = []
     simulate_spy = lambda do |_input_arg, **kwargs|
@@ -186,8 +186,8 @@ RSpec.describe FCS::Application::Runner do
     Dir.mktmpdir do |tmp|
       input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
         "trades" => [],
         "timeline" => {
           "events" => [
@@ -229,8 +229,8 @@ RSpec.describe FCS::Application::Runner do
         },
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-03-03T12:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "110" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "110"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 

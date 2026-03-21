@@ -83,7 +83,7 @@ module FCS
 
         enforce_p95_gate!(report: report, report_path: report_path, fixture_path: fixture_path, command: command)
 
-        { report_path: report_path, report: report }
+        {report_path: report_path, report: report}
       end
 
       private

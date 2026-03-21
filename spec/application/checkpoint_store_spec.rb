@@ -18,8 +18,8 @@ RSpec.describe FCS::Application::CheckpointStore do
         event_count: 3,
         timeline_seq: 103,
         state: {
-          "accounts" => [{ "accountId" => "acc-1" }],
-          "global" => { "totalPnLQuote" => "10.0" }
+          "accounts" => [{"accountId" => "acc-1"}],
+          "global" => {"totalPnLQuote" => "10.0"}
         },
         input_hash: "abc123"
       )
@@ -50,8 +50,8 @@ RSpec.describe FCS::Application::CheckpointStore do
         event_count: 2,
         timeline_seq: 102,
         state: {
-          "accounts" => [{ "accountId" => "acc-1" }],
-          "global" => { "totalPnLQuote" => "5.0" }
+          "accounts" => [{"accountId" => "acc-1"}],
+          "global" => {"totalPnLQuote" => "5.0"}
         },
         input_hash: "abc123"
       )
@@ -68,7 +68,7 @@ RSpec.describe FCS::Application::CheckpointStore do
         JSON.pretty_generate(
           {
             "timelineSeq" => 10,
-            "state" => { "accounts" => [] },
+            "state" => {"accounts" => []},
             "metadata" => {
               "engineVersion" => "legacy-engine",
               "schemaVersion" => "2.0",
@@ -115,14 +115,14 @@ RSpec.describe FCS::Application::CheckpointStore do
       store.write_if_due!(
         event_count: 1,
         timeline_seq: 9,
-        state: { "accounts" => [], "global" => { "totalPnLQuote" => "1.0" } },
+        state: {"accounts" => [], "global" => {"totalPnLQuote" => "1.0"}},
         input_hash: "hash-1"
       )
 
       store.write_if_due!(
         event_count: 2,
         timeline_seq: 12,
-        state: { "accounts" => [], "global" => { "totalPnLQuote" => "2.0" } },
+        state: {"accounts" => [], "global" => {"totalPnLQuote" => "2.0"}},
         input_hash: "hash-2"
       )
 
@@ -168,7 +168,7 @@ RSpec.describe FCS::Application::CheckpointStore do
         JSON.pretty_generate(
           {
             "timelineSeq" => 3,
-            "state" => { "accounts" => [] },
+            "state" => {"accounts" => []},
             "metadata" => {
               "engineVersion" => FCS::VERSION,
               "schemaVersion" => "2.0",

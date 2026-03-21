@@ -15,7 +15,7 @@ RSpec.describe "Fees in quote" do
       "side" => "BUY",
       "quantityBase" => "2",
       "priceQuotePerBase" => "100",
-      "fee" => { "amountQuote" => "1" }
+      "fee" => {"amountQuote" => "1"}
     }
 
     sell = {
@@ -27,7 +27,7 @@ RSpec.describe "Fees in quote" do
       "side" => "SELL",
       "quantityBase" => "2",
       "priceQuotePerBase" => "110",
-      "fee" => { "amountQuote" => "2" }
+      "fee" => {"amountQuote" => "2"}
     }
 
     engine.apply_trade!(buy)
@@ -53,7 +53,7 @@ RSpec.describe "Fees in quote" do
       "side" => "BUY",
       "quantityBase" => "1",
       "priceQuotePerBase" => "100",
-      "fee" => { "amountQuote" => "999" }
+      "fee" => {"amountQuote" => "999"}
     }
 
     engine.apply_trade!(buy)

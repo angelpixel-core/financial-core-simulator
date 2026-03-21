@@ -10,9 +10,9 @@ RSpec.describe "CSV outputs" do
     Dir.mktmpdir do |dir|
       input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-1" }],
-        "markets" => [{ "marketId" => "ETH-USD" }],
-        "feeModel" => { "enabled" => true },
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "ETH-USD"}],
+        "feeModel" => {"enabled" => true},
         "trades" => [
           {
             "tradeId" => "b1",
@@ -23,13 +23,13 @@ RSpec.describe "CSV outputs" do
             "side" => "BUY",
             "quantityBase" => "2",
             "priceQuotePerBase" => "100",
-            "fee" => { "amountQuote" => "1" }
+            "fee" => {"amountQuote" => "1"}
           }
         ],
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
-          "prices" => [{ "marketId" => "ETH-USD", "priceQuotePerBase" => "150" }],
-          "fx" => { "quoteUsd" => "1" }
+          "prices" => [{"marketId" => "ETH-USD", "priceQuotePerBase" => "150"}],
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 
@@ -73,9 +73,9 @@ RSpec.describe "CSV outputs" do
     Dir.mktmpdir do |dir|
       input = {
         "schemaVersion" => "1.0",
-        "accounts" => [{ "accountId" => "acc-a" }, { "accountId" => "acc-b" }],
-        "markets" => [{ "marketId" => "ETH-USD" }, { "marketId" => "BTC-USD" }],
-        "feeModel" => { "enabled" => true },
+        "accounts" => [{"accountId" => "acc-a"}, {"accountId" => "acc-b"}],
+        "markets" => [{"marketId" => "ETH-USD"}, {"marketId" => "BTC-USD"}],
+        "feeModel" => {"enabled" => true},
         "trades" => [],
         "timeline" => {
           "events" => [
@@ -94,7 +94,7 @@ RSpec.describe "CSV outputs" do
                 "side" => "BUY",
                 "quantityBase" => "2",
                 "priceQuotePerBase" => "100",
-                "fee" => { "amountQuote" => "1" }
+                "fee" => {"amountQuote" => "1"}
               }
             },
             {
@@ -112,7 +112,7 @@ RSpec.describe "CSV outputs" do
                 "side" => "BUY",
                 "quantityBase" => "1",
                 "priceQuotePerBase" => "200",
-                "fee" => { "amountQuote" => "2" }
+                "fee" => {"amountQuote" => "2"}
               }
             }
           ]
@@ -120,10 +120,10 @@ RSpec.describe "CSV outputs" do
         "priceSnapshot" => {
           "valuationTimestamp" => "2026-02-25T03:00:00Z",
           "prices" => [
-            { "marketId" => "ETH-USD", "priceQuotePerBase" => "150" },
-            { "marketId" => "BTC-USD", "priceQuotePerBase" => "60" }
+            {"marketId" => "ETH-USD", "priceQuotePerBase" => "150"},
+            {"marketId" => "BTC-USD", "priceQuotePerBase" => "60"}
           ],
-          "fx" => { "quoteUsd" => "1" }
+          "fx" => {"quoteUsd" => "1"}
         }
       }
 

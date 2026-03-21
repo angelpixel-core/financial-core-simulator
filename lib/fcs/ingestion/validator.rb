@@ -24,11 +24,11 @@ module FCS
         validate_risk_model!(h)
 
         accounts = h.fetch("accounts")
-        markets  = h.fetch("markets")
-        trades   = h["trades"] || []
+        markets = h.fetch("markets")
+        trades = h["trades"] || []
 
         account_ids = extract_unique_ids!(accounts, "accountId", code: FCS::Errors::ERR_DUPLICATE_ID)
-        market_ids  = extract_unique_ids!(markets, "marketId", code: FCS::Errors::ERR_DUPLICATE_ID)
+        market_ids = extract_unique_ids!(markets, "marketId", code: FCS::Errors::ERR_DUPLICATE_ID)
         validate_account_collateral!(accounts)
 
         validate_snapshot!(h, market_ids)
@@ -50,7 +50,7 @@ module FCS
         raise FCS::Error.new(
           FCS::Errors::ERR_UNSUPPORTED_SCHEMA,
           "Unsupported schemaVersion",
-          details: { schemaVersion: sv, supported: SUPPORTED_SCHEMA_VERSIONS }
+          details: {schemaVersion: sv, supported: SUPPORTED_SCHEMA_VERSIONS}
         )
       end
 
@@ -60,7 +60,7 @@ module FCS
         end
 
         raise_invalid!("accounts must be an array", field: "accounts") unless h["accounts"].is_a?(Array)
-        raise_invalid!("markets must be an array", field: "markets")   unless h["markets"].is_a?(Array)
+        raise_invalid!("markets must be an array", field: "markets") unless h["markets"].is_a?(Array)
         raise_invalid!("priceSnapshot must be an object", field: "priceSnapshot") unless h["priceSnapshot"].is_a?(Hash)
 
         timeline = h["timeline"]
@@ -68,7 +68,7 @@ module FCS
           raise_invalid!("timeline must be an object", field: "timeline") unless timeline.is_a?(Hash)
           unless timeline["events"].is_a?(Array)
             raise_invalid!("timeline.events must be an array",
-                           field: "timeline.events")
+              field: "timeline.events")
           end
         end
 
@@ -147,8 +147,8 @@ module FCS
           )
         else
           raise_invalid!("Unsupported timeline eventType",
-                         field: "timeline.events.eventType",
-                         details: { eventType: event.fetch("eventType") })
+            field: "timeline.events.eventType",
+            details: {eventType: event.fetch("eventType")})
         end
       end
 
@@ -156,8 +156,8 @@ module FCS
         return unless seen_timeline_seq[current_seq]
 
         raise_invalid!("timeline timelineSeq must be unique",
-                       field: "timeline.events.timelineSeq",
-                       details: { timelineSeq: current_seq })
+          field: "timeline.events.timelineSeq",
+          details: {timelineSeq: current_seq})
       ensure
         seen_timeline_seq[current_seq] = true
       end
@@ -221,37 +221,37 @@ module FCS
       def validate_timeline_common_fields!(event)
         unless event.key?("eventType")
           raise_invalid!("timeline eventType is required",
-                         field: "timeline.events.eventType")
+            field: "timeline.events.eventType")
         end
         unless event.key?("timelineSeq")
           raise_invalid!("timeline timelineSeq is required",
-                         field: "timeline.events.timelineSeq")
+            field: "timeline.events.timelineSeq")
         end
         raise_invalid!("timeline source is required", field: "timeline.events.source") unless event.key?("source")
         unless event.key?("externalId")
           raise_invalid!("timeline externalId is required",
-                         field: "timeline.events.externalId")
+            field: "timeline.events.externalId")
         end
         unless event.key?("timestamp")
           raise_invalid!("timeline timestamp is required",
-                         field: "timeline.events.timestamp")
+            field: "timeline.events.timestamp")
         end
 
         unless non_empty_string?(event["eventType"])
           raise_invalid!("timeline eventType must be a non-empty string",
-                         field: "timeline.events.eventType")
+            field: "timeline.events.eventType")
         end
         unless event["timelineSeq"].is_a?(Integer)
           raise_invalid!("timeline timelineSeq must be an integer",
-                         field: "timeline.events.timelineSeq")
+            field: "timeline.events.timelineSeq")
         end
         unless non_empty_string?(event["source"])
           raise_invalid!("timeline source must be a non-empty string",
-                         field: "timeline.events.source")
+            field: "timeline.events.source")
         end
         unless non_empty_string?(event["externalId"])
           raise_invalid!("timeline externalId must be a non-empty string",
-                         field: "timeline.events.externalId")
+            field: "timeline.events.externalId")
         end
         unless non_empty_string?(event["timestamp"])
           raise_invalid!("timeline timestamp must be a non-empty string", field: "timeline.events.timestamp")
@@ -265,26 +265,26 @@ module FCS
       def validate_timeline_price_updated!(event, market_ids:)
         unless event.key?("marketId")
           raise_invalid!("timeline PRICE_UPDATED marketId is required",
-                         field: "timeline.events.marketId")
+            field: "timeline.events.marketId")
         end
         unless event.key?("priceQuotePerBase")
           raise_invalid!("timeline PRICE_UPDATED priceQuotePerBase is required",
-                         field: "timeline.events.priceQuotePerBase")
+            field: "timeline.events.priceQuotePerBase")
         end
 
         unless non_empty_string?(event["marketId"])
           raise_invalid!("timeline PRICE_UPDATED marketId must be a non-empty string",
-                         field: "timeline.events.marketId")
+            field: "timeline.events.marketId")
         end
         unless market_ids.include?(event["marketId"])
           raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
-                               "Unknown marketId",
-                               details: { marketId: event["marketId"] })
+            "Unknown marketId",
+            details: {marketId: event["marketId"]})
         end
         validate_positive_decimal_string!(
           event["priceQuotePerBase"],
           field: "timeline.events.priceQuotePerBase",
-          context: { marketId: event["marketId"] }
+          context: {marketId: event["marketId"]}
         )
       end
 
@@ -292,45 +292,45 @@ module FCS
         trade = event["trade"]
         unless trade.is_a?(Hash)
           raise_invalid!("timeline TRADE_APPLIED trade is required",
-                         field: "timeline.events.trade")
+            field: "timeline.events.trade")
         end
 
         %w[tradeId accountId marketId timestamp seq side quantityBase priceQuotePerBase].each do |field|
           unless trade.key?(field)
             raise_invalid!("timeline TRADE_APPLIED trade.#{field} is required",
-                           field: "timeline.events.trade.#{field}")
+              field: "timeline.events.trade.#{field}")
           end
         end
 
         unless non_empty_string?(trade["tradeId"])
           raise_invalid!("timeline.events.trade.tradeId must be a non-empty string",
-                         field: "timeline.events.trade.tradeId")
+            field: "timeline.events.trade.tradeId")
         end
         unless non_empty_string?(trade["accountId"])
           raise_invalid!("timeline.events.trade.accountId must be a non-empty string",
-                         field: "timeline.events.trade.accountId")
+            field: "timeline.events.trade.accountId")
         end
         unless account_ids.include?(trade["accountId"])
           raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
-                               "Unknown accountId",
-                               details: { accountId: trade["accountId"] })
+            "Unknown accountId",
+            details: {accountId: trade["accountId"]})
         end
         unless non_empty_string?(trade["marketId"])
           raise_invalid!("timeline.events.trade.marketId must be a non-empty string",
-                         field: "timeline.events.trade.marketId")
+            field: "timeline.events.trade.marketId")
         end
         unless market_ids.include?(trade["marketId"])
           raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
-                               "Unknown marketId",
-                               details: { marketId: trade["marketId"] })
+            "Unknown marketId",
+            details: {marketId: trade["marketId"]})
         end
         unless trade["seq"].is_a?(Integer)
           raise_invalid!("timeline.events.trade.seq must be an integer",
-                         field: "timeline.events.trade.seq")
+            field: "timeline.events.trade.seq")
         end
         unless trade["timestamp"].is_a?(Integer)
           raise_invalid!("timeline.events.trade.timestamp must be an integer",
-                         field: "timeline.events.trade.timestamp")
+            field: "timeline.events.trade.timestamp")
         end
 
         trade_seq_key = [trade["accountId"], trade["marketId"], trade["seq"]]
@@ -338,21 +338,21 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_DUPLICATE_SEQ,
             "Duplicate seq for account+market",
-            details: { accountId: trade["accountId"], marketId: trade["marketId"], seq: trade["seq"] }
+            details: {accountId: trade["accountId"], marketId: trade["marketId"], seq: trade["seq"]}
           )
         end
         seen_trade_seq[trade_seq_key] = true
 
-        raise_invalid!("Invalid side", field: "timeline.events.trade.side", details: { side: trade["side"] }) unless %w[
+        raise_invalid!("Invalid side", field: "timeline.events.trade.side", details: {side: trade["side"]}) unless %w[
           BUY SELL
         ].include?(trade["side"])
 
         validate_positive_decimal_string!(trade["quantityBase"],
-                                          field: "timeline.events.trade.quantityBase",
-                                          context: { tradeId: trade["tradeId"] })
+          field: "timeline.events.trade.quantityBase",
+          context: {tradeId: trade["tradeId"]})
         validate_positive_decimal_string!(trade["priceQuotePerBase"],
-                                          field: "timeline.events.trade.priceQuotePerBase",
-                                          context: { tradeId: trade["tradeId"] })
+          field: "timeline.events.trade.priceQuotePerBase",
+          context: {tradeId: trade["tradeId"]})
       end
 
       def validate_accounting_model!(h)
@@ -369,7 +369,7 @@ module FCS
         raise_invalid!(
           "Unsupported accounting method",
           field: "accountingModel.method",
-          details: { method: method, supported: SUPPORTED_ACCOUNTING_METHODS }
+          details: {method: method, supported: SUPPORTED_ACCOUNTING_METHODS}
         )
       end
 
@@ -382,13 +382,13 @@ module FCS
         max_leverage = model["maxLeverage"]
         unless max_leverage.nil?
           validate_positive_decimal_string!(max_leverage, field: "riskModel.maxLeverage",
-                                                          context: {})
+            context: {})
         end
 
         maintenance = model["maintenanceMarginRatio"]
         if model.key?("maintenanceMarginRatio") && maintenance.nil?
           raise_invalid!("riskModel.maintenanceMarginRatio is required when provided",
-                         field: "riskModel.maintenanceMarginRatio")
+            field: "riskModel.maintenanceMarginRatio")
         end
 
         unless maintenance.nil?
@@ -405,7 +405,7 @@ module FCS
 
         unless liquidation.is_a?(Hash)
           raise_invalid!("riskModel.liquidation must be an object",
-                         field: "riskModel.liquidation")
+            field: "riskModel.liquidation")
         end
 
         enabled = liquidation["enabled"]
@@ -440,7 +440,7 @@ module FCS
           validate_non_negative_decimal_string!(
             collateral,
             field: "accounts.collateralQuote",
-            context: { accountId: account["accountId"] }
+            context: {accountId: account["accountId"]}
           )
         end
       end
@@ -452,7 +452,7 @@ module FCS
         end
 
         dup = ids.group_by(&:itself).find { |_k, v| v.size > 1 }&.first
-        raise FCS::Error.new(code, "Duplicate id", details: { field: key, value: dup }) if dup
+        raise FCS::Error.new(code, "Duplicate id", details: {field: key, value: dup}) if dup
 
         ids.to_set
       end
@@ -463,19 +463,19 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_MISSING_SNAPSHOT,
             "Missing snapshot valuation timestamp",
-            details: { missingField: "priceSnapshot.valuationTimestamp" }
+            details: {missingField: "priceSnapshot.valuationTimestamp"}
           )
         end
 
         unless snap["valuationTimestamp"].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\z/)
           raise_invalid!("Invalid snapshot valuation timestamp format",
-                         field: "priceSnapshot.valuationTimestamp")
+            field: "priceSnapshot.valuationTimestamp")
         end
 
         prices = snap["prices"]
         unless prices.is_a?(Array)
           raise FCS::Error.new(FCS::Errors::ERR_MISSING_SNAPSHOT, "Missing snapshot prices",
-                               details: {})
+            details: {})
         end
 
         price_map = {}
@@ -483,7 +483,7 @@ module FCS
         prices.each do |p|
           unless p.is_a?(Hash)
             raise_invalid!("priceSnapshot.prices item must be an object",
-                           field: "priceSnapshot.prices")
+              field: "priceSnapshot.prices")
           end
 
           mid = p["marketId"]
@@ -493,7 +493,7 @@ module FCS
 
           if seen_snapshot_markets[mid]
             raise_invalid!("Duplicate snapshot marketId", field: "priceSnapshot.prices.marketId",
-                                                          details: { marketId: mid })
+              details: {marketId: mid})
           end
 
           seen_snapshot_markets[mid] = true
@@ -506,7 +506,7 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_MISSING_SNAPSHOT,
             "Snapshot missing markets",
-            details: { missingMarkets: missing.to_a }
+            details: {missingMarkets: missing.to_a}
           )
         end
 
@@ -515,7 +515,7 @@ module FCS
           mid = p["marketId"]
           v = p["priceQuotePerBase"]
           validate_positive_decimal_string!(v, field: "priceSnapshot.prices.priceQuotePerBase",
-                                               context: { marketId: mid })
+            context: {marketId: mid})
         end
 
         fx = snap["fx"]
@@ -530,7 +530,7 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_MISSING_SNAPSHOT,
             "Missing required snapshot FX payload",
-            details: { missingField: "priceSnapshot.fx.quoteUsd" }
+            details: {missingField: "priceSnapshot.fx.quoteUsd"}
           )
         end
 
@@ -538,7 +538,7 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_MISSING_SNAPSHOT,
             "Missing required snapshot FX rate",
-            details: { missingField: "priceSnapshot.fx.quoteUsd" }
+            details: {missingField: "priceSnapshot.fx.quoteUsd"}
           )
         end
 
@@ -603,32 +603,32 @@ module FCS
         mid = trade["marketId"]
 
         unless account_ids.include?(aid)
-          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE, "Unknown accountId", details: { accountId: aid })
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE, "Unknown accountId", details: {accountId: aid})
         end
         unless market_ids.include?(mid)
-          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE, "Unknown marketId", details: { marketId: mid })
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE, "Unknown marketId", details: {marketId: mid})
         end
 
         side = trade["side"]
-        raise_invalid!("Invalid side", field: "side", details: { side: side }) unless %w[BUY SELL].include?(side)
+        raise_invalid!("Invalid side", field: "side", details: {side: side}) unless %w[BUY SELL].include?(side)
 
         validate_positive_decimal_string!(trade["quantityBase"], field: "quantityBase",
-                                                                 context: { tradeId: trade_id })
+          context: {tradeId: trade_id})
         validate_positive_decimal_string!(trade["priceQuotePerBase"], field: "priceQuotePerBase",
-                                                                      context: { tradeId: trade_id })
+          context: {tradeId: trade_id})
 
         if fee_enabled && trade["fee"].is_a?(Hash) && trade["fee"].key?("amountQuote")
           value = trade["fee"]["amountQuote"]
-          validate_non_negative_decimal_string!(value, field: "fee.amountQuote", context: { tradeId: trade_id })
+          validate_non_negative_decimal_string!(value, field: "fee.amountQuote", context: {tradeId: trade_id})
         end
 
         timestamp = trade["timestamp"]
         unless timestamp.is_a?(Integer)
-          raise_invalid!("Missing or invalid timestamp", field: "timestamp", details: { tradeId: trade_id })
+          raise_invalid!("Missing or invalid timestamp", field: "timestamp", details: {tradeId: trade_id})
         end
 
         seq = trade["seq"]
-        raise_invalid!("Missing seq", field: "seq", details: { tradeId: trade_id }) unless seq.is_a?(Integer)
+        raise_invalid!("Missing seq", field: "seq", details: {tradeId: trade_id}) unless seq.is_a?(Integer)
       end
 
       def validate_seq_uniqueness!(trades)
@@ -639,7 +639,7 @@ module FCS
             raise FCS::Error.new(
               FCS::Errors::ERR_DUPLICATE_SEQ,
               "Duplicate seq for account+market",
-              details: { accountId: t["accountId"], marketId: t["marketId"], seq: t["seq"] }
+              details: {accountId: t["accountId"], marketId: t["marketId"], seq: t["seq"]}
             )
           end
           seen[key] = true
@@ -652,9 +652,9 @@ module FCS
 
       def timeline_trade_payloads(h)
         h.fetch("timeline")
-         .fetch("events")
-         .select { |event| event.is_a?(Hash) && event["eventType"] == "TRADE_APPLIED" }
-         .map { |event| event["trade"] }
+          .fetch("events")
+          .select { |event| event.is_a?(Hash) && event["eventType"] == "TRADE_APPLIED" }
+          .map { |event| event["trade"] }
       end
 
       def fee_enabled?(h)
@@ -685,7 +685,7 @@ module FCS
       def validate_decimal_string!(v, field:, context:, allow_zero:)
         if v.is_a?(Float)
           raise FCS::Error.new(FCS::Errors::ERR_INVALID_NUMBER, "Float not allowed",
-                               details: context.merge(field: field))
+            details: context.merge(field: field))
         end
 
         unless v.is_a?(String) && v.match?(/\A\d+(\.\d+)?\z/)

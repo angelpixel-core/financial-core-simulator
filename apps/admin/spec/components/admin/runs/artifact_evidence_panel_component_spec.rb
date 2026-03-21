@@ -63,7 +63,7 @@ RSpec.describe Admin::Runs::ArtifactEvidencePanelComponent, type: :component do
       status: :succeeded,
       verification_status: :verified,
       input_hash: "hash-777",
-      artifacts: { "result_json_path" => outside_path }
+      artifacts: {"result_json_path" => outside_path}
     )
 
     render_inline(described_class.new(run: run))

@@ -4,8 +4,8 @@ RSpec.describe "Run verifications", type: :request do
   it "verifies input hash and persists verification fields" do
     input = {
       "schemaVersion" => "1.0",
-      "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
-      "feeModel" => { "enabled" => true }
+      "trades" => [{"timestamp" => "2026-01-01T00:00:00Z", "seq" => 1}],
+      "feeModel" => {"enabled" => true}
     }
     normalized = Runs::VerifyInputHash.new.send(:normalize_input, input)
     canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
@@ -26,7 +26,7 @@ RSpec.describe "Run verifications", type: :request do
     allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
 
-    run = Run.create!(status: :succeeded, input_json: { "schemaVersion" => "1.0", "trades" => [] }, input_hash: "abc")
+    run = Run.create!(status: :succeeded, input_json: {"schemaVersion" => "1.0", "trades" => []}, input_hash: "abc")
 
     post "/runs/#{run.id}/verify", as: :json
 
@@ -39,15 +39,15 @@ RSpec.describe "Run verifications", type: :request do
 
     input = {
       "schemaVersion" => "1.0",
-      "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
-      "feeModel" => { "enabled" => true }
+      "trades" => [{"timestamp" => "2026-01-01T00:00:00Z", "seq" => 1}],
+      "feeModel" => {"enabled" => true}
     }
     normalized = Runs::VerifyInputHash.new.send(:normalize_input, input)
     canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
     hash = FCS::Hashing::SHA256.hex(canonical)
     run = Run.create!(status: :succeeded, input_json: input, input_hash: hash)
 
-    post "/runs/#{run.id}/verify", headers: { "X-Admin-Token" => "ui-secret" }, as: :json
+    post "/runs/#{run.id}/verify", headers: {"X-Admin-Token" => "ui-secret"}, as: :json
 
     expect(response).to have_http_status(:ok)
     expect(run.reload).to be_verified
@@ -59,15 +59,15 @@ RSpec.describe "Run verifications", type: :request do
 
     input = {
       "schemaVersion" => "1.0",
-      "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
-      "feeModel" => { "enabled" => true }
+      "trades" => [{"timestamp" => "2026-01-01T00:00:00Z", "seq" => 1}],
+      "feeModel" => {"enabled" => true}
     }
     normalized = Runs::VerifyInputHash.new.send(:normalize_input, input)
     canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
     hash = FCS::Hashing::SHA256.hex(canonical)
     run = Run.create!(status: :succeeded, input_json: input, input_hash: hash)
 
-    post "/runs/#{run.id}/verify", headers: { "Authorization" => "Bearer ui-secret" }, as: :json
+    post "/runs/#{run.id}/verify", headers: {"Authorization" => "Bearer ui-secret"}, as: :json
 
     expect(response).to have_http_status(:ok)
     expect(run.reload).to be_verified
@@ -79,15 +79,15 @@ RSpec.describe "Run verifications", type: :request do
 
     input = {
       "schemaVersion" => "1.0",
-      "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
-      "feeModel" => { "enabled" => true }
+      "trades" => [{"timestamp" => "2026-01-01T00:00:00Z", "seq" => 1}],
+      "feeModel" => {"enabled" => true}
     }
     normalized = Runs::VerifyInputHash.new.send(:normalize_input, input)
     canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
     hash = FCS::Hashing::SHA256.hex(canonical)
     run = Run.create!(status: :succeeded, input_json: input, input_hash: hash)
 
-    post "/runs/#{run.id}/verify", headers: { "X-Admin-User" => "ops", "X-Admin-Role" => "operator" }, as: :json
+    post "/runs/#{run.id}/verify", headers: {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}, as: :json
 
     expect(response).to have_http_status(:ok)
     expect(run.reload).to be_verified
@@ -99,15 +99,15 @@ RSpec.describe "Run verifications", type: :request do
 
     input = {
       "schemaVersion" => "1.0",
-      "trades" => [ { "timestamp" => "2026-01-01T00:00:00Z", "seq" => 1 } ],
-      "feeModel" => { "enabled" => true }
+      "trades" => [{"timestamp" => "2026-01-01T00:00:00Z", "seq" => 1}],
+      "feeModel" => {"enabled" => true}
     }
     normalized = Runs::VerifyInputHash.new.send(:normalize_input, input)
     canonical = FCS::Hashing::CanonicalJSON.dump(normalized)
     hash = FCS::Hashing::SHA256.hex(canonical)
     run = Run.create!(status: :succeeded, input_json: input, input_hash: hash)
 
-    post "/runs/#{run.id}/verify", headers: { "X-Admin-User" => "viewer", "X-Admin-Role" => "viewer" }, as: :json
+    post "/runs/#{run.id}/verify", headers: {"X-Admin-User" => "viewer", "X-Admin-Role" => "viewer"}, as: :json
 
     expect(response).to have_http_status(:forbidden)
   end

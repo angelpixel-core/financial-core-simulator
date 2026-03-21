@@ -163,7 +163,7 @@ module FCS
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,
             "timeline input requires FCS_TIMELINE_ENABLED=1",
-            details: { field: "timeline" }
+            details: {field: "timeline"}
           )
         end
       end
@@ -178,7 +178,7 @@ module FCS
         events = input.fetch("timeline").fetch("events").sort_by { |event| event.fetch("timelineSeq") }
         input["timeline"]["events"] = events
         input["trades"] = events.select { |event| event.fetch("eventType") == "TRADE_APPLIED" }
-                                .map { |event| event.fetch("trade") }
+          .map { |event| event.fetch("trade") }
         input
       end
 
@@ -228,7 +228,7 @@ module FCS
         timeline = input["timeline"]
         return nil unless timeline.is_a?(Hash) && timeline["events"].is_a?(Array)
 
-        metadata = { "mode" => "timeline" }
+        metadata = {"mode" => "timeline"}
         if checkpoint.is_a?(Hash) && checkpoint.key?("timelineSeq")
           metadata["checkpointTimelineSeq"] =
             checkpoint["timelineSeq"]
