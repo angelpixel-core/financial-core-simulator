@@ -10,13 +10,13 @@ gem "bigdecimal", "~> 4.0"
 gem "csv", "~> 3.3"
 
 group :development, :test do
+  gem "benchmark", require: false
   gem "brakeman", require: false
   gem "bundler-audit", require: false
-  gem "benchmark", require: false
-  gem "railties", "~> 8.1", require: false
   gem "packwerk", require: false
   gem "packwerk-extensions", require: false
   gem "rails-mcp-server", "~> 1.5"
+  gem "railties", "~> 8.1", require: false
   gem "reek", require: false
   gem "rubocop", require: false
   gem "rubocop-performance", require: false

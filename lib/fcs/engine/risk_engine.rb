@@ -154,8 +154,8 @@ module FCS
       private
 
       def normalize_collateral(collateral)
-        collateral.each_with_object({}) do |(account_id, value), out|
-          out[account_id] = coerce_decimal18(value)
+        collateral.transform_values do |value|
+          coerce_decimal18(value)
         end
       end
 
