@@ -1,6 +1,5 @@
 require "rails_helper"
 require "json"
-require "pathname"
 require "tmpdir"
 
 RSpec.describe Admin::DashboardMetrics do

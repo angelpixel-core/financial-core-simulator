@@ -102,7 +102,6 @@ end
 def upsert_succeeded_run(day_offset:)
   created_at = Time.current.beginning_of_day - day_offset.days + 12.hours
   run_uuid = "#{SEED_NAMESPACE}-succeeded-#{day_offset}"
-  input_hash = "#{SEED_NAMESPACE}-hash-#{day_offset}"
 
   run = Run.find_or_initialize_by(run_uuid: run_uuid)
   input_json = {

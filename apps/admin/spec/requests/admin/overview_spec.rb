@@ -2,7 +2,6 @@ require "rails_helper"
 require "bcrypt"
 require "json"
 require "nokogiri"
-require "pathname"
 require "tmpdir"
 
 RSpec.describe "Admin overview", type: :request do
