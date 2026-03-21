@@ -23,6 +23,7 @@ group :development, :test do
   gem "rubocop-rspec", require: false
   gem "rubycritic", require: false
   gem "simplecov", require: false
+  gem "standard", ">= 1.35.1", require: false
   gem "yard", require: false
 end
 

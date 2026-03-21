@@ -74,6 +74,9 @@ group :development, :test do
   gem "rubocop-performance", require: false
   gem "rubocop-rspec", require: false
 
+  # Ruby style formatter/linter
+  gem "standard", require: false
+
   gem "rspec-rails", "~> 8.0"
   gem "simplecov", require: false
 end
