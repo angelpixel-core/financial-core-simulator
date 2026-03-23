@@ -306,3 +306,8 @@ end
 puts "OK: wrote #{runs_path}"
 puts "OK: wrote #{pnl_path}"
 puts "OK: wrote #{positions_path}"
+puts "Artifacts base (dashboard seed): apps/admin/storage/runs/dashboard_seed"
+puts "Cleanup-safe target: dashboard_seed"
+puts "Cleanup (dry-run default): BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rails runner apps/admin/script/cleanup_artifacts.rb --targets=dashboard_seed"
+puts "Cleanup (confirm delete): BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rails runner apps/admin/script/cleanup_artifacts.rb --targets=dashboard_seed --confirm"
+puts "Canonical seed entry point: BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rails runner apps/admin/script/seed_admin.rb --type dashboard"
