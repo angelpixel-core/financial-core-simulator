@@ -21,6 +21,22 @@ def print_diagnostic_error(code:, what_happened:, impact:, next_action:, details
   warn(JSON.pretty_generate(payload))
 end
 
+def print_diagnostic_warning(code:, what_happened:, impact:, next_action:, details: {})
+  payload = {
+    "warning" => {
+      "code" => code,
+      "message" => what_happened
+    },
+    "code" => code,
+    "what_happened" => what_happened,
+    "impact" => impact,
+    "next_action" => next_action,
+    "details" => details
+  }
+
+  warn(JSON.pretty_generate(payload))
+end
+
 def required_artifact_paths(output_dir)
   {
     "result_json" => File.join(output_dir, "result.json"),
@@ -52,13 +68,42 @@ def failure_summary_payload
   }
 end
 
+def warn_if_unsafe_output_dir(output_dir)
+  repo_root = File.expand_path("..", __dir__)
+  resolved_output_dir = File.expand_path(output_dir, repo_root)
+  output_root = File.expand_path("output", repo_root)
+  within_output = resolved_output_dir == output_root || resolved_output_dir.start_with?(output_root + File::SEPARATOR)
+
+  unsafe_reason = if resolved_output_dir == repo_root
+    "repo_root"
+  elsif !within_output
+    "outside_output"
+  end
+
+  return unless unsafe_reason
+
+  print_diagnostic_warning(
+    code: "WARN_UNSAFE_OUTPUT_DIR",
+    what_happened: "Output directory resolves to an unsafe path",
+    impact: "Artifacts may clutter the repo root or land outside output/.",
+    next_action: "Use --output-dir output/fcs or another path under output/.",
+    details: {
+      "output_dir" => output_dir,
+      "resolved_output_dir" => resolved_output_dir,
+      "repo_root" => repo_root,
+      "output_root" => output_root,
+      "unsafe_reason" => unsafe_reason
+    }
+  )
+end
+
 subcommand = ARGV.shift
 
 case subcommand
 when "run"
   options = {
     input: nil,
-    output_dir: "output",
+    output_dir: "output/fcs",
     fee_enabled: true,
     explain: false,
     verbose: false,
@@ -68,11 +113,11 @@ when "run"
   parser = OptionParser.new do |opts|
     opts.banner = [
       "Usage: fcs run --input path/to/input.json",
-      "[--output-dir output] [--no-fee] [--explain] [--verbose|--quiet]"
+      "[--output-dir output/fcs] [--no-fee] [--explain] [--verbose|--quiet]"
     ].join(" ")
 
     opts.on("--input PATH", "Path to input JSON (required)") { |v| options[:input] = v }
-    opts.on("--output-dir DIR", "Output directory (default: output)") { |v| options[:output_dir] = v }
+    opts.on("--output-dir DIR", "Output directory (default: output/fcs)") { |v| options[:output_dir] = v }
     opts.on("--no-fee", "Disable fee model (ignore fee fields)") { options[:fee_enabled] = false }
     opts.on("--explain", "Include explainability fields in result.json") { options[:explain] = true }
     opts.on("--verbose", "Enable detailed CLI output and summary") do
@@ -116,6 +161,8 @@ when "run"
     )
     exit(2)
   end
+
+  warn_if_unsafe_output_dir(options[:output_dir])
 
   unless options[:quiet]
     puts "FCS #{FCS::VERSION}"
@@ -217,7 +264,7 @@ when "bench"
   options = {
     fixture: "lib/fcs/fixtures/benchmark_fixture.json",
     runs: FCS::Benchmarking::BenchmarkRunner::DEFAULT_RUNS,
-    output_dir: "output/benchmarks"
+    output_dir: "output/fcs/benchmarks"
   }
 
   parser = OptionParser.new do |opts|
@@ -225,7 +272,7 @@ when "bench"
 
     opts.on("--fixture PATH", "Path to benchmark fixture definition") { |v| options[:fixture] = v }
     opts.on("--runs N", Integer, "Number of runs for p95 (default: #{options[:runs]})") { |v| options[:runs] = v }
-    opts.on("--output-dir DIR", "Benchmark output directory (default: output/benchmarks)") do |v|
+    opts.on("--output-dir DIR", "Benchmark output directory (default: output/fcs/benchmarks)") do |v|
       options[:output_dir] = v
     end
     opts.on("-v", "--version", "Print version") do
@@ -254,6 +301,7 @@ when "bench"
   command = "bin/fcs bench --fixture #{options[:fixture]} --runs #{options[:runs]} --output-dir #{options[:output_dir]}"
 
   begin
+    warn_if_unsafe_output_dir(options[:output_dir])
     result = FCS::Benchmarking::BenchmarkRunner.new.run!(
       fixture_path: options[:fixture],
       output_dir: options[:output_dir],
@@ -291,14 +339,14 @@ when "bench"
 else
   puts <<~TXT
     Usage:
-      fcs run   --input path/to/input.json [--output-dir output] [--no-fee] [--explain] [--verbose|--quiet]
+      fcs run   --input path/to/input.json [--output-dir output/fcs] [--no-fee] [--explain] [--verbose|--quiet]
       fcs bench [--fixture PATH] [--runs N] [--output-dir DIR]
 
     Examples:
-      fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output
-      fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output --explain --verbose
+      fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/fcs
+      fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/fcs --explain --verbose
       fcs bench
-      fcs bench --runs 7 --output-dir output/benchmarks
+      fcs bench --runs 7 --output-dir output/fcs/benchmarks
   TXT
   exit(1)
 end
