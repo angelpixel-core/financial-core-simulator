@@ -146,6 +146,7 @@ Cleanup guidance:
 Docs:
 - `docs/10-valid-run.md`
 - `docs/11-reset-db-and-ops.md`
+- `docs/13-demo-reading-guide.md`
 
 ## Deterministic Performance Benchmark (NFR4)
 
