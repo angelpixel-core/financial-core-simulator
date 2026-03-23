@@ -75,6 +75,36 @@ bundle exec packwerk check
 bundle exec packwerk validate
 ```
 
+## Repository layout
+
+Root
+
+| Path | Responsibility |
+| --- | --- |
+| `apps/` | Applications (admin UI lives in `apps/admin`). |
+| `lib/` | Core engine gem (FCS). |
+| `docs/` | Product and technical documentation (EN/ES). |
+| `bin/` | CLI tools and local automation scripts. |
+| `spec/` | Test suite for the core engine. |
+| `scripts/` | Developer utilities (benchmarks, helpers). |
+| `output/` | Generated CLI artifacts (not committed); FCS defaults to `output/fcs/`. |
+| `artifacts/` | Generated benchmark artifacts (not committed). |
+| `run_*/` | Generated run outputs (not committed). |
+| `tmp/` | Temp files, logs, cache (not committed). |
+| `coverage/` | Coverage output (not committed). |
+
+Admin app (`apps/admin`)
+
+| Path | Responsibility |
+| --- | --- |
+| `app/` | Rails app code (controllers, views, domains). |
+| `app/domains/` | Packwerk domain packages. |
+| `script/seed_admin.rb` | Canonical seed entry point (all admin demo flows). |
+| `storage/` | Generated admin artifacts and seed reports (not committed). |
+| `config/` | Rails configuration and initializers. |
+| `db/` | Migrations and seeds. |
+| `spec/` | Admin app tests. |
+
 ## Reproducible Bootstrap (Story 1.1)
 
 Prerequisites:
@@ -96,21 +126,21 @@ Bootstrap and first canonical run:
 
 ```bash
 bundle install
-bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output --verbose
+bin/fcs run --input lib/fcs/fixtures/demo_input.json --verbose
 ```
 
 Expected canonical artifacts:
 
-- `output/result.json`
-- `output/positions.csv`
-- `output/pnl.csv`
+- `output/fcs/result.json`
+- `output/fcs/positions.csv`
+- `output/fcs/pnl.csv`
 
 Determinism check (same input + same config -> identical artifacts):
 
 ```bash
-bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/run1
-bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/run2
-shasum -a 256 output/run1/result.json output/run2/result.json output/run1/positions.csv output/run2/positions.csv output/run1/pnl.csv output/run2/pnl.csv
+bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/fcs/run1
+bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/fcs/run2
+shasum -a 256 output/fcs/run1/result.json output/fcs/run2/result.json output/fcs/run1/positions.csv output/fcs/run2/positions.csv output/fcs/run1/pnl.csv output/fcs/run2/pnl.csv
 ```
 
 Acceptance criterion: each run1/run2 pair above must produce identical SHA-256 values.
@@ -125,7 +155,7 @@ bin/fcs run
 # Invalid input payload (deterministic diagnostic JSON)
 mkdir -p tmp
 printf '{ invalid-json\n' > tmp/bad.json
-bin/fcs run --input tmp/bad.json --output-dir output
+bin/fcs run --input tmp/bad.json --output-dir output/fcs
 ```
 
 ## Admin seed operations (canonical)
@@ -141,7 +171,7 @@ Verification evidence:
 
 Cleanup guidance:
 - Admin storage artifacts (manual): `apps/admin/storage/runs/dashboard_seed`, `apps/admin/storage/runs/run_*`, `apps/admin/storage/runs/root_output`
-- Root generated artifacts: `pnl.csv`, `positions.csv`, `result.json`, `checkpoint_*.json`, `benchmark_report_*.json`, `run_1/`
+- FCS generated artifacts: `output/fcs/result.json`, `output/fcs/positions.csv`, `output/fcs/pnl.csv`, `output/fcs/checkpoint_*.json`, `output/fcs/benchmarks/benchmark_report_*.json`, `output/fcs/run_1/`
 
 Docs:
 - `docs/10-valid-run.md`
@@ -158,15 +188,15 @@ Benchmark fixture definition:
 Run the deterministic benchmark and persist evidence artifacts:
 
 ```bash
-bin/fcs bench --runs 5 --output-dir output/benchmarks
+bin/fcs bench --runs 5
 ```
 
 Expected outputs:
 
-- `output/benchmarks/artifacts/result.json`
-- `output/benchmarks/artifacts/positions.csv`
-- `output/benchmarks/artifacts/pnl.csv`
-- `output/benchmarks/benchmark_report_*.json`
+- `output/fcs/benchmarks/artifacts/result.json`
+- `output/fcs/benchmarks/artifacts/positions.csv`
+- `output/fcs/benchmarks/artifacts/pnl.csv`
+- `output/fcs/benchmarks/benchmark_report_*.json`
 
 The report includes the command, timestamps, p95 runtime, input hash, run id, and artifact paths.
 

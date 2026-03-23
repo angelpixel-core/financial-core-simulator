@@ -3,6 +3,7 @@
 
 # FCS runtime artifacts
 output/
+output/fcs/
 apps/admin/storage/
 coverage/
 tmp/rubycritic/
