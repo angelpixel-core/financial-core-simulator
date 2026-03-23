@@ -3,12 +3,8 @@ require 'rails_helper'
 RSpec.describe 'dashboard demo seed script' do
   include ActiveSupport::Testing::TimeHelpers
 
-  def run_seed_admin(type)
-    original_argv = ARGV.dup
-    ARGV.replace(['--type', type])
-    load Rails.root.join('script/seed_admin.rb')
-  ensure
-    ARGV.replace(original_argv)
+  def run_dashboard_seed
+    Admin::Seeds::DashboardDemoSeed.new.call
   end
 
   around do |example|
@@ -16,7 +12,7 @@ RSpec.describe 'dashboard demo seed script' do
   end
 
   it 'creates 14-day coverage plus non-zero global pnl and multiple top accounts' do
-    run_seed_admin('dashboard')
+    run_dashboard_seed
 
     metrics = Admin::DashboardMetrics.new.call
 
@@ -33,10 +29,10 @@ RSpec.describe 'dashboard demo seed script' do
   end
 
   it 'is idempotent by run_uuid' do
-    run_seed_admin('dashboard')
+    run_dashboard_seed
     seeded_count = Run.count
 
-    run_seed_admin('dashboard')
+    run_dashboard_seed
 
     expect(Run.count).to eq(seeded_count)
   end
