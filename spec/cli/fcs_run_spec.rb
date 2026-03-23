@@ -11,8 +11,30 @@ RSpec.describe 'bin/fcs run' do
   let(:ruby) { RbConfig.ruby }
   let(:fixture) { File.join(root, 'lib/fcs/fixtures/demo_input.json') }
 
+  def parse_last_json(payload)
+    depth = 0
+    end_index = nil
+
+    (payload.length - 1).downto(0) do |idx|
+      char = payload[idx]
+      if char == "}"
+        depth += 1
+        end_index ||= idx
+        next
+      end
+
+      next unless char == "{"
+      depth -= 1
+      next unless depth.zero? && end_index
+
+      return JSON.parse(payload[idx..end_index])
+    end
+
+    raise JSON::ParserError, "No JSON found"
+  end
+
   it 'is silent by default' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       stdout, stderr, status = Open3.capture3(
         ruby,
         File.join(root, 'bin/fcs'),
@@ -24,12 +46,12 @@ RSpec.describe 'bin/fcs run' do
 
       expect(status.success?).to be(true), "exit=#{status.exitstatus} stdout=#{stdout.inspect} stderr=#{stderr.inspect}"
       expect(stdout).to eq('')
-      expect(stderr).to eq('')
+      expect(stderr).to eq("")
     end
   end
 
   it 'defaults output-dir to output/fcs when omitted' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       output_dir = File.join(tmp, 'output', 'fcs')
       stdout, stderr, status = Open3.capture3(
         ruby,
@@ -40,13 +62,13 @@ RSpec.describe 'bin/fcs run' do
       )
 
       expect(status.success?).to be(true), "exit=#{status.exitstatus} stdout=#{stdout.inspect} stderr=#{stderr.inspect}"
-      expect(stderr).to eq('')
+      expect(stderr).to eq("")
       expect(File.exist?(File.join(output_dir, 'result.json'))).to be(true)
     end
   end
 
   it 'honors explicit output-dir overrides' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       output_dir = File.join(tmp, 'output', 'custom')
       stdout, stderr, status = Open3.capture3(
         ruby,
@@ -58,13 +80,13 @@ RSpec.describe 'bin/fcs run' do
       )
 
       expect(status.success?).to be(true), "exit=#{status.exitstatus} stdout=#{stdout.inspect} stderr=#{stderr.inspect}"
-      expect(stderr).to eq('')
+      expect(stderr).to eq("")
       expect(File.exist?(File.join(output_dir, 'result.json'))).to be(true)
     end
   end
 
   it 'warns when output-dir resolves to repo root' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       stdout, stderr, status = Open3.capture3(
         ruby,
         File.join(root, 'bin/fcs'),
@@ -75,7 +97,7 @@ RSpec.describe 'bin/fcs run' do
       )
 
       expect(status.success?).to be(true), "exit=#{status.exitstatus} stdout=#{stdout.inspect} stderr=#{stderr.inspect}"
-      payload = JSON.parse(stderr)
+      payload = parse_last_json(stderr)
       expect(payload).to include(
         'code' => 'WARN_UNSAFE_OUTPUT_DIR',
         'what_happened' => 'Output directory resolves to an unsafe path'
@@ -85,7 +107,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'warns when output-dir resolves outside output/' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       artifacts_dir = File.expand_path('../artifacts', tmp)
       stdout, stderr, status = Open3.capture3(
         ruby,
@@ -97,7 +119,7 @@ RSpec.describe 'bin/fcs run' do
       )
 
       expect(status.success?).to be(true), "exit=#{status.exitstatus} stdout=#{stdout.inspect} stderr=#{stderr.inspect}"
-      payload = JSON.parse(stderr)
+      payload = parse_last_json(stderr)
       expect(payload).to include(
         'code' => 'WARN_UNSAFE_OUTPUT_DIR',
         'what_happened' => 'Output directory resolves to an unsafe path'
@@ -109,7 +131,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'does not warn when output-dir is under output/' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       stdout, stderr, status = Open3.capture3(
         ruby,
         File.join(root, 'bin/fcs'),
@@ -120,12 +142,12 @@ RSpec.describe 'bin/fcs run' do
       )
 
       expect(status.success?).to be(true), "exit=#{status.exitstatus} stdout=#{stdout.inspect} stderr=#{stderr.inspect}"
-      expect(stderr).to eq('')
+      expect(stderr).to eq("")
     end
   end
 
   it 'prints details when --verbose is set' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       stdout, stderr, status = Open3.capture3(
         ruby,
         File.join(root, 'bin/fcs'),
@@ -147,7 +169,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'prints identical CLI summary across repeated verbose runs' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       out_dir = File.join(tmp, 'out')
 
       stdout1, _stderr1, status1 = Open3.capture3(
@@ -189,7 +211,7 @@ RSpec.describe 'bin/fcs run' do
     expect(status.exitstatus).to eq(2)
     expect(stdout).to eq('')
 
-    payload = JSON.parse(stderr)
+    payload = parse_last_json(stderr)
     expect(payload).to include(
       'code' => FCS::Errors::ERR_VALIDATION,
       'what_happened' => '--input is required'
@@ -200,7 +222,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'emits diagnostic payload for invalid input json' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       bad_input = File.join(tmp, 'bad.json')
       File.write(bad_input, '{ invalid-json')
 
@@ -216,7 +238,7 @@ RSpec.describe 'bin/fcs run' do
       expect(status.success?).to be(false)
       expect(status.exitstatus).to eq(2)
 
-      payload = JSON.parse(stderr)
+      payload = parse_last_json(stderr)
       expect(payload).to include(
         'code' => FCS::Errors::ERR_INVALID_INPUT,
         'what_happened' => 'Invalid JSON'
@@ -231,7 +253,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'prints failure summary in verbose mode when run fails' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       bad_input = File.join(tmp, 'bad.json')
       File.write(bad_input, '{ invalid-json')
 
@@ -250,7 +272,7 @@ RSpec.describe 'bin/fcs run' do
       expect(stdout).to include('status: failure')
       expect(stdout).to include('artifacts:')
 
-      payload = JSON.parse(stderr)
+      payload = parse_last_json(stderr)
       expect(payload).to include('code' => FCS::Errors::ERR_INVALID_INPUT)
     end
   end
@@ -267,7 +289,7 @@ RSpec.describe 'bin/fcs run' do
     expect(status.success?).to be(false)
     expect(status.exitstatus).to eq(2)
 
-    payload = JSON.parse(stderr)
+    payload = parse_last_json(stderr)
     expect(payload).to include('code' => FCS::Errors::ERR_VALIDATION)
     expect(payload.fetch('what_happened')).to eq('Invalid CLI option')
     expect(payload).to have_key('impact')
@@ -283,14 +305,14 @@ RSpec.describe 'bin/fcs run' do
       File.join(root, 'bin/fcs'),
       'run',
       '--input', missing,
-      '--output-dir', File.join(root, 'tmp', 'out-missing'),
+      '--output-dir', File.join(root, 'output', 'fcs', 'out-missing'),
       chdir: root
     )
 
     expect(status.success?).to be(false)
     expect(status.exitstatus).to eq(2)
 
-    payload = JSON.parse(stderr)
+    payload = parse_last_json(stderr)
     expect(payload).to include(
       'code' => FCS::Errors::ERR_INVALID_INPUT,
       'what_happened' => 'Input file not found'
@@ -299,7 +321,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'produces identical artifacts across repeated runs with same input' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       out1 = File.join(tmp, 'run1')
       out2 = File.join(tmp, 'run2')
 
@@ -331,7 +353,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'keeps the same inputHash for semantically equivalent but reordered input' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       input_a = {
         'schemaVersion' => '1.0',
         'accounts' => [{ 'accountId' => 'acc-2' }, { 'accountId' => 'acc-1' }],
@@ -440,7 +462,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'changes inputHash when fee CLI override changes effective execution config' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       input = {
         'schemaVersion' => '1.0',
         'accounts' => [{ 'accountId' => 'acc-1' }],
@@ -503,7 +525,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'allows invalid fee payload when --no-fee disables fee validation path' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       input = {
         'schemaVersion' => '1.0',
         'accounts' => [{ 'accountId' => 'acc-1' }],
@@ -542,7 +564,7 @@ RSpec.describe 'bin/fcs run' do
       )
 
       expect(status_fail.success?).to be(false)
-      expect(JSON.parse(stderr_fail)).to include('code' => FCS::Errors::ERR_VALIDATION)
+      expect(parse_last_json(stderr_fail)).to include('code' => FCS::Errors::ERR_VALIDATION)
 
       _stdout_ok, _stderr_ok, status_ok = Open3.capture3(
         ruby,
@@ -559,7 +581,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'emits stable error envelope for invalid schema and broken references' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       bad_schema = {
         'schemaVersion' => '9.9',
         'accounts' => [{ 'accountId' => 'acc-1' }],
@@ -616,7 +638,7 @@ RSpec.describe 'bin/fcs run' do
         expect(status.success?).to be(false)
         expect(status.exitstatus).to eq(2)
 
-        payload = JSON.parse(stderr)
+        payload = parse_last_json(stderr)
         expect(payload).to include('what_happened', 'impact', 'next_action', 'details')
         expect(payload.fetch('error')).to include('code' => expected_code)
         expect(payload.fetch('error')).to have_key('message')
@@ -625,7 +647,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'emits stable error envelope for long-only sell overflow' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       oversell_input = {
         'schemaVersion' => '1.0',
         'accounts' => [{ 'accountId' => 'acc-1' }],
@@ -675,7 +697,7 @@ RSpec.describe 'bin/fcs run' do
       expect(status.success?).to be(false)
       expect(status.exitstatus).to eq(2)
 
-      payload = JSON.parse(stderr)
+      payload = parse_last_json(stderr)
       expect(payload).to include('code' => FCS::Errors::ERR_POSITION_NEGATIVE)
       expect(payload.fetch('what_happened')).to include('position negative')
       expect(payload.fetch('impact')).to include('canonical artifacts')
@@ -690,7 +712,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'emits deterministic ERR_MISSING_SNAPSHOT when fx quoteUsd is missing' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       missing_fx_input = {
         'schemaVersion' => '1.0',
         'accounts' => [{ 'accountId' => 'acc-1' }],
@@ -718,7 +740,7 @@ RSpec.describe 'bin/fcs run' do
       expect(status.success?).to be(false)
       expect(status.exitstatus).to eq(2)
 
-      payload = JSON.parse(stderr)
+      payload = parse_last_json(stderr)
       expect(payload).to include('code' => FCS::Errors::ERR_MISSING_SNAPSHOT)
       expect(payload.fetch('details')).to include('missingField' => 'priceSnapshot.fx.quoteUsd')
       expect(payload).to include('what_happened', 'impact', 'next_action')
@@ -726,7 +748,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'emits deterministic ERR_MISSING_SNAPSHOT when valuationTimestamp is missing' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       missing_ts_input = {
         'schemaVersion' => '1.0',
         'accounts' => [{ 'accountId' => 'acc-1' }],
@@ -753,14 +775,14 @@ RSpec.describe 'bin/fcs run' do
       expect(status.success?).to be(false)
       expect(status.exitstatus).to eq(2)
 
-      payload = JSON.parse(stderr)
+      payload = parse_last_json(stderr)
       expect(payload).to include('code' => FCS::Errors::ERR_MISSING_SNAPSHOT)
       expect(payload.fetch('details')).to include('missingField' => 'priceSnapshot.valuationTimestamp')
     end
   end
 
   it 'emits deterministic ERR_MISSING_SNAPSHOT when fx payload is malformed' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       malformed_fx_input = {
         'schemaVersion' => '1.0',
         'accounts' => [{ 'accountId' => 'acc-1' }],
@@ -788,7 +810,7 @@ RSpec.describe 'bin/fcs run' do
       expect(status.success?).to be(false)
       expect(status.exitstatus).to eq(2)
 
-      payload = JSON.parse(stderr)
+      payload = parse_last_json(stderr)
       expect(payload).to include('code' => FCS::Errors::ERR_MISSING_SNAPSHOT)
       expect(payload.fetch('details')).to include('missingField' => 'priceSnapshot.fx.quoteUsd')
       expect(payload).to include('what_happened', 'impact', 'next_action')
@@ -796,7 +818,7 @@ RSpec.describe 'bin/fcs run' do
   end
 
   it 'enforces strict positivity while preserving reproducible hash for minimal positive values' do
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       invalid_zero_equivalent = {
         'schemaVersion' => '1.0',
         'accounts' => [{ 'accountId' => 'acc-1' }],
@@ -859,7 +881,7 @@ RSpec.describe 'bin/fcs run' do
 
       expect(invalid_status.success?).to be(false)
       expect(invalid_status.exitstatus).to eq(2)
-      invalid_payload = JSON.parse(invalid_stderr)
+      invalid_payload = parse_last_json(invalid_stderr)
       expect(invalid_payload).to include('code' => FCS::Errors::ERR_VALIDATION)
 
       _valid_stdout1, _valid_stderr1, valid_status1 = Open3.capture3(
@@ -893,7 +915,7 @@ RSpec.describe 'bin/fcs run' do
     previous = ENV.fetch('FCS_TIMELINE_ENABLED', nil)
     ENV['FCS_TIMELINE_ENABLED'] = '0'
 
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       timeline_input = {
         'schemaVersion' => '1.0',
         'accounts' => [{ 'accountId' => 'acc-1' }],
@@ -942,7 +964,7 @@ RSpec.describe 'bin/fcs run' do
       expect(status.success?).to be(false)
       expect(status.exitstatus).to eq(2)
 
-      payload = JSON.parse(stderr)
+      payload = parse_last_json(stderr)
       expect(payload).to include('code' => FCS::Errors::ERR_VALIDATION)
       expect(payload.fetch('what_happened')).to include('timeline input requires FCS_TIMELINE_ENABLED=1')
     end
@@ -954,7 +976,7 @@ RSpec.describe 'bin/fcs run' do
     previous = ENV.fetch('FCS_TIMELINE_ENABLED', nil)
     ENV['FCS_TIMELINE_ENABLED'] = '1'
 
-    Dir.mktmpdir do |tmp|
+    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
       timeline_input = {
         'schemaVersion' => '1.0',
         'accounts' => [{ 'accountId' => 'acc-1' }],
