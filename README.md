@@ -128,6 +128,25 @@ printf '{ invalid-json\n' > tmp/bad.json
 bin/fcs run --input tmp/bad.json --output-dir output
 ```
 
+## Admin seed operations (canonical)
+
+Use the canonical admin entry point for all seed flows:
+
+```bash
+BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rails runner apps/admin/script/seed_admin.rb --type <verified|interactive|dashboard|ops|local-demo>
+```
+
+Verification evidence:
+- `apps/admin/storage/runs/seed_reports/seed_<timestamp>.json`
+
+Cleanup guidance:
+- Admin storage artifacts (manual): `apps/admin/storage/runs/dashboard_seed`, `apps/admin/storage/runs/run_*`, `apps/admin/storage/runs/root_output`
+- Root generated artifacts: `pnl.csv`, `positions.csv`, `result.json`, `checkpoint_*.json`, `benchmark_report_*.json`, `run_1/`
+
+Docs:
+- `docs/10-valid-run.md`
+- `docs/11-reset-db-and-ops.md`
+
 ## Deterministic Performance Benchmark (NFR4)
 
 Benchmark fixture definition:
