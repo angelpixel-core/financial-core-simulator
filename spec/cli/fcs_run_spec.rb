@@ -11,6 +11,12 @@ RSpec.describe "bin/fcs run" do
   let(:ruby) { RbConfig.ruby }
   let(:fixture) { File.join(root, "lib/fcs/fixtures/demo_input.json") }
 
+  def output_tmpdir
+    base = File.join(root, "output")
+    FileUtils.mkdir_p(base)
+    Dir.mktmpdir(nil, base)
+  end
+
   def parse_last_json(payload)
     depth = 0
     end_index = nil
@@ -34,7 +40,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "is silent by default" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       stdout, stderr, status = Open3.capture3(
         ruby,
         File.join(root, "bin/fcs"),
@@ -51,7 +57,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "defaults output-dir to output/fcs when omitted" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       output_dir = File.join(tmp, "output", "fcs")
       stdout, stderr, status = Open3.capture3(
         ruby,
@@ -68,7 +74,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "honors explicit output-dir overrides" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       output_dir = File.join(tmp, "output", "custom")
       stdout, stderr, status = Open3.capture3(
         ruby,
@@ -86,7 +92,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "warns when output-dir resolves to repo root" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       stdout, stderr, status = Open3.capture3(
         ruby,
         File.join(root, "bin/fcs"),
@@ -107,7 +113,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "warns when output-dir resolves outside output/" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       artifacts_dir = File.expand_path("../artifacts", tmp)
       stdout, stderr, status = Open3.capture3(
         ruby,
@@ -131,7 +137,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "does not warn when output-dir is under output/" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       stdout, stderr, status = Open3.capture3(
         ruby,
         File.join(root, "bin/fcs"),
@@ -147,7 +153,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "prints details when --verbose is set" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       stdout, stderr, status = Open3.capture3(
         ruby,
         File.join(root, "bin/fcs"),
@@ -169,7 +175,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "prints identical CLI summary across repeated verbose runs" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       out_dir = File.join(tmp, "out")
 
       stdout1, _stderr1, status1 = Open3.capture3(
@@ -222,7 +228,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "emits diagnostic payload for invalid input json" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       bad_input = File.join(tmp, "bad.json")
       File.write(bad_input, "{ invalid-json")
 
@@ -253,7 +259,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "prints failure summary in verbose mode when run fails" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       bad_input = File.join(tmp, "bad.json")
       File.write(bad_input, "{ invalid-json")
 
@@ -321,7 +327,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "produces identical artifacts across repeated runs with same input" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       out1 = File.join(tmp, "run1")
       out2 = File.join(tmp, "run2")
 
@@ -353,7 +359,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "keeps the same inputHash for semantically equivalent but reordered input" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       input_a = {
         "schemaVersion" => "1.0",
         "accounts" => [{"accountId" => "acc-2"}, {"accountId" => "acc-1"}],
@@ -462,7 +468,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "changes inputHash when fee CLI override changes effective execution config" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       input = {
         "schemaVersion" => "1.0",
         "accounts" => [{"accountId" => "acc-1"}],
@@ -525,7 +531,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "allows invalid fee payload when --no-fee disables fee validation path" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       input = {
         "schemaVersion" => "1.0",
         "accounts" => [{"accountId" => "acc-1"}],
@@ -581,7 +587,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "emits stable error envelope for invalid schema and broken references" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       bad_schema = {
         "schemaVersion" => "9.9",
         "accounts" => [{"accountId" => "acc-1"}],
@@ -647,7 +653,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "emits stable error envelope for long-only sell overflow" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       oversell_input = {
         "schemaVersion" => "1.0",
         "accounts" => [{"accountId" => "acc-1"}],
@@ -712,7 +718,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "emits deterministic ERR_MISSING_SNAPSHOT when fx quoteUsd is missing" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       missing_fx_input = {
         "schemaVersion" => "1.0",
         "accounts" => [{"accountId" => "acc-1"}],
@@ -748,7 +754,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "emits deterministic ERR_MISSING_SNAPSHOT when valuationTimestamp is missing" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       missing_ts_input = {
         "schemaVersion" => "1.0",
         "accounts" => [{"accountId" => "acc-1"}],
@@ -782,7 +788,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "emits deterministic ERR_MISSING_SNAPSHOT when fx payload is malformed" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       malformed_fx_input = {
         "schemaVersion" => "1.0",
         "accounts" => [{"accountId" => "acc-1"}],
@@ -818,7 +824,7 @@ RSpec.describe "bin/fcs run" do
   end
 
   it "enforces strict positivity while preserving reproducible hash for minimal positive values" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       invalid_zero_equivalent = {
         "schemaVersion" => "1.0",
         "accounts" => [{"accountId" => "acc-1"}],
@@ -915,7 +921,7 @@ RSpec.describe "bin/fcs run" do
     previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
     ENV["FCS_TIMELINE_ENABLED"] = "0"
 
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       timeline_input = {
         "schemaVersion" => "1.0",
         "accounts" => [{"accountId" => "acc-1"}],
@@ -976,7 +982,7 @@ RSpec.describe "bin/fcs run" do
     previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
     ENV["FCS_TIMELINE_ENABLED"] = "1"
 
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       timeline_input = {
         "schemaVersion" => "1.0",
         "accounts" => [{"accountId" => "acc-1"}],

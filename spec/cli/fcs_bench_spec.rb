@@ -10,8 +10,14 @@ RSpec.describe "bin/fcs bench" do
   let(:ruby) { RbConfig.ruby }
   let(:fixture) { File.join(root, "lib/fcs/fixtures/benchmark_fixture.json") }
 
+  def output_tmpdir
+    base = File.join(root, "output")
+    FileUtils.mkdir_p(base)
+    Dir.mktmpdir(nil, base)
+  end
+
   it "defaults output-dir to output/fcs/benchmarks when omitted" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       output_dir = File.join(tmp, "output", "fcs", "benchmarks")
       stdout, stderr, status = Open3.capture3(
         ruby,
@@ -36,7 +42,7 @@ RSpec.describe "bin/fcs bench" do
   end
 
   it "honors explicit output-dir overrides" do
-    Dir.mktmpdir(nil, File.join(root, "output")) do |tmp|
+    output_tmpdir do |tmp|
       output_dir = File.join(tmp, "output", "benchmarks")
       stdout, stderr, status = Open3.capture3(
         ruby,
