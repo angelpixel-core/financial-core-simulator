@@ -20,6 +20,7 @@ result.json
 positions.csv
 pnl.csv
 run_*/
+.skills/
 
 # BMAD generated planning/runtime artifacts
 .bmad/
