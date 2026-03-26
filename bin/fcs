@@ -68,6 +68,61 @@ def failure_summary_payload
   }
 end
 
+# Demo input generator for dashboard-friendly swings.
+def build_demo_input(accounts:, markets:, trades:)
+  account_ids = (1..accounts).map { |i| "acc-#{i}" }
+  market_ids = (1..markets).map { |i| i == 1 ? "ETH-USD" : "MKT-#{i}" }
+
+  inventory = Hash.new(0)
+  seqs = Hash.new(0)
+  out = []
+  ts = 1
+
+  trades.times do |i|
+    acc = account_ids[i % account_ids.length]
+    mkt = market_ids[(i / account_ids.length) % market_ids.length]
+    key = "#{acc}|#{mkt}"
+
+    side = inventory[key] <= 0 ? "BUY" : (i.even? ? "SELL" : "BUY")
+
+    price = if side == "SELL"
+      (i % 3).zero? ? "90" : "120"
+    else
+      (i % 4).zero? ? "130" : "100"
+    end
+
+    inventory[key] += (side == "BUY" ? 1 : -1)
+    seqs[key] += 1
+
+    out << {
+      "tradeId" => "t-#{i + 1}",
+      "accountId" => acc,
+      "marketId" => mkt,
+      "timestamp" => ts,
+      "seq" => seqs[key],
+      "side" => side,
+      "quantityBase" => "1",
+      "priceQuotePerBase" => price,
+      "fee" => {"amountQuote" => "0.01"}
+    }
+
+    ts += 1
+  end
+
+  {
+    "schemaVersion" => "1.0",
+    "accounts" => account_ids.map { |id| {"accountId" => id} },
+    "markets" => market_ids.map { |id| {"marketId" => id} },
+    "feeModel" => {"enabled" => true},
+    "trades" => out,
+    "priceSnapshot" => {
+      "valuationTimestamp" => "2026-02-25T03:00:00Z",
+      "prices" => market_ids.map { |m| {"marketId" => m, "priceQuotePerBase" => "110"} },
+      "fx" => {"quoteUsd" => "1"}
+    }
+  }
+end
+
 def warn_if_unsafe_output_dir(output_dir)
   repo_root = File.expand_path("..", __dir__)
   resolved_output_dir = File.expand_path(output_dir, repo_root)
@@ -334,6 +389,54 @@ when "bench"
       details: { "message" => e.message, "output_dir" => options[:output_dir] }
     )
     exit(1)
+  end
+
+when "generate-input"
+  options = {
+    output: "output/fcs/demo_input.json",
+    tamper_output: nil,
+    accounts: 2,
+    markets: 2,
+    trades: 24
+  }
+
+  parser = OptionParser.new do |opts|
+    opts.banner = "Usage: fcs generate-input [--output PATH] [--tamper-output PATH] [--accounts N] [--markets N] [--trades N]"
+    opts.on("--output PATH", "Path to output JSON (default: output/fcs/demo_input.json)") { |v| options[:output] = v }
+    opts.on("--tamper-output PATH", "Write a tampered copy to force verification mismatch") { |v| options[:tamper_output] = v }
+    opts.on("--accounts N", Integer, "Number of accounts (default: 2)") { |v| options[:accounts] = v }
+    opts.on("--markets N", Integer, "Number of markets (default: 2)") { |v| options[:markets] = v }
+    opts.on("--trades N", Integer, "Number of trades (default: 24)") { |v| options[:trades] = v }
+    opts.on("-h", "--help", "Print help") do
+      puts opts
+      exit(0)
+    end
+  end
+
+  begin
+    parser.parse!(ARGV)
+  rescue OptionParser::ParseError => e
+    print_diagnostic_error(
+      code: FCS::Errors::ERR_VALIDATION,
+      what_happened: "Invalid CLI option",
+      impact: "The generate-input arguments are invalid; execution did not start.",
+      next_action: "Fix the CLI flags and re-run `bin/fcs generate-input --help`.",
+      details: { "errorClass" => e.class.name, "errorMessage" => e.message }
+    )
+    exit(2)
+  end
+
+  payload = build_demo_input(accounts: options[:accounts], markets: options[:markets], trades: options[:trades])
+  FileUtils.mkdir_p(File.dirname(options[:output]))
+  File.write(options[:output], JSON.pretty_generate(payload))
+  puts "OK: wrote #{options[:output]}"
+
+  if options[:tamper_output]
+    tampered = JSON.parse(JSON.dump(payload))
+    tampered["trades"].first["priceQuotePerBase"] = "999"
+    FileUtils.mkdir_p(File.dirname(options[:tamper_output]))
+    File.write(options[:tamper_output], JSON.pretty_generate(tampered))
+    puts "OK: wrote #{options[:tamper_output]} (tampered)"
   end
 
 else
