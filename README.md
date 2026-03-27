@@ -5,7 +5,7 @@
 ![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen)
 ![Ruby](https://img.shields.io/badge/ruby-3.4%2B-red)
 ![Code Style](https://img.shields.io/badge/code%20style-standardrb-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-blue)
+![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 
 Financial Core Simulator is a deterministic trading infrastructure demo that models the core components of a modern exchange backend:
 
