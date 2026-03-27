@@ -3,24 +3,10 @@
 
 # FCS runtime artifacts
 output/
-output/fcs/
 apps/admin/storage/
 coverage/
-tmp/rubycritic/
-tmp/logs/
 tmp/
 lib/log/
-checkpoint_*.json
-scripts/mutation-unique.sh
-artifacts/
-!apps/admin/app/domains/artifacts/
-!apps/admin/app/domains/artifacts/**
-benchmark_report_*.json
-result.json
-positions.csv
-pnl.csv
-run_*/
-.skills/
 
 # YARD artifacts
 .yardoc/
