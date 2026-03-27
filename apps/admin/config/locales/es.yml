@@ -1,0 +1,566 @@
+es:
+  admin:
+    nav:
+      overview: "Overview"
+      runs: "Runs"
+      validation: "Validacion"
+      artifacts: "Artifacts"
+      docs: "Docs"
+      workspace: "Workspace"
+      open_runs: "Abrir runs"
+    common:
+      na: "N/A"
+      what_happened: "Que paso"
+      impact: "Impacto"
+      next_action: "Siguiente accion"
+      open: "Abrir"
+      previous: "Anterior"
+      next: "Siguiente"
+      apply: "Aplicar"
+      reset: "Resetear"
+      updated: "Actualizado %{time}"
+      view_details: "Ver detalles"
+      day: "Dia"
+      runs: "Runs"
+      runs_tooltip: "%{day}: %{count} runs"
+      ms: "ms"
+    shell:
+      skip_to_content: "Saltar al contenido principal"
+      sidebar_aria: "Navegacion del workspace"
+      header_aria: "Shell admin"
+      expand_sidebar: "Expandir sidebar"
+      collapse_sidebar: "Minimizar sidebar"
+      brand_title: "FCS Workspace"
+      brand_subtitle: "Ops Console"
+      sign_out: "Salir"
+      mobile_nav_toggle: "Abrir menu de navegacion"
+      mobile_nav_aria: "Navegacion mobile del workspace"
+      navigation_label: "Navegacion"
+      presence_stable: "Workspace estable"
+      presence_online: "%{email} online"
+      topbar_aria: "Topbar del workspace"
+      breadcrumb_aria: "Breadcrumb"
+      resources_aria: "Recursos del workspace"
+      env_badge: "Env: %{environment}"
+    docs:
+      index:
+        eyebrow: "DOCS"
+        title: "Documentacion del sistema"
+        subtitle: "Referencias estructuradas para el workspace admin, alineadas a las secciones operativas."
+        sections_title: "Secciones"
+        sections_fallback: "Overview"
+        section_overview: "Resumen y referencias de la seccion."
+      show:
+        eyebrow: "DOCS"
+        back_to_docs: "Volver a docs"
+        related_sections: "Secciones relacionadas"
+        sections_fallback: "Overview"
+        includes: "Incluye"
+        includes_empty: "Esta seccion agrupa multiples paneles del workspace."
+      sections:
+        system_state:
+          title: "System State"
+          how_to_use:
+            title: "Como usar System State"
+            meta: "System State resume la salud operativa actual. Sirve como punto de entrada para detectar degradaciones, verificar estabilidad y decidir si conviene profundizar en otras secciones."
+            usage: { label: "Uso recomendado", value: "Revisar al inicio de cada sesion de monitoreo" }
+            objective: { label: "Objetivo", value: "Confirmar estabilidad y detectar alertas tempranas" }
+            frequency: { label: "Frecuencia", value: "Continuo en operaciones, puntual para auditorias" }
+          read:
+            title: "Que podemos leer"
+            operational_state: { label: "Estado operativo", value: "Salud general del sistema y confiabilidad" }
+            reliable_run: { label: "Ultima ejecucion confiable", value: "Referencia para comparaciones y trazabilidad" }
+            key_indicators: { label: "Indicadores clave", value: "Duracion promedio, tasa de exito, volumen reciente" }
+            meta: "Si algo se ve inestable aqui, se recomienda saltar a Activity o Data Quality para entender la causa."
+          value:
+            title: "Valor agregado"
+            fast_decision: { label: "Decision rapida", value: "Determina si la operacion es confiable ahora mismo" }
+            unique_context: { label: "Contexto unico", value: "Reune señales que normalmente estan dispersas" }
+            prevention: { label: "Prevencion", value: "Detecta degradaciones antes de que escalen" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo de contexto de simulacion"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura del contexto de simulacion"
+        simulation_context:
+          how_to_use:
+            title: "Como usar Simulation Context"
+            meta: "Simulation Context define el marco de referencia de cada run: inputs, reglas activas y configuraciones que determinan la interpretacion de resultados."
+            usage: { label: "Uso recomendado", value: "Antes de comparar resultados entre runs" }
+            objective: { label: "Objetivo", value: "Validar que las corridas son comparables" }
+            frequency: { label: "Frecuencia", value: "Siempre que cambien inputs o version de engine" }
+          read:
+            title: "Que podemos leer"
+            input_hash: { label: "Input hash", value: "Referencia deterministica para reproducibilidad" }
+            schema_version: { label: "Schema version", value: "Contrato del input usado en la simulacion" }
+            engine_version: { label: "Engine version", value: "Version del motor de calculo activo" }
+            dataset: { label: "Dataset", value: "Fuente de datos base y supuestos implicitos" }
+            meta: "Si cambia el contexto, los resultados no son comparables sin ajustes."
+          value:
+            title: "Valor agregado"
+            comparability: { label: "Comparabilidad", value: "Evita conclusiones falsas entre runs distintos" }
+            traceability: { label: "Trazabilidad", value: "Permite reproducir exactamente un resultado" }
+            audit: { label: "Auditoria", value: "Deja claro que supuestos estaban activos" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo de contexto de simulacion"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura del contexto de simulacion"
+        system_metrics:
+          how_to_use:
+            title: "Como usar System Metrics"
+            meta: "System Metrics concentra los KPIs que resumen el rendimiento operativo del sistema y permiten evaluar estabilidad, velocidad y salud general."
+            usage: { label: "Uso recomendado", value: "Antes de tomar decisiones operativas o de capacity" }
+            objective: { label: "Objetivo", value: "Detectar degradaciones de performance o fiabilidad" }
+            frequency: { label: "Frecuencia", value: "Revisar diario y ante cambios de carga" }
+          read:
+            title: "Que podemos leer"
+            total_runs: { label: "Total runs (7d/30d)", value: "Volumen operativo y tendencia reciente" }
+            success_rate: { label: "Success rate", value: "Estabilidad de ejecucion en el tiempo" }
+            avg_duration: { label: "Avg duration", value: "Performance y posibles cuellos de botella" }
+            kpi_delta: { label: "KPIs delta", value: "Comparacion contra periodos previos" }
+            meta: "Un descenso sostenido en success rate o aumentos de duracion sugieren revisar Activity y Data Quality."
+          value:
+            title: "Valor agregado"
+            operational_visibility: { label: "Visibilidad operativa", value: "Señales claras sobre performance y salud" }
+            early_detection: { label: "Deteccion temprana", value: "Se anticipa a problemas de confiabilidad" }
+            action_priority: { label: "Prioridad de acciones", value: "Ayuda a decidir donde investigar primero" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo operativo de metricas"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura de metricas"
+        activity:
+          how_to_use:
+            title: "Como usar Activity"
+            meta: "Activity resume el comportamiento de ejecucion en ventanas recientes y permite detectar cambios de ritmo o distribucion de estados."
+            usage: { label: "Uso recomendado", value: "Cuando cambian patrones de ejecucion" }
+            objective: { label: "Objetivo", value: "Identificar caidas, spikes o degradacion" }
+            frequency: { label: "Frecuencia", value: "Monitoreo continuo durante operaciones" }
+          read:
+            title: "Que podemos leer"
+            run_trend: { label: "Run trend (14d)", value: "Cadencia y volumen reciente" }
+            status_mix: { label: "Status mix (30d)", value: "Distribucion de success vs fallas" }
+            peaks: { label: "Picos o huecos", value: "Eventos operativos anormales" }
+            meta: "Una mezcla de estados degradada suele anticipar issues en Data Quality."
+          value:
+            title: "Valor agregado"
+            timeline: { label: "Contexto temporal", value: "Ubica el problema en una linea de tiempo" }
+            trend_detection: { label: "Deteccion de tendencia", value: "Permite ver cambios sostenidos" }
+            prioritization: { label: "Priorizacion", value: "Indica si investigar o escalar capacidad" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo operacional de actividad"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura de actividad"
+        financial_results:
+          how_to_use:
+            title: "Como usar Financial Results"
+            meta: "Financial Results traduce las corridas en señales financieras concretas para entender impacto, riesgo y exposicion por cuenta."
+            usage: { label: "Uso recomendado", value: "Despues de validar que el sistema esta estable" }
+            objective: { label: "Objetivo", value: "Interpretar PnL y exposicion en contexto" }
+            frequency: { label: "Frecuencia", value: "Post-run y revisiones de cierre" }
+          read:
+            title: "Que podemos leer"
+            pnl_trend: { label: "PnL trend", value: "Tendencia y direccion del resultado" }
+            latest_run: { label: "Latest succeeded run", value: "Referencia base para comparacion" }
+            global_pnl: { label: "Global PnL", value: "Impacto consolidado del ultimo run" }
+            top_accounts: { label: "Top accounts", value: "Exposicion y peso relativo" }
+            run_comparison: { label: "Run comparison", value: "Cambios entre runs recientes" }
+            input_traceability: { label: "Input traceability", value: "Relacion entre input y salida" }
+            meta: "Usar esta seccion despues de entender contexto y actividad evita interpretaciones sesgadas."
+          value:
+            title: "Valor agregado"
+            financial_context: { label: "Contexto financiero", value: "Convierte datos tecnicos en impacto" }
+            risk_priority: { label: "Prioridad de riesgo", value: "Enfoca en cuentas y resultados clave" }
+            follow_up: { label: "Seguimiento", value: "Permite comparar run sobre run" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo operacional de resultados"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura de resultados"
+        data_quality:
+          how_to_use:
+            title: "Como usar Data Quality"
+            meta: "Data Quality concentra los errores de validacion para detectar entradas defectuosas y patrones de falla recurrentes."
+            usage: { label: "Uso recomendado", value: "Cuando el success rate cae o hay fallas recurrentes" }
+            objective: { label: "Objetivo", value: "Identificar rapidamente el origen de errores" }
+            frequency: { label: "Frecuencia", value: "Ante alertas o cambios en inputs" }
+          read:
+            title: "Que podemos leer"
+            source: { label: "Fuente", value: "Origen del error (pipeline o integracion)" }
+            field: { label: "Campo", value: "Atributo que falla validacion" }
+            message: { label: "Mensaje", value: "Descripcion del problema" }
+            correlation: { label: "Correlation", value: "Run o lote asociado" }
+            meta: "Filtrar por source/field ayuda a priorizar correcciones."
+          value:
+            title: "Valor agregado"
+            input_quality: { label: "Calidad de inputs", value: "Evita contaminar resultados" }
+            fast_feedback: { label: "Feedback rapido", value: "Reduce tiempo de correccion" }
+            prevention: { label: "Prevencion", value: "Detecta patrones antes de escalar" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo operativo de calidad"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura de calidad"
+    overview:
+      hero:
+        eyebrow: "CONTROL"
+        title: "Financial Overview"
+        subtitle: "Workspace del motor financiero deterministico."
+        open_latest_reliable: "Abrir ultimo run confiable"
+      engine:
+        aria: "Contexto del engine"
+        title: "Engine"
+        environment: "Environment: %{environment}"
+        engine_version: "Engine version"
+        schema_version: "Schema version"
+        input_hash: "Input hash"
+      system_state:
+        aria: "System state"
+        title: "SYSTEM STATE"
+        reliability_status: "Estado de confiabilidad"
+        latest_reliable: "Ultimo run confiable"
+        open_latest_reliable: "Abrir ultimo run confiable"
+        latest_successful: "Ultimo run exitoso"
+        open_run_details: "Abrir detalles del run"
+        no_reliable_run: "Sin run confiable"
+        degraded_selection: "Seleccion degradada"
+      simulation_context:
+        aria: "Simulation context"
+        title: "SIMULATION CONTEXT"
+        empty: "Sin contexto de simulacion disponible."
+        dataset: "Dataset"
+        accounts: "Accounts"
+        events: "Events"
+        markets: "Markets"
+        input_hash: "Input hash"
+        deterministic: "Deterministico"
+      system_metrics:
+        aria: "System metrics"
+        title: "SYSTEM METRICS"
+        total_runs_7d:
+          title: "Total runs (7d)"
+          subtitle: "Volumen reciente de ejecucion"
+        total_runs_30d:
+          title: "Total runs (30d)"
+          subtitle: "Volumen mensual de ejecucion"
+        success_rate_last_50:
+          title: "Success rate (last 50)"
+          subtitle: "Exitos vs total de runs"
+        avg_duration:
+          title: "Avg duration (last 50 succeeded)"
+          subtitle: "Tendencia de latencia"
+      activity:
+        aria: "Activity"
+        title: "ACTIVITY"
+        run_trend:
+          title: "Run trend (14d)"
+          link: "Ver tendencia de runs"
+          tooltip_label: "Dia"
+          tooltip_count: "Runs"
+          aria: "Grafico de tendencia de runs de los ultimos 14 dias"
+        status_mix:
+          title: "Status mix (30d)"
+          link: "Ver detalle de estados"
+          queued: "Queued"
+          running: "Running"
+          succeeded: "Succeeded"
+          failed: "Failed"
+      financial_results:
+        aria: "Financial results"
+        title: "FINANCIAL RESULTS"
+        pnl_trend:
+          title: "PnL trend"
+          meta: "Total global de PnL quote en runs exitosos"
+          aria: "Tendencia de PnL para runs exitosos"
+          empty_title: "Sin datos de tendencia de PnL."
+          empty_body: "Ejecuta simulaciones exitosas con artifacts canonicos para poblar este grafico."
+          tooltip: "Total PnL Quote"
+          fallback_aria: "Valores fallback de tendencia PnL"
+          pagination_aria: "Paginacion de tendencia PnL"
+        latest_run:
+          title: "Ultimo run exitoso"
+          link: "Ver ultimo run"
+          empty: "Aun no hay runs exitosos."
+          run: "Run"
+          input_hash: "Input hash"
+          duration: "Duracion"
+          schema: "Schema"
+          engine: "Engine"
+        global_pnl:
+          title: "Global PnL (ultimo run exitoso)"
+          empty: "Totales globales no disponibles (result.json faltante o invalido)."
+          total: "Total"
+          realized_net: "Realized net"
+          unrealized: "Unrealized"
+          total_usd: "Total USD"
+        run_comparison:
+          title: "Comparacion de runs"
+          empty: "Comparacion no disponible (se necesitan al menos dos runs exitosos)."
+          current_run: "Run actual"
+          previous_run: "Run previo"
+          pnl_delta: "Delta PnL"
+          realized_delta: "Delta realizado"
+          unrealized_delta: "Delta no realizado"
+        input_traceability:
+          title: "Trazabilidad de input"
+          empty: "Sin metadata de trazabilidad disponible."
+          dataset: "Dataset"
+          input_hash: "Input hash"
+          result_json: "result.json"
+          positions_csv: "positions.csv"
+          pnl_csv: "pnl.csv"
+      validation:
+        aria: "Calidad de datos"
+        title: "CALIDAD DE DATOS"
+        widget_title: "Errores de validacion de ingestion"
+        cta_label: "Ver errores de ingestion"
+        actions_label: "Acciones de errores de ingestion"
+        filters:
+          source: "Fuente"
+          source_placeholder: "agente.hft.alpha"
+          field: "Campo"
+          field_placeholder: "riskModel"
+        columns:
+          source: "Fuente"
+          field: "Campo"
+          message: "Mensaje"
+          occurred: "Timestamp"
+          correlation: "Correlation"
+        empty_message: "Sin errores de validacion de ingestion."
+        loading_message: "Cargando errores de validacion de ingestion..."
+        error_message: "Errores de validacion de ingestion no disponibles."
+        pagination:
+          aria: "Paginacion de errores de ingestion"
+      runs_trend:
+        eyebrow: "Admin"
+        title: "Runs Trend (14d)"
+        subtitle: "Tendencia diaria de ejecucion de los ultimos 14 dias."
+        back_to_overview: "Volver a overview"
+        widget_title: "Run trend (14d)"
+        empty_message: "Sin puntos de tendencia disponibles."
+      status_mix:
+        eyebrow: "Admin"
+        title: "Status Mix (30d)"
+        subtitle: "Distribucion de estados de runs en los ultimos 30 dias."
+        back_to_overview: "Volver a overview"
+        widget_title: "Status mix (30d)"
+        empty_message: "Sin datos de status mix disponibles."
+      top_accounts:
+        eyebrow: "Admin"
+        title: "Top Accounts"
+        subtitle: "Vista standalone con el mismo lenguaje visual que Financial Overview."
+        back_to_overview: "Volver a overview"
+        widget_title: "Top accounts (live)"
+        cta_label: "Ver top accounts"
+        actions_label: "Acciones de top accounts"
+        empty_message: "Sin totales de cuentas disponibles."
+        pagination:
+          aria: "Paginacion de top accounts"
+        columns:
+          account: "Account"
+          total_pnl_quote: "Total PnL Quote"
+          realized_net: "Realized Net"
+          unrealized: "Unrealized"
+    validation:
+      eyebrow: "VALIDACION"
+      title: "Errores de validacion de ingestion"
+      subtitle: "Ultimos fallos de validacion de envelopes y señales de calidad."
+    runs:
+      reliability_banner:
+        states:
+          reliable: "Confiable"
+          degraded: "Degradado"
+          loading: "Cargando"
+          info: "Info"
+        aria: "Estado de confiabilidad: %{state}"
+      validation_issues:
+        title: "Diagnostico de validacion"
+        eyebrow: "Validacion"
+        aria: "Estado de validacion: %{state}"
+        table_container_aria: "Tabla de issues de validacion con scroll horizontal"
+        table_aria: "Issues de validacion"
+        columns:
+          severity: "Severidad"
+          source: "Fuente"
+          field: "Campo"
+          message: "Mensaje"
+          timestamp: "Timestamp"
+          correlation: "Correlation"
+        empty: "Sin issues de validacion reportados."
+        states:
+          success: "OK"
+          warning: "Warning"
+          error: "Error"
+          loading: "Cargando"
+          info: "Info"
+        severity:
+          warning: "Warning"
+          info: "Info"
+          error: "Error"
+        severity_aria: "Severidad: %{severity}"
+      run_selection_card:
+        title: "Run #%{id}"
+        status_aria: "Estado del run: %{status}"
+        timestamp: "Timestamp"
+        validation: "Validacion"
+        duration: "Duracion"
+      reliable_run_selector:
+        reliable:
+          what_happened: "Run verificado y confiable disponible."
+          impact: "El flujo de inspeccion puede continuar sin restricciones."
+          next_action: "Abrir el run y revisar PnL, validacion y artifacts."
+        no_run:
+          what_happened: "No hay runs disponibles todavia."
+          impact: "No es posible identificar un run confiable en este momento."
+          next_action: "Ejecuta un run de prueba y vuelve a cargar el overview."
+        unverified:
+          what_happened: "El ultimo run exitoso no tiene verificacion confiable."
+          impact: "La inspeccion se muestra en modo degradado porque la validacion aun no confirma confiabilidad."
+          next_action: "Revisa el run #%{run_id} (estado %{status}, verificacion %{verification}) y ejecuta verificacion de hash."
+        degraded:
+          what_happened: "No se encontro un run confiable vigente."
+          impact: "La seleccion automatica esta degradada."
+          next_action: "Verifica el ultimo run exitoso o abre la lista completa de runs."
+      validation_diagnostics:
+        error:
+          what_happened: "La validacion de datos del run fallo."
+          impact: "Los resultados no son confiables para decisiones financieras."
+          next_action: "Revisa los issues, corrige el input y re-ejecuta el run."
+        warning:
+          what_happened: "La validacion no pudo completarse por una falla del run."
+          impact: "No es posible confirmar la calidad de datos en este estado."
+          next_action: "Revisa el error de ejecucion y vuelve a intentar el run."
+        loading:
+          what_happened: "El run sigue en ejecucion."
+          impact: "La validacion aun no esta disponible."
+          next_action: "Espera la finalizacion y vuelve a cargar el detalle."
+        success:
+          what_happened: "La validacion no reporta issues."
+          impact: "Los datos son consistentes para inspeccion operativa."
+          next_action: "Continuar con PnL y revisar artifacts si hace falta."
+      artifacts:
+        eyebrow: "Evidence-first"
+        title: "Evidencia y artifacts"
+        status_aria: "Estado del artifact %{state}"
+        status_label: "Estado: %{label}"
+        unavailable_action: "%{label} (No disponible)"
+        status:
+          complete: "Completo"
+          partial: "Parcial"
+          unavailable: "No disponible"
+        entries:
+          result_json:
+            label: "Resultado canonico (JSON)"
+            description: "Contrato principal de salida para trazabilidad y reconciliacion."
+            action: "Abrir result.json"
+          positions_preview:
+            label: "Preview de posiciones"
+            description: "Vista operativa de posiciones proyectadas por mercado/account."
+            action: "Abrir preview positions.csv"
+          positions_download:
+            label: "Descarga de posiciones"
+            description: "Export CSV para auditoria y analisis externo."
+            action: "Descargar positions.csv"
+          pnl_preview:
+            label: "Preview de PnL"
+            description: "Vista operativa del consolidado de PnL por run."
+            action: "Abrir preview pnl.csv"
+          risk_view:
+            label: "Vista de riesgo"
+            description: "Drilldown por estado de riesgo, eventos y margen."
+            action: "Abrir risk view"
+        provenance:
+          run_id: "run_id"
+          input_hash: "input_hash"
+          timestamp_utc: "timestamp_utc"
+          version: "version"
+        version: "engine %{engine} / schema %{schema}"
+    ui:
+      metric_card:
+        badge: "ViewComponent"
+      workspace_widget:
+        loading_message: "Cargando widget del workspace..."
+        empty_message: "Sin datos disponibles."
+        error_message: "Widget del workspace no disponible."
+        actions_label: "Acciones de %{title}"
+      workspace_table:
+        loading_message: "Cargando tabla del workspace..."
+        empty_message: "Sin filas disponibles."
+        error_message: "Tabla del workspace no disponible."
+    auth:
+      title: "Inicio de sesion admin"
+      application_name: "Admin"
+      aria: "Inicio de sesion admin"
+      hero:
+        eyebrow: "Financial Core Simulator"
+        title: "Control operativo para runs, riesgo y salud de ingestion."
+        subtitle: "Acceso seguro al workspace admin. Inicia sesion con tu cuenta provisionada para continuar."
+      card:
+        eyebrow: "Workspace Admin"
+        title: "Iniciar sesion"
+        nav_aria: "Navegacion del formulario admin"
+        back_to_home: "Volver al inicio"
+      form:
+        email_label: "Email"
+        password_label: "Contrasena"
+        submit: "Ingresar a admin"
+    landing:
+      title: "Financial Core Simulator"
+      brand_alt: "Financial Core Simulator"
+      hero:
+        eyebrow: "Financial Core Simulator"
+        title: "Simulacion deterministica de ledger financiero"
+        subtitle: "Simula cuentas, posiciones, PnL y modelos de riesgo usando un motor financiero deterministico orientado a eventos. Creado para experimentos reproducibles de infraestructura financiera."
+        cta:
+          demo: "Ver demo"
+          github: "GitHub"
+          documentation: "Documentacion"
+      why:
+        title: "Por que existe"
+        body: "Los sistemas financieros son dificiles de reproducir. Financial Core Simulator ofrece un entorno deterministico para simular eventos financieros, contabilidad PnL y transiciones de estado del ledger."
+      architecture:
+        title: "Arquitectura"
+        body: "Eventos -> Ingestion -> Ledger Engine -> Valuation Engine -> Reporting -> Dashboard"
+      dashboard_preview:
+        title: "Vista previa del dashboard"
+        items:
+          overview: "Resumen"
+          runs: "Runs"
+          pnl: "PnL"
+          accounts: "Accounts"
+          errors: "Errores"
+      features:
+        title: "Features"
+        items:
+          deterministic_event_processing: "Procesamiento deterministico de eventos"
+          ledger_based_accounting: "Contabilidad basada en ledger"
+          fifo_position_engine: "Motor de posiciones FIFO"
+          pnl_valuation_engine: "Motor de valuacion de PnL"
+          multi_account_simulation: "Simulacion multi-cuenta"
+          audit_ready_artifacts: "Artifacts listos para auditoria"
+      cli_example:
+        title: "Ejemplo de CLI"
+      open_source:
+        title: "Codigo abierto"
+        body: "Creado para investigacion y experimentacion en sistemas de infraestructura financiera."
+        cta: "Ver codigo"
