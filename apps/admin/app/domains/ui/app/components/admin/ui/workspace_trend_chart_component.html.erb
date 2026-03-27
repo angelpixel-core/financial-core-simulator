@@ -2,8 +2,8 @@
   data-controller="run-trend-chart"
   data-run-trend-chart-points-value="<%= @points.to_json %>"
   data-run-trend-chart-chart-kind-value="bar"
-  data-run-trend-chart-tooltip-label-value="Day"
-  data-run-trend-chart-tooltip-count-label-value="Runs"
+  data-run-trend-chart-tooltip-label-value="<%= t("admin.common.day") %>"
+  data-run-trend-chart-tooltip-count-label-value="<%= t("admin.common.runs") %>"
   <% if title_value.present? %>
     data-run-trend-chart-title-value="<%= title_value %>"
   <% end %>
@@ -14,14 +14,14 @@
   <div
     class="<%= trend_class %>"
     data-run-trend-chart-target="chart"
-    aria-label="Run trend chart for the last 14 days"
+    aria-label="<%= t("admin.overview.activity.run_trend.aria") %>"
   ></div>
   <div class="trend-bars" data-run-trend-chart-target="fallback">
     <% @points.each do |point| %>
       <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
       <div class="trend-bars__item">
         <div class="trend-bars__bar-wrap">
-          <div class="trend-bars__bar" style="height: <%= height %>%" title="<%= point[:day] %>: <%= point[:count] %> runs" data-tooltip="<%= point[:day] %>: <%= point[:count] %> runs" aria-label="<%= point[:day] %>: <%= point[:count] %> runs" tabindex="0"></div>
+          <div class="trend-bars__bar" style="height: <%= height %>%" title="<%= t("admin.common.runs_tooltip", day: point[:day], count: point[:count]) %>" data-tooltip="<%= t("admin.common.runs_tooltip", day: point[:day], count: point[:count]) %>" aria-label="<%= t("admin.common.runs_tooltip", day: point[:day], count: point[:count]) %>" tabindex="0"></div>
         </div>
         <span><%= point[:day] %></span>
       </div>

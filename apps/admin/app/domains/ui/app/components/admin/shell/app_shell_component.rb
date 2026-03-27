@@ -47,7 +47,8 @@ module Admin
         @presence_email = presence_email.to_s.presence || "ops@example.com"
       end
 
-      def icon_svg_for(label)
+      def icon_svg_for(item_or_label)
+        label = item_or_label.is_a?(Hash) ? (item_or_label[:icon_key] || item_or_label[:label]) : item_or_label
         paths = ICON_PATHS.fetch(icon_key_for(label), ICON_PATHS.fetch("default"))
 
         helpers.tag.svg(

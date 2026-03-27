@@ -4,10 +4,10 @@
     <% if @updated_at.present? || @cta_path.present? %>
       <nav class="dashboard-card__meta-actions workspace-widget__actions" aria-label="<%= actions_label %>">
         <% if @updated_at.present? %>
-          <p class="dashboard-card__meta">Updated <%= @updated_at %></p>
+          <p class="dashboard-card__meta"><%= t("admin.common.updated", time: @updated_at) %></p>
         <% end %>
         <% if @cta_path.present? %>
-          <a class="overview__link" href="<%= @cta_path %>" data-turbo-frame="_top"><%= @cta_label || "View details" %></a>
+          <a class="overview__link" href="<%= @cta_path %>" data-turbo-frame="_top"><%= @cta_label || t("admin.common.view_details") %></a>
         <% end %>
       </nav>
     <% end %>

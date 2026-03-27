@@ -1,6 +1,8 @@
 class Admin::Ui::WorkspaceTableAdapterComponent < ViewComponent::Base
-  def initialize(columns:, rows:, table_class: nil, state: :default, loading_message: "Loading workspace table...",
-    empty_message: "No rows available.", error_message: "Workspace table unavailable.")
+  def initialize(columns:, rows:, table_class: nil, state: :default,
+    loading_message: I18n.t("admin.ui.workspace_table.loading_message"),
+    empty_message: I18n.t("admin.ui.workspace_table.empty_message"),
+    error_message: I18n.t("admin.ui.workspace_table.error_message"))
     @columns = columns
     @rows = rows
     @table_class = table_class

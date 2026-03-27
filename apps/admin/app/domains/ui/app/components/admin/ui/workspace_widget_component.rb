@@ -1,6 +1,8 @@
 class Admin::Ui::WorkspaceWidgetComponent < ViewComponent::Base
   def initialize(title:, cta_path: nil, cta_label: nil, updated_at: nil, actions_label: nil, state: :default, body_class: nil,
-    loading_message: "Loading workspace widget...", empty_message: "No data available.", error_message: "Workspace widget unavailable.")
+    loading_message: I18n.t("admin.ui.workspace_widget.loading_message"),
+    empty_message: I18n.t("admin.ui.workspace_widget.empty_message"),
+    error_message: I18n.t("admin.ui.workspace_widget.error_message"))
     @title = title
     @cta_path = cta_path
     @cta_label = cta_label
@@ -14,7 +16,7 @@ class Admin::Ui::WorkspaceWidgetComponent < ViewComponent::Base
   end
 
   def actions_label
-    @actions_label.presence || "#{@title} actions"
+    @actions_label.presence || I18n.t("admin.ui.workspace_widget.actions_label", title: @title)
   end
 
   def render_state?
