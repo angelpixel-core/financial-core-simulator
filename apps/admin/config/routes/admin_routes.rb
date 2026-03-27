@@ -3,16 +3,18 @@
 module AdminRoutes
   def self.extended(router)
     router.instance_exec do
-      get "/admin/overview", to: "admin/overview#show", as: :admin_overview
-      get "/admin/docs", to: "admin/docs#index", as: :admin_docs
-      get "/admin/docs/:section", to: "admin/docs#show", as: :admin_docs_section
+      namespace :admin do
+        get 'overview', to: 'overview#show', as: :overview
+        get 'docs', to: 'docs#index', as: :docs
+        get 'docs/:section', to: 'docs#show', as: :docs_section
 
-      get "/admin/overview/pnl-trend", to: "admin/overview#pnl_trend", as: :admin_overview_pnl_trend
-      get "/admin/overview/runs-trend", to: "admin/overview#runs_trend", as: :admin_overview_runs_trend
-      get "/admin/overview/status-mix", to: "admin/overview#status_mix", as: :admin_overview_status_mix
-      get "/admin/overview/top-accounts", to: "admin/overview#top_accounts", as: :admin_overview_top_accounts
-      get "/admin/overview/ingestion-validation-errors", to: "admin/overview#ingestion_validation_errors_panel",
-        as: :admin_overview_ingestion_validation_errors
+        get 'overview/pnl-trend', to: 'overview#pnl_trend', as: :overview_pnl_trend
+        get 'overview/runs-trend', to: 'overview#runs_trend', as: :overview_runs_trend
+        get 'overview/status-mix', to: 'overview#status_mix', as: :overview_status_mix
+        get 'overview/top-accounts', to: 'overview#top_accounts', as: :overview_top_accounts
+        get 'overview/ingestion-validation-errors', to: 'overview#ingestion_validation_errors_panel',
+                                                    as: :overview_ingestion_validation_errors
+      end
     end
   end
 end
