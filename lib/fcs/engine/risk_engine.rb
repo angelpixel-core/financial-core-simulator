@@ -46,7 +46,7 @@ module FCS
         if accounting_method == FCS::Engine::LedgerEngine::ACCOUNTING_METHOD_FIFO
           raise FCS::Error.new(
             FCS::Errors::ERR_RISK_REJECTION,
-            "Short selling is not supported with FIFO accounting",
+            t("fcs.engine.risk.short_selling_fifo"),
             details: {accountingMethod: accounting_method, reason: "FIFO_SHORT_FORBIDDEN"}
           )
         end
@@ -56,7 +56,7 @@ module FCS
         if collateral.nil? || max_leverage.nil? || collateral.zero?
           raise FCS::Error.new(
             FCS::Errors::ERR_RISK_CONFIG_INVALID,
-            "Short selling requires collateralQuote and riskModel.maxLeverage",
+            t("fcs.engine.risk.short_selling_requires_collateral"),
             details: {accountId: account_id}
           )
         end
@@ -68,7 +68,7 @@ module FCS
 
         raise FCS::Error.new(
           FCS::Errors::ERR_RISK_REJECTION,
-          "Leverage limit exceeded",
+          t("fcs.engine.risk.max_leverage_exceeded"),
           details: {
             accountId: account_id,
             marketId: market_id,
@@ -201,9 +201,13 @@ module FCS
 
         raise FCS::Error.new(
           FCS::Errors::ERR_RISK_CONFIG_INVALID,
-          "RiskEngine expects Decimal18-compatible values",
+          t("fcs.engine.risk.invalid_decimal18"),
           details: {valueClass: value.class.to_s}
         )
+      end
+
+      def t(key, **opts)
+        ::I18n.t(key, **opts)
       end
     end
   end
