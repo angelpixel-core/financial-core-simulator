@@ -23,13 +23,13 @@ module Admin
       def state_label
         case @state
         when :reliable
-          "Confiable"
+          I18n.t("admin.runs.reliability_banner.states.reliable")
         when :degraded
-          "Degradado"
+          I18n.t("admin.runs.reliability_banner.states.degraded")
         when :loading
-          "Cargando"
+          I18n.t("admin.runs.reliability_banner.states.loading")
         else
-          "Info"
+          I18n.t("admin.runs.reliability_banner.states.info")
         end
       end
 

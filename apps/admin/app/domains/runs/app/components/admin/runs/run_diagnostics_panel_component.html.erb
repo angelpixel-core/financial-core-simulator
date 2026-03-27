@@ -5,7 +5,7 @@
     diagnostic: reliability[:diagnostic]
   ) %>
   <%= render Admin::Runs::ValidationIssuesPanelComponent.new(
-    title: "Diagnostico de validacion",
+    title: t("admin.runs.validation_issues.title"),
     state: validation[:state],
     diagnostic: validation[:diagnostic],
     issues: validation[:issues]

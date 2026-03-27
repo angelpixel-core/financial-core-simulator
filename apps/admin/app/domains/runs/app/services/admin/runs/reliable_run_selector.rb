@@ -30,9 +30,9 @@ module Admin
           candidate_run: run,
           state: :reliable,
           diagnostic: {
-            what_happened: "Run verificado y confiable disponible.",
-            impact: "El flujo de inspeccion puede continuar sin restricciones.",
-            next_action: "Abrir el run y revisar PnL, validacion y artifacts."
+            what_happened: I18n.t("admin.runs.reliable_run_selector.reliable.what_happened"),
+            impact: I18n.t("admin.runs.reliable_run_selector.reliable.impact"),
+            next_action: I18n.t("admin.runs.reliable_run_selector.reliable.next_action")
           }
         )
       end
@@ -60,9 +60,9 @@ module Admin
 
       def no_run_diagnostic
         {
-          what_happened: "No hay runs disponibles todavia.",
-          impact: "No es posible identificar un run confiable en este momento.",
-          next_action: "Ejecuta un run de prueba y vuelve a cargar el overview."
+          what_happened: I18n.t("admin.runs.reliable_run_selector.no_run.what_happened"),
+          impact: I18n.t("admin.runs.reliable_run_selector.no_run.impact"),
+          next_action: I18n.t("admin.runs.reliable_run_selector.no_run.next_action")
         }
       end
 
@@ -71,18 +71,22 @@ module Admin
         verification_label = candidate.verification_status.to_s.tr("_", " ")
 
         {
-          what_happened: "El ultimo run exitoso no tiene verificacion confiable.",
-          impact: "La inspeccion se muestra en modo degradado porque la validacion aun no confirma confiabilidad.",
-          next_action: "Revisa el run ##{candidate.id} (estado #{status_label}, " \
-                       "verificacion #{verification_label}) y ejecuta verificacion de hash."
+          what_happened: I18n.t("admin.runs.reliable_run_selector.unverified.what_happened"),
+          impact: I18n.t("admin.runs.reliable_run_selector.unverified.impact"),
+          next_action: I18n.t(
+            "admin.runs.reliable_run_selector.unverified.next_action",
+            run_id: candidate.id,
+            status: status_label,
+            verification: verification_label
+          )
         }
       end
 
       def default_degraded_diagnostic
         {
-          what_happened: "No se encontro un run confiable vigente.",
-          impact: "La seleccion automatica esta degradada.",
-          next_action: "Verifica el ultimo run exitoso o abre la lista completa de runs."
+          what_happened: I18n.t("admin.runs.reliable_run_selector.degraded.what_happened"),
+          impact: I18n.t("admin.runs.reliable_run_selector.degraded.impact"),
+          next_action: I18n.t("admin.runs.reliable_run_selector.degraded.next_action")
         }
       end
     end

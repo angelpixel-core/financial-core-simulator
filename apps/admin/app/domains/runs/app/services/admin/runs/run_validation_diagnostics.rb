@@ -37,31 +37,31 @@ module Admin
         :success
       end
 
-      def diagnostic_for(run, state)
+      def diagnostic_for(_run, state)
         case state
         when :error
           {
-            what_happened: "La validacion de datos del run fallo.",
-            impact: "Los resultados no son confiables para decisiones financieras.",
-            next_action: "Revisa los issues, corrige el input y re-ejecuta el run."
+            what_happened: I18n.t("admin.runs.validation_diagnostics.error.what_happened"),
+            impact: I18n.t("admin.runs.validation_diagnostics.error.impact"),
+            next_action: I18n.t("admin.runs.validation_diagnostics.error.next_action")
           }
         when :warning
           {
-            what_happened: "La validacion no pudo completarse por una falla del run.",
-            impact: "No es posible confirmar la calidad de datos en este estado.",
-            next_action: "Revisa el error de ejecucion y vuelve a intentar el run."
+            what_happened: I18n.t("admin.runs.validation_diagnostics.warning.what_happened"),
+            impact: I18n.t("admin.runs.validation_diagnostics.warning.impact"),
+            next_action: I18n.t("admin.runs.validation_diagnostics.warning.next_action")
           }
         when :loading
           {
-            what_happened: "El run sigue en ejecucion.",
-            impact: "La validacion aun no esta disponible.",
-            next_action: "Espera la finalizacion y vuelve a cargar el detalle."
+            what_happened: I18n.t("admin.runs.validation_diagnostics.loading.what_happened"),
+            impact: I18n.t("admin.runs.validation_diagnostics.loading.impact"),
+            next_action: I18n.t("admin.runs.validation_diagnostics.loading.next_action")
           }
         else
           {
-            what_happened: "La validacion no reporta issues.",
-            impact: "Los datos son consistentes para inspeccion operativa.",
-            next_action: "Continuar con PnL y revisar artifacts si hace falta."
+            what_happened: I18n.t("admin.runs.validation_diagnostics.success.what_happened"),
+            impact: I18n.t("admin.runs.validation_diagnostics.success.impact"),
+            next_action: I18n.t("admin.runs.validation_diagnostics.success.next_action")
           }
         end
       end

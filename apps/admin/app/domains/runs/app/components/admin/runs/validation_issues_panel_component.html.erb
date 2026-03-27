@@ -1,39 +1,39 @@
 <section class="validation-issues-panel <%= state_class %>" role="status" aria-live="polite" aria-labelledby="validation-issues-title">
   <header class="validation-issues-panel__header">
     <div>
-      <p class="validation-issues-panel__eyebrow">Validacion</p>
+      <p class="validation-issues-panel__eyebrow"><%= t("admin.runs.validation_issues.eyebrow") %></p>
       <h3 class="validation-issues-panel__title" id="validation-issues-title"><%= @title %></h3>
     </div>
-    <span class="validation-issues-panel__status" aria-label="Estado de validacion: <%= state_label %>">
+    <span class="validation-issues-panel__status" aria-label="<%= t("admin.runs.validation_issues.aria", state: state_label) %>">
       <span class="validation-issues-panel__status-icon" aria-hidden="true"><%= state_icon %></span>
       <span class="validation-issues-panel__status-text"><%= state_label %></span>
     </span>
   </header>
   <div class="validation-issues-panel__diagnostic">
     <div>
-      <p class="validation-issues-panel__label">Que paso</p>
+      <p class="validation-issues-panel__label"><%= t("admin.common.what_happened") %></p>
       <p class="validation-issues-panel__value"><%= @diagnostic[:what_happened] %></p>
     </div>
     <div>
-      <p class="validation-issues-panel__label">Impacto</p>
+      <p class="validation-issues-panel__label"><%= t("admin.common.impact") %></p>
       <p class="validation-issues-panel__value"><%= @diagnostic[:impact] %></p>
     </div>
     <div>
-      <p class="validation-issues-panel__label">Siguiente accion</p>
+      <p class="validation-issues-panel__label"><%= t("admin.common.next_action") %></p>
       <p class="validation-issues-panel__value"><%= @diagnostic[:next_action] %></p>
     </div>
   </div>
   <% if issues? %>
-    <div class="validation-issues-panel__table-container shad-table-wrap" tabindex="0" aria-label="Tabla de issues de validacion con scroll horizontal">
-      <table class="validation-issues-panel__table shad-table" aria-label="Issues de validacion">
+    <div class="validation-issues-panel__table-container shad-table-wrap" tabindex="0" aria-label="<%= t("admin.runs.validation_issues.table_container_aria") %>">
+      <table class="validation-issues-panel__table shad-table" aria-label="<%= t("admin.runs.validation_issues.table_aria") %>">
         <thead class="shad-table__head">
           <tr class="shad-table__row shad-table__row--head">
-            <th class="shad-table__th">Severidad</th>
-            <th class="shad-table__th">Fuente</th>
-            <th class="shad-table__th">Campo</th>
-            <th class="shad-table__th">Mensaje</th>
-            <th class="shad-table__th">Timestamp</th>
-            <th class="shad-table__th">Correlation</th>
+            <th class="shad-table__th"><%= t("admin.runs.validation_issues.columns.severity") %></th>
+            <th class="shad-table__th"><%= t("admin.runs.validation_issues.columns.source") %></th>
+            <th class="shad-table__th"><%= t("admin.runs.validation_issues.columns.field") %></th>
+            <th class="shad-table__th"><%= t("admin.runs.validation_issues.columns.message") %></th>
+            <th class="shad-table__th"><%= t("admin.runs.validation_issues.columns.timestamp") %></th>
+            <th class="shad-table__th"><%= t("admin.runs.validation_issues.columns.correlation") %></th>
           </tr>
         </thead>
         <tbody class="shad-table__body">
@@ -42,7 +42,7 @@
               <td class="shad-table__td">
                 <span
                   class="validation-issues-panel__severity <%= issue_severity_class(issue) %>"
-                  aria-label="Severidad: <%= issue_severity_label(issue) %>"
+                  aria-label="<%= t("admin.runs.validation_issues.severity_aria", severity: issue_severity_label(issue)) %>"
                 >
                   <span class="validation-issues-panel__severity-icon" aria-hidden="true"><%= issue_severity_label(issue)[0] %></span>
                   <span class="validation-issues-panel__severity-text"><%= issue_severity_label(issue) %></span>
@@ -59,6 +59,6 @@
       </table>
     </div>
   <% else %>
-    <p class="validation-issues-panel__empty">Sin issues de validacion reportados.</p>
+    <p class="validation-issues-panel__empty"><%= t("admin.runs.validation_issues.empty") %></p>
   <% end %>
 </section>

@@ -22,9 +22,9 @@ module Admin
       end
 
       def duration_label
-        return "N/A" if @run.duration_ms.nil?
+        return I18n.t("admin.common.na") if @run.duration_ms.nil?
 
-        "#{@run.duration_ms} ms"
+        "#{@run.duration_ms} #{I18n.t("admin.common.ms")}"
       end
 
       def card_classes

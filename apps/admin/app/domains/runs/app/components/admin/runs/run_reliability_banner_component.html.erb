@@ -1,22 +1,22 @@
 <section class="run-reliability-banner <%= state_class %>" role="status" aria-live="polite" aria-labelledby="run-reliability-title">
   <header class="run-reliability-banner__header">
     <h3 class="run-reliability-banner__eyebrow" id="run-reliability-title"><%= @title %></h3>
-    <span class="run-reliability-banner__status" aria-label="Estado de confiabilidad: <%= state_label %>">
+    <span class="run-reliability-banner__status" aria-label="<%= t("admin.runs.reliability_banner.aria", state: state_label) %>">
       <span class="run-reliability-banner__status-icon" aria-hidden="true"><%= state_icon %></span>
       <span class="run-reliability-banner__status-text"><%= state_label %></span>
     </span>
   </header>
   <div class="run-reliability-banner__body">
     <div>
-      <p class="run-reliability-banner__label">Que paso</p>
+      <p class="run-reliability-banner__label"><%= t("admin.common.what_happened") %></p>
       <p class="run-reliability-banner__value"><%= @diagnostic[:what_happened] %></p>
     </div>
     <div>
-      <p class="run-reliability-banner__label">Impacto</p>
+      <p class="run-reliability-banner__label"><%= t("admin.common.impact") %></p>
       <p class="run-reliability-banner__value"><%= @diagnostic[:impact] %></p>
     </div>
     <div>
-      <p class="run-reliability-banner__label">Siguiente accion</p>
+      <p class="run-reliability-banner__label"><%= t("admin.common.next_action") %></p>
       <p class="run-reliability-banner__value"><%= @diagnostic[:next_action] %></p>
     </div>
   </div>

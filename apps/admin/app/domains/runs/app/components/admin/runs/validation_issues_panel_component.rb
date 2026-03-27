@@ -26,15 +26,15 @@ module Admin
       def state_label
         case @state
         when :success
-          "OK"
+          I18n.t("admin.runs.validation_issues.states.success")
         when :warning
-          "Warning"
+          I18n.t("admin.runs.validation_issues.states.warning")
         when :error
-          "Error"
+          I18n.t("admin.runs.validation_issues.states.error")
         when :loading
-          "Loading"
+          I18n.t("admin.runs.validation_issues.states.loading")
         else
-          "Info"
+          I18n.t("admin.runs.validation_issues.states.info")
         end
       end
 
@@ -60,11 +60,11 @@ module Admin
       def issue_severity_label(issue)
         case issue[:severity].to_s
         when "warning"
-          "Warning"
+          I18n.t("admin.runs.validation_issues.severity.warning")
         when "info"
-          "Info"
+          I18n.t("admin.runs.validation_issues.severity.info")
         else
-          "Error"
+          I18n.t("admin.runs.validation_issues.severity.error")
         end
       end
 
