@@ -1,0 +1,92 @@
+es:
+  fcs:
+    cli:
+      warnings:
+        unsafe_output_dir:
+          what_happened: "El directorio de salida se resuelve a una ruta insegura"
+          impact: "Los artefactos pueden ensuciar la raiz del repo o quedar fuera de output/."
+          next_action: "Use --output-dir output/fcs u otra ruta dentro de output/."
+      banners:
+        run_usage: "Uso: fcs run --input path/to/input.json"
+        run_usage_suffix: "[--output-dir output/fcs] [--no-fee] [--explain] [--verbose|--quiet]"
+        bench_usage: "Uso: fcs bench [--fixture PATH] [--runs N] [--output-dir DIR]"
+        generate_input_usage: "Uso: fcs generate-input [--output PATH] [--tamper-output PATH] [--accounts N] [--markets N] [--trades N]"
+        usage_header: "Uso:"
+        usage_run: "fcs run   --input path/to/input.json [--output-dir output/fcs] [--no-fee] [--explain] [--verbose|--quiet]"
+        usage_bench: "fcs bench [--fixture PATH] [--runs N] [--output-dir DIR]"
+        examples_header: "Ejemplos:"
+        example_run: "fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/fcs"
+        example_run_verbose: "fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/fcs --explain --verbose"
+        example_bench: "fcs bench"
+        example_bench_runs: "fcs bench --runs 7 --output-dir output/fcs/benchmarks"
+      options:
+        input: "Ruta al JSON de entrada (obligatoria)"
+        output_dir_run: "Directorio de salida (por defecto: output/fcs)"
+        no_fee: "Desactivar el modelo de comisiones (ignorar campos de fee)"
+        explain: "Incluir campos de explicacion en result.json"
+        verbose: "Habilitar salida detallada y resumen en CLI"
+        quiet: "Silenciar salida no critica (por defecto)"
+        version: "Imprimir version"
+        help: "Imprimir ayuda"
+        fixture: "Ruta al fixture del benchmark"
+        runs: "Numero de ejecuciones para p95 (por defecto: %{runs})"
+        output_dir_bench: "Directorio de salida del benchmark (por defecto: output/fcs/benchmarks)"
+        output_demo: "Ruta al JSON de salida (por defecto: output/fcs/demo_input.json)"
+        tamper_output: "Escribir una copia alterada para forzar una verificacion fallida"
+        accounts: "Numero de cuentas (por defecto: %{count})"
+        markets: "Numero de mercados (por defecto: %{count})"
+        trades: "Numero de trades (por defecto: %{count})"
+      diagnostics:
+        run:
+          invalid_cli_option:
+            what_happened: "Opcion de CLI invalida"
+            impact: "Los argumentos del comando run son invalidos; la ejecucion no comenzo."
+            next_action: "Corrija las banderas y vuelva a ejecutar `bin/fcs run --help` para ver opciones validas."
+          input_required:
+            what_happened: "--input es obligatorio"
+            impact: "La ejecucion no comenzo porque falta la ruta de entrada obligatoria."
+            next_action: "Proporcione `--input <ruta>` y vuelva a intentar."
+          missing_artifacts:
+            what_happened: "Faltan artefactos requeridos despues de la ejecucion"
+            impact: "La ejecucion termino pero faltan artefactos requeridos para comprobaciones de reproducibilidad."
+            next_action: "Revise el directorio de salida y vuelva a ejecutar el comando para regenerar artefactos."
+          failure:
+            impact: "La ejecucion se detuvo antes de producir los artefactos canonicos."
+            next_action: "Corrija el problema de entrada/configuracion y vuelva a ejecutar `bin/fcs run --input <file> --output-dir <dir>`."
+          unexpected_error:
+            what_happened: "Error inesperado en tiempo de ejecucion: %{error_class}"
+            impact: "La ejecucion fallo inesperadamente y los artefactos pueden faltar o estar incompletos."
+            next_action: "Reintente con `--verbose`; si persiste, abra un issue con este payload de error."
+        bench:
+          invalid_cli_option:
+            what_happened: "Opcion de CLI invalida"
+            impact: "Los argumentos del comando bench son invalidos; la ejecucion no comenzo."
+            next_action: "Corrija las banderas y vuelva a ejecutar `bin/fcs bench --help` para ver opciones validas."
+          failure:
+            impact: "El benchmark no termino con artefactos de evidencia validos."
+            next_action: "Revise el fixture y las rutas de salida, luego reintente."
+          unexpected_error:
+            what_happened: "Error inesperado en tiempo de ejecucion: %{error_class}"
+            impact: "El benchmark fallo inesperadamente y las salidas pueden estar incompletas."
+            next_action: "Reintente con el mismo comando; si persiste, abra un issue con este payload de error."
+        generate_input:
+          invalid_cli_option:
+            what_happened: "Opcion de CLI invalida"
+            impact: "Los argumentos de generate-input son invalidos; la ejecucion no comenzo."
+            next_action: "Corrija las banderas y vuelva a ejecutar `bin/fcs generate-input --help`."
+      run_info:
+        version: "FCS %{version}"
+        input: "Entrada: %{path}"
+        output: "Salida: %{path}"
+        fee_enabled: "Comisiones habilitadas: %{value}"
+        explain: "Explicacion: %{value}"
+        verbose: "Detalle: %{value}"
+      success:
+        ok_wrote: "OK: escribio %{path}"
+        ok_wrote_tampered: "OK: escribio %{path} (alterado)"
+      bench:
+        header: "Benchmark:"
+        runs_line: "  ejecuciones=%{runs} p95=%{p95}s"
+        input_hash_line: "  input_hash=%{input_hash} run_id=%{run_id}"
+        report_line: "  reporte=%{path}"
+        artifacts_line: "  artefactos=%{path}"

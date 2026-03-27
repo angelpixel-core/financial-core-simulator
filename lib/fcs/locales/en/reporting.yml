@@ -1,0 +1,49 @@
+en:
+  fcs:
+    reporting:
+      cli_summary:
+        title: "=== fcs_summary ==="
+        labels:
+          status: "status"
+          run_id: "run_id"
+          input_hash: "input_hash"
+          schema_version: "schema_version"
+          engine_version: "engine_version"
+          valuation_timestamp: "valuation_timestamp"
+        sections:
+          metrics: "metrics"
+          artifacts: "artifacts"
+        metric_labels:
+          realized_pnl_quote: "realized_pnl_quote"
+          fees_quote: "fees_quote"
+          realized_net_pnl_quote: "realized_net_pnl_quote"
+          unrealized_pnl_quote: "unrealized_pnl_quote"
+          total_pnl_quote: "total_pnl_quote"
+          total_pnl_usd: "total_pnl_usd"
+        errors:
+          missing_artifacts: "Missing required artifacts for CLI summary"
+      result_metadata:
+        missing_required_field: "result metadata missing required field"
+        invalid_format: "result metadata has invalid format"
+        impact: "Canonical result metadata cannot be trusted for this run."
+        next_action: "Ensure metadata fields are present and formatted as required (ISO-8601 UTC timestamps, deterministic identifiers)."
+      account_market:
+        missing_required_metrics: "account-market row is missing required metrics"
+        empty_required_metrics: "account-market row has empty required metrics"
+        invalid_metric_format: "account-market row has invalid metric format"
+        impact: "Canonical account-market artifacts cannot be trusted for this run."
+        next_action: "Ensure quantity, avgCost, realizedPnL, and unrealizedPnL are present and valid decimal strings for every account-market row."
+      csv:
+        header_mismatch: "CSV header mismatch for %{label}"
+        duplicate_rows: "CSV contains duplicate rows for account and market"
+        unexpected_rows: "CSV contains unexpected rows for %{label}"
+        row_missing: "CSV row missing for %{label}"
+        row_mismatch: "CSV row mismatch for %{label}"
+        totals_missing_value: "CSV totals row is missing required numeric value"
+        totals_mismatch: "CSV totals do not reconcile with result.json"
+        usd_totals_missing: "CSV USD totals missing while result.json has USD totals"
+        usd_totals_partial: "CSV USD totals are partially missing across rows"
+        usd_totals_unexpected: "CSV USD totals present while result.json has no USD totals"
+        usd_totals_mismatch: "CSV USD totals do not reconcile with result.json"
+        impact: "CSV artifacts are not aligned with canonical result.json for this run."
+        next_action: "Regenerate artifacts from the canonical payload and inspect the reconciliation diagnostics."

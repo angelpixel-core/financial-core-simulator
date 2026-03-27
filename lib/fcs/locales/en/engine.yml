@@ -1,0 +1,8 @@
+en:
+  fcs:
+    engine:
+      risk:
+        short_selling_fifo: "Short selling is not supported with FIFO accounting"
+        short_selling_requires_collateral: "Short selling requires collateralQuote and riskModel.maxLeverage"
+        max_leverage_exceeded: "Leverage limit exceeded"
+        invalid_decimal18: "RiskEngine expects Decimal18-compatible values"

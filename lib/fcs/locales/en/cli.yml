@@ -1,0 +1,92 @@
+en:
+  fcs:
+    cli:
+      warnings:
+        unsafe_output_dir:
+          what_happened: "Output directory resolves to an unsafe path"
+          impact: "Artifacts may clutter the repo root or land outside output/."
+          next_action: "Use --output-dir output/fcs or another path under output/."
+      banners:
+        run_usage: "Usage: fcs run --input path/to/input.json"
+        run_usage_suffix: "[--output-dir output/fcs] [--no-fee] [--explain] [--verbose|--quiet]"
+        bench_usage: "Usage: fcs bench [--fixture PATH] [--runs N] [--output-dir DIR]"
+        generate_input_usage: "Usage: fcs generate-input [--output PATH] [--tamper-output PATH] [--accounts N] [--markets N] [--trades N]"
+        usage_header: "Usage:"
+        usage_run: "fcs run   --input path/to/input.json [--output-dir output/fcs] [--no-fee] [--explain] [--verbose|--quiet]"
+        usage_bench: "fcs bench [--fixture PATH] [--runs N] [--output-dir DIR]"
+        examples_header: "Examples:"
+        example_run: "fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/fcs"
+        example_run_verbose: "fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/fcs --explain --verbose"
+        example_bench: "fcs bench"
+        example_bench_runs: "fcs bench --runs 7 --output-dir output/fcs/benchmarks"
+      options:
+        input: "Path to input JSON (required)"
+        output_dir_run: "Output directory (default: output/fcs)"
+        no_fee: "Disable fee model (ignore fee fields)"
+        explain: "Include explainability fields in result.json"
+        verbose: "Enable detailed CLI output and summary"
+        quiet: "Silence non-error output (default)"
+        version: "Print version"
+        help: "Print help"
+        fixture: "Path to benchmark fixture definition"
+        runs: "Number of runs for p95 (default: %{runs})"
+        output_dir_bench: "Benchmark output directory (default: output/fcs/benchmarks)"
+        output_demo: "Path to output JSON (default: output/fcs/demo_input.json)"
+        tamper_output: "Write a tampered copy to force verification mismatch"
+        accounts: "Number of accounts (default: %{count})"
+        markets: "Number of markets (default: %{count})"
+        trades: "Number of trades (default: %{count})"
+      diagnostics:
+        run:
+          invalid_cli_option:
+            what_happened: "Invalid CLI option"
+            impact: "The run command arguments are invalid; execution did not start."
+            next_action: "Fix the CLI flags and re-run `bin/fcs run --help` for valid options."
+          input_required:
+            what_happened: "--input is required"
+            impact: "The run did not start because required input path is missing."
+            next_action: "Provide `--input <path>` and retry."
+          missing_artifacts:
+            what_happened: "Missing required artifacts after run"
+            impact: "The run completed but required artifacts are missing for reproducibility checks."
+            next_action: "Inspect the output directory and re-run the command to regenerate artifacts."
+          failure:
+            impact: "The run stopped before canonical artifacts were fully produced."
+            next_action: "Fix the input/config issue and re-run `bin/fcs run --input <file> --output-dir <dir>`."
+          unexpected_error:
+            what_happened: "Unexpected runtime error: %{error_class}"
+            impact: "The run failed unexpectedly and artifacts may be missing or incomplete."
+            next_action: "Retry with `--verbose`; if it persists, open an issue with this error payload."
+        bench:
+          invalid_cli_option:
+            what_happened: "Invalid CLI option"
+            impact: "The bench command arguments are invalid; execution did not start."
+            next_action: "Fix the CLI flags and re-run `bin/fcs bench --help` for valid options."
+          failure:
+            impact: "The benchmark did not complete with valid evidence artifacts."
+            next_action: "Review the fixture definition and output paths, then retry."
+          unexpected_error:
+            what_happened: "Unexpected runtime error: %{error_class}"
+            impact: "The benchmark failed unexpectedly and outputs may be incomplete."
+            next_action: "Retry with the same command; if it persists, open an issue with this error payload."
+        generate_input:
+          invalid_cli_option:
+            what_happened: "Invalid CLI option"
+            impact: "The generate-input arguments are invalid; execution did not start."
+            next_action: "Fix the CLI flags and re-run `bin/fcs generate-input --help`."
+      run_info:
+        version: "FCS %{version}"
+        input: "Input: %{path}"
+        output: "Output: %{path}"
+        fee_enabled: "Fee enabled: %{value}"
+        explain: "Explain: %{value}"
+        verbose: "Verbose: %{value}"
+      success:
+        ok_wrote: "OK: wrote %{path}"
+        ok_wrote_tampered: "OK: wrote %{path} (tampered)"
+      bench:
+        header: "Bench:"
+        runs_line: "  runs=%{runs} p95=%{p95}s"
+        input_hash_line: "  input_hash=%{input_hash} run_id=%{run_id}"
+        report_line: "  report=%{path}"
+        artifacts_line: "  artifacts=%{path}"

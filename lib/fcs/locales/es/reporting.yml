@@ -1,0 +1,49 @@
+es:
+  fcs:
+    reporting:
+      cli_summary:
+        title: "=== fcs_summary ==="
+        labels:
+          status: "estado"
+          run_id: "run_id"
+          input_hash: "input_hash"
+          schema_version: "schema_version"
+          engine_version: "engine_version"
+          valuation_timestamp: "valuation_timestamp"
+        sections:
+          metrics: "metricas"
+          artifacts: "artefactos"
+        metric_labels:
+          realized_pnl_quote: "realized_pnl_quote"
+          fees_quote: "fees_quote"
+          realized_net_pnl_quote: "realized_net_pnl_quote"
+          unrealized_pnl_quote: "unrealized_pnl_quote"
+          total_pnl_quote: "total_pnl_quote"
+          total_pnl_usd: "total_pnl_usd"
+        errors:
+          missing_artifacts: "Faltan artefactos requeridos para el resumen de CLI"
+      result_metadata:
+        missing_required_field: "faltan campos requeridos en los metadatos del resultado"
+        invalid_format: "los metadatos del resultado tienen un formato invalido"
+        impact: "Los metadatos canonicos del resultado no son confiables para esta ejecucion."
+        next_action: "Asegure que los metadatos esten presentes y formateados segun lo requerido (timestamps ISO-8601 UTC, identificadores deterministas)."
+      account_market:
+        missing_required_metrics: "la fila cuenta-mercado no tiene metricas requeridas"
+        empty_required_metrics: "la fila cuenta-mercado tiene metricas requeridas vacias"
+        invalid_metric_format: "la fila cuenta-mercado tiene un formato de metrica invalido"
+        impact: "Los artefactos canonicos cuenta-mercado no son confiables para esta ejecucion."
+        next_action: "Asegure que quantity, avgCost, realizedPnL y unrealizedPnL esten presentes y sean cadenas decimales validas para cada fila cuenta-mercado."
+      csv:
+        header_mismatch: "Encabezado CSV no coincide para %{label}"
+        duplicate_rows: "El CSV contiene filas duplicadas para cuenta y mercado"
+        unexpected_rows: "El CSV contiene filas inesperadas para %{label}"
+        row_missing: "Falta una fila CSV para %{label}"
+        row_mismatch: "La fila CSV no coincide para %{label}"
+        totals_missing_value: "La fila de totales CSV no tiene un valor numerico requerido"
+        totals_mismatch: "Los totales CSV no concuerdan con result.json"
+        usd_totals_missing: "Faltan totales USD en CSV mientras result.json los tiene"
+        usd_totals_partial: "Los totales USD en CSV faltan parcialmente entre filas"
+        usd_totals_unexpected: "Hay totales USD en CSV mientras result.json no los tiene"
+        usd_totals_mismatch: "Los totales USD en CSV no concuerdan con result.json"
+        impact: "Los artefactos CSV no estan alineados con result.json canonico para esta ejecucion."
+        next_action: "Regenerar artefactos desde el payload canonico y revisar los diagnosticos de reconciliacion."

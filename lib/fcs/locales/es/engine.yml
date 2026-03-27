@@ -1,0 +1,8 @@
+es:
+  fcs:
+    engine:
+      risk:
+        short_selling_fifo: "No se permite vender en corto con contabilidad FIFO"
+        short_selling_requires_collateral: "La venta en corto requiere collateralQuote y riskModel.maxLeverage"
+        max_leverage_exceeded: "Limite de apalancamiento excedido"
+        invalid_decimal18: "RiskEngine espera valores compatibles con Decimal18"
