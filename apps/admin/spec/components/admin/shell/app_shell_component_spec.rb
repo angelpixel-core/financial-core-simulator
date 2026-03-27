@@ -4,6 +4,10 @@ require "view_component/test_helpers"
 RSpec.describe Admin::Shell::AppShellComponent, type: :component do
   include ViewComponent::TestHelpers
 
+  around do |example|
+    I18n.with_locale(:es) { example.run }
+  end
+
   it "renders sidebar links and topbar actions" do
     sidebar_items = [
       {label: "Overview", path: "/admin/overview", active: true},
@@ -26,14 +30,14 @@ RSpec.describe Admin::Shell::AppShellComponent, type: :component do
     expect(rendered_content).to include("Runs")
     expect(rendered_content).to include("Open Latest Reliable Run")
     expect(rendered_content).to include("Main content")
-    expect(rendered_content).to include("aria-label=\"Workspace navigation\"")
-    expect(rendered_content).to include("aria-label=\"Workspace topbar\"")
-    expect(rendered_content).to include("Saltar al contenido principal")
-    expect(rendered_content).to include("href=\"#workspace-main\"")
+    expect(rendered_content).to include("aria-label=\"#{I18n.t("admin.shell.sidebar_aria")}\"")
+    expect(rendered_content).to include("aria-label=\"#{I18n.t("admin.shell.topbar_aria")}\"")
+    expect(rendered_content).to include(I18n.t("admin.shell.skip_to_content"))
+    expect(rendered_content).to include('href="#workspace-main"')
     expect(rendered_content).to include("aria-current=&quot;page&quot;")
-    expect(rendered_content).to include("id=\"workspace-main\"")
+    expect(rendered_content).to include('id="workspace-main"')
     expect(rendered_content).to include("FCS Workspace")
-    expect(rendered_content).to include("aria-label=\"Workspace navigation mobile\"")
+    expect(rendered_content).to include("aria-label=\"#{I18n.t("admin.shell.mobile_nav_aria")}\"")
     expect(rendered_content).to include("app-shell__collapse-toggle")
     expect(rendered_content).to include("app-shell__nav-icon")
   end
