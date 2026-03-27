@@ -28,6 +28,10 @@ module Admin
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    config.i18n.default_locale = :en
+    config.i18n.available_locales = %i[en es]
+    config.i18n.fallbacks = true
+
     domain_roots = Dir[Rails.root.join("app/domains/*/app")]
     domain_subdirs = %w[models services serializers components jobs mailers helpers]
     domain_roots.each do |root|
