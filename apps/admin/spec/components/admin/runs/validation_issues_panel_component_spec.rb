@@ -4,6 +4,10 @@ require "view_component/test_helpers"
 RSpec.describe Admin::Runs::ValidationIssuesPanelComponent, type: :component do
   include ViewComponent::TestHelpers
 
+  around do |example|
+    I18n.with_locale(:es) { example.run }
+  end
+
   it "renders success state with empty message" do
     diagnostic = {
       what_happened: "Sin issues",
@@ -19,8 +23,9 @@ RSpec.describe Admin::Runs::ValidationIssuesPanelComponent, type: :component do
     ))
 
     expect(rendered_content).to include("validation-issues-panel--success")
-    expect(rendered_content).to include("Sin issues de validacion reportados")
-    expect(rendered_content).to include("Estado de validacion")
+    expect(rendered_content).to include(I18n.t("admin.runs.validation_issues.empty"))
+    expect(rendered_content).to include(I18n.t("admin.runs.validation_issues.aria",
+      state: I18n.t("admin.runs.validation_issues.states.success")))
   end
 
   it "renders warning state with diagnostic triad" do
@@ -38,11 +43,12 @@ RSpec.describe Admin::Runs::ValidationIssuesPanelComponent, type: :component do
     ))
 
     expect(rendered_content).to include("validation-issues-panel--warning")
-    expect(rendered_content).to include("Que paso")
-    expect(rendered_content).to include("Impacto")
-    expect(rendered_content).to include("Siguiente accion")
-    expect(rendered_content).to include("Estado de validacion: Warning")
-    expect(rendered_content).to include(">Warning<")
+    expect(rendered_content).to include(I18n.t("admin.common.what_happened"))
+    expect(rendered_content).to include(I18n.t("admin.common.impact"))
+    expect(rendered_content).to include(I18n.t("admin.common.next_action"))
+    expect(rendered_content).to include(I18n.t("admin.runs.validation_issues.aria",
+      state: I18n.t("admin.runs.validation_issues.states.warning")))
+    expect(rendered_content).to include(">#{I18n.t("admin.runs.validation_issues.states.warning")}<")
   end
 
   it "renders error state issues with severity labels" do
@@ -70,10 +76,15 @@ RSpec.describe Admin::Runs::ValidationIssuesPanelComponent, type: :component do
     ))
 
     expect(rendered_content).to include("validation-issues-panel--error")
-    expect(rendered_content).to include("Issues de validacion")
-    expect(rendered_content).to include("Severidad")
-    expect(rendered_content).to include("Severidad: Error")
+    expect(rendered_content).to include(I18n.t("admin.runs.validation_issues.table_aria"))
+    expect(rendered_content).to include(I18n.t("admin.runs.validation_issues.columns.severity"))
+    expect(rendered_content).to include(
+      I18n.t(
+        "admin.runs.validation_issues.severity_aria",
+        severity: I18n.t("admin.runs.validation_issues.severity.error")
+      )
+    )
     expect(rendered_content).to include("validation-issues-panel__table-container")
-    expect(rendered_content).to include("tabindex=\"0\"")
+    expect(rendered_content).to include('tabindex="0"')
   end
 end

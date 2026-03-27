@@ -4,6 +4,10 @@ require "view_component/test_helpers"
 RSpec.describe Admin::Runs::RunReliabilityBannerComponent, type: :component do
   include ViewComponent::TestHelpers
 
+  around do |example|
+    I18n.with_locale(:es) { example.run }
+  end
+
   it "renders diagnostic guidance for degraded state" do
     diagnostic = {
       what_happened: "No hay un run confiable verificado",
@@ -18,12 +22,12 @@ RSpec.describe Admin::Runs::RunReliabilityBannerComponent, type: :component do
     ))
 
     expect(rendered_content).to include("No hay un run confiable verificado")
-    expect(rendered_content).to include("Impacto")
-    expect(rendered_content).to include("Siguiente accion")
-    expect(rendered_content).to include("role=\"status\"")
-    expect(rendered_content).to include("aria-live=\"polite\"")
-    expect(rendered_content).to include("Estado de confiabilidad")
-    expect(rendered_content).to include("Degradado")
+    expect(rendered_content).to include(I18n.t("admin.common.impact"))
+    expect(rendered_content).to include(I18n.t("admin.common.next_action"))
+    expect(rendered_content).to include('role="status"')
+    expect(rendered_content).to include('aria-live="polite"')
+    expect(rendered_content).to include("Reliability status")
+    expect(rendered_content).to include(I18n.t("admin.runs.reliability_banner.states.degraded"))
   end
 
   it "renders a reliable state banner" do

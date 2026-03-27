@@ -4,6 +4,10 @@ require "view_component/test_helpers"
 RSpec.describe Admin::Runs::RunDiagnosticsPanelComponent, type: :component do
   include ViewComponent::TestHelpers
 
+  around do |example|
+    I18n.with_locale(:es) { example.run }
+  end
+
   it "renders reliability and validation diagnostics together" do
     run = Run.create!(
       status: :succeeded,
@@ -16,6 +20,6 @@ RSpec.describe Admin::Runs::RunDiagnosticsPanelComponent, type: :component do
     expect(rendered_content).to include("run-reliability-banner")
     expect(rendered_content).to include("validation-issues-panel")
     expect(rendered_content).to include("Estado de confiabilidad")
-    expect(rendered_content).to include("Diagnostico de validacion")
+    expect(rendered_content).to include(I18n.t("admin.runs.validation_issues.title"))
   end
 end

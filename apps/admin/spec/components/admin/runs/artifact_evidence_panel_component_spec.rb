@@ -6,6 +6,10 @@ require "tmpdir"
 RSpec.describe Admin::Runs::ArtifactEvidencePanelComponent, type: :component do
   include ViewComponent::TestHelpers
 
+  around do |example|
+    I18n.with_locale(:es) { example.run }
+  end
+
   it "renders descriptive artifact entries with provenance metadata" do
     base_dir = Rails.root.join("storage", "runs", "spec_component_artifacts")
     FileUtils.mkdir_p(base_dir)
@@ -28,18 +32,20 @@ RSpec.describe Admin::Runs::ArtifactEvidencePanelComponent, type: :component do
 
     render_inline(described_class.new(run: run))
 
-    expect(rendered_content).to include("Evidencia y artifacts")
-    expect(rendered_content).to include("Resultado canonico (JSON)")
-    expect(rendered_content).to include("Preview de posiciones")
-    expect(rendered_content).to include("<dt>run_id:</dt>")
+    expect(rendered_content).to include(I18n.t("admin.runs.artifacts.title"))
+    expect(rendered_content).to include(I18n.t("admin.runs.artifacts.entries.result_json.label"))
+    expect(rendered_content).to include(I18n.t("admin.runs.artifacts.entries.positions_preview.label"))
+    expect(rendered_content).to include("<dt>#{I18n.t("admin.runs.artifacts.provenance.run_id")}:</dt>")
     expect(rendered_content).to include("<dd>#{run.id}</dd>")
-    expect(rendered_content).to include("<dt>input_hash:</dt>")
+    expect(rendered_content).to include("<dt>#{I18n.t("admin.runs.artifacts.provenance.input_hash")}:</dt>")
     expect(rendered_content).to include("<dd>hash-123</dd>")
-    expect(rendered_content).to include("<dt>timestamp_utc:</dt>")
+    expect(rendered_content).to include("<dt>#{I18n.t("admin.runs.artifacts.provenance.timestamp_utc")}:</dt>")
     expect(rendered_content).to include("<dd>2026-03-14T04:30:00Z</dd>")
-    expect(rendered_content).to include("<dt>version:</dt>")
-    expect(rendered_content).to include("Estado: Completo")
-    expect(rendered_content).to include("role=\"status\"")
+    expect(rendered_content).to include("<dt>#{I18n.t("admin.runs.artifacts.provenance.version")}:</dt>")
+    expect(rendered_content).to include(
+      I18n.t("admin.runs.artifacts.status_label", label: I18n.t("admin.runs.artifacts.status.complete"))
+    )
+    expect(rendered_content).to include('role="status"')
   ensure
     FileUtils.rm_f(result_path) if defined?(result_path)
     FileUtils.rm_f(positions_path) if defined?(positions_path)
@@ -50,8 +56,12 @@ RSpec.describe Admin::Runs::ArtifactEvidencePanelComponent, type: :component do
 
     render_inline(described_class.new(run: run))
 
-    expect(rendered_content).to include("Estado: No disponible")
-    expect(rendered_content).to include("aria-label=\"Estado del artifact unavailable\"")
+    expect(rendered_content).to include(
+      I18n.t("admin.runs.artifacts.status_label", label: I18n.t("admin.runs.artifacts.status.unavailable"))
+    )
+    expect(rendered_content).to include(
+      "aria-label=\"#{I18n.t("admin.runs.artifacts.status_aria", state: "unavailable")}\""
+    )
   end
 
   it "marks artifact as unavailable when path is outside storage root" do
@@ -68,8 +78,14 @@ RSpec.describe Admin::Runs::ArtifactEvidencePanelComponent, type: :component do
 
     render_inline(described_class.new(run: run))
 
-    expect(rendered_content).to include("Abrir result.json (Unavailable)")
-    expect(rendered_content).to include("Estado: No disponible")
+    unavailable_action = I18n.t(
+      "admin.runs.artifacts.unavailable_action",
+      label: I18n.t("admin.runs.artifacts.entries.result_json.action")
+    )
+    expect(rendered_content).to include(unavailable_action)
+    expect(rendered_content).to include(
+      I18n.t("admin.runs.artifacts.status_label", label: I18n.t("admin.runs.artifacts.status.unavailable"))
+    )
   ensure
     FileUtils.remove_entry(outside_dir) if defined?(outside_dir)
   end
