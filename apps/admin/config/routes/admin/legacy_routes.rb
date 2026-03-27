@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Admin
-  module LegacyResourceRoutes
+  module LegacyRoutes
     def self.extended(router)
       router.instance_exec do
         scope :admin do

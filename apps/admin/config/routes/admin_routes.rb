@@ -2,8 +2,7 @@
 
 require_relative 'admin/overview_routes'
 require_relative 'admin/docs_routes'
-require_relative 'admin/legacy_resource_routes'
-require_relative 'avo/legacy_resource_routes'
+require_relative 'admin/legacy_routes'
 require_relative 'avo/legacy_routes'
 
 module AdminRoutes

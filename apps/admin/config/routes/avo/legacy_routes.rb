@@ -5,6 +5,14 @@ module Avo
     def self.extended(router)
       router.instance_exec do
         scope :avo do
+          scope :resources do
+            scope 'runs/:id' do
+              concerns :run_artifact_redirects
+            end
+          end
+        end
+
+        scope :avo do
           get '/', to: redirect('/admin'), as: :legacy_avo_root
           get '/*path', to: redirect('/admin/%{path}'), as: :legacy_avo_catch_all
         end
