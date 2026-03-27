@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Admin Login" %></title>
+    <title><%= content_for(:title) || t("admin.auth.title") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Admin">
+    <meta name="application-name" content="<%= t("admin.auth.application_name") %>">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
@@ -16,20 +16,20 @@
     <%= javascript_importmap_tags %>
   </head>
   <body class="<%= content_for?(:body_class) ? content_for(:body_class) : "auth-page" %>">
-    <main class="auth-shell" aria-label="Admin login">
+    <main class="auth-shell" aria-label="<%= t("admin.auth.aria") %>">
       <section class="auth-hero" aria-hidden="true">
         <div class="auth-hero__copy">
-          <p class="auth-hero__eyebrow">Financial Core Simulator</p>
-          <h1>Operational control for runs, risk and ingestion health.</h1>
-          <p>Secure access for the admin workspace. Sign in with your provisioned account to continue.</p>
+          <p class="auth-hero__eyebrow"><%= t("admin.auth.hero.eyebrow") %></p>
+          <h1><%= t("admin.auth.hero.title") %></h1>
+          <p><%= t("admin.auth.hero.subtitle") %></p>
         </div>
       </section>
       <section class="auth-card">
         <header class="auth-card__header">
-          <p class="auth-card__eyebrow">Admin Workspace</p>
-          <h2>Sign in</h2>
-          <nav class="auth-card__nav" aria-label="Admin form navigation">
-            <%= link_to "Back to home", root_path, class: "auth-card__nav-link" %>
+          <p class="auth-card__eyebrow"><%= t("admin.auth.card.eyebrow") %></p>
+          <h2><%= t("admin.auth.card.title") %></h2>
+          <nav class="auth-card__nav" aria-label="<%= t("admin.auth.card.nav_aria") %>">
+            <%= link_to t("admin.auth.card.back_to_home"), root_path, class: "auth-card__nav-link" %>
           </nav>
         </header>
         <div class="auth-card__content">

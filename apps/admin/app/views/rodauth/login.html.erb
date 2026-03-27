@@ -5,7 +5,7 @@
 <% end %>
 <%= form_with url: rodauth.login_path, method: :post, local: true do %>
   <div>
-    <label for="admin-login-email">Email</label>
+    <label for="admin-login-email"><%= t("admin.auth.form.email_label") %></label>
     <input
       id="admin-login-email"
       type="email"
@@ -16,7 +16,7 @@
     >
     </div>
     <div>
-      <label for="admin-login-password">Password</label>
+      <label for="admin-login-password"><%= t("admin.auth.form.password_label") %></label>
       <input
       id="admin-login-password"
       type="password"
@@ -25,5 +25,5 @@
       required
     >
       </div>
-      <input type="submit" value="Sign in to admin">
+      <input type="submit" value="<%= t("admin.auth.form.submit") %>">
     <% end %>

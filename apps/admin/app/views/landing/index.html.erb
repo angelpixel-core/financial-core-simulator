@@ -1,60 +1,56 @@
-<% content_for :title, "Financial Core Simulator" %>
+<% content_for :title, t("admin.landing.title") %>
 <% content_for :body_class, "landing-page-body" %>
 <main class="landing-page">
   <section class="landing-page__hero">
     <div class="landing-page__hero-header">
       <div class="landing-page__logo">
-        <%= image_tag "fcs_logo_dark_minimal_with_label.svg", alt: "Financial Core Simulator" %>
+        <%= image_tag "fcs_logo_dark_minimal_with_label.svg", alt: t("admin.landing.brand_alt") %>
       </div>
       <div class="landing-page__hero-copy">
-        <p class="landing-page__eyebrow">Financial Core Simulator</p>
-        <h1>Deterministic financial ledger simulation</h1>
+        <p class="landing-page__eyebrow"><%= t("admin.landing.hero.eyebrow") %></p>
+        <h1><%= t("admin.landing.hero.title") %></h1>
       </div>
     </div>
     <p class="landing-page__subtitle">
-      Simulate accounts, positions, PnL and risk models using a deterministic event-driven financial engine.
-      Built for reproducible financial infrastructure experiments.
+      <%= t("admin.landing.hero.subtitle") %>
     </p>
     <div class="landing-page__cta-group">
-      <a class="landing-page__cta landing-page__cta--primary" href="<%= @demo_path %>">View Demo</a>
-      <a class="landing-page__cta" href="<%= @source_url %>">GitHub</a>
-      <a class="landing-page__cta" href="<%= @documentation_url %>">Documentation</a>
+      <a class="landing-page__cta landing-page__cta--primary" href="<%= @demo_path %>"><%= t("admin.landing.hero.cta.demo") %></a>
+      <a class="landing-page__cta" href="<%= @source_url %>"><%= t("admin.landing.hero.cta.github") %></a>
+      <a class="landing-page__cta" href="<%= @documentation_url %>"><%= t("admin.landing.hero.cta.documentation") %></a>
     </div>
   </section>
   <section class="landing-page__section">
-    <h2>Why it exists</h2>
-    <p class="landing-page__copy">
-      Financial systems are hard to reproduce. Financial Core Simulator provides a deterministic environment for
-      simulating financial events, PnL accounting and ledger state transitions.
-    </p>
+    <h2><%= t("admin.landing.why.title") %></h2>
+    <p class="landing-page__copy"><%= t("admin.landing.why.body") %></p>
   </section>
   <section class="landing-page__section">
-    <h2>Architecture</h2>
-    <p class="landing-page__copy">Events -> Ingestion -> Ledger Engine -> Valuation Engine -> Reporting -> Dashboard</p>
+    <h2><%= t("admin.landing.architecture.title") %></h2>
+    <p class="landing-page__copy"><%= t("admin.landing.architecture.body") %></p>
   </section>
   <section class="landing-page__section">
-    <h2>Dashboard preview</h2>
+    <h2><%= t("admin.landing.dashboard_preview.title") %></h2>
     <ul>
-      <li>Overview</li>
-      <li>Runs</li>
-      <li>PnL</li>
-      <li>Accounts</li>
-      <li>Errors</li>
+      <li><%= t("admin.landing.dashboard_preview.items.overview") %></li>
+      <li><%= t("admin.landing.dashboard_preview.items.runs") %></li>
+      <li><%= t("admin.landing.dashboard_preview.items.pnl") %></li>
+      <li><%= t("admin.landing.dashboard_preview.items.accounts") %></li>
+      <li><%= t("admin.landing.dashboard_preview.items.errors") %></li>
     </ul>
   </section>
   <section class="landing-page__section">
-    <h2>Features</h2>
+    <h2><%= t("admin.landing.features.title") %></h2>
     <ul>
-      <li>Deterministic event processing</li>
-      <li>Ledger-based accounting</li>
-      <li>FIFO position engine</li>
-      <li>PnL valuation engine</li>
-      <li>Multi-account simulation</li>
-      <li>Audit-ready artifacts</li>
+      <li><%= t("admin.landing.features.items.deterministic_event_processing") %></li>
+      <li><%= t("admin.landing.features.items.ledger_based_accounting") %></li>
+      <li><%= t("admin.landing.features.items.fifo_position_engine") %></li>
+      <li><%= t("admin.landing.features.items.pnl_valuation_engine") %></li>
+      <li><%= t("admin.landing.features.items.multi_account_simulation") %></li>
+      <li><%= t("admin.landing.features.items.audit_ready_artifacts") %></li>
     </ul>
   </section>
   <section class="landing-page__section">
-    <h2>CLI example</h2>
+    <h2><%= t("admin.landing.cli_example.title") %></h2>
     <pre><code>fcs simulate demo_input.json
 
 runs: 14
@@ -62,8 +58,8 @@ success: 13
 pnl_total: 51.00</code></pre>
   </section>
   <section class="landing-page__section">
-    <h2>Open Source</h2>
-    <p class="landing-page__copy">Built for research and experimentation in financial infrastructure systems.</p>
-    <a class="landing-page__cta" href="<%= @source_url %>">View source</a>
+    <h2><%= t("admin.landing.open_source.title") %></h2>
+    <p class="landing-page__copy"><%= t("admin.landing.open_source.body") %></p>
+    <a class="landing-page__cta" href="<%= @source_url %>"><%= t("admin.landing.open_source.cta") %></a>
   </section>
 </main>

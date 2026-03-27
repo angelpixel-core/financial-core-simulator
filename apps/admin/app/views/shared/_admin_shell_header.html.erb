@@ -1,9 +1,9 @@
-<header class="admin-shell-header admin-shell-header--<%= admin_shell_role %>" aria-label="Admin shell">
+<header class="admin-shell-header admin-shell-header--<%= admin_shell_role %>" aria-label="<%= t("admin.shell.header_aria") %>">
   <div class="admin-shell-header__inner">
     <p class="admin-shell-header__brand"><%= admin_shell_workspace_label %></p>
     <div class="admin-shell-header__actions">
       <p class="admin-shell-header__identity"><%= account_email %></p>
-      <%= button_to "Sign out", logout_path, method: :post, class: "admin-shell-header__logout" %>
+      <%= button_to t("admin.shell.sign_out"), logout_path, method: :post, class: "admin-shell-header__logout" %>
     </div>
   </div>
 </header>
