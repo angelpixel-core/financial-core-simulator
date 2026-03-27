@@ -15,6 +15,10 @@ on:
     branches:
       - main
       - development
+      - feat/*
+      - fix/*
+      - epic/*
+      - story/*
     paths:
       - .github/workflows/**
       - bin/**

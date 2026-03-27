@@ -8,6 +8,10 @@ on:
     branches:
       - main
       - development
+      - feat/*
+      - fix/*
+      - epic/*
+      - story/*
     paths:
       - "lib/**/*.rb"
       - "spec/**/*.rb"
