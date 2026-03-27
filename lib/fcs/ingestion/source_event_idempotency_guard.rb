@@ -44,12 +44,16 @@ module FCS
         unless external_id.is_a?(String) && !external_id.strip.empty? && !sequence.nil?
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,
-            "source event idempotency identity requires payload.externalId and payload.sequence",
+            t("fcs.ingestion.source_event_idempotency.invalid_identity"),
             details: {field: "sourceEvent.idempotencyKey"}
           )
         end
 
         [event.fetch("source"), external_id.to_s, sequence.to_s]
+      end
+
+      def t(key, **opts)
+        ::I18n.t(key, **opts)
       end
     end
   end

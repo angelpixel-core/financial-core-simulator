@@ -33,14 +33,15 @@ module FCS
       def validate_source_event_shape!(source_event)
         return if source_event.is_a?(Hash)
 
-        raise_invalid!("source event must be an object", field: "sourceEvent")
+        raise_invalid!(t("fcs.ingestion.faucet_issuance.event_must_be_object"), field: "sourceEvent")
       end
 
       def validate_supported_event_type!(source_event)
         event_type = source_event.fetch("eventType", nil)
         return if event_type == SUPPORTED_EVENT_TYPE
 
-        raise_invalid!("unsupported faucet source event type", field: "sourceEvent.eventType")
+        raise_invalid!(t("fcs.ingestion.faucet_issuance.unsupported_event_type"),
+          field: "sourceEvent.eventType")
       end
 
       def normalized_payload(payload)
@@ -61,6 +62,10 @@ module FCS
 
       def raise_invalid!(message, field:)
         raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: {field: field})
+      end
+
+      def t(key, **opts)
+        ::I18n.t(key, **opts)
       end
     end
   end

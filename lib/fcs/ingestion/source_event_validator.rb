@@ -47,7 +47,7 @@ module FCS
             next
           end
 
-          raise_invalid!("source event idempotency key conflict for duplicate event",
+          raise_invalid!(t("fcs.ingestion.source_event_validator.idempotency_conflict_duplicate"),
             field: "sourceEvent.idempotencyKey")
         end
 
@@ -59,14 +59,15 @@ module FCS
       def validate_event_shape!(event)
         return if event.is_a?(Hash)
 
-        raise_invalid!("source event must be an object", field: "sourceEvent")
+        raise_invalid!(t("fcs.ingestion.source_event_validator.event_must_be_object"), field: "sourceEvent")
       end
 
       def validate_required_fields!(event)
         REQUIRED_FIELDS.each do |field|
           next if event.key?(field)
 
-          raise_invalid!("missing required source event field", field: "sourceEvent.#{field}")
+          raise_invalid!(t("fcs.ingestion.source_event_validator.missing_required_field"),
+            field: "sourceEvent.#{field}")
         end
       end
 
@@ -79,23 +80,28 @@ module FCS
       def validate_payload!(event)
         return if event["payload"].is_a?(Hash)
 
-        raise_invalid!("source event payload must be an object", field: "sourceEvent.payload")
+        raise_invalid!(t("fcs.ingestion.source_event_validator.payload_must_be_object"),
+          field: "sourceEvent.payload")
       end
 
       def validate_batch_shape!(events)
         return if events.is_a?(Array)
 
-        raise_invalid!("source events batch must be an array", field: "sourceEvents")
+        raise_invalid!(t("fcs.ingestion.source_event_validator.batch_must_be_array"), field: "sourceEvents")
       end
 
       def validate_non_empty_string!(value, field:)
         return if value.is_a?(String) && !value.strip.empty?
 
-        raise_invalid!("source event field must be a non-empty string", field: field)
+        raise_invalid!(t("fcs.ingestion.source_event_validator.field_must_be_non_empty_string"), field: field)
       end
 
       def raise_invalid!(message, field:)
         raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: {field: field})
+      end
+
+      def t(key, **opts)
+        ::I18n.t(key, **opts)
       end
     end
   end

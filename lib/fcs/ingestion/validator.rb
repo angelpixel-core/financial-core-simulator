@@ -49,34 +49,49 @@ module FCS
 
         raise FCS::Error.new(
           FCS::Errors::ERR_UNSUPPORTED_SCHEMA,
-          "Unsupported schemaVersion",
+          t("fcs.ingestion.validator.unsupported_schema_version"),
           details: {schemaVersion: sv, supported: SUPPORTED_SCHEMA_VERSIONS}
         )
       end
 
       def validate_shape!(h)
         %w[accounts markets priceSnapshot].each do |k|
-          raise_invalid!("Missing required field", field: k) unless h.key?(k)
+          raise_invalid!(t("fcs.ingestion.validator.missing_required_field"), field: k) unless h.key?(k)
         end
 
-        raise_invalid!("accounts must be an array", field: "accounts") unless h["accounts"].is_a?(Array)
-        raise_invalid!("markets must be an array", field: "markets") unless h["markets"].is_a?(Array)
-        raise_invalid!("priceSnapshot must be an object", field: "priceSnapshot") unless h["priceSnapshot"].is_a?(Hash)
+        unless h["accounts"].is_a?(Array)
+          raise_invalid!(t("fcs.ingestion.validator.accounts_must_be_array"),
+            field: "accounts")
+        end
+        unless h["markets"].is_a?(Array)
+          raise_invalid!(t("fcs.ingestion.validator.markets_must_be_array"),
+            field: "markets")
+        end
+        unless h["priceSnapshot"].is_a?(Hash)
+          raise_invalid!(t("fcs.ingestion.validator.price_snapshot_must_be_object"),
+            field: "priceSnapshot")
+        end
 
         timeline = h["timeline"]
         unless timeline.nil?
-          raise_invalid!("timeline must be an object", field: "timeline") unless timeline.is_a?(Hash)
+          unless timeline.is_a?(Hash)
+            raise_invalid!(t("fcs.ingestion.validator.timeline_must_be_object"),
+              field: "timeline")
+          end
           unless timeline["events"].is_a?(Array)
-            raise_invalid!("timeline.events must be an array",
+            raise_invalid!(t("fcs.ingestion.validator.timeline_events_must_be_array"),
               field: "timeline.events")
           end
         end
 
         if timeline.nil?
-          raise_invalid!("Missing required field", field: "trades") unless h.key?("trades")
-          raise_invalid!("trades must be an array", field: "trades") unless h["trades"].is_a?(Array)
+          raise_invalid!(t("fcs.ingestion.validator.missing_required_field"), field: "trades") unless h.key?("trades")
+          unless h["trades"].is_a?(Array)
+            raise_invalid!(t("fcs.ingestion.validator.trades_must_be_array"),
+              field: "trades")
+          end
         elsif h.key?("trades") && !h["trades"].is_a?(Array)
-          raise_invalid!("trades must be an array", field: "trades")
+          raise_invalid!(t("fcs.ingestion.validator.trades_must_be_array"), field: "trades")
         end
       end
 
@@ -102,7 +117,10 @@ module FCS
       end
 
       def process_timeline_event!(event, context)
-        raise_invalid!("timeline.events item must be an object", field: "timeline.events") unless event.is_a?(Hash)
+        unless event.is_a?(Hash)
+          raise_invalid!(t("fcs.ingestion.validator.timeline_event_must_be_object"),
+            field: "timeline.events")
+        end
 
         validate_timeline_common_fields!(event)
 
@@ -146,7 +164,7 @@ module FCS
             seen_trade_seq: seen_trade_seq
           )
         else
-          raise_invalid!("Unsupported timeline eventType",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_unsupported_event_type"),
             field: "timeline.events.eventType",
             details: {eventType: event.fetch("eventType")})
         end
@@ -155,7 +173,7 @@ module FCS
       def register_timeline_seq!(seen_timeline_seq, current_seq)
         return unless seen_timeline_seq[current_seq]
 
-        raise_invalid!("timeline timelineSeq must be unique",
+        raise_invalid!(t("fcs.ingestion.validator.timeline_seq_unique"),
           field: "timeline.events.timelineSeq",
           details: {timelineSeq: current_seq})
       ensure
@@ -180,7 +198,7 @@ module FCS
       def validate_timeline_exact_duplicate!(event, stored_event:, idempotency_key:)
         if stored_event != event
           raise_invalid!(
-            "timeline idempotency key conflict for duplicate event",
+            t("fcs.ingestion.validator.timeline_duplicate_conflict"),
             field: "timeline.events.idempotencyKey",
             details: {
               source: idempotency_key[0],
@@ -191,7 +209,7 @@ module FCS
         end
 
         raise_invalid!(
-          "timeline duplicate event is not allowed",
+          t("fcs.ingestion.validator.timeline_duplicate_event"),
           field: "timeline.events.idempotencyKey",
           details: {
             source: idempotency_key[0],
@@ -207,7 +225,7 @@ module FCS
         return if previous_seq == event.fetch("timelineSeq")
 
         raise_invalid!(
-          "timeline idempotency collision for source+externalId",
+          t("fcs.ingestion.validator.timeline_idempotency_collision"),
           field: "timeline.events.externalId",
           details: {
             source: source_external_key[0],
@@ -220,65 +238,70 @@ module FCS
 
       def validate_timeline_common_fields!(event)
         unless event.key?("eventType")
-          raise_invalid!("timeline eventType is required",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_event_type_required"),
             field: "timeline.events.eventType")
         end
         unless event.key?("timelineSeq")
-          raise_invalid!("timeline timelineSeq is required",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_seq_required"),
             field: "timeline.events.timelineSeq")
         end
-        raise_invalid!("timeline source is required", field: "timeline.events.source") unless event.key?("source")
+        unless event.key?("source")
+          raise_invalid!(t("fcs.ingestion.validator.timeline_source_required"),
+            field: "timeline.events.source")
+        end
         unless event.key?("externalId")
-          raise_invalid!("timeline externalId is required",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_external_id_required"),
             field: "timeline.events.externalId")
         end
         unless event.key?("timestamp")
-          raise_invalid!("timeline timestamp is required",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_timestamp_required"),
             field: "timeline.events.timestamp")
         end
 
         unless non_empty_string?(event["eventType"])
-          raise_invalid!("timeline eventType must be a non-empty string",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_event_type_non_empty"),
             field: "timeline.events.eventType")
         end
         unless event["timelineSeq"].is_a?(Integer)
-          raise_invalid!("timeline timelineSeq must be an integer",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_seq_integer"),
             field: "timeline.events.timelineSeq")
         end
         unless non_empty_string?(event["source"])
-          raise_invalid!("timeline source must be a non-empty string",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_source_non_empty"),
             field: "timeline.events.source")
         end
         unless non_empty_string?(event["externalId"])
-          raise_invalid!("timeline externalId must be a non-empty string",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_external_id_non_empty"),
             field: "timeline.events.externalId")
         end
         unless non_empty_string?(event["timestamp"])
-          raise_invalid!("timeline timestamp must be a non-empty string", field: "timeline.events.timestamp")
+          raise_invalid!(t("fcs.ingestion.validator.timeline_timestamp_non_empty"),
+            field: "timeline.events.timestamp")
         end
 
         return if event["timestamp"].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\z/)
 
-        raise_invalid!("timeline timestamp must use ISO-8601 UTC format", field: "timeline.events.timestamp")
+        raise_invalid!(t("fcs.ingestion.validator.timeline_timestamp_iso"),
+          field: "timeline.events.timestamp")
       end
 
       def validate_timeline_price_updated!(event, market_ids:)
         unless event.key?("marketId")
-          raise_invalid!("timeline PRICE_UPDATED marketId is required",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_price_updated_market_required"),
             field: "timeline.events.marketId")
         end
         unless event.key?("priceQuotePerBase")
-          raise_invalid!("timeline PRICE_UPDATED priceQuotePerBase is required",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_price_updated_price_required"),
             field: "timeline.events.priceQuotePerBase")
         end
 
         unless non_empty_string?(event["marketId"])
-          raise_invalid!("timeline PRICE_UPDATED marketId must be a non-empty string",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_price_updated_market_non_empty"),
             field: "timeline.events.marketId")
         end
         unless market_ids.include?(event["marketId"])
           raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
-            "Unknown marketId",
+            t("fcs.ingestion.validator.unknown_market_id"),
             details: {marketId: event["marketId"]})
         end
         validate_positive_decimal_string!(
@@ -291,45 +314,45 @@ module FCS
       def validate_timeline_trade_applied!(event, account_ids:, market_ids:, seen_trade_seq:)
         trade = event["trade"]
         unless trade.is_a?(Hash)
-          raise_invalid!("timeline TRADE_APPLIED trade is required",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_trade_required"),
             field: "timeline.events.trade")
         end
 
         %w[tradeId accountId marketId timestamp seq side quantityBase priceQuotePerBase].each do |field|
           unless trade.key?(field)
-            raise_invalid!("timeline TRADE_APPLIED trade.#{field} is required",
+            raise_invalid!(t("fcs.ingestion.validator.timeline_trade_field_required", field: field),
               field: "timeline.events.trade.#{field}")
           end
         end
 
         unless non_empty_string?(trade["tradeId"])
-          raise_invalid!("timeline.events.trade.tradeId must be a non-empty string",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_trade_id_non_empty"),
             field: "timeline.events.trade.tradeId")
         end
         unless non_empty_string?(trade["accountId"])
-          raise_invalid!("timeline.events.trade.accountId must be a non-empty string",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_trade_account_non_empty"),
             field: "timeline.events.trade.accountId")
         end
         unless account_ids.include?(trade["accountId"])
           raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
-            "Unknown accountId",
+            t("fcs.ingestion.validator.unknown_account_id"),
             details: {accountId: trade["accountId"]})
         end
         unless non_empty_string?(trade["marketId"])
-          raise_invalid!("timeline.events.trade.marketId must be a non-empty string",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_trade_market_non_empty"),
             field: "timeline.events.trade.marketId")
         end
         unless market_ids.include?(trade["marketId"])
           raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
-            "Unknown marketId",
+            t("fcs.ingestion.validator.unknown_market_id"),
             details: {marketId: trade["marketId"]})
         end
         unless trade["seq"].is_a?(Integer)
-          raise_invalid!("timeline.events.trade.seq must be an integer",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_trade_seq_integer"),
             field: "timeline.events.trade.seq")
         end
         unless trade["timestamp"].is_a?(Integer)
-          raise_invalid!("timeline.events.trade.timestamp must be an integer",
+          raise_invalid!(t("fcs.ingestion.validator.timeline_trade_timestamp_integer"),
             field: "timeline.events.trade.timestamp")
         end
 
@@ -337,15 +360,18 @@ module FCS
         if seen_trade_seq[trade_seq_key]
           raise FCS::Error.new(
             FCS::Errors::ERR_DUPLICATE_SEQ,
-            "Duplicate seq for account+market",
+            t("fcs.ingestion.validator.duplicate_seq_account_market"),
             details: {accountId: trade["accountId"], marketId: trade["marketId"], seq: trade["seq"]}
           )
         end
         seen_trade_seq[trade_seq_key] = true
 
-        raise_invalid!("Invalid side", field: "timeline.events.trade.side", details: {side: trade["side"]}) unless %w[
+        unless %w[
           BUY SELL
         ].include?(trade["side"])
+          raise_invalid!(t("fcs.ingestion.validator.invalid_side"),
+            field: "timeline.events.trade.side", details: {side: trade["side"]})
+        end
 
         validate_positive_decimal_string!(trade["quantityBase"],
           field: "timeline.events.trade.quantityBase",
@@ -359,7 +385,10 @@ module FCS
         model = h["accountingModel"]
         return if model.nil?
 
-        raise_invalid!("accountingModel must be an object", field: "accountingModel") unless model.is_a?(Hash)
+        unless model.is_a?(Hash)
+          raise_invalid!(t("fcs.ingestion.validator.accounting_model_must_be_object"),
+            field: "accountingModel")
+        end
 
         method = model["method"]
         return if method.nil?
@@ -367,7 +396,7 @@ module FCS
         return if SUPPORTED_ACCOUNTING_METHODS.include?(method)
 
         raise_invalid!(
-          "Unsupported accounting method",
+          t("fcs.ingestion.validator.unsupported_accounting_method"),
           field: "accountingModel.method",
           details: {method: method, supported: SUPPORTED_ACCOUNTING_METHODS}
         )
@@ -377,7 +406,10 @@ module FCS
         model = h["riskModel"]
         return if model.nil?
 
-        raise_invalid!("riskModel must be an object", field: "riskModel") unless model.is_a?(Hash)
+        unless model.is_a?(Hash)
+          raise_invalid!(t("fcs.ingestion.validator.risk_model_must_be_object"),
+            field: "riskModel")
+        end
 
         max_leverage = model["maxLeverage"]
         unless max_leverage.nil?
@@ -387,7 +419,7 @@ module FCS
 
         maintenance = model["maintenanceMarginRatio"]
         if model.key?("maintenanceMarginRatio") && maintenance.nil?
-          raise_invalid!("riskModel.maintenanceMarginRatio is required when provided",
+          raise_invalid!(t("fcs.ingestion.validator.risk_model_maintenance_required"),
             field: "riskModel.maintenanceMarginRatio")
         end
 
@@ -404,22 +436,25 @@ module FCS
         return if liquidation.nil?
 
         unless liquidation.is_a?(Hash)
-          raise_invalid!("riskModel.liquidation must be an object",
+          raise_invalid!(t("fcs.ingestion.validator.risk_model_liquidation_object"),
             field: "riskModel.liquidation")
         end
 
         enabled = liquidation["enabled"]
         unless enabled.nil? || enabled == true || enabled == false
-          raise_invalid!("riskModel.liquidation.enabled must be boolean", field: "riskModel.liquidation.enabled")
+          raise_invalid!(t("fcs.ingestion.validator.risk_model_liquidation_enabled_boolean"),
+            field: "riskModel.liquidation.enabled")
         end
 
         close_factor = liquidation["closeFactor"]
         unless liquidation.key?("closeFactor")
-          raise_invalid!("riskModel.liquidation.closeFactor is required", field: "riskModel.liquidation.closeFactor")
+          raise_invalid!(t("fcs.ingestion.validator.risk_model_close_factor_required"),
+            field: "riskModel.liquidation.closeFactor")
         end
 
         if liquidation.key?("closeFactor") && close_factor.nil?
-          raise_invalid!("riskModel.liquidation.closeFactor is required", field: "riskModel.liquidation.closeFactor")
+          raise_invalid!(t("fcs.ingestion.validator.risk_model_close_factor_required"),
+            field: "riskModel.liquidation.closeFactor")
         end
 
         return if close_factor.nil?
@@ -448,11 +483,14 @@ module FCS
       def extract_unique_ids!(arr, key, code:)
         ids = arr.map { |x| x[key] }
         if ids.any?(&:nil?) || ids.any? { |v| !v.is_a?(String) || v.strip.empty? }
-          raise_invalid!("Missing or invalid id", field: key)
+          raise_invalid!(t("fcs.ingestion.validator.missing_or_invalid_id"), field: key)
         end
 
         dup = ids.group_by(&:itself).find { |_k, v| v.size > 1 }&.first
-        raise FCS::Error.new(code, "Duplicate id", details: {field: key, value: dup}) if dup
+        if dup
+          raise FCS::Error.new(code, t("fcs.ingestion.validator.duplicate_id"),
+            details: {field: key, value: dup})
+        end
 
         ids.to_set
       end
@@ -462,19 +500,19 @@ module FCS
         unless non_empty_string?(snap["valuationTimestamp"])
           raise FCS::Error.new(
             FCS::Errors::ERR_MISSING_SNAPSHOT,
-            "Missing snapshot valuation timestamp",
+            t("fcs.ingestion.validator.missing_snapshot_timestamp"),
             details: {missingField: "priceSnapshot.valuationTimestamp"}
           )
         end
 
         unless snap["valuationTimestamp"].match?(/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\z/)
-          raise_invalid!("Invalid snapshot valuation timestamp format",
+          raise_invalid!(t("fcs.ingestion.validator.invalid_snapshot_timestamp_format"),
             field: "priceSnapshot.valuationTimestamp")
         end
 
         prices = snap["prices"]
         unless prices.is_a?(Array)
-          raise FCS::Error.new(FCS::Errors::ERR_MISSING_SNAPSHOT, "Missing snapshot prices",
+          raise FCS::Error.new(FCS::Errors::ERR_MISSING_SNAPSHOT, t("fcs.ingestion.validator.missing_snapshot_prices"),
             details: {})
         end
 
@@ -482,17 +520,19 @@ module FCS
         seen_snapshot_markets = {}
         prices.each do |p|
           unless p.is_a?(Hash)
-            raise_invalid!("priceSnapshot.prices item must be an object",
+            raise_invalid!(t("fcs.ingestion.validator.snapshot_price_item_object"),
               field: "priceSnapshot.prices")
           end
 
           mid = p["marketId"]
           unless non_empty_string?(mid)
-            raise_invalid!("Missing or invalid snapshot marketId", field: "priceSnapshot.prices.marketId")
+            raise_invalid!(t("fcs.ingestion.validator.missing_or_invalid_snapshot_market_id"),
+              field: "priceSnapshot.prices.marketId")
           end
 
           if seen_snapshot_markets[mid]
-            raise_invalid!("Duplicate snapshot marketId", field: "priceSnapshot.prices.marketId",
+            raise_invalid!(t("fcs.ingestion.validator.duplicate_snapshot_market_id"),
+              field: "priceSnapshot.prices.marketId",
               details: {marketId: mid})
           end
 
@@ -505,7 +545,7 @@ module FCS
         unless missing.empty?
           raise FCS::Error.new(
             FCS::Errors::ERR_MISSING_SNAPSHOT,
-            "Snapshot missing markets",
+            t("fcs.ingestion.validator.snapshot_missing_markets"),
             details: {missingMarkets: missing.to_a}
           )
         end
@@ -529,7 +569,7 @@ module FCS
         unless fx.is_a?(Hash)
           raise FCS::Error.new(
             FCS::Errors::ERR_MISSING_SNAPSHOT,
-            "Missing required snapshot FX payload",
+            t("fcs.ingestion.validator.missing_snapshot_fx_payload"),
             details: {missingField: "priceSnapshot.fx.quoteUsd"}
           )
         end
@@ -537,7 +577,7 @@ module FCS
         unless fx.key?("quoteUsd") && !fx["quoteUsd"].nil?
           raise FCS::Error.new(
             FCS::Errors::ERR_MISSING_SNAPSHOT,
-            "Missing required snapshot FX rate",
+            t("fcs.ingestion.validator.missing_snapshot_fx_rate"),
             details: {missingField: "priceSnapshot.fx.quoteUsd"}
           )
         end
@@ -550,15 +590,18 @@ module FCS
         model = h["usdModel"]
         return if model.nil?
 
-        raise_invalid!("usdModel must be an object", field: "usdModel") unless model.is_a?(Hash)
+        unless model.is_a?(Hash)
+          raise_invalid!(t("fcs.ingestion.validator.usd_model_must_be_object"),
+            field: "usdModel")
+        end
         unless model.key?("enabled")
-          raise_invalid!("usdModel.enabled is required when usdModel is provided", field: "usdModel.enabled")
+          raise_invalid!(t("fcs.ingestion.validator.usd_model_enabled_required"), field: "usdModel.enabled")
         end
 
         enabled = model["enabled"]
         return if [true, false].include?(enabled)
 
-        raise_invalid!("usdModel.enabled must be boolean", field: "usdModel.enabled")
+        raise_invalid!(t("fcs.ingestion.validator.usd_model_enabled_boolean"), field: "usdModel.enabled")
       end
 
       def usd_conversion_enabled?(h)
@@ -577,12 +620,12 @@ module FCS
       def raise_missing_fx_for_usd_enabled!
         raise FCS::Error.new(
           FCS::Errors::ERR_MISSING_SNAPSHOT,
-          "Missing required snapshot FX rate",
+          t("fcs.ingestion.validator.missing_snapshot_fx_rate"),
           details: {
             missingField: "priceSnapshot.fx.quoteUsd",
-            what_happened: "USD conversion is enabled but quoteUsd FX rate is missing from snapshot.",
-            impact: "Account and global USD totals cannot be calculated deterministically.",
-            next_action: "Provide priceSnapshot.fx.quoteUsd as a positive decimal string, or disable usdModel.enabled."
+            what_happened: t("fcs.ingestion.validator.missing_fx_what_happened"),
+            impact: t("fcs.ingestion.validator.missing_fx_impact"),
+            next_action: t("fcs.ingestion.validator.missing_fx_next_action")
           }
         )
       end
@@ -594,23 +637,31 @@ module FCS
       end
 
       def validate_trade!(trade, account_ids, market_ids, fee_enabled)
-        raise_invalid!("trades item must be an object", field: "trades") unless trade.is_a?(Hash)
+        raise_invalid!(t("fcs.ingestion.validator.trades_item_object"), field: "trades") unless trade.is_a?(Hash)
 
         trade_id = trade["tradeId"]
-        raise_invalid!("Missing tradeId", field: "tradeId") unless non_empty_string?(trade_id)
+        unless non_empty_string?(trade_id)
+          raise_invalid!(t("fcs.ingestion.validator.missing_trade_id"),
+            field: "tradeId")
+        end
 
         aid = trade["accountId"]
         mid = trade["marketId"]
 
         unless account_ids.include?(aid)
-          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE, "Unknown accountId", details: {accountId: aid})
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
+            t("fcs.ingestion.validator.unknown_account_id"),
+            details: {accountId: aid})
         end
         unless market_ids.include?(mid)
-          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE, "Unknown marketId", details: {marketId: mid})
+          raise FCS::Error.new(FCS::Errors::ERR_UNKNOWN_REFERENCE,
+            t("fcs.ingestion.validator.unknown_market_id"),
+            details: {marketId: mid})
         end
 
         side = trade["side"]
-        raise_invalid!("Invalid side", field: "side", details: {side: side}) unless %w[BUY SELL].include?(side)
+        raise_invalid!(t("fcs.ingestion.validator.invalid_side"), field: "side", details: {side: side}) unless %w[BUY
+          SELL].include?(side)
 
         validate_positive_decimal_string!(trade["quantityBase"], field: "quantityBase",
           context: {tradeId: trade_id})
@@ -624,11 +675,15 @@ module FCS
 
         timestamp = trade["timestamp"]
         unless timestamp.is_a?(Integer)
-          raise_invalid!("Missing or invalid timestamp", field: "timestamp", details: {tradeId: trade_id})
+          raise_invalid!(t("fcs.ingestion.validator.missing_or_invalid_timestamp"),
+            field: "timestamp", details: {tradeId: trade_id})
         end
 
         seq = trade["seq"]
-        raise_invalid!("Missing seq", field: "seq", details: {tradeId: trade_id}) unless seq.is_a?(Integer)
+        return if seq.is_a?(Integer)
+
+        raise_invalid!(t("fcs.ingestion.validator.missing_seq"), field: "seq",
+          details: {tradeId: trade_id})
       end
 
       def validate_seq_uniqueness!(trades)
@@ -638,7 +693,7 @@ module FCS
           if seen[key]
             raise FCS::Error.new(
               FCS::Errors::ERR_DUPLICATE_SEQ,
-              "Duplicate seq for account+market",
+              t("fcs.ingestion.validator.duplicate_seq_account_market"),
               details: {accountId: t["accountId"], marketId: t["marketId"], seq: t["seq"]}
             )
           end
@@ -679,23 +734,26 @@ module FCS
         max_decimal = FCS::Types::Decimal18.from_string(max)
         return if parsed.atoms <= max_decimal.atoms
 
-        raise_invalid!("Must be <= #{max}", field: field, details: context.merge(value: v))
+        raise_invalid!(t("fcs.ingestion.validator.must_be_lte", max: max),
+          field: field, details: context.merge(value: v))
       end
 
       def validate_decimal_string!(v, field:, context:, allow_zero:)
         if v.is_a?(Float)
-          raise FCS::Error.new(FCS::Errors::ERR_INVALID_NUMBER, "Float not allowed",
+          raise FCS::Error.new(FCS::Errors::ERR_INVALID_NUMBER, t("fcs.ingestion.validator.float_not_allowed"),
             details: context.merge(field: field))
         end
 
         unless v.is_a?(String) && v.match?(/\A\d+(\.\d+)?\z/)
-          raise_invalid!("Invalid decimal string", field: field, details: context.merge(value: v))
+          raise_invalid!(t("fcs.ingestion.validator.invalid_decimal_string"),
+            field: field, details: context.merge(value: v))
         end
 
         parsed = FCS::Types::Decimal18.from_string(v)
         return unless !allow_zero && parsed.zero?
 
-        raise_invalid!("Must be > 0", field: field, details: context.merge(value: v))
+        raise_invalid!(t("fcs.ingestion.validator.must_be_gt_zero"),
+          field: field, details: context.merge(value: v))
       end
 
       def non_empty_string?(v)
@@ -704,6 +762,10 @@ module FCS
 
       def raise_invalid!(msg, field:, details: {})
         raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, msg, details: details.merge(field: field))
+      end
+
+      def t(key, **opts)
+        ::I18n.t(key, **opts)
       end
     end
   end

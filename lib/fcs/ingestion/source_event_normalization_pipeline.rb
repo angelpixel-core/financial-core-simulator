@@ -37,29 +37,37 @@ module FCS
       def validate_source_event_shape!(source_event)
         return if source_event.is_a?(Hash)
 
-        raise_invalid!("source event must be an object", field: "sourceEvent")
+        raise_invalid!(t("fcs.ingestion.source_event_normalization.event_must_be_object"),
+          field: "sourceEvent")
       end
 
       def validate_source_events_shape!(source_events)
         return if source_events.is_a?(Array)
 
-        raise_invalid!("source events must be an array", field: "sourceEvents")
+        raise_invalid!(t("fcs.ingestion.source_event_normalization.events_must_be_array"),
+          field: "sourceEvents")
       end
 
       def mapper_for(source_event)
         source = source_event.fetch("source", nil)
         unless source.is_a?(String) && !source.strip.empty?
-          raise_invalid!("source event source must be a non-empty string", field: "sourceEvent.source")
+          raise_invalid!(t("fcs.ingestion.source_event_normalization.source_must_be_non_empty"),
+            field: "sourceEvent.source")
         end
 
         _, mapper_klass = SOURCE_MAPPERS.find { |prefix, _klass| source.start_with?(prefix) }
         return mapper_klass.new if mapper_klass
 
-        raise_invalid!("unsupported source for normalization pipeline", field: "sourceEvent.source")
+        raise_invalid!(t("fcs.ingestion.source_event_normalization.unsupported_source"),
+          field: "sourceEvent.source")
       end
 
       def raise_invalid!(message, field:)
         raise FCS::Error.new(FCS::Errors::ERR_VALIDATION, message, details: {field: field})
+      end
+
+      def t(key, **opts)
+        ::I18n.t(key, **opts)
       end
     end
   end
