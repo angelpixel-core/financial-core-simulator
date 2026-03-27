@@ -1,0 +1,19 @@
+es:
+  admin:
+    auth:
+      title: "Inicio de sesion admin"
+      application_name: "Admin"
+      aria: "Inicio de sesion admin"
+      hero:
+        eyebrow: "Financial Core Simulator"
+        title: "Control operativo para runs, riesgo y salud de ingestion."
+        subtitle: "Acceso seguro al workspace admin. Inicia sesion con tu cuenta provisionada para continuar."
+      card:
+        eyebrow: "Workspace Admin"
+        title: "Iniciar sesion"
+        nav_aria: "Navegacion del formulario admin"
+        back_to_home: "Volver al inicio"
+      form:
+        email_label: "Email"
+        password_label: "Contrasena"
+        submit: "Ingresar a admin"

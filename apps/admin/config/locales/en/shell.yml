@@ -1,0 +1,20 @@
+en:
+  admin:
+    shell:
+      skip_to_content: "Skip to main content"
+      sidebar_aria: "Workspace navigation"
+      header_aria: "Admin shell"
+      expand_sidebar: "Expand sidebar"
+      collapse_sidebar: "Collapse sidebar"
+      brand_title: "FCS Workspace"
+      brand_subtitle: "Ops Console"
+      sign_out: "Sign out"
+      mobile_nav_toggle: "Open navigation menu"
+      mobile_nav_aria: "Workspace navigation mobile"
+      navigation_label: "Navigation"
+      presence_stable: "Stable workspace"
+      presence_online: "%{email} online"
+      topbar_aria: "Workspace topbar"
+      breadcrumb_aria: "Breadcrumb"
+      resources_aria: "Workspace resources"
+      env_badge: "Env: %{environment}"

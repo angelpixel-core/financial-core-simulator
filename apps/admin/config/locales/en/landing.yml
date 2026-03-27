@@ -1,0 +1,42 @@
+en:
+  admin:
+    landing:
+      title: "Financial Core Simulator"
+      brand_alt: "Financial Core Simulator"
+      hero:
+        eyebrow: "Financial Core Simulator"
+        title: "Deterministic financial ledger simulation"
+        subtitle: "Simulate accounts, positions, PnL and risk models using a deterministic event-driven financial engine. Built for reproducible financial infrastructure experiments."
+        cta:
+          demo: "View Demo"
+          github: "GitHub"
+          documentation: "Documentation"
+      why:
+        title: "Why it exists"
+        body: "Financial systems are hard to reproduce. Financial Core Simulator provides a deterministic environment for simulating financial events, PnL accounting and ledger state transitions."
+      architecture:
+        title: "Architecture"
+        body: "Events -> Ingestion -> Ledger Engine -> Valuation Engine -> Reporting -> Dashboard"
+      dashboard_preview:
+        title: "Dashboard preview"
+        items:
+          overview: "Overview"
+          runs: "Runs"
+          pnl: "PnL"
+          accounts: "Accounts"
+          errors: "Errors"
+      features:
+        title: "Features"
+        items:
+          deterministic_event_processing: "Deterministic event processing"
+          ledger_based_accounting: "Ledger-based accounting"
+          fifo_position_engine: "FIFO position engine"
+          pnl_valuation_engine: "PnL valuation engine"
+          multi_account_simulation: "Multi-account simulation"
+          audit_ready_artifacts: "Audit-ready artifacts"
+      cli_example:
+        title: "CLI example"
+      open_source:
+        title: "Open Source"
+        body: "Built for research and experimentation in financial infrastructure systems."
+        cta: "View source"

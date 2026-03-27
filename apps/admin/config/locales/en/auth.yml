@@ -1,0 +1,19 @@
+en:
+  admin:
+    auth:
+      title: "Admin Login"
+      application_name: "Admin"
+      aria: "Admin login"
+      hero:
+        eyebrow: "Financial Core Simulator"
+        title: "Operational control for runs, risk and ingestion health."
+        subtitle: "Secure access for the admin workspace. Sign in with your provisioned account to continue."
+      card:
+        eyebrow: "Admin Workspace"
+        title: "Sign in"
+        nav_aria: "Admin form navigation"
+        back_to_home: "Back to home"
+      form:
+        email_label: "Email"
+        password_label: "Password"
+        submit: "Sign in to admin"

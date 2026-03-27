@@ -1,0 +1,6 @@
+en:
+  admin:
+    validation:
+      eyebrow: "VALIDATION"
+      title: "Ingestion validation errors"
+      subtitle: "Latest envelope validation failures and quality signals."

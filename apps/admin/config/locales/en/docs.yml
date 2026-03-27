@@ -1,0 +1,181 @@
+en:
+  admin:
+    docs:
+      index:
+        eyebrow: "DOCS"
+        title: "System documentation"
+        subtitle: "Structured references for the admin workspace, mirroring the operational sections."
+        sections_title: "Sections"
+        sections_fallback: "Overview"
+        section_overview: "Section overview and references."
+      show:
+        eyebrow: "DOCS"
+        back_to_docs: "Back to docs"
+        related_sections: "Related sections"
+        sections_fallback: "Overview"
+        includes: "Includes"
+        includes_empty: "This section aggregates multiple workspace panels."
+      sections:
+        system_state:
+          title: "System State"
+          how_to_use:
+            title: "How to use System State"
+            meta: "System State summarizes current operational health. Use it to detect degradation, verify stability, and decide where to dive deeper."
+            usage: { label: "Recommended use", value: "Review at the start of each monitoring session" }
+            objective: { label: "Objective", value: "Confirm stability and detect early alerts" }
+            frequency: { label: "Frequency", value: "Continuous in ops, periodic for audits" }
+          read:
+            title: "What we can read"
+            operational_state: { label: "Operational state", value: "Overall system health and reliability" }
+            reliable_run: { label: "Latest reliable run", value: "Baseline for comparisons and traceability" }
+            key_indicators: { label: "Key indicators", value: "Avg duration, success rate, recent volume" }
+            meta: "If something looks unstable here, jump to Activity or Data Quality to understand the cause."
+          value:
+            title: "Value"
+            fast_decision: { label: "Fast decision", value: "Tells you if operations are reliable now" }
+            unique_context: { label: "Unique context", value: "Unifies signals that are usually scattered" }
+            prevention: { label: "Prevention", value: "Detects degradations before they escalate" }
+          flow:
+            title: "Operational flow diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Simulation context flow diagram"
+          architecture:
+            title: "Architecture diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Simulation context architecture"
+        simulation_context:
+          how_to_use:
+            title: "How to use Simulation Context"
+            meta: "Simulation Context defines each run's reference frame: inputs, active rules, and configs that shape results."
+            usage: { label: "Recommended use", value: "Before comparing results across runs" }
+            objective: { label: "Objective", value: "Validate that runs are comparable" }
+            frequency: { label: "Frequency", value: "Whenever inputs or engine version change" }
+          read:
+            title: "What we can read"
+            input_hash: { label: "Input hash", value: "Deterministic reference for reproducibility" }
+            schema_version: { label: "Schema version", value: "Input contract used for the simulation" }
+            engine_version: { label: "Engine version", value: "Active calculation engine version" }
+            dataset: { label: "Dataset", value: "Base data source and implied assumptions" }
+            meta: "If context changes, results are not comparable without adjustments."
+          value:
+            title: "Value"
+            comparability: { label: "Comparability", value: "Avoids false conclusions between runs" }
+            traceability: { label: "Traceability", value: "Reproduce results exactly" }
+            audit: { label: "Audit", value: "Makes active assumptions explicit" }
+          flow:
+            title: "Operational flow diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Simulation context flow diagram"
+          architecture:
+            title: "Architecture diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Simulation context architecture"
+        system_metrics:
+          how_to_use:
+            title: "How to use System Metrics"
+            meta: "System Metrics centralizes KPIs that summarize operational performance, stability, and speed."
+            usage: { label: "Recommended use", value: "Before operational or capacity decisions" }
+            objective: { label: "Objective", value: "Detect performance or reliability degradations" }
+            frequency: { label: "Frequency", value: "Daily and whenever load changes" }
+          read:
+            title: "What we can read"
+            total_runs: { label: "Total runs (7d/30d)", value: "Operational volume and recent trend" }
+            success_rate: { label: "Success rate", value: "Execution stability over time" }
+            avg_duration: { label: "Avg duration", value: "Performance and potential bottlenecks" }
+            kpi_delta: { label: "KPIs delta", value: "Comparison vs previous periods" }
+            meta: "A sustained drop in success rate or longer durations suggests reviewing Activity and Data Quality."
+          value:
+            title: "Value"
+            operational_visibility: { label: "Operational visibility", value: "Clear signals about performance and health" }
+            early_detection: { label: "Early detection", value: "Anticipates reliability problems" }
+            action_priority: { label: "Action priority", value: "Helps decide where to investigate first" }
+          flow:
+            title: "Operational flow diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "System metrics operational flow"
+          architecture:
+            title: "Architecture diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "System metrics architecture"
+        activity:
+          how_to_use:
+            title: "How to use Activity"
+            meta: "Activity summarizes execution behavior in recent windows and highlights shifts in rhythm or state distribution."
+            usage: { label: "Recommended use", value: "When execution patterns change" }
+            objective: { label: "Objective", value: "Identify drops, spikes, or degradations" }
+            frequency: { label: "Frequency", value: "Continuous monitoring during operations" }
+          read:
+            title: "What we can read"
+            run_trend: { label: "Run trend (14d)", value: "Cadence and recent volume" }
+            status_mix: { label: "Status mix (30d)", value: "Distribution of success vs failures" }
+            peaks: { label: "Peaks or gaps", value: "Abnormal operational events" }
+            meta: "A degraded status mix often anticipates Data Quality issues."
+          value:
+            title: "Value"
+            timeline: { label: "Timeline context", value: "Places issues on a timeline" }
+            trend_detection: { label: "Trend detection", value: "Highlights sustained changes" }
+            prioritization: { label: "Prioritization", value: "Signals whether to investigate or scale" }
+          flow:
+            title: "Operational flow diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Activity operational flow"
+          architecture:
+            title: "Architecture diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Activity architecture"
+        financial_results:
+          how_to_use:
+            title: "How to use Financial Results"
+            meta: "Financial Results translates runs into financial signals to understand impact, risk, and account exposure."
+            usage: { label: "Recommended use", value: "After validating system stability" }
+            objective: { label: "Objective", value: "Interpret PnL and exposure in context" }
+            frequency: { label: "Frequency", value: "Post-run and end-of-day reviews" }
+          read:
+            title: "What we can read"
+            pnl_trend: { label: "PnL trend", value: "Direction and trend of results" }
+            latest_run: { label: "Latest succeeded run", value: "Baseline for comparisons" }
+            global_pnl: { label: "Global PnL", value: "Consolidated impact of the latest run" }
+            top_accounts: { label: "Top accounts", value: "Exposure and relative weight" }
+            run_comparison: { label: "Run comparison", value: "Changes across recent runs" }
+            input_traceability: { label: "Input traceability", value: "Link between input and output" }
+            meta: "Use this section after understanding context and activity to avoid biased interpretations."
+          value:
+            title: "Value"
+            financial_context: { label: "Financial context", value: "Turns technical data into impact" }
+            risk_priority: { label: "Risk priority", value: "Focuses on key accounts and results" }
+            follow_up: { label: "Follow-up", value: "Compare run over run" }
+          flow:
+            title: "Operational flow diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Financial results operational flow"
+          architecture:
+            title: "Architecture diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Financial results architecture"
+        data_quality:
+          how_to_use:
+            title: "How to use Data Quality"
+            meta: "Data Quality centralizes validation errors to detect defective inputs and recurring failure patterns."
+            usage: { label: "Recommended use", value: "When success rate drops or failures recur" }
+            objective: { label: "Objective", value: "Quickly identify the source of errors" }
+            frequency: { label: "Frequency", value: "On alerts or input changes" }
+          read:
+            title: "What we can read"
+            source: { label: "Source", value: "Error origin (pipeline or integration)" }
+            field: { label: "Field", value: "Attribute failing validation" }
+            message: { label: "Message", value: "Problem description" }
+            correlation: { label: "Correlation", value: "Associated run or batch" }
+            meta: "Filtering by source/field helps prioritize fixes."
+          value:
+            title: "Value"
+            input_quality: { label: "Input quality", value: "Prevents contaminating results" }
+            fast_feedback: { label: "Fast feedback", value: "Reduces correction time" }
+            prevention: { label: "Prevention", value: "Detects patterns before they escalate" }
+          flow:
+            title: "Operational flow diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Data quality operational flow"
+          architecture:
+            title: "Architecture diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Data quality architecture"

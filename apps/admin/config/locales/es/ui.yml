@@ -1,0 +1,14 @@
+es:
+  admin:
+    ui:
+      metric_card:
+        badge: "ViewComponent"
+      workspace_widget:
+        loading_message: "Cargando widget del workspace..."
+        empty_message: "Sin datos disponibles."
+        error_message: "Widget del workspace no disponible."
+        actions_label: "Acciones de %{title}"
+      workspace_table:
+        loading_message: "Cargando tabla del workspace..."
+        empty_message: "Sin filas disponibles."
+        error_message: "Tabla del workspace no disponible."

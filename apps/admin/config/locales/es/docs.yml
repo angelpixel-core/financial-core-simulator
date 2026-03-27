@@ -1,0 +1,181 @@
+es:
+  admin:
+    docs:
+      index:
+        eyebrow: "DOCS"
+        title: "Documentacion del sistema"
+        subtitle: "Referencias estructuradas para el workspace admin, alineadas a las secciones operativas."
+        sections_title: "Secciones"
+        sections_fallback: "Overview"
+        section_overview: "Resumen y referencias de la seccion."
+      show:
+        eyebrow: "DOCS"
+        back_to_docs: "Volver a docs"
+        related_sections: "Secciones relacionadas"
+        sections_fallback: "Overview"
+        includes: "Incluye"
+        includes_empty: "Esta seccion agrupa multiples paneles del workspace."
+      sections:
+        system_state:
+          title: "System State"
+          how_to_use:
+            title: "Como usar System State"
+            meta: "System State resume la salud operativa actual. Sirve como punto de entrada para detectar degradaciones, verificar estabilidad y decidir si conviene profundizar en otras secciones."
+            usage: { label: "Uso recomendado", value: "Revisar al inicio de cada sesion de monitoreo" }
+            objective: { label: "Objetivo", value: "Confirmar estabilidad y detectar alertas tempranas" }
+            frequency: { label: "Frecuencia", value: "Continuo en operaciones, puntual para auditorias" }
+          read:
+            title: "Que podemos leer"
+            operational_state: { label: "Estado operativo", value: "Salud general del sistema y confiabilidad" }
+            reliable_run: { label: "Ultima ejecucion confiable", value: "Referencia para comparaciones y trazabilidad" }
+            key_indicators: { label: "Indicadores clave", value: "Duracion promedio, tasa de exito, volumen reciente" }
+            meta: "Si algo se ve inestable aqui, se recomienda saltar a Activity o Data Quality para entender la causa."
+          value:
+            title: "Valor agregado"
+            fast_decision: { label: "Decision rapida", value: "Determina si la operacion es confiable ahora mismo" }
+            unique_context: { label: "Contexto unico", value: "Reune señales que normalmente estan dispersas" }
+            prevention: { label: "Prevencion", value: "Detecta degradaciones antes de que escalen" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo de contexto de simulacion"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura del contexto de simulacion"
+        simulation_context:
+          how_to_use:
+            title: "Como usar Simulation Context"
+            meta: "Simulation Context define el marco de referencia de cada run: inputs, reglas activas y configuraciones que determinan la interpretacion de resultados."
+            usage: { label: "Uso recomendado", value: "Antes de comparar resultados entre runs" }
+            objective: { label: "Objetivo", value: "Validar que las corridas son comparables" }
+            frequency: { label: "Frecuencia", value: "Siempre que cambien inputs o version de engine" }
+          read:
+            title: "Que podemos leer"
+            input_hash: { label: "Input hash", value: "Referencia deterministica para reproducibilidad" }
+            schema_version: { label: "Schema version", value: "Contrato del input usado en la simulacion" }
+            engine_version: { label: "Engine version", value: "Version del motor de calculo activo" }
+            dataset: { label: "Dataset", value: "Fuente de datos base y supuestos implicitos" }
+            meta: "Si cambia el contexto, los resultados no son comparables sin ajustes."
+          value:
+            title: "Valor agregado"
+            comparability: { label: "Comparabilidad", value: "Evita conclusiones falsas entre runs distintos" }
+            traceability: { label: "Trazabilidad", value: "Permite reproducir exactamente un resultado" }
+            audit: { label: "Auditoria", value: "Deja claro que supuestos estaban activos" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo de contexto de simulacion"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura del contexto de simulacion"
+        system_metrics:
+          how_to_use:
+            title: "Como usar System Metrics"
+            meta: "System Metrics concentra los KPIs que resumen el rendimiento operativo del sistema y permiten evaluar estabilidad, velocidad y salud general."
+            usage: { label: "Uso recomendado", value: "Antes de tomar decisiones operativas o de capacity" }
+            objective: { label: "Objetivo", value: "Detectar degradaciones de performance o fiabilidad" }
+            frequency: { label: "Frecuencia", value: "Revisar diario y ante cambios de carga" }
+          read:
+            title: "Que podemos leer"
+            total_runs: { label: "Total runs (7d/30d)", value: "Volumen operativo y tendencia reciente" }
+            success_rate: { label: "Success rate", value: "Estabilidad de ejecucion en el tiempo" }
+            avg_duration: { label: "Avg duration", value: "Performance y posibles cuellos de botella" }
+            kpi_delta: { label: "KPIs delta", value: "Comparacion contra periodos previos" }
+            meta: "Un descenso sostenido en success rate o aumentos de duracion sugieren revisar Activity y Data Quality."
+          value:
+            title: "Valor agregado"
+            operational_visibility: { label: "Visibilidad operativa", value: "Señales claras sobre performance y salud" }
+            early_detection: { label: "Deteccion temprana", value: "Se anticipa a problemas de confiabilidad" }
+            action_priority: { label: "Prioridad de acciones", value: "Ayuda a decidir donde investigar primero" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo operativo de metricas"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura de metricas"
+        activity:
+          how_to_use:
+            title: "Como usar Activity"
+            meta: "Activity resume el comportamiento de ejecucion en ventanas recientes y permite detectar cambios de ritmo o distribucion de estados."
+            usage: { label: "Uso recomendado", value: "Cuando cambian patrones de ejecucion" }
+            objective: { label: "Objetivo", value: "Identificar caidas, spikes o degradacion" }
+            frequency: { label: "Frecuencia", value: "Monitoreo continuo durante operaciones" }
+          read:
+            title: "Que podemos leer"
+            run_trend: { label: "Run trend (14d)", value: "Cadencia y volumen reciente" }
+            status_mix: { label: "Status mix (30d)", value: "Distribucion de success vs fallas" }
+            peaks: { label: "Picos o huecos", value: "Eventos operativos anormales" }
+            meta: "Una mezcla de estados degradada suele anticipar issues en Data Quality."
+          value:
+            title: "Valor agregado"
+            timeline: { label: "Contexto temporal", value: "Ubica el problema en una linea de tiempo" }
+            trend_detection: { label: "Deteccion de tendencia", value: "Permite ver cambios sostenidos" }
+            prioritization: { label: "Priorizacion", value: "Indica si investigar o escalar capacidad" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo operacional de actividad"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura de actividad"
+        financial_results:
+          how_to_use:
+            title: "Como usar Financial Results"
+            meta: "Financial Results traduce las corridas en señales financieras concretas para entender impacto, riesgo y exposicion por cuenta."
+            usage: { label: "Uso recomendado", value: "Despues de validar que el sistema esta estable" }
+            objective: { label: "Objetivo", value: "Interpretar PnL y exposicion en contexto" }
+            frequency: { label: "Frecuencia", value: "Post-run y revisiones de cierre" }
+          read:
+            title: "Que podemos leer"
+            pnl_trend: { label: "PnL trend", value: "Tendencia y direccion del resultado" }
+            latest_run: { label: "Latest succeeded run", value: "Referencia base para comparacion" }
+            global_pnl: { label: "Global PnL", value: "Impacto consolidado del ultimo run" }
+            top_accounts: { label: "Top accounts", value: "Exposicion y peso relativo" }
+            run_comparison: { label: "Run comparison", value: "Cambios entre runs recientes" }
+            input_traceability: { label: "Input traceability", value: "Relacion entre input y salida" }
+            meta: "Usar esta seccion despues de entender contexto y actividad evita interpretaciones sesgadas."
+          value:
+            title: "Valor agregado"
+            financial_context: { label: "Contexto financiero", value: "Convierte datos tecnicos en impacto" }
+            risk_priority: { label: "Prioridad de riesgo", value: "Enfoca en cuentas y resultados clave" }
+            follow_up: { label: "Seguimiento", value: "Permite comparar run sobre run" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo operacional de resultados"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura de resultados"
+        data_quality:
+          how_to_use:
+            title: "Como usar Data Quality"
+            meta: "Data Quality concentra los errores de validacion para detectar entradas defectuosas y patrones de falla recurrentes."
+            usage: { label: "Uso recomendado", value: "Cuando el success rate cae o hay fallas recurrentes" }
+            objective: { label: "Objetivo", value: "Identificar rapidamente el origen de errores" }
+            frequency: { label: "Frecuencia", value: "Ante alertas o cambios en inputs" }
+          read:
+            title: "Que podemos leer"
+            source: { label: "Fuente", value: "Origen del error (pipeline o integracion)" }
+            field: { label: "Campo", value: "Atributo que falla validacion" }
+            message: { label: "Mensaje", value: "Descripcion del problema" }
+            correlation: { label: "Correlation", value: "Run o lote asociado" }
+            meta: "Filtrar por source/field ayuda a priorizar correcciones."
+          value:
+            title: "Valor agregado"
+            input_quality: { label: "Calidad de inputs", value: "Evita contaminar resultados" }
+            fast_feedback: { label: "Feedback rapido", value: "Reduce tiempo de correccion" }
+            prevention: { label: "Prevencion", value: "Detecta patrones antes de escalar" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo operativo de calidad"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura de calidad"

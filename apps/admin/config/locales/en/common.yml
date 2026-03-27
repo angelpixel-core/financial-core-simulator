@@ -1,0 +1,18 @@
+en:
+  admin:
+    common:
+      na: "N/A"
+      what_happened: "What happened"
+      impact: "Impact"
+      next_action: "Next action"
+      open: "Open"
+      previous: "Previous"
+      next: "Next"
+      apply: "Apply"
+      reset: "Reset"
+      updated: "Updated %{time}"
+      view_details: "View details"
+      day: "Day"
+      runs: "Runs"
+      runs_tooltip: "%{day}: %{count} runs"
+      ms: "ms"

@@ -1,0 +1,10 @@
+en:
+  admin:
+    nav:
+      overview: "Overview"
+      runs: "Runs"
+      validation: "Validation"
+      artifacts: "Artifacts"
+      docs: "Docs"
+      workspace: "Workspace"
+      open_runs: "Open Runs"
