@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'dashboard/overview_routes'
+require_relative "dashboard/overview_routes"
 
 module DashboardRoutes
   def self.extended(router)

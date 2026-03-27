@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'concerns/run_artifact_redirects'
+require_relative "concerns/run_artifact_redirects"
 
 module LegacyRoutes
   def self.extended(router)
