@@ -27,13 +27,13 @@ module FCS
         validate_artifacts!(artifacts) if validate_artifacts
 
         lines = []
-        lines << "=== fcs_summary ==="
-        lines << "status: #{status}"
-        lines << "run_id: #{result_json_payload.fetch("runId")}"
-        lines << "input_hash: #{result_json_payload.fetch("inputHash")}"
-        lines << "schema_version: #{result_json_payload.fetch("schemaVersion")}"
-        lines << "engine_version: #{result_json_payload.fetch("engineVersion")}"
-        lines << "valuation_timestamp: #{result_json_payload.fetch("valuationTimestamp")}"
+        lines << t("fcs.reporting.cli_summary.title")
+        lines << "#{t("fcs.reporting.cli_summary.labels.status")}: #{status}"
+        lines << "#{t("fcs.reporting.cli_summary.labels.run_id")}: #{result_json_payload.fetch("runId")}"
+        lines << "#{t("fcs.reporting.cli_summary.labels.input_hash")}: #{result_json_payload.fetch("inputHash")}"
+        lines << "#{t("fcs.reporting.cli_summary.labels.schema_version")}: #{result_json_payload.fetch("schemaVersion")}"
+        lines << "#{t("fcs.reporting.cli_summary.labels.engine_version")}: #{result_json_payload.fetch("engineVersion")}"
+        lines << "#{t("fcs.reporting.cli_summary.labels.valuation_timestamp")}: #{result_json_payload.fetch("valuationTimestamp")}"
         lines.concat(metric_lines(result_json_payload.fetch("global")))
         lines.concat(artifact_lines(artifacts))
 
@@ -44,19 +44,19 @@ module FCS
 
       def metric_lines(global)
         lines = []
-        lines << "metrics:"
-        lines << "  realized_pnl_quote: #{format_value(global.fetch("realizedPnLQuote"))}"
-        lines << "  fees_quote: #{format_value(global.fetch("feesQuote"))}"
-        lines << "  realized_net_pnl_quote: #{format_value(global.fetch("realizedNetPnLQuote"))}"
-        lines << "  unrealized_pnl_quote: #{format_value(global.fetch("unrealizedPnLQuote"))}"
-        lines << "  total_pnl_quote: #{format_value(global.fetch("totalPnLQuote"))}"
-        lines << "  total_pnl_usd: #{format_value(global["totalPnLUsd"])}"
+        lines << "#{t("fcs.reporting.cli_summary.sections.metrics")}:"
+        lines << "  #{t("fcs.reporting.cli_summary.metric_labels.realized_pnl_quote")}: #{format_value(global.fetch("realizedPnLQuote"))}"
+        lines << "  #{t("fcs.reporting.cli_summary.metric_labels.fees_quote")}: #{format_value(global.fetch("feesQuote"))}"
+        lines << "  #{t("fcs.reporting.cli_summary.metric_labels.realized_net_pnl_quote")}: #{format_value(global.fetch("realizedNetPnLQuote"))}"
+        lines << "  #{t("fcs.reporting.cli_summary.metric_labels.unrealized_pnl_quote")}: #{format_value(global.fetch("unrealizedPnLQuote"))}"
+        lines << "  #{t("fcs.reporting.cli_summary.metric_labels.total_pnl_quote")}: #{format_value(global.fetch("totalPnLQuote"))}"
+        lines << "  #{t("fcs.reporting.cli_summary.metric_labels.total_pnl_usd")}: #{format_value(global["totalPnLUsd"])}"
         lines
       end
 
       def artifact_lines(artifacts)
         lines = []
-        lines << "artifacts:"
+        lines << "#{t("fcs.reporting.cli_summary.sections.artifacts")}:"
 
         REQUIRED_ARTIFACT_KEYS.each do |key, label|
           path = artifacts[key]
@@ -65,7 +65,11 @@ module FCS
 
         extra_keys = artifacts.keys.map(&:to_s)
           .sort
-          .reject { |key| REQUIRED_ARTIFACT_KEYS.any? { |required, _| required.to_s == key } }
+          .reject do |key|
+            REQUIRED_ARTIFACT_KEYS.any? do |required, _|
+              required.to_s == key
+            end
+        end
         extra_keys.each do |key|
           lines << "  #{key}: #{format_value(artifacts[key.to_sym] || artifacts[key])}"
         end
@@ -98,9 +102,13 @@ module FCS
 
         raise FCS::Error.new(
           FCS::Errors::ERR_VALIDATION,
-          "Missing required artifacts for CLI summary",
+          t("fcs.reporting.cli_summary.errors.missing_artifacts"),
           details: details
         )
+      end
+
+      def t(key, **opts)
+        ::I18n.t(key, **opts)
       end
     end
   end
