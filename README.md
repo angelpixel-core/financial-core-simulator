@@ -122,6 +122,25 @@ bundle config set path "vendor/bundle"
 
 No `.env` setup is required for the canonical demo run.
 
+## Internationalization (i18n)
+
+The admin app and CLI support English (`en`) and Spanish (`es`), defaulting to English and falling back to English for unsupported locales.
+
+Admin locale selection:
+
+```bash
+# Per-request locale selection (persists in session)
+https://localhost:3000/admin?locale=es
+```
+
+CLI locale selection:
+
+```bash
+FCS_LOCALE=es bin/fcs run --input lib/fcs/fixtures/demo_input.json
+```
+
+Locale selection does not change JSON payload keys; only user-facing labels and diagnostics are translated.
+
 Bootstrap and first canonical run:
 
 ```bash
