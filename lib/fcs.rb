@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "fcs/version"
+require_relative "fcs/i18n"
 
 require "zeitwerk"
 
@@ -40,5 +41,8 @@ module FCS
     end
   end
 end
+
+FCS::I18n.load_translations!
+FCS::I18n.configure_locale
 
 loader.eager_load
