@@ -65,7 +65,7 @@ module FCS
         return if headers == expected_headers
 
         raise_validation_error!(
-          message: "CSV header mismatch for #{label}",
+          message: t("fcs.reporting.csv.header_mismatch", label: label),
           mismatch: "csv_header_mismatch",
           details: {
             "expected_headers" => expected_headers,
@@ -109,7 +109,7 @@ module FCS
           key = [row["account_id"], row["market_id"]]
           if acc.key?(key)
             raise_validation_error!(
-              message: "CSV contains duplicate rows for account and market",
+              message: t("fcs.reporting.csv.duplicate_rows"),
               mismatch: "csv_row_duplicate",
               details: {
                 "account_id" => key[0],
@@ -136,7 +136,7 @@ module FCS
         return if extra.empty?
 
         raise_validation_error!(
-          message: "CSV contains unexpected rows for #{label}",
+          message: t("fcs.reporting.csv.unexpected_rows", label: label),
           mismatch: "csv_row_unexpected",
           details: {
             "unexpected_rows" => extra.map { |row| {"account_id" => row[0], "market_id" => row[1]} }
@@ -150,7 +150,7 @@ module FCS
 
         if actual.nil?
           raise_validation_error!(
-            message: "CSV row missing for #{label}",
+            message: t("fcs.reporting.csv.row_missing", label: label),
             mismatch: "csv_row_missing",
             details: {
               "account_id" => key[0],
@@ -165,7 +165,7 @@ module FCS
           next if decimals_equal?(expected_value, actual_value)
 
           raise_validation_error!(
-            message: "CSV row mismatch for #{label}",
+            message: t("fcs.reporting.csv.row_mismatch", label: label),
             mismatch: "csv_row_mismatch",
             details: {
               "account_id" => key[0],
@@ -194,7 +194,7 @@ module FCS
             value = normalize_blank(row[field])
             if value.nil?
               raise_validation_error!(
-                message: "CSV totals row is missing required numeric value",
+                message: t("fcs.reporting.csv.totals_missing_value"),
                 mismatch: "csv_global_total_missing",
                 details: {
                   "field" => field
@@ -213,7 +213,7 @@ module FCS
           next if decimals_equal?(expected, actual)
 
           raise_validation_error!(
-            message: "CSV totals do not reconcile with result.json",
+            message: t("fcs.reporting.csv.totals_mismatch"),
             mismatch: "csv_global_total_mismatch",
             details: {
               "field" => field,
@@ -230,7 +230,7 @@ module FCS
             return if expected_total_usd.nil?
 
             raise_validation_error!(
-              message: "CSV USD totals missing while result.json has USD totals",
+              message: t("fcs.reporting.csv.usd_totals_missing"),
               mismatch: "csv_global_total_usd_missing",
               details: {
                 "expected" => serialize_decimal(expected_total_usd)
@@ -239,7 +239,7 @@ module FCS
           end
 
           raise_validation_error!(
-            message: "CSV USD totals are partially missing across rows",
+            message: t("fcs.reporting.csv.usd_totals_partial"),
             mismatch: "csv_global_total_usd_partial",
             details: {
               "expected" => serialize_decimal(expected_total_usd)
@@ -249,7 +249,7 @@ module FCS
 
         if expected_total_usd.nil?
           raise_validation_error!(
-            message: "CSV USD totals present while result.json has no USD totals",
+            message: t("fcs.reporting.csv.usd_totals_unexpected"),
             mismatch: "csv_global_total_usd_unexpected",
             details: {
               "actual" => total_usd_values.map { |value| serialize_decimal(value) }
@@ -266,7 +266,7 @@ module FCS
         return if decimals_equal?(expected_usd, actual_usd)
 
         raise_validation_error!(
-          message: "CSV USD totals do not reconcile with result.json",
+          message: t("fcs.reporting.csv.usd_totals_mismatch"),
           mismatch: "csv_global_total_usd_mismatch",
           details: {
             "expected" => expected_usd,
@@ -314,11 +314,14 @@ module FCS
           message,
           details: {
             "mismatch" => mismatch,
-            "impact" => "CSV artifacts are not aligned with canonical result.json for this run.",
-            "next_action" => "Regenerate artifacts from the canonical payload and inspect " \
-                             "the reconciliation diagnostics."
+            "impact" => t("fcs.reporting.csv.impact"),
+            "next_action" => t("fcs.reporting.csv.next_action")
           }.merge(details)
         )
+      end
+
+      def t(key, **opts)
+        ::I18n.t(key, **opts)
       end
     end
   end

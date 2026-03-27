@@ -38,7 +38,7 @@ module FCS
 
         if value.nil?
           raise_contract_error!(
-            message: "account-market row is missing required metrics",
+            message: t("fcs.reporting.account_market.missing_required_metrics"),
             missing_field: path,
             account_id: account["accountId"],
             market_id: market["marketId"]
@@ -47,7 +47,7 @@ module FCS
 
         if value.is_a?(String) && value.strip.empty?
           raise_contract_error!(
-            message: "account-market row has empty required metrics",
+            message: t("fcs.reporting.account_market.empty_required_metrics"),
             missing_field: path,
             account_id: account["accountId"],
             market_id: market["marketId"],
@@ -59,7 +59,7 @@ module FCS
           FCS::Types::Decimal18.from_string(value.to_s)
         rescue
           raise_contract_error!(
-            message: "account-market row has invalid metric format",
+            message: t("fcs.reporting.account_market.invalid_metric_format"),
             missing_field: path,
             account_id: account["accountId"],
             market_id: market["marketId"],
@@ -73,9 +73,8 @@ module FCS
           "missing_field" => missing_field,
           "account_id" => account_id,
           "market_id" => market_id,
-          "impact" => "Canonical account-market artifacts cannot be trusted for this run.",
-          "next_action" => "Ensure quantity, avgCost, realizedPnL, and unrealizedPnL are present " \
-                           "and valid decimal strings for every account-market row."
+          "impact" => t("fcs.reporting.account_market.impact"),
+          "next_action" => t("fcs.reporting.account_market.next_action")
         }
         details["invalid_value"] = invalid_value unless invalid_value.nil?
 
@@ -84,6 +83,10 @@ module FCS
           message,
           details: details
         )
+      end
+
+      def t(key, **opts)
+        ::I18n.t(key, **opts)
       end
     end
   end

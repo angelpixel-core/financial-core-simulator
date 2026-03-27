@@ -21,7 +21,7 @@ module FCS
           next if value && (!value.is_a?(String) || !value.strip.empty?)
 
           raise_contract_error!(
-            message: "result metadata missing required field",
+            message: t("fcs.reporting.result_metadata.missing_required_field"),
             field: field,
             invalid_value: value
           )
@@ -38,7 +38,7 @@ module FCS
         return if value.is_a?(String) && value.match?(regex)
 
         raise_contract_error!(
-          message: "result metadata has invalid format",
+          message: t("fcs.reporting.result_metadata.invalid_format"),
           field: field,
           invalid_value: value
         )
@@ -47,9 +47,8 @@ module FCS
       def raise_contract_error!(message:, field:, invalid_value: nil)
         details = {
           "field" => field,
-          "impact" => "Canonical result metadata cannot be trusted for this run.",
-          "next_action" => "Ensure metadata fields are present and formatted as required " \
-                           "(ISO-8601 UTC timestamps, deterministic identifiers)."
+          "impact" => t("fcs.reporting.result_metadata.impact"),
+          "next_action" => t("fcs.reporting.result_metadata.next_action")
         }
         details["invalid_value"] = invalid_value unless invalid_value.nil?
 
@@ -58,6 +57,10 @@ module FCS
           message,
           details: details
         )
+      end
+
+      def t(key, **opts)
+        ::I18n.t(key, **opts)
       end
     end
   end
