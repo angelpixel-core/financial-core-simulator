@@ -1,4 +1,4 @@
-<ul class="trend-line-fallback" aria-label="PnL trend fallback values">
+<ul class="trend-line-fallback" aria-label="<%= t("admin.overview.financial_results.pnl_trend.fallback_aria") %>">
   <% pagination[:entries].each do |point| %>
     <li>
       <span><%= point[:label] %></span>
@@ -6,24 +6,22 @@
     </li>
   <% end %>
 </ul>
-
 <% if pagination[:total_pages] > 1 %>
-  <nav class="pagination pagination--pnl" aria-label="PnL trend pagination">
+  <nav class="pagination pagination--pnl" aria-label="<%= t("admin.overview.financial_results.pnl_trend.pagination_aria") %>">
     <ul class="pagination-content">
       <li class="pagination-item">
         <% if pagination[:page] > 1 %>
           <%= link_to admin_overview_pnl_trend_path(page: pagination[:page] - 1), data: { turbo_frame: "pnl_trend_fallback" }, class: "pagination-link pagination-prev" do %>
             <span aria-hidden="true">‹</span>
-            <span class="pagination-text">Previous</span>
+            <span class="pagination-text"><%= t("admin.common.previous") %></span>
           <% end %>
         <% else %>
           <span class="pagination-link pagination-prev pagination-disabled">
             <span aria-hidden="true">‹</span>
-            <span class="pagination-text">Previous</span>
+            <span class="pagination-text"><%= t("admin.common.previous") %></span>
           </span>
         <% end %>
       </li>
-
       <% total_pages = pagination[:total_pages] %>
       <% current_page = pagination[:page] %>
       <% if total_pages <= 5 %>
@@ -40,13 +38,11 @@
             data: { turbo_frame: "pnl_trend_fallback" },
             class: "pagination-link#{" is-active" if current_page == 1}" %>
         </li>
-
         <% if current_page > 3 %>
           <li class="pagination-item">
             <span class="pagination-ellipsis">…</span>
           </li>
         <% end %>
-
         <% window_start = [2, current_page - 1].max %>
         <% window_end = [total_pages - 1, current_page + 1].min %>
         <% (window_start..window_end).each do |page_number| %>
@@ -57,29 +53,26 @@
               class: "pagination-link#{" is-active" if page_number == current_page}" %>
           </li>
         <% end %>
-
         <% if current_page < total_pages - 2 %>
           <li class="pagination-item">
             <span class="pagination-ellipsis">…</span>
           </li>
         <% end %>
-
         <li class="pagination-item">
           <%= link_to total_pages, admin_overview_pnl_trend_path(page: total_pages),
             data: { turbo_frame: "pnl_trend_fallback" },
             class: "pagination-link#{" is-active" if current_page == total_pages}" %>
         </li>
       <% end %>
-
       <li class="pagination-item">
         <% if pagination[:page] < pagination[:total_pages] %>
           <%= link_to admin_overview_pnl_trend_path(page: pagination[:page] + 1), data: { turbo_frame: "pnl_trend_fallback" }, class: "pagination-link pagination-next" do %>
-            <span class="pagination-text">Next</span>
+            <span class="pagination-text"><%= t("admin.common.next") %></span>
             <span aria-hidden="true">›</span>
           <% end %>
         <% else %>
           <span class="pagination-link pagination-next pagination-disabled">
-            <span class="pagination-text">Next</span>
+            <span class="pagination-text"><%= t("admin.common.next") %></span>
             <span aria-hidden="true">›</span>
           </span>
         <% end %>

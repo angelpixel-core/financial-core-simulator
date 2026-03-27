@@ -1,20 +1,20 @@
 <main class="overview">
   <header class="overview__header">
     <div>
-      <p class="overview__eyebrow">Admin</p>
-      <h1>Runs Trend (14d)</h1>
-      <p class="overview__subtitle">Daily execution volume trend for the last 14 days.</p>
+      <p class="overview__eyebrow"><%= t("admin.overview.runs_trend.eyebrow") %></p>
+      <h1><%= t("admin.overview.runs_trend.title") %></h1>
+      <p class="overview__subtitle"><%= t("admin.overview.runs_trend.subtitle") %></p>
     </div>
     <nav class="overview__nav">
-      <a class="overview__link" href="<%= admin_overview_path %>">Back to overview</a>
-      <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
+      <a class="overview__link" href="<%= admin_overview_path %>"><%= t("admin.overview.runs_trend.back_to_overview") %></a>
+      <a class="overview__link" href="<%= avo.resources_runs_path %>"><%= t("admin.nav.open_runs") %></a>
     </nav>
   </header>
   <% trend_points = Array(@metrics[:runs_trend_14d]) %>
   <%= render Admin::Ui::WorkspaceWidgetComponent.new(
-    title: "Run trend (14d)",
+    title: t("admin.overview.runs_trend.widget_title"),
     state: trend_points.empty? ? :empty : :default,
-    empty_message: "No trend points available."
+    empty_message: t("admin.overview.runs_trend.empty_message")
   ) do %>
     <%= render Admin::Ui::WorkspaceTrendChartComponent.new(points: trend_points, detail: true) %>
   <% end %>

@@ -16,41 +16,40 @@ end %>
   }
 end %>
 <%= render Admin::Ui::WorkspaceWidgetComponent.new(
-  title: "Top accounts (live)",
+  title: t("admin.overview.top_accounts.widget_title"),
   cta_path: drilldown_path,
-  cta_label: "View top accounts",
+  cta_label: t("admin.overview.top_accounts.cta_label"),
   updated_at: Time.current.strftime("%H:%M:%S"),
-  actions_label: "Top accounts actions",
+  actions_label: t("admin.overview.top_accounts.actions_label"),
   state: accounts.empty? ? :empty : :default,
-  empty_message: "No account totals available."
+  empty_message: t("admin.overview.top_accounts.empty_message")
 ) do %>
   <%= render Admin::Ui::WorkspaceTableAdapterComponent.new(
     columns: [
-      { key: :account, label: "Account" },
-      { key: :total_pnl_quote, label: "Total PnL Quote" },
-      { key: :realized_net, label: "Realized Net" },
-      { key: :unrealized, label: "Unrealized" }
+      { key: :account, label: t("admin.overview.top_accounts.columns.account") },
+      { key: :total_pnl_quote, label: t("admin.overview.top_accounts.columns.total_pnl_quote") },
+      { key: :realized_net, label: t("admin.overview.top_accounts.columns.realized_net") },
+      { key: :unrealized, label: t("admin.overview.top_accounts.columns.unrealized") }
     ],
     rows: rows,
     table_class: "top-accounts-table table--striped"
   ) %>
   <% if pagination && pagination[:total_pages] > 1 %>
-    <nav class="pagination pagination--pnl" aria-label="Top accounts pagination">
+    <nav class="pagination pagination--pnl" aria-label="<%= t("admin.overview.top_accounts.pagination.aria") %>">
       <ul class="pagination-content">
         <li class="pagination-item">
           <% if pagination[:page] > 1 %>
             <%= link_to admin_overview_top_accounts_path(navigation_context.merge(page: pagination[:page] - 1)), data: { turbo_frame: "overview-top-accounts-panel" }, class: "pagination-link pagination-prev" do %>
               <span aria-hidden="true">‹</span>
-              <span class="pagination-text">Previous</span>
+              <span class="pagination-text"><%= t("admin.common.previous") %></span>
             <% end %>
           <% else %>
             <span class="pagination-link pagination-prev pagination-disabled">
               <span aria-hidden="true">‹</span>
-              <span class="pagination-text">Previous</span>
+              <span class="pagination-text"><%= t("admin.common.previous") %></span>
             </span>
           <% end %>
         </li>
-
         <% total_pages = pagination[:total_pages] %>
         <% current_page = pagination[:page] %>
         <% if total_pages <= 5 %>
@@ -67,13 +66,11 @@ end %>
               data: { turbo_frame: "overview-top-accounts-panel" },
               class: "pagination-link#{" is-active" if current_page == 1}" %>
           </li>
-
           <% if current_page > 3 %>
             <li class="pagination-item">
               <span class="pagination-ellipsis">…</span>
             </li>
           <% end %>
-
           <% window_start = [2, current_page - 1].max %>
           <% window_end = [total_pages - 1, current_page + 1].min %>
           <% (window_start..window_end).each do |page_number| %>
@@ -84,29 +81,26 @@ end %>
                 class: "pagination-link#{" is-active" if page_number == current_page}" %>
             </li>
           <% end %>
-
           <% if current_page < total_pages - 2 %>
             <li class="pagination-item">
               <span class="pagination-ellipsis">…</span>
             </li>
           <% end %>
-
           <li class="pagination-item">
             <%= link_to total_pages, admin_overview_top_accounts_path(navigation_context.merge(page: total_pages)),
               data: { turbo_frame: "overview-top-accounts-panel" },
               class: "pagination-link#{" is-active" if current_page == total_pages}" %>
           </li>
         <% end %>
-
         <li class="pagination-item">
           <% if pagination[:page] < pagination[:total_pages] %>
             <%= link_to admin_overview_top_accounts_path(navigation_context.merge(page: pagination[:page] + 1)), data: { turbo_frame: "overview-top-accounts-panel" }, class: "pagination-link pagination-next" do %>
-              <span class="pagination-text">Next</span>
+              <span class="pagination-text"><%= t("admin.common.next") %></span>
               <span aria-hidden="true">›</span>
             <% end %>
           <% else %>
             <span class="pagination-link pagination-next pagination-disabled">
-              <span class="pagination-text">Next</span>
+              <span class="pagination-text"><%= t("admin.common.next") %></span>
               <span aria-hidden="true">›</span>
             </span>
           <% end %>

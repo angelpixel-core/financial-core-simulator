@@ -2,13 +2,13 @@
   <% navigation_context = @navigation_context || {} %>
   <header class="overview__header">
     <div>
-      <p class="overview__eyebrow">Admin</p>
-      <h1>Top Accounts</h1>
-      <p class="overview__subtitle">Standalone view with the same visual language as Financial Overview.</p>
+      <p class="overview__eyebrow"><%= t("admin.overview.top_accounts.eyebrow") %></p>
+      <h1><%= t("admin.overview.top_accounts.title") %></h1>
+      <p class="overview__subtitle"><%= t("admin.overview.top_accounts.subtitle") %></p>
     </div>
     <nav class="overview__nav">
-      <a class="overview__link" href="<%= admin_overview_path(navigation_context) %>">Back to overview</a>
-      <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
+      <a class="overview__link" href="<%= admin_overview_path(navigation_context) %>"><%= t("admin.overview.top_accounts.back_to_overview") %></a>
+      <a class="overview__link" href="<%= avo.resources_runs_path %>"><%= t("admin.nav.open_runs") %></a>
     </nav>
   </header>
   <section class="overview__live">

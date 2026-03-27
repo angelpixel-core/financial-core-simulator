@@ -2,11 +2,11 @@
 <% navigation_context = local_assigns.fetch(:navigation_context, {}) %>
 <% drilldown_path = show_drilldown ? admin_overview_ingestion_validation_errors_path(navigation_context) : nil %>
 <%= render Admin::Ui::WorkspaceWidgetComponent.new(
-  title: "Ingestion validation errors",
+  title: t("admin.overview.validation.widget_title"),
   cta_path: drilldown_path,
-  cta_label: "View ingestion errors",
+  cta_label: t("admin.overview.validation.cta_label"),
   updated_at: Time.current.strftime("%H:%M:%S"),
-  actions_label: "Ingestion validation errors actions"
+  actions_label: t("admin.overview.validation.actions_label")
 ) do %>
   <form
     id="ingestion-errors-filters-form"
@@ -20,21 +20,21 @@
     <% navigation_context.each do |key, value| %>
       <input type="hidden" name="<%= key %>" value="<%= value %>" />
     <% end %>
-    <label for="source-filter" class="ingestion-filters__label">Source</label>
-    <input id="source-filter" class="ingestion-filters__input" name="source" type="text" value="<%= selected_source %>" placeholder="agente.hft.alpha" data-action="input->ingestion-filters#scheduleSubmit" />
-    <label for="field-filter" class="ingestion-filters__label">Field</label>
-    <input id="field-filter" class="ingestion-filters__input" name="field" type="text" value="<%= selected_field %>" placeholder="riskModel" data-action="input->ingestion-filters#scheduleSubmit" />
-    <button type="submit" class="ingestion-filters__button ingestion-filters__button--primary">Apply</button>
-    <button type="button" class="ingestion-filters__button" data-action="click->ingestion-filters#reset">Reset</button>
+    <label for="source-filter" class="ingestion-filters__label"><%= t("admin.overview.validation.filters.source") %></label>
+    <input id="source-filter" class="ingestion-filters__input" name="source" type="text" value="<%= selected_source %>" placeholder="<%= t("admin.overview.validation.filters.source_placeholder") %>" data-action="input->ingestion-filters#scheduleSubmit" />
+    <label for="field-filter" class="ingestion-filters__label"><%= t("admin.overview.validation.filters.field") %></label>
+    <input id="field-filter" class="ingestion-filters__input" name="field" type="text" value="<%= selected_field %>" placeholder="<%= t("admin.overview.validation.filters.field_placeholder") %>" data-action="input->ingestion-filters#scheduleSubmit" />
+    <button type="submit" class="ingestion-filters__button ingestion-filters__button--primary"><%= t("admin.common.apply") %></button>
+    <button type="button" class="ingestion-filters__button" data-action="click->ingestion-filters#reset"><%= t("admin.common.reset") %></button>
   </form>
   <% pagination = local_assigns[:pagination] %>
   <%= render Admin::Ui::WorkspaceTableAdapterComponent.new(
     columns: [
-      { key: :source, label: "Source" },
-      { key: :field, label: "Field" },
-      { key: :message, label: "Message" },
-      { key: :occurred_at, label: "Occurred" },
-      { key: :correlation_id, label: "Correlation" }
+      { key: :source, label: t("admin.overview.validation.columns.source") },
+      { key: :field, label: t("admin.overview.validation.columns.field") },
+      { key: :message, label: t("admin.overview.validation.columns.message") },
+      { key: :occurred_at, label: t("admin.overview.validation.columns.occurred") },
+      { key: :correlation_id, label: t("admin.overview.validation.columns.correlation") }
     ],
     rows: Array(errors).map do |error|
       {
@@ -47,27 +47,26 @@
     end,
     table_class: "top-accounts-table ingestion-errors-table table--striped",
     state: errors.blank? ? :empty : :default,
-    empty_message: "No ingestion validation errors.",
-    loading_message: "Loading ingestion validation errors...",
-    error_message: "Ingestion validation errors unavailable."
+    empty_message: t("admin.overview.validation.empty_message"),
+    loading_message: t("admin.overview.validation.loading_message"),
+    error_message: t("admin.overview.validation.error_message")
   ) %>
   <% if pagination && pagination[:total_pages] > 1 %>
-    <nav class="pagination pagination--pnl" aria-label="Ingestion errors pagination">
+    <nav class="pagination pagination--pnl" aria-label="<%= t("admin.overview.validation.pagination.aria") %>">
       <ul class="pagination-content">
         <li class="pagination-item">
           <% if pagination[:page] > 1 %>
             <%= link_to admin_overview_ingestion_validation_errors_path(navigation_context.merge(source: selected_source, field: selected_field, errors_page: pagination[:page] - 1)), data: { turbo_frame: "overview-ingestion-validation-errors-panel" }, class: "pagination-link pagination-prev" do %>
               <span aria-hidden="true">‹</span>
-              <span class="pagination-text">Previous</span>
+              <span class="pagination-text"><%= t("admin.common.previous") %></span>
             <% end %>
           <% else %>
             <span class="pagination-link pagination-prev pagination-disabled">
               <span aria-hidden="true">‹</span>
-              <span class="pagination-text">Previous</span>
+              <span class="pagination-text"><%= t("admin.common.previous") %></span>
             </span>
           <% end %>
         </li>
-
         <% total_pages = pagination[:total_pages] %>
         <% current_page = pagination[:page] %>
         <% if total_pages <= 5 %>
@@ -84,13 +83,11 @@
               data: { turbo_frame: "overview-ingestion-validation-errors-panel" },
               class: "pagination-link#{" is-active" if current_page == 1}" %>
           </li>
-
           <% if current_page > 3 %>
             <li class="pagination-item">
               <span class="pagination-ellipsis">…</span>
             </li>
           <% end %>
-
           <% window_start = [2, current_page - 1].max %>
           <% window_end = [total_pages - 1, current_page + 1].min %>
           <% (window_start..window_end).each do |page_number| %>
@@ -101,29 +98,26 @@
                 class: "pagination-link#{" is-active" if page_number == current_page}" %>
             </li>
           <% end %>
-
           <% if current_page < total_pages - 2 %>
             <li class="pagination-item">
               <span class="pagination-ellipsis">…</span>
             </li>
           <% end %>
-
           <li class="pagination-item">
             <%= link_to total_pages, admin_overview_ingestion_validation_errors_path(navigation_context.merge(source: selected_source, field: selected_field, errors_page: total_pages)),
               data: { turbo_frame: "overview-ingestion-validation-errors-panel" },
               class: "pagination-link#{" is-active" if current_page == total_pages}" %>
           </li>
         <% end %>
-
         <li class="pagination-item">
           <% if pagination[:page] < pagination[:total_pages] %>
             <%= link_to admin_overview_ingestion_validation_errors_path(navigation_context.merge(source: selected_source, field: selected_field, errors_page: pagination[:page] + 1)), data: { turbo_frame: "overview-ingestion-validation-errors-panel" }, class: "pagination-link pagination-next" do %>
-              <span class="pagination-text">Next</span>
+              <span class="pagination-text"><%= t("admin.common.next") %></span>
               <span aria-hidden="true">›</span>
             <% end %>
           <% else %>
             <span class="pagination-link pagination-next pagination-disabled">
-              <span class="pagination-text">Next</span>
+              <span class="pagination-text"><%= t("admin.common.next") %></span>
               <span aria-hidden="true">›</span>
             </span>
           <% end %>

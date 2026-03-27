@@ -1,26 +1,26 @@
 <main class="overview">
   <header class="overview__header">
     <div>
-      <p class="overview__eyebrow">Admin</p>
-      <h1>Status Mix (30d)</h1>
-      <p class="overview__subtitle">Distribution of run states over the last 30 days.</p>
+      <p class="overview__eyebrow"><%= t("admin.overview.status_mix.eyebrow") %></p>
+      <h1><%= t("admin.overview.status_mix.title") %></h1>
+      <p class="overview__subtitle"><%= t("admin.overview.status_mix.subtitle") %></p>
     </div>
     <nav class="overview__nav">
-      <a class="overview__link" href="<%= admin_overview_path %>">Back to overview</a>
-      <a class="overview__link" href="<%= avo.resources_runs_path %>">Open Runs</a>
+      <a class="overview__link" href="<%= admin_overview_path %>"><%= t("admin.overview.status_mix.back_to_overview") %></a>
+      <a class="overview__link" href="<%= avo.resources_runs_path %>"><%= t("admin.nav.open_runs") %></a>
     </nav>
   </header>
   <% status_mix = @metrics[:status_mix_30d] || {} %>
   <% status_rows = [
-    ["Queued", status_mix[:queued]],
-    ["Running", status_mix[:running]],
-    ["Succeeded", status_mix[:succeeded]],
-    ["Failed", status_mix[:failed]]
+    [t("admin.overview.activity.status_mix.queued"), status_mix[:queued]],
+    [t("admin.overview.activity.status_mix.running"), status_mix[:running]],
+    [t("admin.overview.activity.status_mix.succeeded"), status_mix[:succeeded]],
+    [t("admin.overview.activity.status_mix.failed"), status_mix[:failed]]
   ] %>
   <%= render Admin::Ui::WorkspaceWidgetComponent.new(
-    title: "Status mix (30d)",
+    title: t("admin.overview.status_mix.widget_title"),
     state: status_rows.all? { |_, value| value.nil? } ? :empty : :default,
-    empty_message: "No status mix data available."
+    empty_message: t("admin.overview.status_mix.empty_message")
   ) do %>
     <ul class="detail-list">
       <% status_rows.each do |label, value| %>
