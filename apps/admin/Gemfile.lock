@@ -14,6 +14,7 @@ PATH
     financial-core-simulator (0.1.0)
       bigdecimal
       csv
+      i18n
       zeitwerk (~> 2.7)
 
 GEM
