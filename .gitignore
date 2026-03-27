@@ -22,18 +22,6 @@ pnl.csv
 run_*/
 .skills/
 
-# BMAD generated planning/runtime artifacts
-.bmad/
-
-.opencode
-.codex
-.cursor
-.openspec/
-openspec/
-.claude
-
-.private/
-
 # YARD artifacts
 .yardoc/
 docs/yard/
