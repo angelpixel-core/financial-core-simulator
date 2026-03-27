@@ -3,17 +3,27 @@
 module LegacyRoutes
   def self.extended(router)
     router.instance_exec do
-      get "/admin/resources/runs/:id/result", to: redirect("/runs/%{id}/result")
-      get "/admin/resources/runs/:id/positions", to: redirect("/runs/%{id}/positions")
-      get "/admin/resources/runs/:id/pnl", to: redirect("/runs/%{id}/pnl")
-      get "/admin/resources/runs/:id/risk", to: redirect("/runs/%{id}/risk")
+      concern :run_artifact_redirects do
+        get 'result', to: redirect('/runs/%{id}/result')
+        get 'positions', to: redirect('/runs/%{id}/positions')
+        get 'pnl', to: redirect('/runs/%{id}/pnl')
+        get 'risk', to: redirect('/runs/%{id}/risk')
+      end
 
-      get "/avo/resources/runs/:id/result", to: redirect("/runs/%{id}/result")
-      get "/avo/resources/runs/:id/positions", to: redirect("/runs/%{id}/positions")
-      get "/avo/resources/runs/:id/pnl", to: redirect("/runs/%{id}/pnl")
-      get "/avo/resources/runs/:id/risk", to: redirect("/runs/%{id}/risk")
-      get "/avo", to: redirect("/admin"), as: :legacy_avo_root
-      get "/avo/*path", to: redirect("/admin/%{path}"), as: :legacy_avo_catch_all
+      extend Admin::LegacyResourceRoutes
+
+      scope :avo do
+        scope :resources do
+          scope 'runs/:id' do
+            concerns :run_artifact_redirects
+          end
+        end
+      end
+
+      scope :avo do
+        get '/', to: redirect('/admin'), as: :legacy_avo_root
+        get '/*path', to: redirect('/admin/%{path}'), as: :legacy_avo_catch_all
+      end
     end
   end
 end
