@@ -10,6 +10,15 @@
         <p class="landing-page__eyebrow"><%= t("admin.landing.hero.eyebrow") %></p>
         <h1><%= t("admin.landing.hero.title") %></h1>
       </div>
+      <div class="landing-page__locale" aria-label="<%= t("admin.common.language") %>">
+        <span class="landing-page__locale-label"><%= t("admin.common.language") %></span>
+        <%= link_to "EN", url_for(params: request.query_parameters.merge(locale: "en")),
+          class: "landing-page__locale-link",
+          "aria-current": (I18n.locale == :en ? "true" : nil) %>
+        <%= link_to "ES", url_for(params: request.query_parameters.merge(locale: "es")),
+          class: "landing-page__locale-link",
+          "aria-current": (I18n.locale == :es ? "true" : nil) %>
+      </div>
     </div>
     <p class="landing-page__subtitle">
       <%= t("admin.landing.hero.subtitle") %>
