@@ -10,35 +10,6 @@
         <p class="landing-page__eyebrow"><%= t("admin.landing.hero.eyebrow") %></p>
         <h1><%= t("admin.landing.hero.title") %></h1>
       </div>
-      <% current_locale = I18n.locale == :es ? "es" : "en" %>
-      <details class="locale-switcher landing-page__locale" aria-label="<%= t("admin.common.language") %>">
-        <summary class="locale-switcher__trigger">
-          <span class="visually-hidden"><%= t("admin.common.language") %></span>
-          <span class="locale-switcher__flag" aria-hidden="true">
-            <%= image_tag "flags/#{current_locale}.svg", alt: "" %>
-          </span>
-        </summary>
-        <div class="locale-switcher__menu" role="menu">
-          <%= link_to url_for(params: request.query_parameters.merge(locale: "en")),
-            class: "locale-switcher__option",
-            role: "menuitem",
-            "aria-current": (I18n.locale == :en ? "true" : nil) do %>
-            <span class="locale-switcher__flag" aria-hidden="true">
-              <%= image_tag "flags/en.svg", alt: "" %>
-            </span>
-            <span class="locale-switcher__text"><%= t("admin.common.languages.en") %></span>
-          <% end %>
-          <%= link_to url_for(params: request.query_parameters.merge(locale: "es")),
-            class: "locale-switcher__option",
-            role: "menuitem",
-            "aria-current": (I18n.locale == :es ? "true" : nil) do %>
-            <span class="locale-switcher__flag" aria-hidden="true">
-              <%= image_tag "flags/es.svg", alt: "" %>
-            </span>
-            <span class="locale-switcher__text"><%= t("admin.common.languages.es") %></span>
-          <% end %>
-        </div>
-      </details>
     </div>
     <p class="landing-page__subtitle">
       <%= t("admin.landing.hero.subtitle") %>
