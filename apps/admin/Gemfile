@@ -19,6 +19,8 @@ gem "rodauth-rails", github: "janko/rodauth-rails"
 gem "rodauth", "~> 2.42"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
+gem "caxlsx", require: "caxlsx"
+gem "roo"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
@@ -73,6 +75,8 @@ group :development, :test do
   gem "standard", require: false
 
   gem "rspec-rails", "~> 8.0"
+  gem "capybara"
+  gem "selenium-webdriver"
   gem "simplecov", require: false
 end
 

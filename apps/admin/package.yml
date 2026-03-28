@@ -9,3 +9,4 @@ dependencies:
   - "app/domains/ui"
   - "app/domains/validation"
   - "app/domains/release"
+  - "app/domains/demo"
