@@ -2,15 +2,35 @@
   <div class="admin-shell-header__inner">
     <p class="admin-shell-header__brand"><%= admin_shell_workspace_label %></p>
     <div class="admin-shell-header__actions">
-      <div class="admin-shell-header__locale" aria-label="<%= t("admin.common.language") %>">
-        <span class="admin-shell-header__locale-label"><%= t("admin.common.language") %></span>
-        <%= link_to "EN", url_for(params: request.query_parameters.merge(locale: "en")),
-          class: "admin-shell-header__locale-link",
-          "aria-current": (I18n.locale == :en ? "true" : nil) %>
-        <%= link_to "ES", url_for(params: request.query_parameters.merge(locale: "es")),
-          class: "admin-shell-header__locale-link",
-          "aria-current": (I18n.locale == :es ? "true" : nil) %>
-      </div>
+      <% current_locale = I18n.locale == :es ? "es" : "en" %>
+      <details class="locale-switcher admin-shell-header__locale" aria-label="<%= t("admin.common.language") %>">
+        <summary class="locale-switcher__trigger">
+          <span class="visually-hidden"><%= t("admin.common.language") %></span>
+          <span class="locale-switcher__flag" aria-hidden="true">
+            <%= image_tag "flags/#{current_locale}.svg", alt: "" %>
+          </span>
+        </summary>
+        <div class="locale-switcher__menu" role="menu">
+          <%= link_to url_for(params: request.query_parameters.merge(locale: "en")),
+            class: "locale-switcher__option",
+            role: "menuitem",
+            "aria-current": (I18n.locale == :en ? "true" : nil) do %>
+            <span class="locale-switcher__flag" aria-hidden="true">
+              <%= image_tag "flags/en.svg", alt: "" %>
+            </span>
+            <span class="locale-switcher__text"><%= t("admin.common.languages.en") %></span>
+          <% end %>
+          <%= link_to url_for(params: request.query_parameters.merge(locale: "es")),
+            class: "locale-switcher__option",
+            role: "menuitem",
+            "aria-current": (I18n.locale == :es ? "true" : nil) do %>
+            <span class="locale-switcher__flag" aria-hidden="true">
+              <%= image_tag "flags/es.svg", alt: "" %>
+            </span>
+            <span class="locale-switcher__text"><%= t("admin.common.languages.es") %></span>
+          <% end %>
+        </div>
+      </details>
       <p class="admin-shell-header__identity"><%= account_email %></p>
       <%= button_to t("admin.shell.sign_out"), logout_path, method: :post, class: "admin-shell-header__logout" %>
     </div>

@@ -17,3 +17,6 @@ en:
       runs_tooltip: "%{day}: %{count} runs"
       ms: "ms"
       language: "Language"
+      languages:
+        en: "English"
+        es: "Espanol"
