@@ -4,7 +4,7 @@ require "view_component/test_helpers"
 RSpec.describe Admin::DemoDataset::PreviewModalComponent, type: :component do
   include ViewComponent::TestHelpers
 
-  it "limits sample rows and renders summary" do
+  it "renders all sample rows and summary" do
     rows = (1..15).map do |index|
       {
         tradeId: "trade-#{index}",
@@ -26,15 +26,15 @@ RSpec.describe Admin::DemoDataset::PreviewModalComponent, type: :component do
     }
 
     render_inline(described_class.new(
-      state: :success,
-      summary: summary,
-      sample_rows: rows,
-      errors: [],
-      file_name: "demo.xlsx"
-    ))
+                    state: :success,
+                    summary: summary,
+                    sample_rows: rows,
+                    errors: [],
+                    file_name: "demo.xlsx"
+                  ))
 
     expect(rendered_content).to include(I18n.t("admin.overview.dataset.preview.summary_title"))
     expect(rendered_content).to include("trade-12")
-    expect(rendered_content).not_to include("trade-13")
+    expect(rendered_content).to include("trade-13")
   end
 end

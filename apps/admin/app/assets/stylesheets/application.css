@@ -1797,6 +1797,7 @@ body {
   border-radius: 12px;
   overflow: auto;
   background: var(--surface);
+  max-height: 320px;
 }
 
 .demo-dataset-preview-table {

@@ -16,7 +16,6 @@
         <%= t("admin.overview.dataset.preview.close") %>
       </button>
     </header>
-
     <% if loading? %>
       <div class="demo-dataset-modal__body">
         <p class="demo-dataset-preview__loading"><%= t("admin.overview.dataset.preview.loading") %></p>
@@ -36,7 +35,6 @@
             </dl>
           </section>
         <% end %>
-
         <section class="demo-dataset-preview__section">
           <h3 class="demo-dataset-preview__section-title"><%= t("admin.overview.dataset.preview.sample_title") %></h3>
           <% if empty? %>
@@ -59,7 +57,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <% limited_sample_rows.each do |row| %>
+                  <% sample_rows.each do |row| %>
                     <tr>
                       <td><%= row_value(row, :tradeId) %></td>
                       <td><%= row_value(row, :accountId) %></td>

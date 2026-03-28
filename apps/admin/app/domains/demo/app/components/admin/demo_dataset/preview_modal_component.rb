@@ -3,8 +3,6 @@
 module Admin
   module DemoDataset
     class PreviewModalComponent < ViewComponent::Base
-      SAMPLE_LIMIT = 12
-
       def initialize(state:, summary: nil, sample_rows: [], errors: [], file_name: nil)
         @state = state&.to_sym
         @summary = summary
@@ -30,7 +28,7 @@ module Admin
       end
 
       def empty?
-        success? && limited_sample_rows.empty?
+        success? && sample_rows.empty?
       end
 
       def summary_items
@@ -44,7 +42,7 @@ module Admin
         ]
 
         fee_value = summary_value(:fee_enabled)
-        if fee_value != nil
+        unless fee_value.nil?
           items << {
             label: t("admin.overview.dataset.preview.fee_label"),
             value: fee_value ? t("admin.overview.dataset.preview.fee_enabled") : t("admin.overview.dataset.preview.fee_disabled")
@@ -54,17 +52,19 @@ module Admin
         items
       end
 
-      def limited_sample_rows
-        Array(@sample_rows).first(SAMPLE_LIMIT)
+      def sample_rows
+        Array(@sample_rows)
       end
 
       def error_items
-        Array(@errors)
+        Array(@errors).sort_by do |error|
+          line = error[:line] || error["line"] || 0
+          code = error[:code] || error["code"] || ""
+          [line, code]
+        end
       end
 
-      def file_name
-        @file_name
-      end
+      attr_reader :file_name
 
       def row_value(row, key)
         return nil unless row.is_a?(Hash)
