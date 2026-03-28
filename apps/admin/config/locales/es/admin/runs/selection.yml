@@ -1,0 +1,9 @@
+es:
+  admin:
+    runs:
+      run_selection_card:
+        title: "Run #%{id}"
+        status_aria: "Estado del run: %{status}"
+        timestamp: "Timestamp"
+        validation: "Validacion"
+        duration: "Duracion"

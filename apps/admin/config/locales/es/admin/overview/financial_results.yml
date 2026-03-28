@@ -1,0 +1,47 @@
+es:
+  admin:
+    overview:
+      financial_results:
+        aria: "Financial results"
+        title: "FINANCIAL RESULTS"
+        pnl_trend:
+          title: "PnL trend"
+          meta: "Total global de PnL quote en runs exitosos"
+          aria: "Tendencia de PnL para runs exitosos"
+          empty_title: "Sin datos de tendencia de PnL."
+          empty_body: "Ejecuta simulaciones exitosas con artifacts canonicos para poblar este grafico."
+          tooltip: "Total PnL Quote"
+          fallback_aria: "Valores fallback de tendencia PnL"
+          pagination_aria: "Paginacion de tendencia PnL"
+        latest_run:
+          title: "Ultimo run exitoso"
+          link: "Ver ultimo run"
+          empty: "Aun no hay runs exitosos."
+          run: "Run"
+          input_hash: "Input hash"
+          duration: "Duracion"
+          schema: "Schema"
+          engine: "Engine"
+        global_pnl:
+          title: "Global PnL (ultimo run exitoso)"
+          empty: "Totales globales no disponibles (result.json faltante o invalido)."
+          total: "Total"
+          realized_net: "Realized net"
+          unrealized: "Unrealized"
+          total_usd: "Total USD"
+        run_comparison:
+          title: "Comparacion de runs"
+          empty: "Comparacion no disponible (se necesitan al menos dos runs exitosos)."
+          current_run: "Run actual"
+          previous_run: "Run previo"
+          pnl_delta: "Delta PnL"
+          realized_delta: "Delta realizado"
+          unrealized_delta: "Delta no realizado"
+        input_traceability:
+          title: "Trazabilidad de input"
+          empty: "Sin metadata de trazabilidad disponible."
+          dataset: "Dataset"
+          input_hash: "Input hash"
+          result_json: "result.json"
+          positions_csv: "positions.csv"
+          pnl_csv: "pnl.csv"

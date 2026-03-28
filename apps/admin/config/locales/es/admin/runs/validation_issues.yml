@@ -1,0 +1,28 @@
+es:
+  admin:
+    runs:
+      validation_issues:
+        title: "Diagnostico de validacion"
+        eyebrow: "Validacion"
+        aria: "Estado de validacion: %{state}"
+        table_container_aria: "Tabla de issues de validacion con scroll horizontal"
+        table_aria: "Issues de validacion"
+        columns:
+          severity: "Severidad"
+          source: "Fuente"
+          field: "Campo"
+          message: "Mensaje"
+          timestamp: "Timestamp"
+          correlation: "Correlation"
+        empty: "Sin issues de validacion reportados."
+        states:
+          success: "OK"
+          warning: "Warning"
+          error: "Error"
+          loading: "Cargando"
+          info: "Info"
+        severity:
+          warning: "Warning"
+          info: "Info"
+          error: "Error"
+        severity_aria: "Severidad: %{severity}"

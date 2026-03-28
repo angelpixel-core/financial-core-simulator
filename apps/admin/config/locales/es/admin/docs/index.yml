@@ -1,0 +1,10 @@
+es:
+  admin:
+    docs:
+      index:
+        eyebrow: "DOCS"
+        title: "Documentacion del sistema"
+        subtitle: "Referencias estructuradas para el workspace admin, alineadas a las secciones operativas."
+        sections_title: "Secciones"
+        sections_fallback: "Overview"
+        section_overview: "Resumen y referencias de la seccion."

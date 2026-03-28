@@ -1,0 +1,19 @@
+es:
+  admin:
+    overview:
+      activity:
+        aria: "Activity"
+        title: "ACTIVITY"
+        run_trend:
+          title: "Run trend (14d)"
+          link: "Ver tendencia de runs"
+          tooltip_label: "Dia"
+          tooltip_count: "Runs"
+          aria: "Grafico de tendencia de runs de los ultimos 14 dias"
+        status_mix:
+          title: "Status mix (30d)"
+          link: "Ver detalle de estados"
+          queued: "Queued"
+          running: "Running"
+          succeeded: "Succeeded"
+          failed: "Failed"

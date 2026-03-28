@@ -1,0 +1,8 @@
+es:
+  admin:
+    overview:
+      hero:
+        eyebrow: "CONTROL"
+        title: "Financial Overview"
+        subtitle: "Workspace del motor financiero deterministico."
+        open_latest_reliable: "Abrir ultimo run confiable"

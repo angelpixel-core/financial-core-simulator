@@ -1,0 +1,20 @@
+es:
+  admin:
+    runs:
+      reliable_run_selector:
+        reliable:
+          what_happened: "Run verificado y confiable disponible."
+          impact: "El flujo de inspeccion puede continuar sin restricciones."
+          next_action: "Abrir el run y revisar PnL, validacion y artifacts."
+        no_run:
+          what_happened: "No hay runs disponibles todavia."
+          impact: "No es posible identificar un run confiable en este momento."
+          next_action: "Ejecuta un run de prueba y vuelve a cargar el overview."
+        unverified:
+          what_happened: "El ultimo run exitoso no tiene verificacion confiable."
+          impact: "La inspeccion se muestra en modo degradado porque la validacion aun no confirma confiabilidad."
+          next_action: "Revisa el run #%{run_id} (estado %{status}, verificacion %{verification}) y ejecuta verificacion de hash."
+        degraded:
+          what_happened: "No se encontro un run confiable vigente."
+          impact: "La seleccion automatica esta degradada."
+          next_action: "Verifica el ultimo run exitoso o abre la lista completa de runs."

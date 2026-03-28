@@ -1,0 +1,10 @@
+es:
+  admin:
+    overview:
+      engine:
+        aria: "Contexto del engine"
+        title: "Engine"
+        environment: "Environment: %{environment}"
+        engine_version: "Engine version"
+        schema_version: "Schema version"
+        input_hash: "Input hash"

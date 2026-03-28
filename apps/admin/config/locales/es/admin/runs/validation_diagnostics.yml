@@ -1,0 +1,20 @@
+es:
+  admin:
+    runs:
+      validation_diagnostics:
+        error:
+          what_happened: "La validacion de datos del run fallo."
+          impact: "Los resultados no son confiables para decisiones financieras."
+          next_action: "Revisa los issues, corrige el input y re-ejecuta el run."
+        warning:
+          what_happened: "La validacion no pudo completarse por una falla del run."
+          impact: "No es posible confirmar la calidad de datos en este estado."
+          next_action: "Revisa el error de ejecucion y vuelve a intentar el run."
+        loading:
+          what_happened: "El run sigue en ejecucion."
+          impact: "La validacion aun no esta disponible."
+          next_action: "Espera la finalizacion y vuelve a cargar el detalle."
+        success:
+          what_happened: "La validacion no reporta issues."
+          impact: "Los datos son consistentes para inspeccion operativa."
+          next_action: "Continuar con PnL y revisar artifacts si hace falta."

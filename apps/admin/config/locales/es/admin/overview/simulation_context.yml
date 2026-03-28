@@ -1,0 +1,13 @@
+es:
+  admin:
+    overview:
+      simulation_context:
+        aria: "Simulation context"
+        title: "SIMULATION CONTEXT"
+        empty: "Sin contexto de simulacion disponible."
+        dataset: "Dataset"
+        accounts: "Accounts"
+        events: "Events"
+        markets: "Markets"
+        input_hash: "Input hash"
+        deterministic: "Deterministico"

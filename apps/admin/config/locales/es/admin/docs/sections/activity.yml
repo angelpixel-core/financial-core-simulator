@@ -1,0 +1,30 @@
+es:
+  admin:
+    docs:
+      sections:
+        activity:
+          how_to_use:
+            title: "Como usar Activity"
+            meta: "Activity resume el comportamiento de ejecucion en ventanas recientes y permite detectar cambios de ritmo o distribucion de estados."
+            usage: { label: "Uso recomendado", value: "Cuando cambian patrones de ejecucion" }
+            objective: { label: "Objetivo", value: "Identificar caidas, spikes o degradacion" }
+            frequency: { label: "Frecuencia", value: "Monitoreo continuo durante operaciones" }
+          read:
+            title: "Que podemos leer"
+            run_trend: { label: "Run trend (14d)", value: "Cadencia y volumen reciente" }
+            status_mix: { label: "Status mix (30d)", value: "Distribucion de success vs fallas" }
+            peaks: { label: "Picos o huecos", value: "Eventos operativos anormales" }
+            meta: "Una mezcla de estados degradada suele anticipar issues en Data Quality."
+          value:
+            title: "Valor agregado"
+            timeline: { label: "Contexto temporal", value: "Ubica el problema en una linea de tiempo" }
+            trend_detection: { label: "Deteccion de tendencia", value: "Permite ver cambios sostenidos" }
+            prioritization: { label: "Priorizacion", value: "Indica si investigar o escalar capacidad" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo operacional de actividad"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura de actividad"

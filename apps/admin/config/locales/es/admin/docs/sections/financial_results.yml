@@ -1,0 +1,33 @@
+es:
+  admin:
+    docs:
+      sections:
+        financial_results:
+          how_to_use:
+            title: "Como usar Financial Results"
+            meta: "Financial Results traduce las corridas en señales financieras concretas para entender impacto, riesgo y exposicion por cuenta."
+            usage: { label: "Uso recomendado", value: "Despues de validar que el sistema esta estable" }
+            objective: { label: "Objetivo", value: "Interpretar PnL y exposicion en contexto" }
+            frequency: { label: "Frecuencia", value: "Post-run y revisiones de cierre" }
+          read:
+            title: "Que podemos leer"
+            pnl_trend: { label: "PnL trend", value: "Tendencia y direccion del resultado" }
+            latest_run: { label: "Latest succeeded run", value: "Referencia base para comparacion" }
+            global_pnl: { label: "Global PnL", value: "Impacto consolidado del ultimo run" }
+            top_accounts: { label: "Top accounts", value: "Exposicion y peso relativo" }
+            run_comparison: { label: "Run comparison", value: "Cambios entre runs recientes" }
+            input_traceability: { label: "Input traceability", value: "Relacion entre input y salida" }
+            meta: "Usar esta seccion despues de entender contexto y actividad evita interpretaciones sesgadas."
+          value:
+            title: "Valor agregado"
+            financial_context: { label: "Contexto financiero", value: "Convierte datos tecnicos en impacto" }
+            risk_priority: { label: "Prioridad de riesgo", value: "Enfoca en cuentas y resultados clave" }
+            follow_up: { label: "Seguimiento", value: "Permite comparar run sobre run" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo operacional de resultados"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura de resultados"

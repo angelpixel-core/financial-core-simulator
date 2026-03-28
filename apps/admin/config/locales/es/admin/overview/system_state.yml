@@ -1,0 +1,13 @@
+es:
+  admin:
+    overview:
+      system_state:
+        aria: "System state"
+        title: "SYSTEM STATE"
+        reliability_status: "Estado de confiabilidad"
+        latest_reliable: "Ultimo run confiable"
+        open_latest_reliable: "Abrir ultimo run confiable"
+        latest_successful: "Ultimo run exitoso"
+        open_run_details: "Abrir detalles del run"
+        no_reliable_run: "Sin run confiable"
+        degraded_selection: "Seleccion degradada"

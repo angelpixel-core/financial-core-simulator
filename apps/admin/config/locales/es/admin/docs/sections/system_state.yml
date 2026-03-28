@@ -1,0 +1,31 @@
+es:
+  admin:
+    docs:
+      sections:
+        system_state:
+          title: "System State"
+          how_to_use:
+            title: "Como usar System State"
+            meta: "System State resume la salud operativa actual. Sirve como punto de entrada para detectar degradaciones, verificar estabilidad y decidir si conviene profundizar en otras secciones."
+            usage: { label: "Uso recomendado", value: "Revisar al inicio de cada sesion de monitoreo" }
+            objective: { label: "Objetivo", value: "Confirmar estabilidad y detectar alertas tempranas" }
+            frequency: { label: "Frecuencia", value: "Continuo en operaciones, puntual para auditorias" }
+          read:
+            title: "Que podemos leer"
+            operational_state: { label: "Estado operativo", value: "Salud general del sistema y confiabilidad" }
+            reliable_run: { label: "Ultima ejecucion confiable", value: "Referencia para comparaciones y trazabilidad" }
+            key_indicators: { label: "Indicadores clave", value: "Duracion promedio, tasa de exito, volumen reciente" }
+            meta: "Si algo se ve inestable aqui, se recomienda saltar a Activity o Data Quality para entender la causa."
+          value:
+            title: "Valor agregado"
+            fast_decision: { label: "Decision rapida", value: "Determina si la operacion es confiable ahora mismo" }
+            unique_context: { label: "Contexto unico", value: "Reune señales que normalmente estan dispersas" }
+            prevention: { label: "Prevencion", value: "Detecta degradaciones antes de que escalen" }
+          flow:
+            title: "Diagrama de flujo operacional"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Flujo de contexto de simulacion"
+          architecture:
+            title: "Diagrama de arquitectura"
+            meta_html: "Ver diagrama global en %{link}."
+            alt: "Arquitectura del contexto de simulacion"
