@@ -1,0 +1,33 @@
+en:
+  admin:
+    docs:
+      sections:
+        financial_results:
+          how_to_use:
+            title: "How to use Financial Results"
+            meta: "Financial Results translates runs into financial signals to understand impact, risk, and account exposure."
+            usage: { label: "Recommended use", value: "After validating system stability" }
+            objective: { label: "Objective", value: "Interpret PnL and exposure in context" }
+            frequency: { label: "Frequency", value: "Post-run and end-of-day reviews" }
+          read:
+            title: "What we can read"
+            pnl_trend: { label: "PnL trend", value: "Direction and trend of results" }
+            latest_run: { label: "Latest succeeded run", value: "Baseline for comparisons" }
+            global_pnl: { label: "Global PnL", value: "Consolidated impact of the latest run" }
+            top_accounts: { label: "Top accounts", value: "Exposure and relative weight" }
+            run_comparison: { label: "Run comparison", value: "Changes across recent runs" }
+            input_traceability: { label: "Input traceability", value: "Link between input and output" }
+            meta: "Use this section after understanding context and activity to avoid biased interpretations."
+          value:
+            title: "Value"
+            financial_context: { label: "Financial context", value: "Turns technical data into impact" }
+            risk_priority: { label: "Risk priority", value: "Focuses on key accounts and results" }
+            follow_up: { label: "Follow-up", value: "Compare run over run" }
+          flow:
+            title: "Operational flow diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Financial results operational flow"
+          architecture:
+            title: "Architecture diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Financial results architecture"

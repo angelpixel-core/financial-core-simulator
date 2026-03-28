@@ -1,0 +1,20 @@
+en:
+  admin:
+    runs:
+      validation_diagnostics:
+        error:
+          what_happened: "Run data validation failed."
+          impact: "Results are not reliable for financial decisions."
+          next_action: "Review issues, fix input, and re-run."
+        warning:
+          what_happened: "Validation could not complete due to a run failure."
+          impact: "Data quality cannot be confirmed in this state."
+          next_action: "Review the run error and try again."
+        loading:
+          what_happened: "The run is still executing."
+          impact: "Validation is not available yet."
+          next_action: "Wait for completion and reload the detail view."
+        success:
+          what_happened: "Validation reports no issues."
+          impact: "Data is consistent for operational inspection."
+          next_action: "Continue with PnL and review artifacts if needed."

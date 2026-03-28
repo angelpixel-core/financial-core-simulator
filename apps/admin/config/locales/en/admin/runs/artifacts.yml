@@ -1,0 +1,40 @@
+en:
+  admin:
+    runs:
+      artifacts:
+        eyebrow: "Evidence-first"
+        title: "Evidence and artifacts"
+        status_aria: "Artifact status %{state}"
+        status_label: "Status: %{label}"
+        unavailable_action: "%{label} (Unavailable)"
+        status:
+          complete: "Complete"
+          partial: "Partial"
+          unavailable: "Unavailable"
+        entries:
+          result_json:
+            label: "Canonical result (JSON)"
+            description: "Primary output contract for traceability and reconciliation."
+            action: "Open result.json"
+          positions_preview:
+            label: "Positions preview"
+            description: "Operational view of projected positions by market/account."
+            action: "Open preview positions.csv"
+          positions_download:
+            label: "Positions download"
+            description: "CSV export for audit and external analysis."
+            action: "Download positions.csv"
+          pnl_preview:
+            label: "PnL preview"
+            description: "Operational view of consolidated PnL per run."
+            action: "Open preview pnl.csv"
+          risk_view:
+            label: "Risk view"
+            description: "Drilldown by risk status, events, and margin."
+            action: "Open risk view"
+        provenance:
+          run_id: "run_id"
+          input_hash: "input_hash"
+          timestamp_utc: "timestamp_utc"
+          version: "version"
+        version: "engine %{engine} / schema %{schema}"

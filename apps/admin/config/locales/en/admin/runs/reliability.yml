@@ -1,0 +1,10 @@
+en:
+  admin:
+    runs:
+      reliability_banner:
+        states:
+          reliable: "Reliable"
+          degraded: "Degraded"
+          loading: "Loading"
+          info: "Info"
+        aria: "Reliability status: %{state}"

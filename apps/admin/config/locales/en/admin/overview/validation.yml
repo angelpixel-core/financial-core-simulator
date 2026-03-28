@@ -1,0 +1,25 @@
+en:
+  admin:
+    overview:
+      validation:
+        aria: "Data quality"
+        title: "DATA QUALITY"
+        widget_title: "Ingestion validation errors"
+        cta_label: "View ingestion errors"
+        actions_label: "Ingestion validation errors actions"
+        filters:
+          source: "Source"
+          source_placeholder: "agente.hft.alpha"
+          field: "Field"
+          field_placeholder: "riskModel"
+        columns:
+          source: "Source"
+          field: "Field"
+          message: "Message"
+          occurred: "Occurred"
+          correlation: "Correlation"
+        empty_message: "No ingestion validation errors."
+        loading_message: "Loading ingestion validation errors..."
+        error_message: "Ingestion validation errors unavailable."
+        pagination:
+          aria: "Ingestion errors pagination"

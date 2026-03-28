@@ -1,0 +1,33 @@
+en:
+  admin:
+    overview:
+      runs_trend:
+        eyebrow: "Admin"
+        title: "Runs Trend (14d)"
+        subtitle: "Daily execution volume trend for the last 14 days."
+        back_to_overview: "Back to overview"
+        widget_title: "Run trend (14d)"
+        empty_message: "No trend points available."
+      status_mix:
+        eyebrow: "Admin"
+        title: "Status Mix (30d)"
+        subtitle: "Distribution of run states over the last 30 days."
+        back_to_overview: "Back to overview"
+        widget_title: "Status mix (30d)"
+        empty_message: "No status mix data available."
+      top_accounts:
+        eyebrow: "Admin"
+        title: "Top Accounts"
+        subtitle: "Standalone view with the same visual language as Financial Overview."
+        back_to_overview: "Back to overview"
+        widget_title: "Top accounts (live)"
+        cta_label: "View top accounts"
+        actions_label: "Top accounts actions"
+        empty_message: "No account totals available."
+        pagination:
+          aria: "Top accounts pagination"
+        columns:
+          account: "Account"
+          total_pnl_quote: "Total PnL Quote"
+          realized_net: "Realized Net"
+          unrealized: "Unrealized"

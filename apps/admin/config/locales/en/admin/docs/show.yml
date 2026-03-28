@@ -1,0 +1,10 @@
+en:
+  admin:
+    docs:
+      show:
+        eyebrow: "DOCS"
+        back_to_docs: "Back to docs"
+        related_sections: "Related sections"
+        sections_fallback: "Overview"
+        includes: "Includes"
+        includes_empty: "This section aggregates multiple workspace panels."

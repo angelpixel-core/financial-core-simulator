@@ -1,0 +1,20 @@
+en:
+  admin:
+    runs:
+      reliable_run_selector:
+        reliable:
+          what_happened: "Verified reliable run available."
+          impact: "The inspection flow can continue without restrictions."
+          next_action: "Open the run and review PnL, validation, and artifacts."
+        no_run:
+          what_happened: "No runs available yet."
+          impact: "A reliable run cannot be identified at the moment."
+          next_action: "Execute a test run and reload the overview."
+        unverified:
+          what_happened: "The latest successful run does not have reliable verification."
+          impact: "Inspection is degraded because validation has not confirmed reliability yet."
+          next_action: "Review run #%{run_id} (status %{status}, verification %{verification}) and run hash verification."
+        degraded:
+          what_happened: "No reliable run found."
+          impact: "Automatic selection is degraded."
+          next_action: "Verify the latest successful run or open the full runs list."

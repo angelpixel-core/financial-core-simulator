@@ -1,0 +1,31 @@
+en:
+  admin:
+    docs:
+      sections:
+        simulation_context:
+          how_to_use:
+            title: "How to use Simulation Context"
+            meta: "Simulation Context defines each run's reference frame: inputs, active rules, and configs that shape results."
+            usage: { label: "Recommended use", value: "Before comparing results across runs" }
+            objective: { label: "Objective", value: "Validate that runs are comparable" }
+            frequency: { label: "Frequency", value: "Whenever inputs or engine version change" }
+          read:
+            title: "What we can read"
+            input_hash: { label: "Input hash", value: "Deterministic reference for reproducibility" }
+            schema_version: { label: "Schema version", value: "Input contract used for the simulation" }
+            engine_version: { label: "Engine version", value: "Active calculation engine version" }
+            dataset: { label: "Dataset", value: "Base data source and implied assumptions" }
+            meta: "If context changes, results are not comparable without adjustments."
+          value:
+            title: "Value"
+            comparability: { label: "Comparability", value: "Avoids false conclusions between runs" }
+            traceability: { label: "Traceability", value: "Reproduce results exactly" }
+            audit: { label: "Audit", value: "Makes active assumptions explicit" }
+          flow:
+            title: "Operational flow diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Simulation context flow diagram"
+          architecture:
+            title: "Architecture diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "Simulation context architecture"

@@ -1,0 +1,18 @@
+en:
+  admin:
+    overview:
+      system_metrics:
+        aria: "System metrics"
+        title: "SYSTEM METRICS"
+        total_runs_7d:
+          title: "Total runs (7d)"
+          subtitle: "Recent execution volume"
+        total_runs_30d:
+          title: "Total runs (30d)"
+          subtitle: "Monthly execution volume"
+        success_rate_last_50:
+          title: "Success rate (last 50)"
+          subtitle: "Succeeded vs total runs"
+        avg_duration:
+          title: "Avg duration (last 50 succeeded)"
+          subtitle: "Execution latency trend"

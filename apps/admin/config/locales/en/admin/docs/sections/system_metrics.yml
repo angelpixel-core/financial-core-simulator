@@ -1,0 +1,31 @@
+en:
+  admin:
+    docs:
+      sections:
+        system_metrics:
+          how_to_use:
+            title: "How to use System Metrics"
+            meta: "System Metrics centralizes KPIs that summarize operational performance, stability, and speed."
+            usage: { label: "Recommended use", value: "Before operational or capacity decisions" }
+            objective: { label: "Objective", value: "Detect performance or reliability degradations" }
+            frequency: { label: "Frequency", value: "Daily and whenever load changes" }
+          read:
+            title: "What we can read"
+            total_runs: { label: "Total runs (7d/30d)", value: "Operational volume and recent trend" }
+            success_rate: { label: "Success rate", value: "Execution stability over time" }
+            avg_duration: { label: "Avg duration", value: "Performance and potential bottlenecks" }
+            kpi_delta: { label: "KPIs delta", value: "Comparison vs previous periods" }
+            meta: "A sustained drop in success rate or longer durations suggests reviewing Activity and Data Quality."
+          value:
+            title: "Value"
+            operational_visibility: { label: "Operational visibility", value: "Clear signals about performance and health" }
+            early_detection: { label: "Early detection", value: "Anticipates reliability problems" }
+            action_priority: { label: "Action priority", value: "Helps decide where to investigate first" }
+          flow:
+            title: "Operational flow diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "System metrics operational flow"
+          architecture:
+            title: "Architecture diagram"
+            meta_html: "See the global diagram in %{link}."
+            alt: "System metrics architecture"
