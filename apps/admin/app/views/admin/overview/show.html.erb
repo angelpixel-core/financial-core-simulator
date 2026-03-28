@@ -71,6 +71,75 @@
       </div>
     </section>
     <section class="workspace__overview">
+      <% demo_upload = @demo_dataset_upload %>
+      <section class="overview__domain" aria-label="<%= t("admin.overview.dataset.aria") %>">
+        <h2 class="overview__domain-title"><%= t("admin.overview.dataset.title") %></h2>
+        <div class="demo-dataset-grid">
+          <div class="demo-dataset-preview" data-controller="demo-dataset-preview">
+            <section class="dashboard-card demo-dataset-card">
+              <header class="dashboard-card__header">
+                <h2><%= t("admin.overview.dataset.upload.title") %></h2>
+                <p class="dashboard-card__meta"><%= t("admin.overview.dataset.upload.subtitle") %></p>
+              </header>
+              <%= form_with url: admin_demo_datasets_path, method: :post, multipart: true, local: true, class: "demo-dataset-form", data: {
+              action: "turbo:submit-start->demo-dataset-preview#start turbo:submit-end->demo-dataset-preview#finish"
+            } do |form| %>
+                <%= hidden_field_tag :locale, I18n.locale %>
+                <div class="demo-dataset-form__row">
+                  <%= form.file_field :file, accept: ".xlsx", class: "demo-dataset-form__file" %>
+                  <%= form.submit t("admin.overview.dataset.upload.cta"), class: "demo-dataset-button" %>
+                  <%= button_tag t("admin.overview.dataset.preview.cta"),
+                  type: :submit,
+                  class: "demo-dataset-button demo-dataset-button--ghost",
+                  formaction: admin_demo_datasets_preview_path(locale: I18n.locale),
+                  formmethod: :post,
+                  data: { turbo_frame: "demo-dataset-preview", demo_dataset_preview_submit: true } %>
+                </div>
+              <% end %>
+              <div class="demo-dataset-form__row">
+                <%= button_to t("admin.overview.dataset.reset.cta"), admin_demo_datasets_reset_path(locale: I18n.locale), method: :post, class: "demo-dataset-button demo-dataset-button--ghost" %>
+                <p class="demo-dataset-form__hint"><%= t("admin.overview.dataset.upload.hint") %></p>
+              </div>
+            </section>
+            <%= turbo_frame_tag "demo-dataset-preview",
+              class: "demo-dataset-preview__frame",
+              data: {
+                action: "turbo:frame-load->demo-dataset-preview#open",
+                demo_dataset_preview_target: "frame",
+                loading_label: t("admin.overview.dataset.preview.loading")
+              } %>
+          </div>
+          <section class="dashboard-card demo-dataset-status <%= demo_upload&.valid_status? ? "demo-dataset-status--valid" : demo_upload&.invalid_status? ? "demo-dataset-status--invalid" : "" %>">
+            <header class="dashboard-card__header">
+              <h2><%= t("admin.overview.dataset.status.title") %></h2>
+              <p class="dashboard-card__meta"><%= t("admin.overview.dataset.status.subtitle") %></p>
+            </header>
+            <% if demo_upload&.valid_status? %>
+              <p class="demo-dataset-status__label"><%= t("admin.overview.dataset.status.valid") %></p>
+              <p class="demo-dataset-status__detail"><%= t("admin.overview.dataset.status.valid_detail") %></p>
+            <% elsif demo_upload&.invalid_status? %>
+              <p class="demo-dataset-status__label"><%= t("admin.overview.dataset.status.invalid") %></p>
+              <p class="demo-dataset-status__detail"><%= t("admin.overview.dataset.status.invalid_detail") %></p>
+              <% if demo_upload.validation_errors.present? %>
+                <div class="demo-dataset-errors">
+                  <h3 class="demo-dataset-errors__title"><%= t("admin.overview.dataset.errors.title") %></h3>
+                  <ul class="demo-dataset-errors__list">
+                    <% demo_upload.validation_errors.take(6).each do |error| %>
+                      <li>
+                        <strong><%= t("admin.overview.dataset.errors.line") %> <%= error["line"] %>:</strong>
+                        <span><%= error["code"] %></span>
+                      </li>
+                    <% end %>
+                  </ul>
+                </div>
+              <% end %>
+            <% else %>
+              <p class="demo-dataset-status__label"><%= t("admin.overview.dataset.status.empty") %></p>
+              <p class="demo-dataset-status__detail"><%= t("admin.overview.dataset.status.empty_detail") %></p>
+            <% end %>
+          </section>
+        </div>
+      </section>
       <section class="overview__domain" aria-label="<%= t("admin.overview.system_state.aria") %>">
         <h2 class="overview__domain-title"><%= t("admin.overview.system_state.title") %></h2>
         <div class="overview__state-grid">

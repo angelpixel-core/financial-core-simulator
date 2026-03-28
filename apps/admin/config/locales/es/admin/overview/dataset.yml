@@ -1,0 +1,53 @@
+es:
+  admin:
+    overview:
+      dataset:
+        aria: "Carga de dataset demo"
+        title: "DEMO DATASET"
+        upload:
+          title: "Subir Excel"
+          subtitle: "Subi el dataset valido/invalido de trades para validar ingestion."
+          cta: "Procesar Excel"
+          hint: "Los validos simulan; los invalidos muestran errores."
+        reset:
+          cta: "Resetear base de datos"
+        preview:
+          cta: "Previsualizar Excel"
+          title: "Vista previa del dataset"
+          loading: "Preparando vista previa"
+          close: "Cerrar vista previa"
+          summary_title: "Resumen"
+          sample_title: "Filas de muestra"
+          empty_title: "Sin filas para previsualizar"
+          empty_body: "El archivo subido no incluyo filas para previsualizar."
+          invalid_title: "Errores de validacion"
+          invalid_body: "El archivo contiene errores de validacion."
+          error_title: "La vista previa fallo"
+          error_body: "No pudimos parsear el archivo. Revisalo e intenta de nuevo."
+          errors_title: "Errores"
+          errors_empty: "Sin detalles de error."
+          file_label: "Archivo"
+          trades_label: "Trades"
+          accounts_label: "Cuentas"
+          markets_label: "Mercados"
+          schema_label: "Schema"
+          fee_label: "Modelo de fee"
+          fee_enabled: "Habilitado"
+          fee_disabled: "Deshabilitado"
+        status:
+          title: "Estado del dataset"
+          subtitle: "Resultado de validacion del ultimo upload."
+          valid: "Dataset valido"
+          valid_detail: "La simulacion se ejecuto y los artifacts estan disponibles."
+          invalid: "Dataset invalido"
+          invalid_detail: "La simulacion se freno por errores de validacion."
+          empty: "Sin dataset"
+          empty_detail: "Subi un dataset para evaluar la validacion."
+        errors:
+          title: "Errores detectados"
+          line: "Linea"
+        flash:
+          missing_file: "El archivo es requerido"
+          valid: "Dataset procesado correctamente"
+          invalid: "El dataset tiene errores de validacion"
+          reset: "Base de datos reseteada"

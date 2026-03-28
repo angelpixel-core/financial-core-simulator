@@ -11,6 +11,9 @@ en:
           demo: "View Demo"
           github: "GitHub"
           documentation: "Documentation"
+          valid_excel: "Download valid Excel"
+          invalid_excel: "Download invalid Excel"
+          dataset_note: "Download a real dataset (valid + invalid) and test the system yourself."
       why:
         title: "Why it exists"
         body: "Financial systems are hard to reproduce. Financial Core Simulator provides a deterministic environment for simulating financial events, PnL accounting and ledger state transitions."

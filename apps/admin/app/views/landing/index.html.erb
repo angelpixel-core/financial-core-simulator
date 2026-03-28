@@ -48,6 +48,11 @@
       <a class="landing-page__cta" href="<%= @source_url %>"><%= t("admin.landing.hero.cta.github") %></a>
       <a class="landing-page__cta" href="<%= @documentation_url %>"><%= t("admin.landing.hero.cta.documentation") %></a>
     </div>
+    <div class="landing-page__cta-group landing-page__cta-group--secondary">
+      <a class="landing-page__cta landing-page__cta--ghost" href="<%= demo_dataset_valid_path %>"><%= t("admin.landing.hero.cta.valid_excel") %></a>
+      <a class="landing-page__cta landing-page__cta--ghost" href="<%= demo_dataset_invalid_path %>"><%= t("admin.landing.hero.cta.invalid_excel") %></a>
+      <p class="landing-page__cta-note"><%= t("admin.landing.hero.cta.dataset_note") %></p>
+    </div>
   </section>
   <section class="landing-page__section">
     <h2><%= t("admin.landing.why.title") %></h2>

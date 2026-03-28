@@ -1,0 +1,53 @@
+en:
+  admin:
+    overview:
+      dataset:
+        aria: "Demo dataset upload"
+        title: "DEMO DATASET"
+        upload:
+          title: "Upload Excel"
+          subtitle: "Upload the valid/invalid trade dataset to validate ingestion."
+          cta: "Process Excel"
+          hint: "Valid runs simulate; invalid runs show errors."
+        reset:
+          cta: "Reset database"
+        preview:
+          cta: "Preview Excel"
+          title: "Dataset preview"
+          loading: "Preparing preview"
+          close: "Close preview"
+          summary_title: "Summary"
+          sample_title: "Sample rows"
+          empty_title: "No rows to preview"
+          empty_body: "The uploaded file did not include previewable rows."
+          invalid_title: "Validation issues"
+          invalid_body: "The file contains validation errors."
+          error_title: "Preview failed"
+          error_body: "We could not parse the file. Check the format and try again."
+          errors_title: "Errors"
+          errors_empty: "No error details available."
+          file_label: "File"
+          trades_label: "Trades"
+          accounts_label: "Accounts"
+          markets_label: "Markets"
+          schema_label: "Schema"
+          fee_label: "Fee model"
+          fee_enabled: "Enabled"
+          fee_disabled: "Disabled"
+        status:
+          title: "Dataset status"
+          subtitle: "Validation outcome from the latest upload."
+          valid: "Valid dataset"
+          valid_detail: "Simulation executed and artifacts are available."
+          invalid: "Invalid dataset"
+          invalid_detail: "Simulation aborted due to validation errors."
+          empty: "No dataset uploaded"
+          empty_detail: "Upload a dataset to evaluate validation."
+        errors:
+          title: "Detected errors"
+          line: "Line"
+        flash:
+          missing_file: "File is required"
+          valid: "Dataset processed successfully"
+          invalid: "Dataset contains validation errors"
+          reset: "Database reset"

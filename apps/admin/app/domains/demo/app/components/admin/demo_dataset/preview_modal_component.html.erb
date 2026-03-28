@@ -1,0 +1,127 @@
+<div class="demo-dataset-modal" role="dialog" aria-modal="true" aria-labelledby="demo-dataset-preview-title">
+  <div class="demo-dataset-modal__overlay" data-action="click->demo-dataset-preview#close"></div>
+  <div class="demo-dataset-modal__panel">
+    <header class="demo-dataset-modal__header">
+      <div>
+        <p class="demo-dataset-modal__eyebrow"><%= t("admin.overview.dataset.preview.title") %></p>
+        <h2 id="demo-dataset-preview-title" class="demo-dataset-modal__title"><%= t("admin.overview.dataset.preview.title") %></h2>
+        <% if file_name.present? %>
+          <p class="demo-dataset-modal__meta">
+            <span><%= t("admin.overview.dataset.preview.file_label") %>:</span>
+            <strong><%= file_name %></strong>
+          </p>
+        <% end %>
+      </div>
+      <button class="demo-dataset-modal__close" type="button" data-action="click->demo-dataset-preview#close">
+        <%= t("admin.overview.dataset.preview.close") %>
+      </button>
+    </header>
+
+    <% if loading? %>
+      <div class="demo-dataset-modal__body">
+        <p class="demo-dataset-preview__loading"><%= t("admin.overview.dataset.preview.loading") %></p>
+      </div>
+    <% elsif success? %>
+      <div class="demo-dataset-modal__body">
+        <% if summary_items.any? %>
+          <section class="demo-dataset-preview__section">
+            <h3 class="demo-dataset-preview__section-title"><%= t("admin.overview.dataset.preview.summary_title") %></h3>
+            <dl class="demo-dataset-preview-summary">
+              <% summary_items.each do |item| %>
+                <div>
+                  <dt><%= item[:label] %></dt>
+                  <dd><%= item[:value] || t("admin.common.na") %></dd>
+                </div>
+              <% end %>
+            </dl>
+          </section>
+        <% end %>
+
+        <section class="demo-dataset-preview__section">
+          <h3 class="demo-dataset-preview__section-title"><%= t("admin.overview.dataset.preview.sample_title") %></h3>
+          <% if empty? %>
+            <div class="demo-dataset-preview__empty">
+              <p class="demo-dataset-preview__empty-title"><%= t("admin.overview.dataset.preview.empty_title") %></p>
+              <p class="demo-dataset-preview__empty-body"><%= t("admin.overview.dataset.preview.empty_body") %></p>
+            </div>
+          <% else %>
+            <div class="demo-dataset-preview__table-wrap">
+              <table class="demo-dataset-preview-table">
+                <thead>
+                  <tr>
+                    <th>Trade</th>
+                    <th>Account</th>
+                    <th>Market</th>
+                    <th>Timestamp</th>
+                    <th>Side</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% limited_sample_rows.each do |row| %>
+                    <tr>
+                      <td><%= row_value(row, :tradeId) %></td>
+                      <td><%= row_value(row, :accountId) %></td>
+                      <td><%= row_value(row, :marketId) %></td>
+                      <td><%= row_value(row, :timestamp) %></td>
+                      <td><%= row_value(row, :side) %></td>
+                      <td><%= row_value(row, :quantityBase) %></td>
+                      <td><%= row_value(row, :priceQuotePerBase) %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% end %>
+        </section>
+      </div>
+    <% elsif invalid? %>
+      <div class="demo-dataset-modal__body">
+        <div class="demo-dataset-preview__state">
+          <h3><%= t("admin.overview.dataset.preview.invalid_title") %></h3>
+          <p><%= t("admin.overview.dataset.preview.invalid_body") %></p>
+        </div>
+        <section class="demo-dataset-preview__section">
+          <h3 class="demo-dataset-preview__section-title"><%= t("admin.overview.dataset.preview.errors_title") %></h3>
+          <% if error_items.any? %>
+            <ul class="demo-dataset-preview-errors">
+              <% error_items.each do |error| %>
+                <li>
+                  <% if error["line"].present? || error[:line].present? %>
+                    <strong><%= t("admin.overview.dataset.errors.line") %> <%= error["line"] || error[:line] %>:</strong>
+                  <% end %>
+                  <span><%= error["message"] || error[:message] || error["code"] || error[:code] %></span>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="demo-dataset-preview__empty-body"><%= t("admin.overview.dataset.preview.errors_empty") %></p>
+          <% end %>
+        </section>
+      </div>
+    <% else %>
+      <div class="demo-dataset-modal__body">
+        <div class="demo-dataset-preview__state">
+          <h3><%= t("admin.overview.dataset.preview.error_title") %></h3>
+          <p><%= t("admin.overview.dataset.preview.error_body") %></p>
+        </div>
+        <% if error_items.any? %>
+          <section class="demo-dataset-preview__section">
+            <h3 class="demo-dataset-preview__section-title"><%= t("admin.overview.dataset.preview.errors_title") %></h3>
+            <ul class="demo-dataset-preview-errors">
+              <% error_items.each do |error| %>
+                <li>
+                  <% if error["line"].present? || error[:line].present? %>
+                    <strong><%= t("admin.overview.dataset.errors.line") %> <%= error["line"] || error[:line] %>:</strong>
+                  <% end %>
+                  <span><%= error["message"] || error[:message] || error["code"] || error[:code] %></span>
+                </li>
+              <% end %>
+            </ul>
+          </section>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

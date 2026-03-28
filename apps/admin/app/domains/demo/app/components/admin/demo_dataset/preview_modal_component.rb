@@ -1,0 +1,84 @@
+# frozen_string_literal: true
+
+module Admin
+  module DemoDataset
+    class PreviewModalComponent < ViewComponent::Base
+      SAMPLE_LIMIT = 12
+
+      def initialize(state:, summary: nil, sample_rows: [], errors: [], file_name: nil)
+        @state = state&.to_sym
+        @summary = summary
+        @sample_rows = sample_rows
+        @errors = errors
+        @file_name = file_name
+      end
+
+      def loading?
+        @state == :loading
+      end
+
+      def success?
+        @state == :success
+      end
+
+      def invalid?
+        @state == :invalid
+      end
+
+      def error?
+        @state == :error
+      end
+
+      def empty?
+        success? && limited_sample_rows.empty?
+      end
+
+      def summary_items
+        return [] unless @summary.is_a?(Hash)
+
+        items = [
+          { label: t("admin.overview.dataset.preview.trades_label"), value: summary_value(:trades_count) },
+          { label: t("admin.overview.dataset.preview.accounts_label"), value: summary_value(:accounts_count) },
+          { label: t("admin.overview.dataset.preview.markets_label"), value: summary_value(:markets_count) },
+          { label: t("admin.overview.dataset.preview.schema_label"), value: summary_value(:schema_version) }
+        ]
+
+        fee_value = summary_value(:fee_enabled)
+        if fee_value != nil
+          items << {
+            label: t("admin.overview.dataset.preview.fee_label"),
+            value: fee_value ? t("admin.overview.dataset.preview.fee_enabled") : t("admin.overview.dataset.preview.fee_disabled")
+          }
+        end
+
+        items
+      end
+
+      def limited_sample_rows
+        Array(@sample_rows).first(SAMPLE_LIMIT)
+      end
+
+      def error_items
+        Array(@errors)
+      end
+
+      def file_name
+        @file_name
+      end
+
+      def row_value(row, key)
+        return nil unless row.is_a?(Hash)
+
+        row[key] || row[key.to_s]
+      end
+
+      private
+
+      def summary_value(key)
+        return nil unless @summary.is_a?(Hash)
+
+        @summary[key] || @summary[key.to_s]
+      end
+    end
+  end
+end
