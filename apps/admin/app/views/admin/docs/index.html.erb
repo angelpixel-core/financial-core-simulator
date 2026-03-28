@@ -1,7 +1,7 @@
 <% navigation_context = @navigation_context || {} %>
 <% shell_role = admin_shell_role %>
 <% secondary_action = shell_role == "operator" ? nil : { label: t("admin.nav.open_runs"), path: avo.resources_runs_path } %>
-<% artifacts_path = run_latest_result_path(navigation_context) %>
+<% artifacts_path = main_app.run_latest_result_path(navigation_context) %>
 <% sidebar_items = [
   { label: t("admin.nav.overview"), path: admin_overview_path(navigation_context), icon_key: "overview" }
 ] %>
