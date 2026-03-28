@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'caxlsx'
-require 'fileutils'
-require 'securerandom'
-require 'time'
+require "caxlsx"
+require "fileutils"
+require "securerandom"
+require "time"
 
 module Admin
   module DemoDataset
@@ -11,8 +11,8 @@ module Admin
       DAYS = 30
       TRADES_PER_DAY_RANGE = (3..8)
       ERROR_RATE = 0.08
-      ACCOUNTS = ['acc-1'].freeze
-      MARKETS = ['ETH-USD'].freeze
+      ACCOUNTS = ["acc-1"].freeze
+      MARKETS = ["ETH-USD"].freeze
 
       HEADERS = %w[
         trade_id account_id market_id timestamp seq
@@ -39,11 +39,11 @@ module Admin
       end
 
       def valid_path
-        File.join(@output_dir, 'trades_valid.xlsx')
+        File.join(@output_dir, "trades_valid.xlsx")
       end
 
       def invalid_path
-        File.join(@output_dir, 'trades_invalid.xlsx')
+        File.join(@output_dir, "trades_invalid.xlsx")
       end
 
       private
@@ -55,6 +55,7 @@ module Admin
       def generate_trades
         trades = []
         seq = 1
+        inventories = Hash.new(0.0)
         start_date = Time.now.utc - (DAYS * 24 * 60 * 60)
 
         DAYS.times do |day|
@@ -63,14 +64,27 @@ module Admin
           timestamps = Array.new(trades_per_day) { rand(0..86_399) }.sort
 
           timestamps.each do |offset|
+            account_id = ACCOUNTS.sample
+            market_id = MARKETS.sample
+            key = "#{account_id}|#{market_id}"
+            side = inventories[key] <= 0 ? "BUY" : %w[BUY SELL].sample
+            quantity_base = 1.0
+
+            if side == "SELL"
+              quantity_base = [quantity_base, inventories[key]].min
+              inventories[key] -= quantity_base
+            else
+              inventories[key] += quantity_base
+            end
+
             trades << {
               trade_id: "t-#{SecureRandom.hex(4)}",
-              account_id: ACCOUNTS.sample,
-              market_id: MARKETS.sample,
+              account_id: account_id,
+              market_id: market_id,
               timestamp: (date + offset).to_i,
               seq: seq,
-              side: %w[BUY SELL].sample,
-              quantity_base: rand(0.5..4.5).round(4),
+              side: side,
+              quantity_base: quantity_base,
               price_quote_per_base: rand(80.0..140.0).round(2),
               invalid: false
             }
@@ -99,7 +113,7 @@ module Admin
           when 5
             row[:trade_id] = trades.sample[:trade_id]
           when 6
-            row[:market_id] = 'BTC-ARS-X'
+            row[:market_id] = "BTC-ARS-X"
           end
 
           row[:invalid] = true
@@ -113,9 +127,9 @@ module Admin
         styles = workbook.styles
         header_style = styles.add_style(b: true)
         normal_style = styles.add_style
-        error_style = styles.add_style(bg_color: 'FFCC99', fg_color: '000000')
+        error_style = styles.add_style(bg_color: "FFCC99", fg_color: "000000")
 
-        workbook.add_worksheet(name: 'Trades') do |sheet|
+        workbook.add_worksheet(name: "Trades") do |sheet|
           sheet.add_row(HEADERS, style: header_style)
 
           trades.each do |trade|
