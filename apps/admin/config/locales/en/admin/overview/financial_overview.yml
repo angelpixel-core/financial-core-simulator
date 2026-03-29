@@ -1,0 +1,20 @@
+en:
+  admin:
+    overview:
+      financial_overview:
+        aria: "Financial overview"
+        title: "FINANCIAL OVERVIEW"
+        empty_title: "No trade activity yet."
+        empty_body: "Load a dataset with trades to populate trade activity and volume."
+        trade_activity:
+          title: "Trade activity"
+          meta: "Trade count per timestamp"
+          aria: "Trade activity chart"
+          tooltip: "Trades"
+          empty: "No trade activity available yet."
+        trade_volume:
+          title: "Trade volume"
+          meta: "Quote volume per timestamp"
+          aria: "Trade volume chart"
+          tooltip: "Volume"
+          empty: "No trade volume available yet."

@@ -3,6 +3,7 @@
 <% navigation_context = @navigation_context || {} %>
 <% run_details_path = ->(run_id) { avo.resources_run_path({ id: run_id }.merge(navigation_context)) } %>
 <% artifacts_run = reliable_run || candidate_run %>
+<% financial_overview_run = reliable_run || candidate_run %>
 <% artifacts_path = artifacts_run.nil? ? run_latest_result_path(navigation_context) : run_result_path({ id: artifacts_run.id }.merge(navigation_context)) %>
 <% shell_role = admin_shell_role %>
 <% secondary_action = shell_role == "operator" ? nil : { label: t("admin.nav.open_runs"), path: avo.resources_runs_path } %>
@@ -300,6 +301,53 @@
             <li><span><%= t("admin.overview.activity.status_mix.failed") %></span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
           </ul>
         </section>
+      </section>
+      <section class="overview__domain" aria-label="<%= t("admin.overview.financial_overview.aria") %>">
+        <h2 class="overview__domain-title"><%= t("admin.overview.financial_overview.title") %></h2>
+        <div
+          class="overview__grid"
+          data-controller="financial-overview"
+          data-financial-overview-url-value="<%= financial_overview_run.present? ? dashboard_financial_overview_path(run_id: financial_overview_run.id) : "" %>"
+          data-financial-overview-activity-title-value="<%= t("admin.overview.financial_overview.trade_activity.title") %>"
+          data-financial-overview-volume-title-value="<%= t("admin.overview.financial_overview.trade_volume.title") %>"
+          data-financial-overview-activity-tooltip-label-value="<%= t("admin.overview.financial_overview.trade_activity.tooltip") %>"
+          data-financial-overview-volume-tooltip-label-value="<%= t("admin.overview.financial_overview.trade_volume.tooltip") %>"
+        >
+          <div data-financial-overview-target="cards">
+            <section class="dashboard-card">
+              <header class="dashboard-card__header">
+                <h2><%= t("admin.overview.financial_overview.trade_activity.title") %></h2>
+                <p class="dashboard-card__meta"><%= t("admin.overview.financial_overview.trade_activity.meta") %></p>
+              </header>
+              <div
+                class="trend-chart"
+                data-financial-overview-target="activityChart"
+                aria-label="<%= t("admin.overview.financial_overview.trade_activity.aria") %>"
+              ></div>
+              <p class="empty-state" data-financial-overview-target="activityFallback" hidden>
+                <%= t("admin.overview.financial_overview.trade_activity.empty") %>
+              </p>
+            </section>
+            <section class="dashboard-card">
+              <header class="dashboard-card__header">
+                <h2><%= t("admin.overview.financial_overview.trade_volume.title") %></h2>
+                <p class="dashboard-card__meta"><%= t("admin.overview.financial_overview.trade_volume.meta") %></p>
+              </header>
+              <div
+                class="trend-chart trend-chart--pnl"
+                data-financial-overview-target="volumeChart"
+                aria-label="<%= t("admin.overview.financial_overview.trade_volume.aria") %>"
+              ></div>
+              <p class="empty-state" data-financial-overview-target="volumeFallback" hidden>
+                <%= t("admin.overview.financial_overview.trade_volume.empty") %>
+              </p>
+            </section>
+          </div>
+          <div class="ui-empty-state" data-financial-overview-target="emptyState" hidden>
+            <p class="ui-empty-state__title"><%= t("admin.overview.financial_overview.empty_title") %></p>
+            <p class="empty-state"><%= t("admin.overview.financial_overview.empty_body") %></p>
+          </div>
+        </div>
       </section>
       <section class="overview__domain" aria-label="<%= t("admin.overview.financial_results.aria") %>">
         <h2 class="overview__domain-title"><%= t("admin.overview.financial_results.title") %></h2>

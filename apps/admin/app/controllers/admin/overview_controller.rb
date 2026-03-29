@@ -10,6 +10,7 @@ class Admin::OverviewController < ApplicationController
   ]
   before_action :authorize_dashboard_viewer!, only: %i[
     dashboard_overview
+    dashboard_financial_overview
     dashboard_top_accounts
     dashboard_risk
     dashboard_trend
@@ -70,6 +71,14 @@ class Admin::OverviewController < ApplicationController
     render_dashboard_json do |metrics|
       overview_response_serializer.serialize(metrics: metrics)
     end
+  end
+
+  def dashboard_financial_overview
+    run = Run.find_by(id: params[:run_id])
+    return render json: { 'error' => 'run_not_found' }, status: :not_found if run.nil?
+
+    metrics = financial_overview_metrics(run: run).call
+    render json: financial_overview_response_serializer.serialize(metrics: metrics), status: :ok
   end
 
   def dashboard_top_accounts
@@ -155,8 +164,16 @@ class Admin::OverviewController < ApplicationController
     )
   end
 
+  def financial_overview_response_serializer
+    @financial_overview_response_serializer ||= Admin::Dashboard::FinancialOverviewResponseSerializer.new
+  end
+
   def ingestion_validation_errors_response_serializer
     @ingestion_validation_errors_response_serializer ||= Admin::Dashboard::IngestionValidationErrorsResponseSerializer.new
+  end
+
+  def financial_overview_metrics(run:)
+    Admin::Dashboard::FinancialOverviewMetrics.new(run: run)
   end
 
   def dashboard_ingestion_validation_errors(source: nil, field: nil)
