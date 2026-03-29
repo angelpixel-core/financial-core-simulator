@@ -261,16 +261,23 @@ export default class extends Controller {
   showLoading() {
     if (this.hasCardsTarget) this.cardsTarget.hidden = false
     if (this.hasEmptyStateTarget) this.emptyStateTarget.hidden = true
+    this.setState("loading")
   }
 
   showEmptyState() {
     if (this.hasCardsTarget) this.cardsTarget.hidden = true
     if (this.hasEmptyStateTarget) this.emptyStateTarget.hidden = false
+    this.setState("empty")
   }
 
   hideEmptyState() {
     if (this.hasCardsTarget) this.cardsTarget.hidden = false
     if (this.hasEmptyStateTarget) this.emptyStateTarget.hidden = true
+    this.setState("ready")
+  }
+
+  setState(state) {
+    this.element.dataset.financialOverviewState = state
   }
 
   formatTimestamp(timestamp) {

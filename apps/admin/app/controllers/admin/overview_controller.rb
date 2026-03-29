@@ -79,6 +79,9 @@ class Admin::OverviewController < ApplicationController
 
     metrics = financial_overview_metrics(run: run).call
     render json: financial_overview_response_serializer.serialize(metrics: metrics), status: :ok
+  rescue StandardError
+    fallback_metrics = { trade_activity: [], trade_volume: [] }
+    render json: financial_overview_response_serializer.serialize(metrics: fallback_metrics), status: :ok
   end
 
   def dashboard_top_accounts
