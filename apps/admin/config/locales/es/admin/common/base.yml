@@ -16,6 +16,8 @@ es:
       runs: "Runs"
       runs_tooltip: "%{day}: %{count} runs"
       ms: "ms"
+      copy: "Copiar"
+      copied: "Copiado"
       language: "Idioma"
       languages:
         en: "Ingles"

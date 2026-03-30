@@ -9,6 +9,7 @@ en:
           subtitle: "Upload the valid/invalid trade dataset to validate ingestion."
           cta: "Process Excel"
           hint: "Valid runs simulate; invalid runs show errors."
+          timeline_label: "Enable detailed PnL timeline generation"
         reset:
           cta: "Reset database"
         preview:

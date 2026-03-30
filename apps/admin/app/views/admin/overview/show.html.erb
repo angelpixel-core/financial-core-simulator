@@ -4,6 +4,13 @@
 <% run_details_path = ->(run_id) { avo.resources_run_path({ id: run_id }.merge(navigation_context)) } %>
 <% artifacts_run = reliable_run || candidate_run %>
 <% financial_overview_run = reliable_run || candidate_run %>
+<% financial_input = financial_overview_run&.input_json.is_a?(Hash) ? financial_overview_run.input_json : {} %>
+<% financial_accounts = Array(financial_input["accounts"]).filter_map { |account| account.is_a?(Hash) ? account["accountId"] : account }
+  .map { |value| value.to_s.strip }.reject(&:empty?).uniq.sort %>
+<% financial_markets = Array(financial_input["markets"]).filter_map { |market| market.is_a?(Hash) ? market["marketId"] : market }
+  .map { |value| value.to_s.strip }.reject(&:empty?).uniq.sort %>
+<% selected_account_id = params[:account_id].to_s.strip %>
+<% selected_market_id = params[:market_id].to_s.strip %>
 <% artifacts_path = artifacts_run.nil? ? run_latest_result_path(navigation_context) : run_result_path({ id: artifacts_run.id }.merge(navigation_context)) %>
 <% shell_role = admin_shell_role %>
 <% secondary_action = shell_role == "operator" ? nil : { label: t("admin.nav.open_runs"), path: avo.resources_runs_path } %>
@@ -64,10 +71,6 @@
               <span><%= t("admin.overview.engine.schema_version") %></span>
               <strong><%= @metrics.dig(:latest_run, :schema_version) || t("admin.common.na") %></strong>
             </li>
-            <li>
-              <span><%= t("admin.overview.engine.input_hash") %></span>
-              <strong><%= @metrics.dig(:latest_run, :input_hash).presence || t("admin.common.na") %></strong>
-            </li>
           </ul>
         </section>
       </div>
@@ -96,6 +99,12 @@
                   formaction: admin_demo_datasets_preview_path(locale: I18n.locale),
                   formmethod: :post,
                   data: { turbo_frame: "demo-dataset-preview", demo_dataset_preview_submit: true } %>
+                </div>
+                <div class="demo-dataset-form__row">
+                  <label class="demo-dataset-form__toggle">
+                    <%= form.check_box :timeline_enabled, { checked: true, class: "demo-dataset-form__checkbox" }, "1", "0" %>
+                    <span><%= t("admin.overview.dataset.upload.timeline_label") %></span>
+                  </label>
                 </div>
               <% end %>
               <div class="demo-dataset-form__row">
@@ -254,55 +263,6 @@
           ) %>
         </section>
       </section>
-      <section class="overview__domain" aria-label="<%= t("admin.overview.activity.aria") %>">
-        <h2 class="overview__domain-title"><%= t("admin.overview.activity.title") %></h2>
-        <section class="dashboard-card">
-          <header class="dashboard-card__header">
-            <h2><%= t("admin.overview.activity.run_trend.title") %></h2>
-            <a class="overview__link" href="<%= admin_overview_runs_trend_path(navigation_context) %>"><%= t("admin.overview.activity.run_trend.link") %></a>
-          </header>
-          <div
-            data-controller="run-trend-chart"
-            data-run-trend-chart-points-value="<%= @metrics[:runs_trend_14d].to_json %>"
-            data-run-trend-chart-chart-kind-value="bar"
-            data-run-trend-chart-tooltip-label-value="<%= t("admin.overview.activity.run_trend.tooltip_label") %>"
-            data-run-trend-chart-tooltip-count-label-value="<%= t("admin.overview.activity.run_trend.tooltip_count") %>"
-            data-run-trend-chart-animation-mode-value="proportional"
-            data-run-trend-chart-base-duration-value="260"
-            data-run-trend-chart-max-extra-duration-value="540"
-          >
-            <div
-              class="trend-chart"
-              data-run-trend-chart-target="chart"
-              aria-label="<%= t("admin.overview.activity.run_trend.aria") %>"
-            ></div>
-            <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
-            <div class="trend-bars" data-run-trend-chart-target="fallback">
-              <% @metrics[:runs_trend_14d].each do |point| %>
-                <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
-                <div class="trend-bars__item">
-                  <div class="trend-bars__bar-wrap">
-                    <div class="trend-bars__bar" style="height: <%= height %>%"></div>
-                  </div>
-                  <span><%= point[:day] %></span>
-                </div>
-              <% end %>
-            </div>
-          </div>
-        </section>
-        <section class="dashboard-card">
-          <header class="dashboard-card__header">
-            <h2><%= t("admin.overview.activity.status_mix.title") %></h2>
-            <a class="overview__link" href="<%= admin_overview_status_mix_path(navigation_context) %>"><%= t("admin.overview.activity.status_mix.link") %></a>
-          </header>
-          <ul class="detail-list">
-            <li><span><%= t("admin.overview.activity.status_mix.queued") %></span><strong><%= @metrics[:status_mix_30d][:queued] %></strong></li>
-            <li><span><%= t("admin.overview.activity.status_mix.running") %></span><strong><%= @metrics[:status_mix_30d][:running] %></strong></li>
-            <li><span><%= t("admin.overview.activity.status_mix.succeeded") %></span><strong><%= @metrics[:status_mix_30d][:succeeded] %></strong></li>
-            <li><span><%= t("admin.overview.activity.status_mix.failed") %></span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
-          </ul>
-        </section>
-      </section>
       <section class="overview__domain" aria-label="<%= t("admin.overview.financial_overview.aria") %>">
         <h2 class="overview__domain-title"><%= t("admin.overview.financial_overview.title") %></h2>
         <div
@@ -313,163 +273,127 @@
           data-financial-overview-volume-title-value="<%= t("admin.overview.financial_overview.trade_volume.title") %>"
           data-financial-overview-activity-tooltip-label-value="<%= t("admin.overview.financial_overview.trade_activity.tooltip") %>"
           data-financial-overview-volume-tooltip-label-value="<%= t("admin.overview.financial_overview.trade_volume.tooltip") %>"
+          data-financial-overview-pnl-title-value="<%= t("admin.overview.financial_overview.pnl_daily.title") %>"
+          data-financial-overview-pnl-tooltip-label-value="<%= t("admin.overview.financial_overview.pnl_daily.tooltip") %>"
         >
-          <div data-financial-overview-target="cards">
-            <section class="dashboard-card">
-              <header class="dashboard-card__header">
-                <h2><%= t("admin.overview.financial_overview.trade_activity.title") %></h2>
-                <p class="dashboard-card__meta"><%= t("admin.overview.financial_overview.trade_activity.meta") %></p>
-              </header>
-              <div
+          <div class="ingestion-filters" data-financial-overview-target="filters">
+            <label for="financial-account-filter" class="ingestion-filters__label"><%= t("admin.overview.financial_overview.filters.account") %></label>
+            <select
+              id="financial-account-filter"
+              class="ingestion-filters__input"
+              data-financial-overview-target="accountSelect"
+              data-action="change->financial-overview#applyFilters"
+              >
+              <option value="" <%= "selected" if selected_account_id.empty? %>><%= t("admin.overview.financial_overview.filters.account_all") %></option>
+                <% financial_accounts.each do |account_id| %>
+                  <option value="<%= account_id %>" <%= "selected" if account_id == selected_account_id %>><%= account_id %></option>
+                  <% end %>
+                </select>
+                <label for="financial-market-filter" class="ingestion-filters__label"><%= t("admin.overview.financial_overview.filters.market") %></label>
+                <select
+              id="financial-market-filter"
+              class="ingestion-filters__input"
+              data-financial-overview-target="marketSelect"
+              data-action="change->financial-overview#applyFilters"
+                  >
+                  <option value="" <%= "selected" if selected_market_id.empty? %>><%= t("admin.overview.financial_overview.filters.market_all") %></option>
+                    <% financial_markets.each do |market_id| %>
+                      <option value="<%= market_id %>" <%= "selected" if market_id == selected_market_id %>><%= market_id %></option>
+                      <% end %>
+                    </select>
+                  </div>
+                  <div data-financial-overview-target="cards">
+                    <section class="dashboard-card">
+                      <header class="dashboard-card__header">
+                        <h2><%= t("admin.overview.financial_overview.trade_activity.title") %></h2>
+                        <p class="dashboard-card__meta"><%= t("admin.overview.financial_overview.trade_activity.meta") %></p>
+                      </header>
+                      <div
                 class="trend-chart"
                 data-financial-overview-target="activityChart"
                 aria-label="<%= t("admin.overview.financial_overview.trade_activity.aria") %>"
               ></div>
-              <p class="empty-state" data-financial-overview-target="activityFallback" hidden>
-                <%= t("admin.overview.financial_overview.trade_activity.empty") %>
-              </p>
-            </section>
-            <section class="dashboard-card">
-              <header class="dashboard-card__header">
-                <h2><%= t("admin.overview.financial_overview.trade_volume.title") %></h2>
-                <p class="dashboard-card__meta"><%= t("admin.overview.financial_overview.trade_volume.meta") %></p>
-              </header>
-              <div
+                      <p class="empty-state" data-financial-overview-target="activityFallback" hidden>
+                        <%= t("admin.overview.financial_overview.trade_activity.empty") %>
+                      </p>
+                    </section>
+                    <section class="dashboard-card">
+                      <header class="dashboard-card__header">
+                        <h2><%= t("admin.overview.financial_overview.trade_volume.title") %></h2>
+                        <p class="dashboard-card__meta"><%= t("admin.overview.financial_overview.trade_volume.meta") %></p>
+                      </header>
+                      <div
                 class="trend-chart trend-chart--pnl"
                 data-financial-overview-target="volumeChart"
                 aria-label="<%= t("admin.overview.financial_overview.trade_volume.aria") %>"
               ></div>
-              <p class="empty-state" data-financial-overview-target="volumeFallback" hidden>
-                <%= t("admin.overview.financial_overview.trade_volume.empty") %>
-              </p>
-            </section>
-          </div>
-          <div class="ui-empty-state" data-financial-overview-target="emptyState" hidden>
-            <p class="ui-empty-state__title"><%= t("admin.overview.financial_overview.empty_title") %></p>
-            <p class="empty-state"><%= t("admin.overview.financial_overview.empty_body") %></p>
-          </div>
-        </div>
-      </section>
-      <section class="overview__domain" aria-label="<%= t("admin.overview.financial_results.aria") %>">
-        <h2 class="overview__domain-title"><%= t("admin.overview.financial_results.title") %></h2>
-        <section class="dashboard-card">
-          <header class="dashboard-card__header">
-            <h2><%= t("admin.overview.financial_results.pnl_trend.title") %></h2>
-            <p class="dashboard-card__meta"><%= t("admin.overview.financial_results.pnl_trend.meta") %></p>
-          </header>
-          <% if @metrics[:pnl_trend].blank? %>
-            <div class="ui-empty-state">
-              <p class="ui-empty-state__title"><%= t("admin.overview.financial_results.pnl_trend.empty_title") %></p>
-              <p class="empty-state"><%= t("admin.overview.financial_results.pnl_trend.empty_body") %></p>
-            </div>
-          <% else %>
-            <div
-              data-controller="pnl-trend-chart"
-              data-pnl-trend-chart-points-value="<%= @metrics[:pnl_trend].to_json %>"
-              data-pnl-trend-chart-title-value="<%= t("admin.overview.financial_results.pnl_trend.title") %>"
-              data-pnl-trend-chart-tooltip-label-value="<%= t("admin.overview.financial_results.pnl_trend.tooltip") %>"
-            >
-              <div
+                      <p class="empty-state" data-financial-overview-target="volumeFallback" hidden>
+                        <%= t("admin.overview.financial_overview.trade_volume.empty") %>
+                      </p>
+                    </section>
+                    <section class="dashboard-card">
+                      <header class="dashboard-card__header">
+                        <h2><%= t("admin.overview.financial_overview.pnl_daily.title") %></h2>
+                        <p class="dashboard-card__meta"><%= t("admin.overview.financial_overview.pnl_daily.meta") %></p>
+                      </header>
+                      <div
                 class="trend-chart trend-chart--pnl"
-                data-pnl-trend-chart-target="chart"
-                aria-label="<%= t("admin.overview.financial_results.pnl_trend.aria") %>"
+                data-financial-overview-target="pnlChart"
+                aria-label="<%= t("admin.overview.financial_overview.pnl_daily.aria") %>"
               ></div>
-              <%= turbo_frame_tag "pnl_trend_fallback" do %>
-                <%= render "admin/overview/pnl_trend_list", pagination: @pnl_trend_pagination %>
-              <% end %>
-            </div>
-          <% end %>
-        </section>
-        <section class="dashboard-card">
-          <header class="dashboard-card__header">
-            <h2><%= t("admin.overview.financial_results.latest_run.title") %></h2>
-            <% if @metrics[:latest_run].present? %>
-              <a class="overview__link" href="<%= run_details_path.call(@metrics[:latest_run][:id]) %>"><%= t("admin.overview.financial_results.latest_run.link") %></a>
-            <% end %>
-          </header>
-          <% if @metrics[:latest_run].nil? %>
-            <p class="empty-state"><%= t("admin.overview.financial_results.latest_run.empty") %></p>
-          <% else %>
-            <ul class="detail-list">
-              <li><span><%= t("admin.overview.financial_results.latest_run.run") %></span><strong>#<%= @metrics[:latest_run][:id] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.latest_run.input_hash") %></span><code><%= @metrics[:latest_run][:input_hash] %></code></li>
-              <li><span><%= t("admin.overview.financial_results.latest_run.duration") %></span><strong><%= @metrics[:latest_run][:duration_ms] %> <%= t("admin.common.ms") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.latest_run.schema") %></span><strong><%= @metrics[:latest_run][:schema_version] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.latest_run.engine") %></span><strong><%= @metrics[:latest_run][:engine_version] %></strong></li>
-            </ul>
-          <% end %>
-        </section>
-        <section class="dashboard-card">
-          <h2><%= t("admin.overview.financial_results.global_pnl.title") %></h2>
-          <% if @metrics[:latest_global].nil? %>
-            <p class="empty-state"><%= t("admin.overview.financial_results.global_pnl.empty") %></p>
-          <% else %>
-            <ul class="detail-list">
-              <li><span><%= t("admin.overview.financial_results.global_pnl.total") %></span><strong><%= @metrics[:latest_global]["totalPnLQuote"] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.global_pnl.realized_net") %></span><strong><%= @metrics[:latest_global]["realizedNetPnLQuote"] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.global_pnl.unrealized") %></span><strong><%= @metrics[:latest_global]["unrealizedPnLQuote"] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.global_pnl.total_usd") %></span><strong><%= @metrics[:latest_global]["totalPnLUsd"] || t("admin.common.na") %></strong></li>
-            </ul>
-          <% end %>
-        </section>
-        <section
+                      <p class="empty-state" data-financial-overview-target="pnlFallback" hidden>
+                        <%= t("admin.overview.financial_overview.pnl_daily.empty") %>
+                      </p>
+                    </section>
+                  </div>
+                  <div class="ui-empty-state" data-financial-overview-target="emptyState" hidden>
+                    <p class="ui-empty-state__title"><%= t("admin.overview.financial_overview.empty_title") %></p>
+                    <p class="empty-state"><%= t("admin.overview.financial_overview.empty_body") %></p>
+                  </div>
+                </div>
+              </section>
+              <section class="overview__domain" aria-label="<%= t("admin.overview.financial_results.aria") %>">
+                <h2 class="overview__domain-title"><%= t("admin.overview.financial_results.title") %></h2>
+                <section
           class="overview__live"
           data-controller="poll"
           data-poll-url-value="<%= admin_overview_top_accounts_path(navigation_context.merge(page: @top_accounts_pagination[:page])) %>"
           data-poll-interval-value="12000"
         >
-          <%= render partial: "admin/overview/top_accounts_frame", locals: {
+                  <%= render partial: "admin/overview/top_accounts_frame", locals: {
             metrics: @metrics,
             pagination: @top_accounts_pagination,
             show_drilldown: true,
             navigation_context: navigation_context
           } %>
-        </section>
-        <section class="dashboard-card">
-          <header class="dashboard-card__header">
-            <h2><%= t("admin.overview.financial_results.run_comparison.title") %></h2>
-          </header>
-          <% run_comparison = @metrics[:run_comparison] %>
-          <% if run_comparison.nil? || run_comparison[:previous_run_id].nil? %>
-            <p class="empty-state"><%= t("admin.overview.financial_results.run_comparison.empty") %></p>
-          <% else %>
-            <ul class="detail-list">
-              <li><span><%= t("admin.overview.financial_results.run_comparison.current_run") %></span><strong>#<%= run_comparison[:current_run_id] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.previous_run") %></span><strong>#<%= run_comparison[:previous_run_id] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.pnl_delta") %></span><strong><%= run_comparison[:total_pnl_delta] || t("admin.common.na") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.realized_delta") %></span><strong><%= run_comparison[:realized_delta] || t("admin.common.na") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.unrealized_delta") %></span><strong><%= run_comparison[:unrealized_delta] || t("admin.common.na") %></strong></li>
-            </ul>
-            <p class="dashboard-card__meta"><%= run_comparison[:deterministic_result] %></p>
-          <% end %>
-        </section>
-        <section class="dashboard-card">
-          <header class="dashboard-card__header">
-            <h2><%= t("admin.overview.financial_results.input_traceability.title") %></h2>
-          </header>
-          <% traceability = @metrics[:input_traceability] %>
-          <% if traceability.nil? %>
-            <p class="empty-state"><%= t("admin.overview.financial_results.input_traceability.empty") %></p>
-          <% else %>
-            <ul class="detail-list">
-              <li><span><%= t("admin.overview.financial_results.input_traceability.dataset") %></span><strong><%= traceability[:dataset] || t("admin.common.na") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.input_traceability.input_hash") %></span><strong><%= traceability[:input_hash].presence || t("admin.common.na") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.input_traceability.result_json") %></span><strong><%= traceability.dig(:artifacts, :result_json_path).presence || t("admin.common.na") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.input_traceability.positions_csv") %></span><strong><%= traceability.dig(:artifacts, :positions_csv_path).presence || t("admin.common.na") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.input_traceability.pnl_csv") %></span><strong><%= traceability.dig(:artifacts, :pnl_csv_path).presence || t("admin.common.na") %></strong></li>
-            </ul>
-          <% end %>
-        </section>
-      </section>
-      <section class="overview__domain" aria-label="<%= t("admin.overview.validation.aria") %>">
-        <h2 class="overview__domain-title"><%= t("admin.overview.validation.title") %></h2>
-        <section
+                </section>
+                <section class="dashboard-card">
+                  <header class="dashboard-card__header">
+                    <h2><%= t("admin.overview.financial_results.input_traceability.title") %></h2>
+                  </header>
+                  <% traceability = @metrics[:input_traceability] %>
+                  <% if traceability.nil? %>
+                    <p class="empty-state"><%= t("admin.overview.financial_results.input_traceability.empty") %></p>
+                  <% else %>
+                    <ul class="detail-list">
+                      <li><span><%= t("admin.overview.financial_results.input_traceability.dataset") %></span><strong><%= traceability[:dataset] || t("admin.common.na") %></strong></li>
+                      <li><span><%= t("admin.overview.financial_results.input_traceability.input_hash") %></span><strong><%= traceability[:input_hash].presence || t("admin.common.na") %></strong></li>
+                      <li><span><%= t("admin.overview.financial_results.input_traceability.result_json") %></span><strong><%= traceability.dig(:artifacts, :result_json_path).presence || t("admin.common.na") %></strong></li>
+                      <li><span><%= t("admin.overview.financial_results.input_traceability.positions_csv") %></span><strong><%= traceability.dig(:artifacts, :positions_csv_path).presence || t("admin.common.na") %></strong></li>
+                      <li><span><%= t("admin.overview.financial_results.input_traceability.pnl_csv") %></span><strong><%= traceability.dig(:artifacts, :pnl_csv_path).presence || t("admin.common.na") %></strong></li>
+                    </ul>
+                  <% end %>
+                </section>
+              </section>
+              <section class="overview__domain" aria-label="<%= t("admin.overview.validation.aria") %>">
+                <h2 class="overview__domain-title"><%= t("admin.overview.validation.title") %></h2>
+                <section
           class="overview__live"
           data-controller="poll"
           data-poll-url-value="<%= admin_overview_ingestion_validation_errors_path(navigation_context.merge(source: @selected_source, field: @selected_field, errors_page: @ingestion_errors_pagination[:page])) %>"
           data-poll-interval-value="12000"
         >
-          <%= render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
+                  <%= render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
             errors: @ingestion_validation_errors,
             pagination: @ingestion_errors_pagination,
             selected_source: @selected_source,
@@ -477,8 +401,8 @@
             show_drilldown: true,
             navigation_context: navigation_context
           } %>
-        </section>
-      </section>
-    </section>
-  </main>
-<% end %>
+                </section>
+              </section>
+            </section>
+          </main>
+        <% end %>

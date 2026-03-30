@@ -9,6 +9,7 @@ es:
           subtitle: "Subi el dataset valido/invalido de trades para validar ingestion."
           cta: "Procesar Excel"
           hint: "Los validos simulan; los invalidos muestran errores."
+          timeline_label: "Habilitar generacion de timeline detallado de PnL"
         reset:
           cta: "Resetear base de datos"
         preview:

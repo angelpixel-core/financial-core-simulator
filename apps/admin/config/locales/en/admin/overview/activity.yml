@@ -17,3 +17,12 @@ en:
           running: "Running"
           succeeded: "Succeeded"
           failed: "Failed"
+        pnl_trend:
+          title: "Run PnL trend"
+          meta: "Total PnL quote across successful runs"
+          aria: "PnL trend chart for successful runs"
+          empty_title: "No PnL trend data available yet."
+          empty_body: "Run successful simulations with canonical result artifacts to populate this chart."
+          tooltip: "Total PnL Quote"
+          fallback_aria: "PnL trend fallback values"
+          pagination_aria: "PnL trend pagination"

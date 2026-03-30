@@ -11,7 +11,7 @@ module Admin
       DAYS = 30
       TRADES_PER_DAY_RANGE = (3..8)
       ERROR_RATE = 0.08
-      ACCOUNTS = ["acc-1"].freeze
+      ACCOUNT_COUNT_RANGE = (2..5)
       MARKETS = ["ETH-USD"].freeze
 
       HEADERS = %w[
@@ -21,6 +21,7 @@ module Admin
 
       def initialize(output_dir:)
         @output_dir = output_dir
+        @accounts = build_accounts
       end
 
       def generate_valid
@@ -64,7 +65,7 @@ module Admin
           timestamps = Array.new(trades_per_day) { rand(0..86_399) }.sort
 
           timestamps.each do |offset|
-            account_id = ACCOUNTS.sample
+            account_id = @accounts.sample
             market_id = MARKETS.sample
             key = "#{account_id}|#{market_id}"
             side = inventories[key] <= 0 ? "BUY" : %w[BUY SELL].sample
@@ -142,6 +143,11 @@ module Admin
         end
 
         package.serialize(file_path)
+      end
+
+      def build_accounts
+        count = rand(ACCOUNT_COUNT_RANGE)
+        Array.new(count) { |index| "acc-#{index + 1}" }
       end
     end
   end

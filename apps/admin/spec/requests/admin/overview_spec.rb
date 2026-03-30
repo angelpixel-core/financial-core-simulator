@@ -22,7 +22,6 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response.body).to include(admin_t('overview.financial_results.title', locale: :en))
     expect(response.body).to include(admin_t('overview.validation.title', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_results.latest_run.empty', locale: :en))
-    expect(response.body).to include(admin_t('overview.financial_results.pnl_trend.empty_title', locale: :en))
     expect(response.body).to include(admin_t('overview.simulation_context.empty', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_results.run_comparison.empty', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_results.input_traceability.empty', locale: :en))
@@ -228,32 +227,6 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response.body).to include('data-run-trend-chart-animation-mode-value="proportional"')
     expect(response.body).to include('data-run-trend-chart-base-duration-value="260"')
     expect(response.body).to include('data-run-trend-chart-max-extra-duration-value="540"')
-    expect(response.body).to include(admin_t('overview.financial_results.pnl_trend.empty_title', locale: :en))
-  end
-
-  it 'renders pnl trend chart hooks when successful runs include canonical pnl values' do
-    run = Run.create!(
-      status: :succeeded,
-      valuation_timestamp: Time.zone.parse('2026-03-14T04:00:00Z'),
-      input_json: { 'schemaVersion' => '1.0' }
-    )
-
-    Dir.mktmpdir do |dir|
-      path = File.join(dir, 'result.json')
-      File.write(path, JSON.pretty_generate({ 'global' => { 'totalPnLQuote' => '42.25' }, 'accounts' => [] }))
-      run.update!(artifacts: { 'result_json_path' => path })
-
-      get '/admin/overview', headers: admin_session_headers
-
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include('data-controller="pnl-trend-chart"')
-      expect(response.body).to include('data-pnl-trend-chart-target="chart"')
-      expect(response.body).to include('<turbo-frame id="pnl_trend_fallback"')
-      expect(response.body).to include("data-pnl-trend-chart-tooltip-label-value=\"#{admin_t(
-        'overview.financial_results.pnl_trend.tooltip', locale: :en
-      )}\"")
-      expect(response.body).to include(admin_t('overview.financial_results.pnl_trend.meta', locale: :en))
-    end
   end
 
   it 'renders derived simulation context, run comparison, and traceability cards when data is available' do

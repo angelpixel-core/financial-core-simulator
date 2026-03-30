@@ -17,3 +17,12 @@ es:
           running: "Running"
           succeeded: "Succeeded"
           failed: "Failed"
+        pnl_trend:
+          title: "Tendencia PnL por run"
+          meta: "Total global de PnL quote en runs exitosos"
+          aria: "Tendencia de PnL para runs exitosos"
+          empty_title: "Sin datos de tendencia de PnL."
+          empty_body: "Ejecuta simulaciones exitosas con artifacts canonicos para poblar este grafico."
+          tooltip: "Total PnL Quote"
+          fallback_aria: "Valores fallback de tendencia PnL"
+          pagination_aria: "Paginacion de tendencia PnL"

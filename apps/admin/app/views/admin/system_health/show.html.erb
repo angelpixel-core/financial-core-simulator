@@ -2,6 +2,10 @@
 <% shell_role = admin_shell_role %>
 <% secondary_action = shell_role == "operator" ? nil : { label: t("admin.nav.open_runs"), path: avo.resources_runs_path } %>
 <% artifacts_path = main_app.run_latest_result_path(navigation_context) %>
+<% run_details_path = ->(run_id) { avo.resources_run_path({ id: run_id }.merge(navigation_context)) } %>
+<% latest_run_hash = @metrics.dig(:latest_run, :input_hash).to_s %>
+<% latest_run_hash_present = latest_run_hash.present? %>
+<% latest_run_hash_truncated = latest_run_hash_present ? "#{latest_run_hash.first(10)}..." : nil %>
 <% sidebar_items = [
   { label: t("admin.nav.overview"), path: admin_overview_path(navigation_context), active: false, icon_key: "overview", external: false }
 ] %>
@@ -45,59 +49,182 @@
       </div>
     </section>
     <section class="workspace__overview">
-      <section class="dashboard-card">
-        <header class="dashboard-card__header">
-          <h2><%= t("admin.overview.system_metrics.title") %></h2>
-        </header>
-        <ul class="detail-list">
-          <li>
-            <span><%= t("admin.overview.system_metrics.total_runs_7d.title") %></span>
-            <strong><%= @metrics[:total_runs_7d] || t("admin.common.na") %></strong>
-          </li>
-          <li>
-            <span><%= t("admin.overview.system_metrics.total_runs_30d.title") %></span>
-            <strong><%= @metrics[:total_runs_30d] || t("admin.common.na") %></strong>
-          </li>
-          <li>
-            <span><%= t("admin.overview.system_metrics.success_rate_last_50.title") %></span>
-            <strong><%= @metrics[:success_rate_last_50].nil? ? t("admin.common.na") : "#{@metrics[:success_rate_last_50]}%" %></strong>
-          </li>
-          <li>
-            <span><%= t("admin.overview.system_metrics.avg_duration.title") %></span>
-            <strong><%= @metrics[:avg_duration_ms_last_50].nil? ? t("admin.common.na") : "#{@metrics[:avg_duration_ms_last_50]} #{t("admin.common.ms")}" %></strong>
-          </li>
-        </ul>
-      </section>
-      <section class="dashboard-card">
-        <header class="dashboard-card__header">
-          <h2><%= t("admin.overview.financial_results.latest_run.title") %></h2>
-        </header>
-        <% if @metrics[:latest_run].nil? %>
-          <p class="empty-state"><%= t("admin.overview.financial_results.latest_run.empty") %></p>
-        <% else %>
+      <section class="overview__domain" aria-label="<%= t("admin.overview.system_metrics.aria") %>">
+        <h2 class="overview__domain-title"><%= t("admin.overview.system_metrics.title") %></h2>
+        <section class="dashboard-card">
           <ul class="detail-list">
             <li>
-              <span><%= t("admin.overview.financial_results.latest_run.run") %></span>
-              <strong>#<%= @metrics[:latest_run][:id] %></strong>
+              <span><%= t("admin.overview.system_metrics.total_runs_7d.title") %></span>
+              <strong><%= @metrics[:total_runs_7d] || t("admin.common.na") %></strong>
             </li>
             <li>
-              <span><%= t("admin.overview.financial_results.latest_run.input_hash") %></span>
-              <code><%= @metrics[:latest_run][:input_hash] %></code>
+              <span><%= t("admin.overview.system_metrics.total_runs_30d.title") %></span>
+              <strong><%= @metrics[:total_runs_30d] || t("admin.common.na") %></strong>
             </li>
             <li>
-              <span><%= t("admin.overview.financial_results.latest_run.duration") %></span>
-              <strong><%= @metrics[:latest_run][:duration_ms] %> <%= t("admin.common.ms") %></strong>
+              <span><%= t("admin.overview.system_metrics.success_rate_last_50.title") %></span>
+              <strong><%= @metrics[:success_rate_last_50].nil? ? t("admin.common.na") : "#{@metrics[:success_rate_last_50]}%" %></strong>
             </li>
             <li>
-              <span><%= t("admin.overview.financial_results.latest_run.schema") %></span>
-              <strong><%= @metrics[:latest_run][:schema_version] %></strong>
-            </li>
-            <li>
-              <span><%= t("admin.overview.financial_results.latest_run.engine") %></span>
-              <strong><%= @metrics[:latest_run][:engine_version] %></strong>
+              <span><%= t("admin.overview.system_metrics.avg_duration.title") %></span>
+              <strong><%= @metrics[:avg_duration_ms_last_50].nil? ? t("admin.common.na") : "#{@metrics[:avg_duration_ms_last_50]} #{t("admin.common.ms")}" %></strong>
             </li>
           </ul>
-        <% end %>
+        </section>
+      </section>
+      <section class="overview__domain" aria-label="<%= t("admin.overview.activity.aria") %>">
+        <h2 class="overview__domain-title"><%= t("admin.overview.activity.title") %></h2>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2><%= t("admin.overview.activity.run_trend.title") %></h2>
+            <a class="overview__link" href="<%= admin_overview_runs_trend_path(navigation_context) %>"><%= t("admin.overview.activity.run_trend.link") %></a>
+          </header>
+          <div
+            data-controller="run-trend-chart"
+            data-run-trend-chart-points-value="<%= @metrics[:runs_trend_14d].to_json %>"
+            data-run-trend-chart-chart-kind-value="bar"
+            data-run-trend-chart-tooltip-label-value="<%= t("admin.overview.activity.run_trend.tooltip_label") %>"
+            data-run-trend-chart-tooltip-count-label-value="<%= t("admin.overview.activity.run_trend.tooltip_count") %>"
+            data-run-trend-chart-animation-mode-value="proportional"
+            data-run-trend-chart-base-duration-value="260"
+            data-run-trend-chart-max-extra-duration-value="540"
+          >
+            <div
+              class="trend-chart"
+              data-run-trend-chart-target="chart"
+              aria-label="<%= t("admin.overview.activity.run_trend.aria") %>"
+            ></div>
+            <% max_trend = [@metrics[:runs_trend_14d].map { |point| point[:count] }.max.to_i, 1].max %>
+            <div class="trend-bars" data-run-trend-chart-target="fallback">
+              <% @metrics[:runs_trend_14d].each do |point| %>
+                <% height = ((point[:count].to_f / max_trend) * 100).round(1) %>
+                <div class="trend-bars__item">
+                  <div class="trend-bars__bar-wrap">
+                    <div class="trend-bars__bar" style="height: <%= height %>%"></div>
+                  </div>
+                  <span><%= point[:day] %></span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </section>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2><%= t("admin.overview.activity.pnl_trend.title") %></h2>
+            <p class="dashboard-card__meta"><%= t("admin.overview.activity.pnl_trend.meta") %></p>
+          </header>
+          <% if @metrics[:pnl_trend].blank? %>
+            <div class="ui-empty-state">
+              <p class="ui-empty-state__title"><%= t("admin.overview.activity.pnl_trend.empty_title") %></p>
+              <p class="empty-state"><%= t("admin.overview.activity.pnl_trend.empty_body") %></p>
+            </div>
+          <% else %>
+            <div
+              data-controller="pnl-trend-chart"
+              data-pnl-trend-chart-points-value="<%= @metrics[:pnl_trend].to_json %>"
+              data-pnl-trend-chart-title-value="<%= t("admin.overview.activity.pnl_trend.title") %>"
+              data-pnl-trend-chart-tooltip-label-value="<%= t("admin.overview.activity.pnl_trend.tooltip") %>"
+            >
+              <div
+                class="trend-chart trend-chart--pnl"
+                data-pnl-trend-chart-target="chart"
+                aria-label="<%= t("admin.overview.activity.pnl_trend.aria") %>"
+              ></div>
+              <%= render "admin/system_health/pnl_trend_frame", pagination: @pnl_trend_pagination %>
+            </div>
+          <% end %>
+        </section>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2><%= t("admin.overview.activity.status_mix.title") %></h2>
+            <a class="overview__link" href="<%= admin_overview_status_mix_path(navigation_context) %>"><%= t("admin.overview.activity.status_mix.link") %></a>
+          </header>
+          <ul class="detail-list">
+            <li><span><%= t("admin.overview.activity.status_mix.queued") %></span><strong><%= @metrics[:status_mix_30d][:queued] %></strong></li>
+            <li><span><%= t("admin.overview.activity.status_mix.running") %></span><strong><%= @metrics[:status_mix_30d][:running] %></strong></li>
+            <li><span><%= t("admin.overview.activity.status_mix.succeeded") %></span><strong><%= @metrics[:status_mix_30d][:succeeded] %></strong></li>
+            <li><span><%= t("admin.overview.activity.status_mix.failed") %></span><strong><%= @metrics[:status_mix_30d][:failed] %></strong></li>
+          </ul>
+        </section>
+      </section>
+      <section class="overview__domain" aria-label="<%= t("admin.overview.financial_results.aria") %>">
+        <h2 class="overview__domain-title"><%= t("admin.overview.financial_results.title") %></h2>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2><%= t("admin.overview.financial_results.latest_run.title") %></h2>
+            <% if @metrics[:latest_run].present? %>
+              <a class="overview__link" href="<%= run_details_path.call(@metrics[:latest_run][:id]) %>"><%= t("admin.overview.financial_results.latest_run.link") %></a>
+            <% end %>
+          </header>
+          <% if @metrics[:latest_run].nil? %>
+            <p class="empty-state"><%= t("admin.overview.financial_results.latest_run.empty") %></p>
+          <% else %>
+            <ul class="detail-list">
+              <li><span><%= t("admin.overview.financial_results.latest_run.run") %></span><strong>#<%= @metrics[:latest_run][:id] %></strong></li>
+              <li>
+                <span><%= t("admin.overview.financial_results.latest_run.input_hash") %></span>
+                <% if latest_run_hash_present %>
+                  <div
+                    class="detail-list__value hash-inline"
+                    data-controller="copy"
+                    data-copy-text-value="<%= latest_run_hash %>"
+                    data-copy-default-label-value="<%= t("admin.common.copy") %>"
+                    data-copy-copied-label-value="<%= t("admin.common.copied") %>"
+                  >
+                    <code class="hash-inline__code"><%= latest_run_hash_truncated %></code>
+                    <button class="hash-inline__button" type="button" data-action="copy#copy">
+                      <svg class="hash-inline__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false">
+                        <path fill="none" d="M0 0h448v512H0z" />
+                        <path
+                          fill="currentColor"
+                          d="M384 336H192c-8.8 0-16-7.2-16-16V64c0-8.8 7.2-16 16-16l140.1 0L400 115.9V320c0 8.8-7.2 16-16 16zM192 384H384c35.3 0 64-28.7 64-64V115.9c0-12.7-5.1-24.9-14.1-33.9L366.1 14.1c-9-9-21.2-14.1-33.9-14.1H192c-35.3 0-64 28.7-64 64V320c0 35.3 28.7 64 64 64zM64 128c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H256c35.3 0 64-28.7 64-64V416H272v32c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192c0-8.8 7.2-16 16-16H96V128H64z"
+                        />
+                      </svg>
+                      <span data-copy-target="label"><%= t("admin.common.copy") %></span>
+                    </button>
+                    <span class="visually-hidden" data-copy-target="status" aria-live="polite"></span>
+                  </div>
+                <% else %>
+                  <strong><%= t("admin.common.na") %></strong>
+                <% end %>
+              </li>
+              <li><span><%= t("admin.overview.financial_results.latest_run.duration") %></span><strong><%= @metrics[:latest_run][:duration_ms] %> <%= t("admin.common.ms") %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.latest_run.schema") %></span><strong><%= @metrics[:latest_run][:schema_version] %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.latest_run.engine") %></span><strong><%= @metrics[:latest_run][:engine_version] %></strong></li>
+            </ul>
+          <% end %>
+        </section>
+        <section class="dashboard-card">
+          <h2><%= t("admin.overview.financial_results.global_pnl.title") %></h2>
+          <% if @metrics[:latest_global].nil? %>
+            <p class="empty-state"><%= t("admin.overview.financial_results.global_pnl.empty") %></p>
+          <% else %>
+            <ul class="detail-list">
+              <li><span><%= t("admin.overview.financial_results.global_pnl.total") %></span><strong><%= @metrics[:latest_global]["totalPnLQuote"] %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.global_pnl.realized_net") %></span><strong><%= @metrics[:latest_global]["realizedNetPnLQuote"] %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.global_pnl.unrealized") %></span><strong><%= @metrics[:latest_global]["unrealizedPnLQuote"] %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.global_pnl.total_usd") %></span><strong><%= @metrics[:latest_global]["totalPnLUsd"] || t("admin.common.na") %></strong></li>
+            </ul>
+          <% end %>
+        </section>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2><%= t("admin.overview.financial_results.run_comparison.title") %></h2>
+          </header>
+          <% run_comparison = @metrics[:run_comparison] %>
+          <% if run_comparison.nil? || run_comparison[:previous_run_id].nil? %>
+            <p class="empty-state"><%= t("admin.overview.financial_results.run_comparison.empty") %></p>
+          <% else %>
+            <ul class="detail-list">
+              <li><span><%= t("admin.overview.financial_results.run_comparison.current_run") %></span><strong>#<%= run_comparison[:current_run_id] %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.run_comparison.previous_run") %></span><strong>#<%= run_comparison[:previous_run_id] %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.run_comparison.pnl_delta") %></span><strong><%= run_comparison[:total_pnl_delta] || t("admin.common.na") %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.run_comparison.realized_delta") %></span><strong><%= run_comparison[:realized_delta] || t("admin.common.na") %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.run_comparison.unrealized_delta") %></span><strong><%= run_comparison[:unrealized_delta] || t("admin.common.na") %></strong></li>
+            </ul>
+            <p class="dashboard-card__meta"><%= run_comparison[:deterministic_result] %></p>
+          <% end %>
+        </section>
       </section>
     </section>
   </main>

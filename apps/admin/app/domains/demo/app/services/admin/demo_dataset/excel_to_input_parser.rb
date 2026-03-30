@@ -15,12 +15,13 @@ module Admin
       ALLOWED_SIDES = %w[BUY SELL].freeze
       ALLOWED_MARKETS = %w[ETH-USD].freeze
 
-      def self.call(file_path:)
-        new(file_path: file_path).call
+      def self.call(file_path:, timeline_enabled: false)
+        new(file_path: file_path, timeline_enabled: timeline_enabled).call
       end
 
-      def initialize(file_path:)
+      def initialize(file_path:, timeline_enabled: false)
         @file_path = file_path
+        @timeline_enabled = timeline_enabled
         @errors = []
         @rows = []
         @row_errors = {}
@@ -138,14 +139,35 @@ module Admin
       end
 
       def build_input
-        {
+        trades = @rows.map { |row| row.except(:line) }
+        input = {
           schemaVersion: "1.0",
           accounts: unique(:accountId).map { |id| { accountId: id } },
           markets: unique(:marketId).map { |id| { marketId: id } },
-          trades: @rows.map { |row| row.except(:line) },
+          trades: trades,
           priceSnapshot: default_price_snapshot,
           feeModel: { enabled: false }
         }
+
+        input[:timeline] = { events: build_timeline_events } if @timeline_enabled
+
+        input
+      end
+
+      def build_timeline_events
+        sorted = @rows.sort_by { |row| [row[:timestamp] || 0, row[:seq] || 0, row[:line] || 0] }
+
+        sorted.map.with_index(1) do |row, index|
+          trade = row.except(:line)
+          {
+            eventType: "TRADE_APPLIED",
+            timelineSeq: index,
+            timestamp: timeline_iso_timestamp(trade[:timestamp]),
+            source: "admin.demo_dataset",
+            externalId: trade[:tradeId],
+            trade: trade
+          }
+        end
       end
 
       def unique(key)
@@ -180,6 +202,12 @@ module Admin
         Time.parse(string_value).to_i
       rescue ArgumentError, TypeError
         nil
+      end
+
+      def timeline_iso_timestamp(timestamp)
+        return nil unless timestamp.is_a?(Integer)
+
+        Time.at(timestamp).utc.strftime("%Y-%m-%dT%H:%M:%SZ")
       end
     end
   end

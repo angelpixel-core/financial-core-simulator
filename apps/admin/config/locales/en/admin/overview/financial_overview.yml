@@ -6,6 +6,11 @@ en:
         title: "FINANCIAL OVERVIEW"
         empty_title: "No trade activity yet."
         empty_body: "Load a dataset with trades to populate trade activity and volume."
+        filters:
+          account: "Account"
+          account_all: "All accounts"
+          market: "Market"
+          market_all: "All markets"
         trade_activity:
           title: "Trade activity"
           meta: "Trade count per timestamp"
@@ -18,3 +23,9 @@ en:
           aria: "Trade volume chart"
           tooltip: "Volume"
           empty: "No trade volume available yet."
+        pnl_daily:
+          title: "Daily PnL"
+          meta: "Daily cumulative PnL"
+          aria: "Daily PnL chart"
+          tooltip: "Total PnL"
+          empty: "No PnL timeline available yet."

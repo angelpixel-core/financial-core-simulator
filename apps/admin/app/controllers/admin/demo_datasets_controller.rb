@@ -15,13 +15,19 @@ class Admin::DemoDatasetsController < ApplicationController
       return
     end
 
-    result = Admin::DemoDataset::ExcelToInputParser.call(file_path: file.path)
+    timeline_enabled = timeline_enabled?
+    result = Admin::DemoDataset::ExcelToInputParser.call(
+      file_path: file.path,
+      timeline_enabled: timeline_enabled
+    )
 
     if result.valid?
       run = Run.create!(input_json: result.input)
       fee_enabled = result.input.dig("feeModel", "enabled")
-      Runs::Execute.new.call(run, fee_enabled: fee_enabled)
-      Runs::VerifyInputHash.new.call(run)
+      with_timeline_env(timeline_enabled) do
+        Runs::Execute.new.call(run, fee_enabled: fee_enabled)
+        Runs::VerifyInputHash.new.call(run)
+      end
       DemoDatasetUpload.create!(status: :valid, run_id: run.id)
       redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
                     notice: t("admin.overview.dataset.flash.valid")
@@ -47,7 +53,10 @@ class Admin::DemoDatasetsController < ApplicationController
       return
     end
 
-    result = Admin::DemoDataset::ExcelToInputParser.call(file_path: file.path)
+    result = Admin::DemoDataset::ExcelToInputParser.call(
+      file_path: file.path,
+      timeline_enabled: timeline_enabled?
+    )
     input = result.input
     summary = build_preview_summary(input)
     sample_rows = if input.is_a?(Hash)
@@ -102,5 +111,23 @@ class Admin::DemoDatasetsController < ApplicationController
     return input[key] if input.key?(key)
 
     input[key.to_s]
+  end
+
+  def timeline_enabled?
+    return true unless params.key?(:timeline_enabled)
+
+    ActiveModel::Type::Boolean.new.cast(params[:timeline_enabled])
+  end
+
+  def with_timeline_env(enabled)
+    previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
+    ENV["FCS_TIMELINE_ENABLED"] = enabled ? "1" : "0"
+    yield
+  ensure
+    if previous.nil?
+      ENV.delete("FCS_TIMELINE_ENABLED")
+    else
+      ENV["FCS_TIMELINE_ENABLED"] = previous
+    end
   end
 end

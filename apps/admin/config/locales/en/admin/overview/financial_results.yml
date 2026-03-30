@@ -4,15 +4,6 @@ en:
       financial_results:
         aria: "Financial results"
         title: "FINANCIAL RESULTS"
-        pnl_trend:
-          title: "PnL trend"
-          meta: "Global total PnL quote over successful runs"
-          aria: "PnL trend chart for successful runs"
-          empty_title: "No PnL trend data available yet."
-          empty_body: "Run successful simulations with canonical result artifacts to populate this chart."
-          tooltip: "Total PnL Quote"
-          fallback_aria: "PnL trend fallback values"
-          pagination_aria: "PnL trend pagination"
         latest_run:
           title: "Latest succeeded run"
           link: "View latest run"
