@@ -2,64 +2,69 @@ module Admin
   module Shell
     class AppShellComponent < ViewComponent::Base
       ICON_PATHS = {
-        "overview" => [
-          "M3 12h8V3H3z",
-          "M13 21h8v-6h-8z",
-          "M13 10h8V3h-8z",
-          "M3 21h8v-7H3z"
+        'overview' => [
+          'M3 12h8V3H3z',
+          'M13 21h8v-6h-8z',
+          'M13 10h8V3h-8z',
+          'M3 21h8v-7H3z'
         ],
-        "runs" => [
-          "M5 4h10l4 4v12H5z",
-          "M15 4v4h4",
-          "M9 13h6",
-          "M9 17h6"
+        'runs' => [
+          'M5 4h10l4 4v12H5z',
+          'M15 4v4h4',
+          'M9 13h6',
+          'M9 17h6'
         ],
-        "validation" => [
-          "M12 3l8 4v6c0 5-3.5 8-8 8s-8-3-8-8V7z",
-          "M9 12l2 2 4-4"
+        'validation' => [
+          'M12 3l8 4v6c0 5-3.5 8-8 8s-8-3-8-8V7z',
+          'M9 12l2 2 4-4'
         ],
-        "artifacts" => [
-          "M4 4h16v16H4z",
-          "M8 8h8",
-          "M8 12h8",
-          "M8 16h5"
+        'artifacts' => [
+          'M4 4h16v16H4z',
+          'M8 8h8',
+          'M8 12h8',
+          'M8 16h5'
         ],
-        "docs" => [
-          "M4 5h12a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z",
-          "M8 5v12",
-          "M12 9h4",
-          "M12 13h4"
+        'docs' => [
+          'M4 5h12a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z',
+          'M8 5v12',
+          'M12 9h4',
+          'M12 13h4'
         ],
-        "default" => [
-          "M4 12h16",
-          "M12 4v16"
+        'support' => [
+          'M12 3a9 9 0 1 0 0.001 18.001',
+          'M12 7v5',
+          'M12 16h.01'
+        ],
+        'default' => [
+          'M4 12h16',
+          'M12 4v16'
         ]
       }.freeze
 
       def initialize(sidebar_items:, breadcrumb:, environment:, primary_action:, secondary_action: nil,
-        topbar_links: [], presence_email: nil)
+                     topbar_links: [], presence_email: nil)
         @sidebar_items = sidebar_items
         @breadcrumb = breadcrumb
         @environment = environment
         @primary_action = primary_action
         @secondary_action = secondary_action
         @topbar_links = topbar_links
-        @presence_email = presence_email.to_s.presence || "ops@example.com"
+        @presence_email = presence_email.to_s.presence || 'ops@example.com'
       end
 
       def icon_svg_for(item_or_label)
         label = item_or_label.is_a?(Hash) ? (item_or_label[:icon_key] || item_or_label[:label]) : item_or_label
-        paths = ICON_PATHS.fetch(icon_key_for(label), ICON_PATHS.fetch("default"))
+        paths = ICON_PATHS.fetch(icon_key_for(label), ICON_PATHS.fetch('default'))
 
         helpers.tag.svg(
-          class: "app-shell__nav-icon-svg",
-          viewBox: "0 0 24 24",
-          fill: "none",
-          stroke: "currentColor",
-          "stroke-width": "1.8",
-          "stroke-linecap": "round",
-          "stroke-linejoin": "round",
-          "aria-hidden": "true"
+          class: 'app-shell__nav-icon-svg',
+          viewBox: '0 0 24 24',
+          fill: 'none',
+          stroke: 'currentColor',
+          "stroke-width": '1.8',
+          "stroke-linecap": 'round',
+          "stroke-linejoin": 'round',
+          "aria-hidden": 'true'
         ) do
           helpers.safe_join(paths.map { |path| helpers.tag.path(d: path) })
         end
@@ -69,13 +74,13 @@ module Admin
 
       def icon_key_for(label)
         normalized = label.to_s.downcase
-        return "overview" if normalized.include?("overview")
-        return "runs" if normalized.include?("run")
-        return "validation" if normalized.include?("validation")
-        return "artifacts" if normalized.include?("artifact")
-        return "docs" if normalized.include?("docs")
+        return 'overview' if normalized.include?('overview')
+        return 'runs' if normalized.include?('run')
+        return 'validation' if normalized.include?('validation')
+        return 'artifacts' if normalized.include?('artifact')
+        return 'docs' if normalized.include?('docs')
 
-        "default"
+        'default'
       end
     end
   end

@@ -3,18 +3,19 @@
 <% secondary_action = shell_role == "operator" ? nil : { label: t("admin.nav.open_runs"), path: avo.resources_runs_path } %>
 <% artifacts_path = main_app.run_latest_result_path(navigation_context) %>
 <% sidebar_items = [
-  { label: t("admin.nav.overview"), path: admin_overview_path(navigation_context), icon_key: "overview" }
+  { label: t("admin.nav.overview"), path: admin_overview_path(navigation_context), active: false, icon_key: "overview", external: false }
 ] %>
-<% if shell_role != "operator" %>
-  <% runs_item = { label: t("admin.nav.runs"), path: avo.resources_runs_path, icon_key: "runs" } %>
-  <% runs_item[:icon_variant] = "sensitive" if shell_role == "admin" %>
-  <% sidebar_items << runs_item %>
-<% end %>
+<% runs_item = { label: t("admin.nav.runs"), path: admin_system_health_path(navigation_context), active: false, icon_key: "runs", external: false } %>
+<% runs_item[:icon_variant] = "sensitive" if shell_role == "admin" %>
+<% sidebar_items << runs_item %>
 <% sidebar_items.concat([
-  { label: t("admin.nav.validation"), path: admin_overview_ingestion_validation_errors_path(navigation_context), active: true, icon_key: "validation" },
-  { label: t("admin.nav.artifacts"), path: artifacts_path, external: false, icon_key: "artifacts" },
-  { label: t("admin.nav.docs"), path: admin_docs_path(navigation_context), icon_key: "docs" }
+  { label: t("admin.nav.validation"), path: admin_overview_ingestion_validation_errors_path(navigation_context), active: true, icon_key: "validation", external: false },
+  { label: t("admin.nav.artifacts"), path: artifacts_path, active: false, icon_key: "artifacts", external: false },
+  { label: t("admin.nav.docs"), path: admin_docs_path(navigation_context), active: false, icon_key: "docs", external: false }
 ]) %>
+<% if admin_shell_admin? %>
+  <% sidebar_items << { label: t("admin.nav.support"), path: Avo.configuration.root_path, active: false, icon_key: "support", external: false } %>
+<% end %>
 <%= render Admin::Shell::AppShellComponent.new(
   sidebar_items: sidebar_items,
   topbar_links: [

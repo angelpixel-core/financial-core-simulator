@@ -1,10 +1,11 @@
 en:
   admin:
     nav:
-      overview: "Overview"
-      runs: "Runs"
+      overview: "Financial Overview"
+      runs: "System Health"
       validation: "Validation"
       artifacts: "Artifacts"
       docs: "Docs"
       workspace: "Workspace"
       open_runs: "Open Runs"
+      support: "Support"
