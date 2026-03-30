@@ -14,10 +14,10 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
       metrics = described_class.new(run: run).call
 
       expect(metrics[:trade_activity].length).to eq(1)
-      expect(metrics[:trade_activity].first).to include(timestamp: '2026-03-29T12:00:00Z', trade_count: 1)
+      expect(metrics[:trade_activity].first).to include(timestamp: '2026-03-29', trade_count: 1)
     end
 
-    it 'groups trade activity by normalized timestamp' do
+    it 'groups trade activity by normalized day' do
       run = Run.create!(status: :succeeded, input_json: {
                           'trades' => [
                             { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 2, 'price' => 10,
@@ -32,9 +32,33 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
       metrics = described_class.new(run: run).call
 
       expect(metrics[:trade_activity]).to eq([
-                                               { timestamp: '2026-03-29T12:00:00Z', trade_count: 2 },
-                                               { timestamp: '2026-03-29T13:00:00Z', trade_count: 1 }
+                                               { timestamp: '2026-03-29', trade_count: 3 }
                                              ])
+    end
+
+    it 'normalizes epoch timestamps and new field names' do
+      run = Run.create!(status: :succeeded, input_json: {
+                          'trades' => [
+                            { 'timestamp' => 1_774_785_600, 'quantityBase' => 2, 'priceQuotePerBase' => 10,
+                              'marketId' => 'BTC-USD' },
+                            { 'timestamp' => '1774785600', 'quantityBase' => 1, 'priceQuotePerBase' => 5,
+                              'marketId' => 'BTC-USD' }
+                          ]
+                        })
+
+      metrics = described_class.new(run: run).call
+
+      expect(metrics[:trade_activity]).to eq([
+                                               { timestamp: '2026-03-29', trade_count: 2 }
+                                             ])
+      expect(metrics[:trade_volume]).to eq([
+                                             {
+                                               timestamp: '2026-03-29',
+                                               volume: 25.0,
+                                               unit_type: 'quote',
+                                               unit_code: 'USD'
+                                             }
+                                           ])
     end
 
     it 'returns trade volume when unit resolution is consistent' do
@@ -51,7 +75,7 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
 
       expect(metrics[:trade_volume]).to eq([
                                              {
-                                               timestamp: '2026-03-29T12:00:00Z',
+                                               timestamp: '2026-03-29',
                                                volume: 25.0,
                                                unit_type: 'quote',
                                                unit_code: 'USD'
@@ -74,7 +98,8 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
       metrics = described_class.new(run: run).call
 
       expect(metrics[:trade_volume]).to eq([])
-      expect(metrics[:trade_activity].length).to eq(3)
+      expect(metrics[:trade_activity].length).to eq(1)
+      expect(metrics[:trade_activity].first).to include(timestamp: '2026-03-29', trade_count: 3)
     end
   end
 end

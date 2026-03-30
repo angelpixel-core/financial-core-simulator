@@ -36,8 +36,9 @@ module Admin
           next unless trade.is_a?(Hash)
 
           timestamp = normalize_timestamp(trade_field(trade, 'timestamp'))
-          quantity = parse_decimal(trade_field(trade, 'quantity'))
-          price = parse_decimal(trade_field(trade, 'price'))
+          quantity = parse_decimal(trade_field(trade, 'quantityBase') || trade_field(trade, 'quantity'))
+          price = parse_decimal(trade_field(trade, 'priceQuotePerBase') || trade_field(trade, 'price'))
+          symbol = trade_field(trade, 'marketId') || trade_field(trade, 'symbol')
 
           next if timestamp.nil? || quantity.nil? || price.nil?
           next if quantity <= 0 || price <= 0
@@ -46,7 +47,7 @@ module Admin
             timestamp: timestamp,
             quantity: quantity,
             price: price,
-            symbol: trade_field(trade, 'symbol')
+            symbol: symbol
           }
         end
       end
@@ -108,14 +109,35 @@ module Admin
       end
 
       def normalize_timestamp(raw)
+        time = parse_time(raw)
+        return nil if time.nil?
+
+        time.utc.to_date.iso8601
+      end
+
+      def parse_time(raw)
         return nil if raw.nil?
 
-        parsed = Time.zone.parse(raw.to_s)
+        return Time.at(normalize_epoch(raw)).utc if raw.is_a?(Numeric)
+
+        raw_string = raw.to_s.strip
+        return nil if raw_string.empty?
+
+        return Time.at(normalize_epoch(raw_string.to_i)).utc if raw_string.match?(/\A\d+\z/)
+
+        parsed = Time.zone.parse(raw_string)
         return nil if parsed.nil?
 
-        parsed.utc.iso8601
+        parsed
       rescue ArgumentError
         nil
+      end
+
+      def normalize_epoch(value)
+        numeric_value = value.to_f
+        return numeric_value / 1000.0 if numeric_value >= 1_000_000_000_000
+
+        numeric_value
       end
 
       def parse_decimal(value)

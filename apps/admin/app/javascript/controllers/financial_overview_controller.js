@@ -114,7 +114,7 @@ export default class extends Controller {
         {
           className: "trend-chart__shell",
           role: "img",
-          "aria-label": `${this.activityTitleValue}. Trade count per timestamp.`
+          "aria-label": `${this.activityTitleValue}. Trade count per day.`
         },
         React.createElement(
           ResponsiveContainer,
@@ -188,7 +188,7 @@ export default class extends Controller {
         {
           className: "trend-chart__shell",
           role: "img",
-          "aria-label": `${this.volumeTitleValue}. Quote volume per timestamp.`
+          "aria-label": `${this.volumeTitleValue}. Quote volume per day.`
         },
         React.createElement(
           ResponsiveContainer,
@@ -283,13 +283,16 @@ export default class extends Controller {
   formatTimestamp(timestamp) {
     if (!timestamp) return ""
 
+    if (/^\d{4}-\d{2}-\d{2}$/.test(timestamp)) {
+      return timestamp
+    }
+
     const date = new Date(timestamp)
     if (Number.isNaN(date.getTime())) return ""
 
+    const year = date.getUTCFullYear()
     const month = String(date.getUTCMonth() + 1).padStart(2, "0")
     const day = String(date.getUTCDate()).padStart(2, "0")
-    const hours = String(date.getUTCHours()).padStart(2, "0")
-    const minutes = String(date.getUTCMinutes()).padStart(2, "0")
-    return `${month}-${day} ${hours}:${minutes}`
+    return `${year}-${month}-${day}`
   }
 }
