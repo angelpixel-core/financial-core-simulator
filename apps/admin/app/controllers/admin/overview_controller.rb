@@ -30,6 +30,7 @@ class Admin::OverviewController < ApplicationController
     @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
     @reliable_selection = Admin::Runs::ReliableRunSelector.new.call
     @demo_dataset_upload = DemoDatasetUpload.latest
+    load_fx_context
   end
 
   def top_accounts
@@ -242,6 +243,37 @@ class Admin::OverviewController < ApplicationController
 
   def dashboard_read_path_config
     @dashboard_read_path_config ||= Admin::Dashboard::ReadPathConfig.new
+  end
+
+  def load_fx_context
+    @reporting_setting = ReportingSetting.current
+    @fx_operational_date = Admin::Fx::OperationalDate.call
+    @fx_base_currency = Admin::Fx::RateResolver::BASE_CURRENCY
+    @fx_quote_currency = @reporting_setting.reporting_currency
+
+    if @fx_quote_currency == @fx_base_currency
+      @fx_rate_state = Admin::Fx::RateResolver::Result.new(
+        rate: '1.0',
+        rate_date: @fx_operational_date,
+        rate_source: Admin::Fx::RateResolver::IDENTITY_SOURCE,
+        rate_missing: false,
+        source_rate_id: nil
+      )
+      @fx_carry_forward_available = false
+      return
+    end
+
+    @fx_rate_state = Admin::Fx::RateResolver.call(
+      base_currency: @fx_base_currency,
+      quote_currency: @fx_quote_currency,
+      operational_date: @fx_operational_date
+    )
+
+    @fx_carry_forward_available = FxDailyRate.exists?(
+      operational_date: @fx_operational_date - 1.day,
+      base_currency: @fx_base_currency,
+      quote_currency: @fx_quote_currency
+    )
   end
 
   def load_navigation_context

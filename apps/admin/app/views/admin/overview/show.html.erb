@@ -76,6 +76,15 @@
       </div>
     </section>
     <section class="workspace__overview">
+      <% if admin_shell_operator? || admin_shell_admin? %>
+        <section class="overview__domain" aria-label="<%= t("admin.fx.reporting.aria") %>">
+          <h2 class="overview__domain-title"><%= t("admin.fx.reporting.section_title") %></h2>
+          <%= render Admin::Fx::ReportingCurrencyFormComponent.new(
+            reporting_setting: @reporting_setting,
+            supported_currencies: ReportingSetting::SUPPORTED_CURRENCIES
+          ) %>
+        </section>
+      <% end %>
       <% demo_upload = @demo_dataset_upload %>
       <section class="overview__domain" aria-label="<%= t("admin.overview.dataset.aria") %>">
         <h2 class="overview__domain-title"><%= t("admin.overview.dataset.title") %></h2>
@@ -403,6 +412,16 @@
           } %>
                 </section>
               </section>
+              <% if admin_shell_operator? || admin_shell_admin? %>
+                <%= render Admin::Fx::MissingRatePopupComponent.new(
+                  operational_date: @fx_operational_date,
+                  reporting_currency: @fx_quote_currency,
+                  base_currency: @fx_base_currency,
+                  quote_currency: @fx_quote_currency,
+                  carry_forward_available: @fx_carry_forward_available,
+                  rate_missing: @fx_rate_state&.rate_missing
+                ) %>
+              <% end %>
             </section>
           </main>
         <% end %>

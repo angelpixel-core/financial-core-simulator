@@ -1,0 +1,27 @@
+en:
+  admin:
+    fx:
+      reporting:
+        aria: "Reporting currency settings"
+        section_title: "Reporting currency"
+        title: "Reporting currency"
+        subtitle: "Select the currency used to normalize reporting totals."
+        label: "Reporting currency"
+        save_cta: "Save"
+        hint: "Changes apply to new runs and reporting views."
+      popup:
+        eyebrow: "FX rate required"
+        title: "Missing daily FX rate"
+        meta_date: "Operational date"
+        meta_pair: "Required pair"
+        dismiss: "Not now"
+        body: "Add the daily rate needed to normalize reporting to %{currency}."
+        rate_label: "Daily rate"
+        save_cta: "Save rate"
+        or: "Or"
+        carry_forward_cta: "Carry forward prior day"
+        carry_forward_unavailable: "No prior rate available to carry forward."
+      flash:
+        rate_saved: "Daily FX rate saved."
+        rate_carried_forward: "Daily FX rate carried forward."
+        reporting_updated: "Reporting currency updated."

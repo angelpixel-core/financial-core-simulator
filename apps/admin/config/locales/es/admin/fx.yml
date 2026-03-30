@@ -1,0 +1,27 @@
+es:
+  admin:
+    fx:
+      reporting:
+        aria: "Configuracion de moneda de reporte"
+        section_title: "Moneda de reporte"
+        title: "Moneda de reporte"
+        subtitle: "Selecciona la moneda usada para normalizar los totales."
+        label: "Moneda de reporte"
+        save_cta: "Guardar"
+        hint: "Los cambios aplican a nuevas ejecuciones y vistas."
+      popup:
+        eyebrow: "Se requiere FX"
+        title: "Falta la tasa diaria"
+        meta_date: "Fecha operativa"
+        meta_pair: "Par requerido"
+        dismiss: "Ahora no"
+        body: "Agrega la tasa diaria para normalizar el reporte en %{currency}."
+        rate_label: "Tasa diaria"
+        save_cta: "Guardar tasa"
+        or: "O"
+        carry_forward_cta: "Copiar la tasa anterior"
+        carry_forward_unavailable: "No hay una tasa previa para copiar."
+      flash:
+        rate_saved: "Tasa FX diaria guardada."
+        rate_carried_forward: "Tasa FX diaria copiada."
+        reporting_updated: "Moneda de reporte actualizada."

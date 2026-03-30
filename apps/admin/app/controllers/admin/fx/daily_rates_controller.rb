@@ -1,0 +1,72 @@
+# frozen_string_literal: true
+
+class Admin::Fx::DailyRatesController < ApplicationController
+  include AdminUiAuthorizable
+
+  before_action :authorize_admin_session_operator!
+
+  def create
+    Admin::Fx::RateCreator.call(
+      operational_date: operational_date,
+      base_currency: base_currency,
+      quote_currency: quote_currency,
+      rate: rate_value,
+      created_by_id: current_admin_account&.id,
+      created_by_role: admin_shell_role,
+      created_context: request_context
+    )
+
+    redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
+                  notice: t('admin.fx.flash.rate_saved')
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
+                  alert: e.record.errors.full_messages.to_sentence
+  end
+
+  def carry_forward
+    Admin::Fx::CarryForwardRate.call(
+      operational_date: operational_date,
+      base_currency: base_currency,
+      quote_currency: quote_currency,
+      created_by_id: current_admin_account&.id,
+      created_by_role: admin_shell_role,
+      created_context: request_context
+    )
+
+    redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
+                  notice: t('admin.fx.flash.rate_carried_forward')
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
+                  alert: e.record.errors.full_messages.to_sentence
+  end
+
+  private
+
+  def operational_date
+    value = params[:operational_date].presence
+    return Admin::Fx::OperationalDate.call if value.blank?
+
+    Date.iso8601(value)
+  rescue ArgumentError
+    Admin::Fx::OperationalDate.call
+  end
+
+  def base_currency
+    params[:base_currency].presence || Admin::Fx::RateResolver::BASE_CURRENCY
+  end
+
+  def quote_currency
+    params[:quote_currency].presence || ReportingSetting.current.reporting_currency
+  end
+
+  def rate_value
+    params[:rate]
+  end
+
+  def request_context
+    {
+      source: 'admin_overview',
+      ip: request.remote_ip
+    }
+  end
+end
