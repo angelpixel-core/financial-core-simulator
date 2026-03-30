@@ -1,0 +1,19 @@
+<section class="dashboard-card fx-reporting-card">
+  <header class="dashboard-card__header">
+    <h2><%= t("admin.fx.reporting.title") %></h2>
+    <p class="dashboard-card__meta"><%= t("admin.fx.reporting.subtitle") %></p>
+  </header>
+  <%= form_with url: admin_fx_reporting_settings_path(locale: I18n.locale), method: :patch, local: true, class: "fx-reporting-form" do %>
+    <div class="fx-reporting-form__row">
+      <label class="fx-reporting-form__label" for="reporting-currency">
+        <%= t("admin.fx.reporting.label") %>
+      </label>
+      <%= select_tag :reporting_currency,
+        options_for_select(supported_currencies, reporting_setting.reporting_currency),
+        id: "reporting-currency",
+        class: "fx-reporting-form__select" %>
+      <%= submit_tag t("admin.fx.reporting.save_cta"), class: "fx-reporting-form__submit" %>
+    </div>
+    <p class="fx-reporting-form__hint"><%= t("admin.fx.reporting.hint") %></p>
+  <% end %>
+</section>

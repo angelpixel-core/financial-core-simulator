@@ -1,0 +1,53 @@
+<div class="fx-missing-rate" role="dialog" aria-modal="true" aria-labelledby="fx-missing-rate-title" data-controller="fx-missing-rate">
+  <div class="fx-missing-rate__overlay" data-action="click->fx-missing-rate#close"></div>
+  <div class="fx-missing-rate__panel">
+    <header class="fx-missing-rate__header">
+      <div>
+        <p class="fx-missing-rate__eyebrow"><%= t("admin.fx.popup.eyebrow") %></p>
+        <h2 id="fx-missing-rate-title" class="fx-missing-rate__title"><%= t("admin.fx.popup.title") %></h2>
+        <p class="fx-missing-rate__meta">
+          <span><%= t("admin.fx.popup.meta_date") %>:</span>
+          <strong><%= operational_date_label %></strong>
+        </p>
+        <p class="fx-missing-rate__meta">
+          <span><%= t("admin.fx.popup.meta_pair") %>:</span>
+          <strong><%= base_currency %>/<%= quote_currency %></strong>
+        </p>
+      </div>
+      <button class="fx-missing-rate__close" type="button" data-action="click->fx-missing-rate#close">
+        <%= t("admin.fx.popup.dismiss") %>
+      </button>
+    </header>
+    <div class="fx-missing-rate__body">
+      <p class="fx-missing-rate__hint"><%= t("admin.fx.popup.body", currency: reporting_currency) %></p>
+      <%= form_with url: admin_fx_daily_rates_path(locale: I18n.locale), method: :post, local: true, class: "fx-missing-rate__form" do |form| %>
+        <%= hidden_field_tag :operational_date, operational_date_value %>
+        <%= hidden_field_tag :base_currency, base_currency %>
+        <%= hidden_field_tag :quote_currency, quote_currency %>
+        <div class="fx-missing-rate__field">
+          <%= form.label :rate, t("admin.fx.popup.rate_label"), class: "fx-missing-rate__label" %>
+          <%= form.number_field :rate,
+            step: "0.000001",
+            min: "0",
+            required: true,
+            class: "fx-missing-rate__input" %>
+        </div>
+        <%= form.submit t("admin.fx.popup.save_cta"), class: "fx-missing-rate__submit" %>
+      <% end %>
+      <div class="fx-missing-rate__divider"><%= t("admin.fx.popup.or") %></div>
+      <%= button_to t("admin.fx.popup.carry_forward_cta"),
+        carry_forward_admin_fx_daily_rates_path(locale: I18n.locale),
+        method: :post,
+        params: {
+          operational_date: operational_date_value,
+          base_currency: base_currency,
+          quote_currency: quote_currency
+        },
+        class: "fx-missing-rate__carry",
+        disabled: !carry_forward_available? %>
+      <% unless carry_forward_available? %>
+        <p class="fx-missing-rate__note"><%= t("admin.fx.popup.carry_forward_unavailable") %></p>
+      <% end %>
+    </div>
+  </div>
+</div>

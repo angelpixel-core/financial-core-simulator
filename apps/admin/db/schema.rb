@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_28_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_30_090002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -56,6 +56,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_28_120000) do
     t.index ["run_id"], name: "index_demo_dataset_uploads_on_run_id"
   end
 
+  create_table "fx_daily_rates", force: :cascade do |t|
+    t.string "base_currency", null: false
+    t.datetime "created_at", null: false
+    t.string "created_by_id"
+    t.string "created_by_role"
+    t.jsonb "created_context", default: {}, null: false
+    t.date "operational_date", null: false
+    t.string "quote_currency", null: false
+    t.decimal "rate", precision: 24, scale: 12, null: false
+    t.string "source", null: false
+    t.bigint "source_rate_id"
+    t.datetime "updated_at", null: false
+    t.index ["operational_date", "base_currency", "quote_currency"], name: "idx_fx_daily_rates_unique", unique: true
+    t.index ["source_rate_id"], name: "index_fx_daily_rates_on_source_rate_id"
+  end
+
+  create_table "reporting_settings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "reporting_currency", default: "USD", null: false
+    t.string "singleton_key", default: "reporting", null: false
+    t.datetime "updated_at", null: false
+    t.string "updated_by_id"
+    t.string "updated_by_role"
+    t.jsonb "updated_context", default: {}, null: false
+    t.index ["singleton_key"], name: "index_reporting_settings_on_singleton_key", unique: true
+  end
+
   create_table "runs", force: :cascade do |t|
     t.json "artifacts"
     t.datetime "created_at", null: false
@@ -63,6 +90,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_28_120000) do
     t.string "engine_version"
     t.string "error_code"
     t.text "error_message"
+    t.jsonb "fx_context"
     t.string "input_hash"
     t.json "input_json"
     t.string "output_dir"
