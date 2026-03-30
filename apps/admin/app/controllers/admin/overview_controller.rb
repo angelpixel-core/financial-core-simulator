@@ -22,7 +22,6 @@ class Admin::OverviewController < ApplicationController
 
   def show
     @metrics = dashboard_metrics
-    @pnl_trend_pagination = pnl_trend_pagination(metrics: @metrics, page: params[:pnl_page])
     @top_accounts_pagination = top_accounts_pagination(metrics: @metrics, page: params[:top_accounts_page])
     @selected_source = normalize_filter_value(params[:source])
     @selected_field = normalize_filter_value(params[:field])
@@ -31,12 +30,6 @@ class Admin::OverviewController < ApplicationController
     @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
     @reliable_selection = Admin::Runs::ReliableRunSelector.new.call
     @demo_dataset_upload = DemoDatasetUpload.latest
-  end
-
-  def pnl_trend
-    @metrics = dashboard_metrics
-    @pnl_trend_pagination = pnl_trend_pagination(metrics: @metrics, page: params[:page])
-    render partial: 'admin/overview/pnl_trend_frame', locals: { pagination: @pnl_trend_pagination }
   end
 
   def top_accounts
@@ -77,10 +70,12 @@ class Admin::OverviewController < ApplicationController
     run = Run.find_by(id: params[:run_id])
     return render json: { 'error' => 'run_not_found' }, status: :not_found if run.nil?
 
-    metrics = financial_overview_metrics(run: run).call
+    account_id = normalize_filter_value(params[:account_id])
+    market_id = normalize_filter_value(params[:market_id])
+    metrics = financial_overview_metrics(run: run, account_id: account_id, market_id: market_id).call
     render json: financial_overview_response_serializer.serialize(metrics: metrics), status: :ok
   rescue StandardError
-    fallback_metrics = { trade_activity: [], trade_volume: [] }
+    fallback_metrics = { trade_activity: [], trade_volume: [], pnl_daily: [] }
     render json: financial_overview_response_serializer.serialize(metrics: fallback_metrics), status: :ok
   end
 
@@ -175,8 +170,8 @@ class Admin::OverviewController < ApplicationController
     @ingestion_validation_errors_response_serializer ||= Admin::Dashboard::IngestionValidationErrorsResponseSerializer.new
   end
 
-  def financial_overview_metrics(run:)
-    Admin::Dashboard::FinancialOverviewMetrics.new(run: run)
+  def financial_overview_metrics(run:, account_id: nil, market_id: nil)
+    Admin::Dashboard::FinancialOverviewMetrics.new(run: run, account_id: account_id, market_id: market_id)
   end
 
   def dashboard_ingestion_validation_errors(source: nil, field: nil)
@@ -204,26 +199,6 @@ class Admin::OverviewController < ApplicationController
     return nil if normalized.empty?
 
     normalized
-  end
-
-  def pnl_trend_pagination(metrics:, page: nil)
-    points = Array(metrics[:pnl_trend])
-    per_page = 5
-    current = page.to_i
-    current = 1 if current < 1
-    total_pages = (points.length.to_f / per_page).ceil
-    total_pages = 1 if total_pages.zero?
-    current = total_pages if current > total_pages
-
-    start_index = (current - 1) * per_page
-    entries = points.slice(start_index, per_page) || []
-
-    {
-      entries: entries,
-      page: current,
-      total_pages: total_pages,
-      per_page: per_page
-    }
   end
 
   def top_accounts_pagination(metrics:, page: nil)

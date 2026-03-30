@@ -1,4 +1,6 @@
 require 'rails_helper'
+require 'json'
+require 'tempfile'
 
 RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
   describe '#call' do
@@ -100,6 +102,134 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
       expect(metrics[:trade_volume]).to eq([])
       expect(metrics[:trade_activity].length).to eq(1)
       expect(metrics[:trade_activity].first).to include(timestamp: '2026-03-29', trade_count: 3)
+    end
+
+    it 'applies account and market filters across trades and pnl series' do
+      temp = Tempfile.new(['result', '.json'])
+      temp.write(JSON.generate(
+                   {
+                     'timeline' => {
+                       'schema_version' => '1.0',
+                       'points' => [
+                         {
+                           'timestamp' => '2026-03-29T12:00:00Z',
+                           'account_id' => 'acc-1',
+                           'market_id' => 'BTC-USD',
+                           'realized_pnl' => '1',
+                           'unrealized_pnl' => '2',
+                           'total_pnl' => '3'
+                         },
+                         {
+                           'timestamp' => '2026-03-29T13:00:00Z',
+                           'account_id' => 'all',
+                           'market_id' => 'BTC-USD',
+                           'realized_pnl' => '0',
+                           'unrealized_pnl' => '5',
+                           'total_pnl' => '5'
+                         },
+                         {
+                           'timestamp' => '2026-03-30T12:00:00Z',
+                           'account_id' => 'acc-1',
+                           'market_id' => 'BTC-USD',
+                           'realized_pnl' => '2',
+                           'unrealized_pnl' => '3',
+                           'total_pnl' => '5'
+                         },
+                         {
+                           'timestamp' => '2026-03-30T12:30:00Z',
+                           'account_id' => 'acc-1',
+                           'market_id' => 'ETH-USD',
+                           'realized_pnl' => '2',
+                           'unrealized_pnl' => '1',
+                           'total_pnl' => '3'
+                         }
+                       ]
+                     }
+                   }
+                 ))
+      temp.rewind
+
+      run = Run.create!(status: :succeeded,
+                        input_json: {
+                          'trades' => [
+                            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 2, 'price' => 10,
+                              'symbol' => 'BTC-USD', 'accountId' => 'acc-1', 'marketId' => 'BTC-USD' },
+                            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 1, 'price' => 5,
+                              'symbol' => 'BTC-USD', 'accountId' => 'acc-2', 'marketId' => 'BTC-USD' }
+                          ]
+                        },
+                        artifacts: { 'result_json_path' => temp.path })
+
+      metrics = described_class.new(run: run, account_id: 'acc-1', market_id: 'BTC-USD').call
+
+      expect(metrics[:trade_activity]).to eq([
+                                               { timestamp: '2026-03-29', trade_count: 1 }
+                                             ])
+      expect(metrics[:trade_volume]).to eq([
+                                             {
+                                               timestamp: '2026-03-29',
+                                               volume: 20.0,
+                                               unit_type: 'quote',
+                                               unit_code: 'USD'
+                                             }
+                                           ])
+      expect(metrics[:pnl_daily]).to eq([
+                                          { timestamp: '2026-03-29', realized_pnl: 1.0, unrealized_pnl: 2.0,
+                                            total_pnl: 3.0 },
+                                          { timestamp: '2026-03-30', realized_pnl: 2.0, unrealized_pnl: 3.0,
+                                            total_pnl: 5.0 }
+                                        ])
+    ensure
+      temp.close
+      temp.unlink
+    end
+
+    it 'includes price updates only when unfiltered' do
+      temp = Tempfile.new(['result', '.json'])
+      temp.write(JSON.generate(
+                   {
+                     'timeline' => {
+                       'schema_version' => '1.0',
+                       'points' => [
+                         {
+                           'timestamp' => '2026-03-29T12:00:00Z',
+                           'account_id' => 'acc-1',
+                           'market_id' => 'BTC-USD',
+                           'realized_pnl' => '1',
+                           'unrealized_pnl' => '2',
+                           'total_pnl' => '3'
+                         },
+                         {
+                           'timestamp' => '2026-03-29T13:00:00Z',
+                           'account_id' => 'all',
+                           'market_id' => 'BTC-USD',
+                           'realized_pnl' => '0',
+                           'unrealized_pnl' => '5',
+                           'total_pnl' => '5'
+                         }
+                       ]
+                     }
+                   }
+                 ))
+      temp.rewind
+
+      run = Run.create!(status: :succeeded, input_json: { 'trades' => [] },
+                        artifacts: { 'result_json_path' => temp.path })
+
+      unfiltered = described_class.new(run: run).call
+      filtered = described_class.new(run: run, account_id: 'acc-1').call
+
+      expect(unfiltered[:pnl_daily]).to eq([
+                                             { timestamp: '2026-03-29', realized_pnl: 0.0, unrealized_pnl: 5.0,
+                                               total_pnl: 5.0 }
+                                           ])
+      expect(filtered[:pnl_daily]).to eq([
+                                           { timestamp: '2026-03-29', realized_pnl: 1.0, unrealized_pnl: 2.0,
+                                             total_pnl: 3.0 }
+                                         ])
+    ensure
+      temp.close
+      temp.unlink
     end
   end
 end

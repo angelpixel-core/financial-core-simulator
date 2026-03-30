@@ -14,13 +14,26 @@ import {
 } from "recharts"
 
 export default class extends Controller {
-  static targets = ["activityChart", "volumeChart", "cards", "emptyState", "activityFallback", "volumeFallback"]
+  static targets = [
+    "activityChart",
+    "volumeChart",
+    "pnlChart",
+    "cards",
+    "emptyState",
+    "activityFallback",
+    "volumeFallback",
+    "pnlFallback",
+    "accountSelect",
+    "marketSelect"
+  ]
   static values = {
     url: String,
     activityTitle: { type: String, default: "Trade activity" },
     volumeTitle: { type: String, default: "Trade volume" },
     activityTooltipLabel: { type: String, default: "Trades" },
-    volumeTooltipLabel: { type: String, default: "Volume" }
+    volumeTooltipLabel: { type: String, default: "Volume" },
+    pnlTitle: { type: String, default: "PnL" },
+    pnlTooltipLabel: { type: String, default: "Total PnL" }
   }
 
   connect() {
@@ -31,6 +44,7 @@ export default class extends Controller {
       return
     }
 
+    this.syncFiltersFromUrl()
     this.fetchOverview()
   }
 
@@ -43,10 +57,16 @@ export default class extends Controller {
       this.volumeRoot.unmount()
       this.volumeRoot = null
     }
+    if (this.pnlRoot) {
+      this.pnlRoot.unmount()
+      this.pnlRoot = null
+    }
   }
 
   fetchOverview() {
-    fetch(this.urlValue, { headers: { Accept: "application/json" } })
+    const requestUrl = this.buildRequestUrl()
+
+    fetch(requestUrl, { headers: { Accept: "application/json" } })
       .then((response) => {
         if (!response.ok) throw new Error("financial_overview_fetch_failed")
         return response.json()
@@ -55,8 +75,9 @@ export default class extends Controller {
         const overview = payload?.financial_overview || {}
         const activity = Array.isArray(overview.trade_activity) ? overview.trade_activity : []
         const volume = Array.isArray(overview.trade_volume) ? overview.trade_volume : []
+        const pnlDaily = Array.isArray(overview.pnlDaily) ? overview.pnlDaily : []
 
-        if (activity.length === 0 && volume.length === 0) {
+        if (activity.length === 0 && volume.length === 0 && pnlDaily.length === 0) {
           this.showEmptyState()
           return
         }
@@ -74,10 +95,22 @@ export default class extends Controller {
         } else {
           this.showVolumeFallback()
         }
+
+        if (pnlDaily.length > 0) {
+          this.renderPnlChart(pnlDaily)
+        } else {
+          this.showPnlFallback()
+        }
       })
       .catch(() => {
         this.showEmptyState()
       })
+  }
+
+  applyFilters() {
+    this.showLoading()
+    this.syncUrlParams()
+    this.fetchOverview()
   }
 
   renderActivityChart(points) {
@@ -230,6 +263,82 @@ export default class extends Controller {
     this.showVolumeChart()
   }
 
+  renderPnlChart(points) {
+    if (!this.hasPnlChartTarget) return
+
+    const chartData = points.map((point) => ({
+      label: this.formatTimestamp(point.timestamp),
+      totalPnl: Number(point.total_pnl || 0)
+    }))
+
+    this.pnlRoot = this.pnlRoot || createRoot(this.pnlChartTarget)
+
+    const tooltip = ({ active, payload, label }) => {
+      if (!active || !payload || !payload.length) return null
+      const value = Number(payload[0]?.value || 0)
+
+      return React.createElement(
+        "div",
+        { className: "trend-chart__tooltip", role: "tooltip" },
+        React.createElement("p", { className: "trend-chart__tooltip-label" }, label),
+        React.createElement(
+          "p",
+          { className: "trend-chart__tooltip-value" },
+          React.createElement("span", { className: "trend-chart__tooltip-dot", "aria-hidden": "true" }),
+          React.createElement("span", null, this.pnlTooltipLabelValue),
+          React.createElement("strong", null, value.toFixed(2))
+        )
+      )
+    }
+
+    this.pnlRoot.render(
+      React.createElement(
+        "div",
+        {
+          className: "trend-chart__shell",
+          role: "img",
+          "aria-label": `${this.pnlTitleValue}. Daily cumulative PnL.`
+        },
+        React.createElement(
+          ResponsiveContainer,
+          { width: "100%", height: "100%" },
+          React.createElement(
+            LineChart,
+            { data: chartData, margin: { top: 16, right: 12, left: 6, bottom: 10 } },
+            React.createElement(CartesianGrid, { vertical: false, stroke: "rgba(148, 163, 184, 0.16)" }),
+            React.createElement(XAxis, {
+              dataKey: "label",
+              tickLine: false,
+              tickMargin: 10,
+              axisLine: false,
+              tick: { fill: "#94a3b8", fontSize: 11 }
+            }),
+            React.createElement(YAxis, {
+              tickLine: false,
+              axisLine: false,
+              tickFormatter: (value) => Number(value).toFixed(0),
+              tick: { fill: "#64748b", fontSize: 11 }
+            }),
+            React.createElement(Tooltip, {
+              cursor: { stroke: "rgba(148, 163, 184, 0.28)", strokeWidth: 1 },
+              content: tooltip
+            }),
+            React.createElement(Line, {
+              type: "monotone",
+              dataKey: "totalPnl",
+              name: this.pnlTooltipLabelValue,
+              stroke: "#f59e0b",
+              strokeWidth: 2,
+              dot: false
+            })
+          )
+        )
+      )
+    )
+
+    this.showPnlChart()
+  }
+
   showActivityChart() {
     if (this.hasActivityChartTarget) this.activityChartTarget.classList.add("is-ready")
     if (this.hasActivityFallbackTarget) this.activityFallbackTarget.hidden = true
@@ -258,6 +367,20 @@ export default class extends Controller {
     if (this.hasVolumeFallbackTarget) this.volumeFallbackTarget.hidden = false
   }
 
+  showPnlChart() {
+    if (this.hasPnlChartTarget) this.pnlChartTarget.classList.add("is-ready")
+    if (this.hasPnlFallbackTarget) this.pnlFallbackTarget.hidden = true
+  }
+
+  showPnlFallback() {
+    if (this.pnlRoot) {
+      this.pnlRoot.unmount()
+      this.pnlRoot = null
+    }
+    if (this.hasPnlChartTarget) this.pnlChartTarget.classList.remove("is-ready")
+    if (this.hasPnlFallbackTarget) this.pnlFallbackTarget.hidden = false
+  }
+
   showLoading() {
     if (this.hasCardsTarget) this.cardsTarget.hidden = false
     if (this.hasEmptyStateTarget) this.emptyStateTarget.hidden = true
@@ -278,6 +401,58 @@ export default class extends Controller {
 
   setState(state) {
     this.element.dataset.financialOverviewState = state
+  }
+
+  syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search)
+    const accountId = params.get("account_id") || ""
+    const marketId = params.get("market_id") || ""
+
+    if (this.hasAccountSelectTarget) {
+      this.accountSelectTarget.value = accountId
+    }
+
+    if (this.hasMarketSelectTarget) {
+      this.marketSelectTarget.value = marketId
+    }
+  }
+
+  syncUrlParams() {
+    const params = new URLSearchParams(window.location.search)
+    const accountId = this.hasAccountSelectTarget ? this.accountSelectTarget.value : ""
+    const marketId = this.hasMarketSelectTarget ? this.marketSelectTarget.value : ""
+
+    if (accountId) {
+      params.set("account_id", accountId)
+    } else {
+      params.delete("account_id")
+    }
+
+    if (marketId) {
+      params.set("market_id", marketId)
+    } else {
+      params.delete("market_id")
+    }
+
+    const query = params.toString()
+    const nextUrl = query.length ? `${window.location.pathname}?${query}` : window.location.pathname
+    window.history.replaceState({}, "", nextUrl)
+  }
+
+  buildRequestUrl() {
+    const url = new URL(this.urlValue, window.location.origin)
+    const accountId = this.hasAccountSelectTarget ? this.accountSelectTarget.value : ""
+    const marketId = this.hasMarketSelectTarget ? this.marketSelectTarget.value : ""
+
+    if (accountId) {
+      url.searchParams.set("account_id", accountId)
+    }
+
+    if (marketId) {
+      url.searchParams.set("market_id", marketId)
+    }
+
+    return url.toString()
   }
 
   formatTimestamp(timestamp) {

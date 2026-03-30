@@ -5,10 +5,11 @@ module Admin
 
       def serialize(metrics:)
         payload = {
-          'contractVersion' => CONTRACT_VERSION,
-          'financial_overview' => {
-            'trade_activity' => Array(metrics[:trade_activity]),
-            'trade_volume' => Array(metrics[:trade_volume])
+          "contractVersion" => CONTRACT_VERSION,
+          "financial_overview" => {
+            "trade_activity" => Array(metrics[:trade_activity]),
+            "trade_volume" => Array(metrics[:trade_volume]),
+            "pnlDaily" => Array(metrics[:pnl_daily])
           }
         }
 
