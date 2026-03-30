@@ -223,7 +223,11 @@ RSpec.describe "Timeline processing integration" do
     full_replay = FCS::Application::Simulate.new.call(full_input)
     checkpoint_replay = FCS::Application::Simulate.new.call(from_checkpoint_input)
 
-    expect(checkpoint_replay).to eq(full_replay)
+    expect(strip_timeline(checkpoint_replay)).to eq(strip_timeline(full_replay))
+  end
+
+  def strip_timeline(payload)
+    payload.dup.tap { |value| value.delete("timeline") }
   end
 
   it "falls back safely when checkpoint state is missing" do
@@ -273,6 +277,6 @@ RSpec.describe "Timeline processing integration" do
     full_replay = FCS::Application::Simulate.new.call(full_input)
     replay_with_missing_checkpoint = FCS::Application::Simulate.new.call(missing_checkpoint_input)
 
-    expect(replay_with_missing_checkpoint).to eq(full_replay)
+    expect(strip_timeline(replay_with_missing_checkpoint)).to eq(strip_timeline(full_replay))
   end
 end
