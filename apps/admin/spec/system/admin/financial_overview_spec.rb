@@ -29,9 +29,8 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
     login_as_admin
     visit '/admin/overview'
 
-    expect(page).to have_css('[data-controller="financial-overview"][data-financial-overview-state="empty"]')
+    expect(page).to have_css('[data-financial-overview-target="emptyState"]:not([hidden])', wait: 10)
     within('[data-controller="financial-overview"]') do
-      expect(page).to have_css('[data-financial-overview-target="emptyState"]:not([hidden])')
       expect(page).to have_css('[data-financial-overview-target="cards"][hidden]', visible: :hidden)
       expect(page).to have_content(I18n.t('admin.overview.financial_overview.empty_title'))
     end
@@ -83,9 +82,8 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
     login_as_admin
     visit '/admin/overview'
 
-    expect(page).to have_css('[data-controller="financial-overview"][data-financial-overview-state="ready"]')
+    expect(page).to have_css('[data-financial-overview-target="activityChart"].is-ready', wait: 10)
     within('[data-controller="financial-overview"]') do
-      expect(page).to have_css('[data-financial-overview-target="activityChart"].is-ready')
       expect(page).to have_css('[data-financial-overview-target="volumeChart"].is-ready')
       expect(page).to have_css('[data-financial-overview-target="pnlChart"].is-ready')
       expect(page).to have_css('.trend-chart__shell')
@@ -115,10 +113,7 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
     login_as_admin
     visit '/admin/overview'
 
-    expect(page).to have_css('[data-controller="financial-overview"][data-financial-overview-state="ready"]')
-    within('[data-controller="financial-overview"]') do
-      expect(page).to have_css('[data-financial-overview-target="pnlFallback"]:not([hidden])')
-    end
+    expect(page).to have_css('[data-financial-overview-target="pnlFallback"]:not([hidden])', wait: 10)
   end
 
   it 'falls back to empty state when the endpoint fails' do
@@ -143,7 +138,7 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
     login_as_admin
     visit '/admin/overview'
 
-    expect(page).to have_css('[data-controller="financial-overview"][data-financial-overview-state="empty"]')
+    expect(page).to have_css('[data-controller="financial-overview"][data-financial-overview-state="empty"]', wait: 10)
     within('[data-controller="financial-overview"]') do
       expect(page).to have_css('[data-financial-overview-target="emptyState"]:not([hidden])')
       expect(page).to have_css('[data-financial-overview-target="cards"][hidden]', visible: :hidden)

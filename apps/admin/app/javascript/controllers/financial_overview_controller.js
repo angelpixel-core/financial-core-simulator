@@ -101,6 +101,8 @@ export default class extends Controller {
         } else {
           this.showPnlFallback()
         }
+
+        this.setState("ready")
       })
       .catch(() => {
         this.showEmptyState()
@@ -379,6 +381,7 @@ export default class extends Controller {
     }
     if (this.hasPnlChartTarget) this.pnlChartTarget.classList.remove("is-ready")
     if (this.hasPnlFallbackTarget) this.pnlFallbackTarget.hidden = false
+    this.setState("ready")
   }
 
   showLoading() {
