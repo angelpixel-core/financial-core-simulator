@@ -5,10 +5,15 @@ module Admin
     def self.extended(router)
       router.instance_exec do
         namespace :fx do
-          resources :daily_rates, only: %i[create] do
+          resources :daily_rates, only: %i[create update destroy] do
             post :carry_forward, on: :collection
+            patch :current, on: :collection
+          end
+          resources :rate_uploads, only: :create do
+            get :template, on: :collection
           end
           resource :reporting_settings, only: %i[update]
+          resources :history, only: :index
         end
       end
     end

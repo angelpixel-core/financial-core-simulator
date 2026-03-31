@@ -3,6 +3,7 @@ en:
     nav:
       overview: "Financial Overview"
       runs: "System Health"
+      history: "History"
       validation: "Validation"
       artifacts: "Artifacts"
       docs: "Docs"

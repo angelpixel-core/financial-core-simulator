@@ -57,7 +57,7 @@ RSpec.describe 'Admin demo dataset preview modal', type: :system, js: true do
 
     visit '/admin/overview'
 
-    attach_file 'file', tempfile.path
+    attach_file 'demo-dataset-upload-file', tempfile.path
     click_button I18n.t('admin.overview.dataset.preview.cta')
 
     expect(page).to have_css('.demo-dataset-preview.demo-dataset-preview--loading')

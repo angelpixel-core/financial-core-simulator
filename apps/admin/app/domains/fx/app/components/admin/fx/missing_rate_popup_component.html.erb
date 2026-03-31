@@ -20,7 +20,7 @@
     </header>
     <div class="fx-missing-rate__body">
       <p class="fx-missing-rate__hint"><%= t("admin.fx.popup.body", currency: reporting_currency) %></p>
-      <%= form_with url: admin_fx_daily_rates_path(locale: I18n.locale), method: :post, local: true, class: "fx-missing-rate__form" do |form| %>
+      <%= form_with url: admin_fx_daily_rates_path(locale: I18n.locale), method: :post, scope: nil, local: true, class: "fx-missing-rate__form" do |form| %>
         <%= hidden_field_tag :operational_date, operational_date_value %>
         <%= hidden_field_tag :base_currency, base_currency %>
         <%= hidden_field_tag :quote_currency, quote_currency %>

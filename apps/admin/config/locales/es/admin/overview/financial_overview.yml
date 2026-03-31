@@ -1,0 +1,35 @@
+es:
+  admin:
+    overview:
+      financial_overview:
+        aria: "Resumen financiero"
+        title: "RESUMEN FINANCIERO"
+        empty_title: "Sin actividad de trades."
+        empty_body: "Carga un dataset con trades para poblar actividad y volumen."
+        reporting_currency: "Moneda de reporte: %{currency}"
+        filters:
+          account: "Cuenta"
+          account_all: "Todas las cuentas"
+          market: "Mercado"
+          market_all: "Todos los mercados"
+        trade_activity:
+          title: "Actividad de trades"
+          measure: "Mide los trades ejecutados por timestamp."
+          interpret: "Picos mas altos indican rafagas de actividad."
+          aria: "Grafico de actividad de trades"
+          tooltip: "Trades"
+          empty: "Sin actividad de trades aun."
+        trade_volume:
+          title: "Volumen de trades"
+          measure: "Mide el volumen quote por timestamp en la moneda de reporte."
+          interpret: "Lineas ascendentes muestran mayor liquidez y flujo."
+          aria: "Grafico de volumen de trades"
+          tooltip: "Volumen"
+          empty: "Sin volumen de trades aun."
+        pnl_daily:
+          title: "PnL diario"
+          measure: "Mide el PnL diario acumulado en la moneda de reporte."
+          interpret: "Pendiente ascendente indica ganancias netas en el tiempo."
+          aria: "Grafico de PnL diario"
+          tooltip: "PnL diario acumulado"
+          empty: "Aun no hay timeline de PnL."

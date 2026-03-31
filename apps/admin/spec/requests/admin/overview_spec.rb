@@ -15,33 +15,37 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t('overview.hero.title', locale: :en))
     expect(response.body).to include(admin_t('overview.hero.eyebrow', locale: :en))
+    expect(response.body).to include(admin_t('overview.dataset.title', locale: :en))
     expect(response.body).to include(admin_t('overview.system_state.title', locale: :en))
     expect(response.body).to include(admin_t('overview.simulation_context.title', locale: :en))
     expect(response.body).to include(admin_t('overview.system_metrics.title', locale: :en))
-    expect(response.body).to include(admin_t('overview.activity.title', locale: :en))
+    expect(response.body).to include(admin_t('overview.financial_overview.title', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_results.title', locale: :en))
     expect(response.body).to include(admin_t('overview.validation.title', locale: :en))
-    expect(response.body).to include(admin_t('overview.financial_results.latest_run.empty', locale: :en))
     expect(response.body).to include(admin_t('overview.simulation_context.empty', locale: :en))
-    expect(response.body).to include(admin_t('overview.financial_results.run_comparison.empty', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_results.input_traceability.empty', locale: :en))
-    expect(response.body).to include(admin_t('overview.activity.run_trend.title', locale: :en))
-    expect(response.body).to include(admin_t('overview.activity.status_mix.title', locale: :en))
     expect(response.body).to include('data-controller="poll"')
     control_index = response.body.index(admin_t('overview.hero.eyebrow', locale: :en))
+    dataset_index = response.body.index(admin_t('overview.dataset.title', locale: :en))
     state_index = response.body.index(admin_t('overview.system_state.title', locale: :en))
     simulation_context_index = response.body.index(admin_t('overview.simulation_context.title', locale: :en))
     metrics_index = response.body.index(admin_t('overview.system_metrics.title', locale: :en))
-    activity_index = response.body.index(admin_t('overview.activity.title', locale: :en))
+    financial_overview_index = response.body.index(admin_t('overview.financial_overview.title', locale: :en))
     financial_index = response.body.index(admin_t('overview.financial_results.title', locale: :en))
     quality_index = response.body.index(admin_t('overview.validation.title', locale: :en))
 
-    expect(control_index).to be < state_index
+    expect(control_index).to be < dataset_index
+    expect(dataset_index).to be < state_index
     expect(state_index).to be < simulation_context_index
     expect(simulation_context_index).to be < metrics_index
-    expect(metrics_index).to be < activity_index
-    expect(activity_index).to be < financial_index
+    expect(metrics_index).to be < financial_overview_index
+    expect(financial_overview_index).to be < financial_index
     expect(financial_index).to be < quality_index
+
+    get admin_system_health_path, headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include(admin_t('overview.financial_results.latest_run.empty', locale: :en))
   end
 
   it 'renders Spanish labels when locale is set' do
@@ -50,8 +54,8 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t('overview.hero.title', locale: :es))
     expect(response.body).to include(admin_t('overview.hero.eyebrow', locale: :es))
-    expect(response.body).to include(admin_t('overview.activity.run_trend.title', locale: :es))
-    expect(response.body).to include(admin_t('overview.activity.status_mix.title', locale: :es))
+    expect(response.body).to include(admin_t('overview.dataset.title', locale: :es))
+    expect(response.body).to include(admin_t('overview.financial_overview.title', locale: :es))
 
     nav_labels = Nokogiri::HTML(response.body)
                          .css('.app-shell__nav--desktop a')
@@ -60,10 +64,17 @@ RSpec.describe 'Admin overview', type: :request do
     expect(nav_labels).to include(
       admin_t('nav.overview', locale: :es),
       admin_t('nav.runs', locale: :es),
+      admin_t('nav.history', locale: :es),
       admin_t('nav.validation', locale: :es),
       admin_t('nav.artifacts', locale: :es),
       admin_t('nav.docs', locale: :es)
     )
+
+    get admin_system_health_path, params: { locale: 'es' }, headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include(admin_t('overview.activity.run_trend.title', locale: :es))
+    expect(response.body).to include(admin_t('overview.activity.status_mix.title', locale: :es))
   end
 
   it 'keeps state-first navigation sequence discoverable in the shell' do
@@ -75,11 +86,13 @@ RSpec.describe 'Admin overview', type: :request do
 
     overview_index = response.body.index(admin_t('nav.overview', locale: :en))
     runs_index = response.body.index(admin_t('nav.runs', locale: :en))
+    history_index = response.body.index(admin_t('nav.history', locale: :en))
     validation_index = response.body.index(admin_t('nav.validation', locale: :en))
     artifacts_index = response.body.index(admin_t('nav.artifacts', locale: :en))
 
     expect(overview_index).to be < runs_index
-    expect(runs_index).to be < validation_index
+    expect(runs_index).to be < history_index
+    expect(history_index).to be < validation_index
     expect(validation_index).to be < artifacts_index
   end
 
@@ -123,6 +136,7 @@ RSpec.describe 'Admin overview', type: :request do
     expect(nav_labels).to include(
       admin_t('nav.overview', locale: :en),
       admin_t('nav.runs', locale: :en),
+      admin_t('nav.history', locale: :en),
       admin_t('nav.validation', locale: :en),
       admin_t('nav.artifacts', locale: :en),
       admin_t('nav.docs', locale: :en)
@@ -164,7 +178,7 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response.body).not_to include('/admin/logout')
   end
 
-  it 'renders drilldown links for runs activity, latest run, top accounts, and ingestion errors' do
+  it 'renders drilldown links for activity, latest run, top accounts, and ingestion errors' do
     run = Run.create!(
       status: :succeeded,
       input_hash: 'abc123',
@@ -175,18 +189,21 @@ RSpec.describe 'Admin overview', type: :request do
     get '/admin/overview', headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
+    expect(response.body).to include(admin_t('overview.top_accounts.cta_label', locale: :en))
+    expect(response.body).to include(admin_t('overview.validation.cta_label', locale: :en))
+
+    expect(response.body).to include(%(href="#{admin_overview_top_accounts_path}"))
+    expect(response.body).to include(%(href="#{admin_overview_ingestion_validation_errors_path}"))
+
+    get admin_system_health_path, headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t('overview.activity.run_trend.link', locale: :en))
     expect(response.body).to include(admin_t('overview.activity.status_mix.link', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_results.latest_run.link', locale: :en))
-    expect(response.body).to include(admin_t('overview.top_accounts.cta_label', locale: :en))
-    expect(response.body).to include(admin_t('overview.validation.cta_label', locale: :en))
-    expect(response.body).to include(run_result_path(id: run.id))
-
     expect(response.body).to include(%(href="#{admin_overview_runs_trend_path}"))
     expect(response.body).to include(%(href="#{admin_overview_status_mix_path}"))
     expect(response.body).to include(%(href="/admin/resources/runs/#{run.id}"))
-    expect(response.body).to include(%(href="#{admin_overview_top_accounts_path}"))
-    expect(response.body).to include(%(href="#{admin_overview_ingestion_validation_errors_path}"))
   end
 
   it 'renders dedicated runs trend and status mix pages' do
@@ -216,8 +233,8 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response.body).to include(admin_t('overview.status_mix.widget_title', locale: :en))
   end
 
-  it 'keeps trend chart hook and fallback nodes coexisting in overview' do
-    get '/admin/overview', headers: admin_session_headers
+  it 'keeps trend chart hook and fallback nodes coexisting in system health' do
+    get admin_system_health_path, headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include('data-controller="run-trend-chart"')
@@ -229,7 +246,7 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response.body).to include('data-run-trend-chart-max-extra-duration-value="540"')
   end
 
-  it 'renders derived simulation context, run comparison, and traceability cards when data is available' do
+  it 'renders derived simulation context and traceability cards when data is available' do
     previous_run = Run.create!(
       status: :succeeded,
       created_at: 2.days.ago,
@@ -297,8 +314,6 @@ RSpec.describe 'Admin overview', type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(admin_t('overview.simulation_context.title', locale: :en))
       expect(response.body).to include('demo_input.json')
-      expect(response.body).to include(admin_t('overview.financial_results.run_comparison.title', locale: :en))
-      expect(response.body).to include('Identical output for matching input hash.')
       expect(response.body).to include(admin_t('overview.financial_results.input_traceability.title', locale: :en))
       expect(response.body).to include(Pathname(latest_path).relative_path_from(Rails.root).to_s)
       expect(response.body).to include(Pathname(positions_path).relative_path_from(Rails.root).to_s)

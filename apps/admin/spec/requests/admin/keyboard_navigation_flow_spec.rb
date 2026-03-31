@@ -32,7 +32,7 @@ RSpec.describe 'Admin keyboard navigation flow', type: :request do
     links = nav.css('a')
 
     labels = links.map { |link| link.text.strip }
-    expect(labels).to include('Financial Overview', 'System Health', 'Validation', 'Artifacts')
+    expect(labels).to include('Financial Overview', 'System Health', 'History', 'Validation', 'Artifacts')
 
     overview_link = links.find { |node| node.text.strip == 'Financial Overview' }
     runs_link = links.find { |node| node.text.strip == 'System Health' }

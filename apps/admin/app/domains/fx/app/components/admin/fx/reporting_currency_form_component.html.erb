@@ -1,9 +1,11 @@
-<section class="dashboard-card fx-reporting-card">
-  <header class="dashboard-card__header">
-    <h2><%= t("admin.fx.reporting.title") %></h2>
-    <p class="dashboard-card__meta"><%= t("admin.fx.reporting.subtitle") %></p>
-  </header>
-  <%= form_with url: admin_fx_reporting_settings_path(locale: I18n.locale), method: :patch, local: true, class: "fx-reporting-form" do %>
+<section class="app-shell__sidebar-panel fx-reporting-panel" aria-label="<%= t("admin.fx.reporting.aria") %>">
+  <p class="app-shell__sidebar-panel-label"><%= t("admin.fx.reporting.sidebar_title") %></p>
+  <div class="fx-reporting-panel__header">
+    <h3 class="fx-reporting-panel__title"><%= t("admin.fx.reporting.title") %></h3>
+    <p class="fx-reporting-panel__subtitle"><%= t("admin.fx.reporting.subtitle") %></p>
+  </div>
+  <%= form_with url: admin_fx_reporting_settings_path(locale: I18n.locale), method: :patch, local: true,
+                class: "fx-reporting-form", data: { controller: "auto-submit" } do %>
     <div class="fx-reporting-form__row">
       <label class="fx-reporting-form__label" for="reporting-currency">
         <%= t("admin.fx.reporting.label") %>
@@ -11,9 +13,30 @@
       <%= select_tag :reporting_currency,
         options_for_select(supported_currencies, reporting_setting.reporting_currency),
         id: "reporting-currency",
-        class: "fx-reporting-form__select" %>
-      <%= submit_tag t("admin.fx.reporting.save_cta"), class: "fx-reporting-form__submit" %>
+        class: "fx-reporting-form__select",
+        data: { action: "change->auto-submit#submit" } %>
     </div>
     <p class="fx-reporting-form__hint"><%= t("admin.fx.reporting.hint") %></p>
+  <% end %>
+  <%= form_with url: admin_fx_daily_rates_path(locale: I18n.locale), method: :post, scope: :fx_daily_rate, local: true,
+                class: "fx-reporting-form", data: { controller: "auto-submit" } do |form| %>
+    <%= form.hidden_field :operational_date, value: operational_date.iso8601 %>
+    <%= form.hidden_field :base_currency, value: base_currency %>
+    <%= form.hidden_field :quote_currency, value: quote_currency %>
+    <div class="fx-reporting-form__row">
+      <label class="fx-reporting-form__label" for="current-daily-rate">
+        <%= t("admin.fx.reporting.rate_label", pair: "#{base_currency}/#{quote_currency}") %>
+      </label>
+      <%= form.number_field :rate,
+        value: fx_rate_state&.rate,
+        step: "0.000001",
+        min: "0",
+        class: "fx-reporting-form__select",
+        id: "current-daily-rate",
+        data: { action: "change->auto-submit#submit" } %>
+    </div>
+    <p class="fx-reporting-form__hint">
+      <%= t("admin.fx.reporting.rate_hint", date: l(operational_date)) %>
+    </p>
   <% end %>
 </section>

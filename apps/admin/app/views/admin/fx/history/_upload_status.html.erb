@@ -1,0 +1,7 @@
+<div id="<%= FxRateUpload.status_dom_id %>" class="fx-history-upload__status <%= upload&.status ? "fx-history-upload__status--#{upload.status}" : "" %>">
+  <% if upload.present? %>
+    <p class="fx-history-upload__status-text">
+      <%= t("admin.fx.history.upload.status.#{upload.status}", count: upload.error_count.to_i) %>
+    </p>
+  <% end %>
+</div>

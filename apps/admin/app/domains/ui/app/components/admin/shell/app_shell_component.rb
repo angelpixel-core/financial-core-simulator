@@ -30,6 +30,10 @@ module Admin
           'M12 9h4',
           'M12 13h4'
         ],
+        'history' => [
+          'M12 8v5l3 3',
+          'M12 3a9 9 0 1 0 0.001 18.001'
+        ],
         'support' => [
           'M12 3a9 9 0 1 0 0.001 18.001',
           'M12 7v5',
@@ -42,7 +46,7 @@ module Admin
       }.freeze
 
       def initialize(sidebar_items:, breadcrumb:, environment:, primary_action:, secondary_action: nil,
-                     topbar_links: [], presence_email: nil)
+                     topbar_links: [], presence_email: nil, sidebar_panels: nil)
         @sidebar_items = sidebar_items
         @breadcrumb = breadcrumb
         @environment = environment
@@ -50,6 +54,7 @@ module Admin
         @secondary_action = secondary_action
         @topbar_links = topbar_links
         @presence_email = presence_email.to_s.presence || 'ops@example.com'
+        @sidebar_panels = sidebar_panels
       end
 
       def icon_svg_for(item_or_label)
@@ -76,6 +81,7 @@ module Admin
         normalized = label.to_s.downcase
         return 'overview' if normalized.include?('overview')
         return 'runs' if normalized.include?('run')
+        return 'history' if normalized.include?('history')
         return 'validation' if normalized.include?('validation')
         return 'artifacts' if normalized.include?('artifact')
         return 'docs' if normalized.include?('docs')

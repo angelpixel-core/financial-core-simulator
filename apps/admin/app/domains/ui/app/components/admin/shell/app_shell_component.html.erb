@@ -101,6 +101,11 @@
         <% end %>
       <% end %>
     </nav>
+    <% if @sidebar_panels.present? %>
+      <div class="app-shell__sidebar-panels">
+        <%= @sidebar_panels %>
+      </div>
+    <% end %>
     <div
       class="app-shell__sidebar-footer"
       data-controller="workspace-presence"

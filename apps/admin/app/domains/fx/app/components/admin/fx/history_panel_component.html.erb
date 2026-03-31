@@ -1,0 +1,52 @@
+<section class="app-shell__sidebar-panel fx-history-panel" aria-label="<%= t("admin.fx.history.aria") %>">
+  <p class="app-shell__sidebar-panel-label"><%= t("admin.fx.history.sidebar_title") %></p>
+  <div class="fx-history-panel__header">
+    <h3 class="fx-history-panel__title"><%= t("admin.fx.history.title") %></h3>
+    <p class="fx-history-panel__subtitle"><%= t("admin.fx.history.subtitle") %></p>
+  </div>
+  <% if entries.any? %>
+    <ul class="fx-history-list" role="list">
+      <% entries.each do |rate| %>
+        <% status = gap_status(rate) %>
+        <li class="fx-history-item">
+          <div class="fx-history-item__meta">
+            <p class="fx-history-item__date"><%= l(rate.operational_date) %></p>
+            <p class="fx-history-item__source"><%= t("admin.fx.history.sources.#{rate.source}") %></p>
+          </div>
+          <div class="fx-history-item__rate">
+            <strong><%= display_rate(rate) %></strong>
+            <% if status.present? %>
+              <span class="fx-history-item__status fx-history-item__status--<%= status %>">
+                <%= t("admin.fx.history.gap_status.#{status}") %>
+              </span>
+            <% end %>
+          </div>
+          <% if editable_rate?(rate) %>
+            <div class="fx-history-item__actions">
+              <%= form_with url: admin_fx_daily_rate_path(rate, locale: I18n.locale), method: :patch, local: true,
+                            scope: nil, class: "fx-history-item__form" do |form| %>
+                <%= form.number_field :rate,
+                  value: rate.rate,
+                  step: "0.000001",
+                  min: "0",
+                  class: "fx-history-item__input" %>
+                <%= form.submit t("admin.fx.history.edit_cta"), class: "fx-history-item__button" %>
+              <% end %>
+              <% if deletable_rate?(rate) %>
+                <%= button_to t("admin.fx.history.delete_cta"),
+                  admin_fx_daily_rate_path(rate, locale: I18n.locale),
+                  method: :delete,
+                  class: "fx-history-item__button fx-history-item__button--ghost",
+                  data: { turbo_confirm: t("admin.fx.history.delete_confirm") } %>
+              <% else %>
+                <span class="fx-history-item__note"><%= t("admin.fx.history.delete_blocked") %></span>
+              <% end %>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="empty-state"><%= t("admin.fx.history.empty") %></p>
+  <% end %>
+</section>
