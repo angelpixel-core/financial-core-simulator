@@ -16,7 +16,7 @@ class RunVerificationsController < ApplicationController
     payload = verification_payload({"status" => "verification_error", "error" => error.message})
 
     respond_to do |format|
-      format.json { render json: payload, status: :unprocessable_entity }
+      format.json { render json: payload, status: :unprocessable_content }
       format.html do
         redirect_back fallback_location: "/admin/resources/runs/#{@run.id}", alert: error.message
       end

@@ -51,7 +51,7 @@ class RunArtifactsController < ApplicationController
     counters = risk_status_counters(all_rows)
     render html: risk_table_html(rows, status_filter: status_filter, counters: counters).html_safe
   rescue JSON::ParserError
-    render plain: "Invalid result.json artifact", status: :unprocessable_entity
+    render plain: "Invalid result.json artifact", status: :unprocessable_content
   end
 
   def latest

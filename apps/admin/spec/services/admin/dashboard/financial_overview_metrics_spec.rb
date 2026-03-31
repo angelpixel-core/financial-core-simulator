@@ -4,6 +4,45 @@ require 'tempfile'
 
 RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
   describe '#call' do
+    it 'prefers persisted artifacts when available' do
+      run = Run.create!(status: :succeeded, input_json: { 'trades' => [] })
+
+      snapshot = RunSnapshot.create!(
+        run_id: run.id,
+        operational_date: Date.new(2026, 3, 29),
+        reporting_currency: 'USD'
+      )
+
+      RunDailyPnl.create!(
+        run_snapshot_id: snapshot.id,
+        realized_pnl: 1,
+        unrealized_pnl: 2,
+        total_pnl: 3
+      )
+
+      RunDailyVolume.create!(
+        run_snapshot_id: snapshot.id,
+        notional_volume: 25,
+        trade_count: 4,
+        unit_type: 'quote',
+        unit_code: 'USD'
+      )
+
+      metrics = described_class.new(run: run).call
+
+      expect(metrics[:trade_activity]).to eq([
+                                               { timestamp: '2026-03-29', trade_count: 4 }
+                                             ])
+      expect(metrics[:trade_volume]).to eq([
+                                             { timestamp: '2026-03-29', volume: 25.0, unit_type: 'quote',
+                                               unit_code: 'USD' }
+                                           ])
+      expect(metrics[:pnl_daily]).to eq([
+                                          { timestamp: '2026-03-29', realized_pnl: 1.0, unrealized_pnl: 2.0,
+                                            total_pnl: 3.0 }
+                                        ])
+    end
+
     it 'filters trades missing required fields' do
       run = Run.create!(status: :succeeded, input_json: {
                           'trades' => [
@@ -81,6 +120,65 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
                                                volume: 25.0,
                                                unit_type: 'quote',
                                                unit_code: 'USD'
+                                             }
+                                           ])
+    end
+
+    it 'scales trade volume using the FX rate when present' do
+      run = Run.create!(
+        status: :succeeded,
+        input_json: {
+          'trades' => [
+            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 2, 'price' => 10, 'symbol' => 'BTC-USD' },
+            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 1, 'price' => 5, 'symbol' => 'BTC-USD' }
+          ]
+        },
+        fx_context: {
+          'reportingCurrency' => 'ARS',
+          'rate' => '100',
+          'rateMissing' => false
+        }
+      )
+
+      metrics = described_class.new(run: run).call
+
+      expect(metrics[:trade_volume]).to eq([
+                                             {
+                                               timestamp: '2026-03-29',
+                                               volume: 2500.0,
+                                               unit_type: 'quote',
+                                               unit_code: 'ARS'
+                                             }
+                                           ])
+    end
+
+    it 'uses fxContext from input_json when run fx_context is incomplete' do
+      run = Run.create!(
+        status: :succeeded,
+        input_json: {
+          'trades' => [
+            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 2, 'price' => 10, 'symbol' => 'BTC-USD' },
+            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 1, 'price' => 5, 'symbol' => 'BTC-USD' }
+          ],
+          'fxContext' => {
+            'reportingCurrency' => 'ARS',
+            'rate' => '100',
+            'rateMissing' => 'false'
+          }
+        },
+        fx_context: {
+          'reportingCurrency' => 'ARS'
+        }
+      )
+
+      metrics = described_class.new(run: run).call
+
+      expect(metrics[:trade_volume]).to eq([
+                                             {
+                                               timestamp: '2026-03-29',
+                                               volume: 2500.0,
+                                               unit_type: 'quote',
+                                               unit_code: 'ARS'
                                              }
                                            ])
     end
@@ -227,6 +325,47 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
                                            { timestamp: '2026-03-29', realized_pnl: 1.0, unrealized_pnl: 2.0,
                                              total_pnl: 3.0 }
                                          ])
+    ensure
+      temp.close
+      temp.unlink
+    end
+
+    it 'scales pnl daily values using the FX rate when present' do
+      temp = Tempfile.new(['result', '.json'])
+      temp.write(JSON.generate(
+                   {
+                     'timeline' => {
+                       'schema_version' => '1.0',
+                       'points' => [
+                         {
+                           'timestamp' => '2026-03-29T12:00:00Z',
+                           'realized_pnl' => '1',
+                           'unrealized_pnl' => '2',
+                           'total_pnl' => '3'
+                         }
+                       ]
+                     }
+                   }
+                 ))
+      temp.rewind
+
+      run = Run.create!(
+        status: :succeeded,
+        input_json: { 'trades' => [] },
+        artifacts: { 'result_json_path' => temp.path },
+        fx_context: {
+          'reportingCurrency' => 'ARS',
+          'rate' => '150',
+          'rateMissing' => false
+        }
+      )
+
+      metrics = described_class.new(run: run).call
+
+      expect(metrics[:pnl_daily]).to eq([
+                                          { timestamp: '2026-03-29', realized_pnl: 150.0, unrealized_pnl: 300.0,
+                                            total_pnl: 450.0 }
+                                        ])
     ensure
       temp.close
       temp.unlink

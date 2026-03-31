@@ -1,5 +1,5 @@
-require "bigdecimal"
-require "json"
+require 'bigdecimal'
+require 'json'
 
 module Admin
   module Dashboard
@@ -14,8 +14,11 @@ module Admin
       end
 
       def call
+        persisted = persisted_metrics
+        return persisted if persisted
+
         trades = filtered_trades
-        pnl_daily = PnlTimelineAggregator.new(points: filtered_timeline_points).call
+        pnl_daily = apply_fx_to_pnl(PnlTimelineAggregator.new(points: filtered_timeline_points).call)
 
         {
           trade_activity: trade_activity(trades),
@@ -36,16 +39,71 @@ module Admin
         trades
       end
 
+      def persisted_metrics
+        return nil unless @account_id.nil? && @market_id.nil?
+        return nil if @run.nil?
+
+        snapshots = RunSnapshot.where(run_id: @run.id).includes(:run_daily_pnl, :run_daily_volume)
+                               .order(:operational_date)
+        return nil if snapshots.empty?
+
+        {
+          trade_activity: persisted_trade_activity(snapshots),
+          trade_volume: persisted_trade_volume(snapshots),
+          pnl_daily: persisted_pnl_daily(snapshots)
+        }
+      end
+
+      def persisted_trade_activity(snapshots)
+        snapshots.filter_map do |snapshot|
+          volume = snapshot.run_daily_volume
+          next if volume.nil?
+
+          {
+            timestamp: snapshot.operational_date.iso8601,
+            trade_count: volume.trade_count
+          }
+        end
+      end
+
+      def persisted_trade_volume(snapshots)
+        snapshots.filter_map do |snapshot|
+          volume = snapshot.run_daily_volume
+          next if volume.nil?
+
+          {
+            timestamp: snapshot.operational_date.iso8601,
+            volume: volume.notional_volume.to_f,
+            unit_type: volume.unit_type,
+            unit_code: volume.unit_code
+          }
+        end
+      end
+
+      def persisted_pnl_daily(snapshots)
+        snapshots.filter_map do |snapshot|
+          pnl = snapshot.run_daily_pnl
+          next if pnl.nil?
+
+          {
+            timestamp: snapshot.operational_date.iso8601,
+            realized_pnl: pnl.realized_pnl.to_f,
+            unrealized_pnl: pnl.unrealized_pnl.to_f,
+            total_pnl: pnl.total_pnl.to_f
+          }
+        end
+      end
+
       def filtered_trades
         input_trades.filter_map do |trade|
           next unless trade.is_a?(Hash)
 
           timestamp = normalize_timestamp(trade_field(trade, 'timestamp'))
-          quantity = parse_decimal(trade_field(trade, "quantityBase") || trade_field(trade, "quantity"))
-          price = parse_decimal(trade_field(trade, "priceQuotePerBase") || trade_field(trade, "price"))
-          symbol = trade_field(trade, "marketId") || trade_field(trade, "symbol")
-          account_id = trade_field(trade, "accountId")
-          market_id = trade_field(trade, "marketId") || symbol
+          quantity = parse_decimal(trade_field(trade, 'quantityBase') || trade_field(trade, 'quantity'))
+          price = parse_decimal(trade_field(trade, 'priceQuotePerBase') || trade_field(trade, 'price'))
+          symbol = trade_field(trade, 'marketId') || trade_field(trade, 'symbol')
+          account_id = trade_field(trade, 'accountId')
+          market_id = trade_field(trade, 'marketId') || symbol
 
           next if timestamp.nil? || quantity.nil? || price.nil?
           next if quantity <= 0 || price <= 0
@@ -82,7 +140,7 @@ module Admin
         payload = result_payload
         return [] if payload.nil?
 
-        timeline = payload.dig("timeline", "points")
+        timeline = payload.dig('timeline', 'points')
         timeline.is_a?(Array) ? timeline : []
       end
 
@@ -114,16 +172,20 @@ module Admin
         unit = resolve_unit(trades)
         return [] if unit.nil?
 
+        rate = fx_rate_multiplier
+        reporting_currency = rate.nil? ? nil : fx_reporting_currency
+
         grouped = trades.group_by { |trade| trade[:timestamp] }
 
         grouped.keys.sort.map do |timestamp|
           sum = grouped.fetch(timestamp).sum { |trade| trade[:quantity] * trade[:price] }
+          sum *= rate if rate
 
           {
             timestamp: timestamp,
             volume: sum.to_f,
             unit_type: unit.fetch(:unit_type),
-            unit_code: unit.fetch(:unit_code)
+            unit_code: reporting_currency || unit.fetch(:unit_code)
           }
         end
       end
@@ -192,6 +254,120 @@ module Admin
         BigDecimal(value.to_s)
       rescue ArgumentError
         nil
+      end
+
+      def apply_fx_to_pnl(pnl_daily)
+        rate = fx_rate_multiplier
+        return pnl_daily if rate.nil?
+
+        pnl_daily.map do |entry|
+          next entry unless entry.is_a?(Hash)
+
+          realized = parse_decimal(entry[:realized_pnl] || entry['realized_pnl'])
+          unrealized = parse_decimal(entry[:unrealized_pnl] || entry['unrealized_pnl'])
+          total = parse_decimal(entry[:total_pnl] || entry['total_pnl'])
+
+          next entry if realized.nil? || unrealized.nil? || total.nil?
+
+          {
+            timestamp: entry[:timestamp] || entry['timestamp'],
+            realized_pnl: (realized * rate).to_f,
+            unrealized_pnl: (unrealized * rate).to_f,
+            total_pnl: (total * rate).to_f
+          }
+        end
+      end
+
+      def fx_rate_multiplier
+        context = fx_context
+        return nil unless context
+
+        rate_missing = cast_boolean(context_value(context, 'rateMissing', :rateMissing, 'rate_missing', :rate_missing))
+        rate_value = context_value(context, 'rate', :rate)
+        return nil if rate_missing || rate_value.blank?
+
+        rate = parse_decimal(rate_value)
+        return nil if rate.nil? || rate == 1
+
+        rate
+      end
+
+      def fx_reporting_currency
+        context = fx_context
+        return nil unless context
+
+        rate_missing = cast_boolean(context_value(context, 'rateMissing', :rateMissing, 'rate_missing', :rate_missing))
+        return nil if rate_missing
+
+        value = context_value(context, 'reportingCurrency', :reportingCurrency, 'reporting_currency',
+                              :reporting_currency)
+        value.to_s.strip.presence
+      end
+
+      def fx_context
+        return nil if @run.nil?
+
+        run_context = normalize_fx_context(@run.fx_context)
+        input_context = nil
+        input_context = normalize_fx_context(@run.input_json['fxContext']) if @run.input_json.is_a?(Hash)
+
+        return run_context if context_has_rate_data?(run_context)
+
+        return input_context if context_has_rate_data?(input_context)
+
+        return run_context if context_has_reporting_currency?(run_context)
+
+        return input_context if context_has_reporting_currency?(input_context)
+
+        run_context || input_context
+      end
+
+      def normalize_fx_context(raw)
+        return nil if raw.nil?
+        return raw if raw.is_a?(Hash)
+        return JSON.parse(raw) if raw.is_a?(String)
+
+        nil
+      rescue JSON::ParserError
+        nil
+      end
+
+      def context_has_fx_data?(context)
+        return false unless context.is_a?(Hash)
+
+        context_has_rate_data?(context) || context_has_reporting_currency?(context)
+      end
+
+      def context_has_rate_data?(context)
+        return false unless context.is_a?(Hash)
+
+        rate_value = context_value(context, 'rate', :rate)
+        rate_missing = context_value(context, 'rateMissing', :rateMissing, 'rate_missing', :rate_missing)
+
+        rate_value.present? || !rate_missing.nil?
+      end
+
+      def context_has_reporting_currency?(context)
+        return false unless context.is_a?(Hash)
+
+        reporting_currency = context_value(context, 'reportingCurrency', :reportingCurrency, 'reporting_currency',
+                                           :reporting_currency)
+
+        reporting_currency.to_s.strip.present?
+      end
+
+      def context_value(context, *keys)
+        return nil unless context.is_a?(Hash)
+
+        keys.each do |key|
+          return context[key] if context.key?(key)
+        end
+
+        nil
+      end
+
+      def cast_boolean(value)
+        ActiveModel::Type::Boolean.new.cast(value)
       end
 
       def trade_field(trade, key)

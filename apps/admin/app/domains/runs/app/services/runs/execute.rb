@@ -44,6 +44,9 @@ module Runs
         duration_ms: duration_ms
       )
 
+      Runs::PersistDailyArtifacts.call(run: run)
+      Admin::Fx::RunRateGapProcessor.call(run: run)
+
       run
     rescue StandardError => e
       duration_ms = begin

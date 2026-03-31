@@ -21,7 +21,7 @@ class RunExecutionsController < ApplicationController
     payload = execution_payload(status: "failed").merge("error" => error.message)
 
     respond_to do |format|
-      format.json { render json: payload, status: :unprocessable_entity }
+      format.json { render json: payload, status: :unprocessable_content }
       format.html do
         redirect_back fallback_location: "/admin/resources/runs/#{@run.id}", alert: error.message
       end
