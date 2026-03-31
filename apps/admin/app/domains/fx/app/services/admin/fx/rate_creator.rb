@@ -50,6 +50,7 @@ module Admin
         end
 
         rate_record.save!
+        Admin::Fx::GapResolver.call(rate: rate_record)
         rate_record
       end
     end

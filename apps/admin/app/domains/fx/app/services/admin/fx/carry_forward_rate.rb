@@ -7,6 +7,7 @@ module Admin
         operational_date:,
         base_currency:,
         quote_currency:,
+        source: 'carry_forward',
         created_by_id: nil,
         created_by_role: nil,
         created_context: {}
@@ -15,6 +16,7 @@ module Admin
           operational_date: operational_date,
           base_currency: base_currency,
           quote_currency: quote_currency,
+          source: source,
           created_by_id: created_by_id,
           created_by_role: created_by_role,
           created_context: created_context
@@ -25,10 +27,13 @@ module Admin
         operational_date:,
         base_currency:,
         quote_currency:,
+        source: 'carry_forward',
         created_by_id: nil,
         created_by_role: nil,
         created_context: {}
       )
+        source_value = source.to_s
+        source_value = 'carry_forward' unless source_value == 'carry_forward'
         expected = OperationalDate.call
         if operational_date != expected
           rate_record = FxDailyRate.new(operational_date: operational_date)
@@ -49,17 +54,30 @@ module Admin
           raise ActiveRecord::RecordInvalid, rate_record
         end
 
-        FxDailyRate.create!(
+        rate_record = FxDailyRate.find_or_initialize_by(
           operational_date: operational_date,
           base_currency: base_currency,
-          quote_currency: quote_currency,
+          quote_currency: quote_currency
+        )
+
+        return rate_record if rate_record.persisted? && !rate_record.placeholder? && rate_record.rate.present?
+
+        context = rate_record.created_context || {}
+        rate_record.assign_attributes(
           rate: prior_rate.rate,
-          source: 'carry_forward',
+          source: source_value,
           source_rate_id: prior_rate.id,
+          source_run_id: nil,
+          source_upload_id: nil,
           created_by_id: created_by_id,
           created_by_role: created_by_role,
-          created_context: created_context
+          created_context: context.merge(created_context)
         )
+
+        rate_record.save!
+
+        Admin::Fx::GapResolver.call(rate: rate_record)
+        rate_record
       end
     end
   end

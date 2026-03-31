@@ -41,6 +41,7 @@ RSpec.describe 'Admin FX daily rates', type: :request do
 
     expect(response).to have_http_status(:found)
     expect(FxDailyRate.count).to eq(2)
-    expect(FxDailyRate.order(:created_at).last.source).to eq('carry_forward')
+    rate = FxDailyRate.find_by!(operational_date: Date.new(2026, 3, 30), base_currency: 'USD', quote_currency: 'ARS')
+    expect(rate.source).to eq('carry_forward')
   end
 end

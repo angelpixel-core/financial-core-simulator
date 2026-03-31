@@ -55,6 +55,16 @@ module Admin
           )
         end
 
+        if rate.rate.nil? || rate.source == 'placeholder'
+          return Result.new(
+            rate: nil,
+            rate_date: rate.operational_date,
+            rate_source: rate.source,
+            rate_missing: true,
+            source_rate_id: nil
+          )
+        end
+
         Result.new(
           rate: decimal_string(rate.rate),
           rate_date: rate.operational_date,

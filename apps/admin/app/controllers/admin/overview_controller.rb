@@ -271,8 +271,8 @@ class Admin::OverviewController < ApplicationController
 
     @fx_carry_forward_available = FxDailyRate.exists?(
       operational_date: @fx_operational_date - 1.day,
-      base_currency: @fx_base_currency,
-      quote_currency: @fx_quote_currency
+      base_currency: @fx_base_currency.to_s.upcase,
+      quote_currency: @fx_quote_currency.to_s.upcase
     )
   end
 
