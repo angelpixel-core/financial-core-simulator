@@ -26,19 +26,19 @@ module FCS
       # @param timeline [Hash, nil]
       # @return [Hash]
       def self.build(engine_version:, schema_version:, input_hash:, run_id:, valuation_timestamp:, accounts:, global:,
-                     replay: nil, timeline: nil)
+        replay: nil, timeline: nil)
         payload = {
-          'engineVersion' => engine_version,
-          'schemaVersion' => schema_version,
-          'inputHash' => input_hash,
-          'runId' => run_id,
-          'valuationTimestamp' => valuation_timestamp,
-          'accounts' => accounts,
-          'global' => global
+          "engineVersion" => engine_version,
+          "schemaVersion" => schema_version,
+          "inputHash" => input_hash,
+          "runId" => run_id,
+          "valuationTimestamp" => valuation_timestamp,
+          "accounts" => accounts,
+          "global" => global
         }
 
-        payload['replay'] = replay unless replay.nil?
-        payload['timeline'] = timeline unless timeline.nil?
+        payload["replay"] = replay unless replay.nil?
+        payload["timeline"] = timeline unless timeline.nil?
         payload
       end
     end

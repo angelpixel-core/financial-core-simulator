@@ -34,7 +34,7 @@ module Admin
         validate_headers!(headers)
 
         (2..sheet.last_row).each do |i|
-          row = Hash[[headers, sheet.row(i)].transpose]
+          row = [[headers, sheet.row(i)].transpose].to_h
           parse_row(row, i)
         end
 
@@ -135,21 +135,21 @@ module Admin
         return if @row_errors.key?(line)
 
         @row_errors[line] = code
-        @errors << { line: line, code: code }
+        @errors << {line: line, code: code}
       end
 
       def build_input
         trades = @rows.map { |row| row.except(:line) }
         input = {
           schemaVersion: "1.0",
-          accounts: unique(:accountId).map { |id| { accountId: id } },
-          markets: unique(:marketId).map { |id| { marketId: id } },
+          accounts: unique(:accountId).map { |id| {accountId: id} },
+          markets: unique(:marketId).map { |id| {marketId: id} },
           trades: trades,
           priceSnapshot: default_price_snapshot,
-          feeModel: { enabled: false }
+          feeModel: {enabled: false}
         }
 
-        input[:timeline] = { events: build_timeline_events } if @timeline_enabled
+        input[:timeline] = {events: build_timeline_events} if @timeline_enabled
 
         input
       end
@@ -178,9 +178,9 @@ module Admin
         {
           valuationTimestamp: Time.now.utc.iso8601,
           prices: unique(:marketId).map do |market|
-            { marketId: market, priceQuotePerBase: "100" }
+            {marketId: market, priceQuotePerBase: "100"}
           end,
-          fx: { quoteUsd: "1" }
+          fx: {quoteUsd: "1"}
         }
       end
 
@@ -200,7 +200,7 @@ module Admin
         Integer(string_value)
       rescue ArgumentError
         Time.parse(string_value).to_i
-      rescue ArgumentError, TypeError
+      rescue TypeError
         nil
       end
 

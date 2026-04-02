@@ -9,10 +9,10 @@ class Run < ApplicationRecord
   }
 
   enum :verification_status, {
-    unverified: 'unverified',
-    verified: 'verified',
-    mismatch: 'mismatch',
-    verification_error: 'verification_error'
+    unverified: "unverified",
+    verified: "verified",
+    mismatch: "mismatch",
+    verification_error: "verification_error"
   }, validate: true
 
   has_many :run_snapshots, dependent: :destroy
@@ -22,17 +22,17 @@ class Run < ApplicationRecord
 
   before_validation :set_defaults, on: :create
 
-  def result_json_path = artifacts&.dig('result_json_path')
-  def positions_csv_path = artifacts&.dig('positions_csv_path')
-  def pnl_csv_path = artifacts&.dig('pnl_csv_path')
+  def result_json_path = artifacts&.dig("result_json_path")
+  def positions_csv_path = artifacts&.dig("positions_csv_path")
+  def pnl_csv_path = artifacts&.dig("pnl_csv_path")
 
   def result_json_url = Rails.application.routes.url_helpers.run_result_path(id: id)
   def positions_csv_url = Rails.application.routes.url_helpers.run_positions_path(id: id)
   def pnl_csv_url = Rails.application.routes.url_helpers.run_pnl_path(id: id)
 
-  def result_json_link = artifact_link('View result.json', result_json_path, result_json_url)
-  def positions_csv_link = artifact_link('Download positions.csv', positions_csv_path, positions_csv_url)
-  def pnl_csv_link = artifact_link('Download pnl.csv', pnl_csv_path, pnl_csv_url)
+  def result_json_link = artifact_link("View result.json", result_json_path, result_json_url)
+  def positions_csv_link = artifact_link("Download positions.csv", positions_csv_path, positions_csv_url)
+  def pnl_csv_link = artifact_link("Download pnl.csv", pnl_csv_path, pnl_csv_url)
 
   private
 
@@ -42,7 +42,7 @@ class Run < ApplicationRecord
   end
 
   def artifact_link(label, path, url)
-    return 'Unavailable' if path.blank?
+    return "Unavailable" if path.blank?
 
     %(<a href="#{url}" target="_blank" rel="noopener">#{label}</a>)
   end

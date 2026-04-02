@@ -35,10 +35,10 @@ module Admin
         return [] unless @summary.is_a?(Hash)
 
         items = [
-          { label: t("admin.overview.dataset.preview.trades_label"), value: summary_value(:trades_count) },
-          { label: t("admin.overview.dataset.preview.accounts_label"), value: summary_value(:accounts_count) },
-          { label: t("admin.overview.dataset.preview.markets_label"), value: summary_value(:markets_count) },
-          { label: t("admin.overview.dataset.preview.schema_label"), value: summary_value(:schema_version) }
+          {label: t("admin.overview.dataset.preview.trades_label"), value: summary_value(:trades_count)},
+          {label: t("admin.overview.dataset.preview.accounts_label"), value: summary_value(:accounts_count)},
+          {label: t("admin.overview.dataset.preview.markets_label"), value: summary_value(:markets_count)},
+          {label: t("admin.overview.dataset.preview.schema_label"), value: summary_value(:schema_version)}
         ]
 
         fee_value = summary_value(:fee_enabled)

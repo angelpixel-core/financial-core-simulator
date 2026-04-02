@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require 'bigdecimal'
+require "bigdecimal"
 
 module Admin
   module Fx
     class RateResolver
-      BASE_CURRENCY = 'USD'
-      IDENTITY_SOURCE = 'identity'
+      BASE_CURRENCY = "USD"
+      IDENTITY_SOURCE = "identity"
 
       Result = Struct.new(
         :rate,
@@ -31,7 +31,7 @@ module Admin
 
         if base == quote || quote.empty?
           return Result.new(
-            rate: '1.0',
+            rate: "1.0",
             rate_date: operational_date,
             rate_source: IDENTITY_SOURCE,
             rate_missing: false,
@@ -55,7 +55,7 @@ module Admin
           )
         end
 
-        if rate.rate.nil? || rate.source == 'placeholder'
+        if rate.rate.nil? || rate.source == "placeholder"
           return Result.new(
             rate: nil,
             rate_date: rate.operational_date,
@@ -77,7 +77,7 @@ module Admin
       private
 
       def decimal_string(value)
-        return value.to_s('F') if value.is_a?(BigDecimal)
+        return value.to_s("F") if value.is_a?(BigDecimal)
 
         value.to_s
       end

@@ -68,7 +68,7 @@ module Admin
             account_id = @accounts.sample
             market_id = MARKETS.sample
             key = "#{account_id}|#{market_id}"
-            side = inventories[key] <= 0 ? "BUY" : %w[BUY SELL].sample
+            side = (inventories[key] <= 0) ? "BUY" : %w[BUY SELL].sample
             quantity_base = 1.0
 
             if side == "SELL"

@@ -2,8 +2,8 @@
 
 class DemoDatasetUpload < ApplicationRecord
   enum :status, {
-    valid: 'valid',
-    invalid: 'invalid'
+    valid: "valid",
+    invalid: "invalid"
   }, suffix: true, validate: true
 
   scope :latest_first, -> { order(created_at: :desc) }

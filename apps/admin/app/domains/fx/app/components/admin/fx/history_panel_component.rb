@@ -11,9 +11,9 @@ module Admin
 
       def entries
         FxDailyRate.where(base_currency: base_currency, quote_currency: quote_currency)
-                   .includes(:resolved_gap)
-                   .order(operational_date: :desc)
-                   .limit(10)
+          .includes(:resolved_gap)
+          .order(operational_date: :desc)
+          .limit(10)
       end
 
       def can_edit?
@@ -32,7 +32,7 @@ module Admin
       end
 
       def display_rate(rate)
-        return t('admin.fx.history.placeholder_value') if rate.rate.nil?
+        return t("admin.fx.history.placeholder_value") if rate.rate.nil?
 
         rate.rate.to_s
       end

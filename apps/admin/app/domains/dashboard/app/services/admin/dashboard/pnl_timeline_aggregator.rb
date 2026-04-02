@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'bigdecimal'
+require "bigdecimal"
 
 module Admin
   module Dashboard
@@ -32,13 +32,13 @@ module Admin
       def normalize_point(point)
         return nil unless point.is_a?(Hash)
 
-        timestamp_value = point['timestamp'] || point[:timestamp]
+        timestamp_value = point["timestamp"] || point[:timestamp]
         timestamp = parse_time(timestamp_value)
         return nil if timestamp.nil?
 
-        realized = parse_decimal(point['realized_pnl'] || point[:realized_pnl])
-        unrealized = parse_decimal(point['unrealized_pnl'] || point[:unrealized_pnl])
-        total = parse_decimal(point['total_pnl'] || point[:total_pnl])
+        realized = parse_decimal(point["realized_pnl"] || point[:realized_pnl])
+        unrealized = parse_decimal(point["unrealized_pnl"] || point[:unrealized_pnl])
+        total = parse_decimal(point["total_pnl"] || point[:total_pnl])
         return nil if realized.nil? || unrealized.nil? || total.nil?
 
         {

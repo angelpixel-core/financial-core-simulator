@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'caxlsx'
+require "caxlsx"
 
 module Admin
   module Fx
@@ -8,7 +8,7 @@ module Admin
       HEADERS = %w[id operational_date base_currency quote_currency rate].freeze
       TEMPLATE_START_DATE = Date.new(2026, 3, 1)
       TEMPLATE_END_DATE = Date.new(2026, 3, 30)
-      TEMPLATE_SHEET_NAME = 'FX Rates'
+      TEMPLATE_SHEET_NAME = "FX Rates"
       TEMPLATE_PAIRS = [
         %w[USD ARS],
         %w[BTC USD],
@@ -43,8 +43,8 @@ module Admin
 
         Template.new(
           data: package.to_stream.read,
-          filename: 'fx_rates_template.xlsx',
-          content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          filename: "fx_rates_template.xlsx",
+          content_type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
       end
 

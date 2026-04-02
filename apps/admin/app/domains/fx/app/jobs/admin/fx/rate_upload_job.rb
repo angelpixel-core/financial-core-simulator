@@ -15,28 +15,26 @@ class Admin::Fx::RateUploadJob < ApplicationJob
 
     if result.valid?
       upload.update!(
-        status: 'success',
+        status: "success",
         error_count: 0,
         error_message: result.message,
         processed_at: Time.current
       )
     else
       upload.update!(
-        status: 'error',
+        status: "error",
         error_count: result.errors.size,
         error_message: result.errors.first&.dig(:message),
         processed_at: Time.current
       )
     end
-  rescue StandardError => e
-    if upload
-      upload.update!(
-        status: 'error',
-        error_count: [upload.error_count.to_i, 1].max,
-        error_message: e.message,
-        processed_at: Time.current
-      )
-    end
+  rescue => e
+    upload&.update!(
+      status: "error",
+      error_count: [upload.error_count.to_i, 1].max,
+      error_message: e.message,
+      processed_at: Time.current
+    )
   ensure
     cleanup_file(upload&.file_path)
     broadcast_status(upload) if upload
@@ -54,8 +52,8 @@ class Admin::Fx::RateUploadJob < ApplicationJob
     Turbo::StreamsChannel.broadcast_replace_to(
       FxRateUpload.status_stream_for(account_id: upload.created_by_id),
       target: FxRateUpload.status_dom_id,
-      partial: 'admin/fx/history/upload_status',
-      locals: { upload: upload }
+      partial: "admin/fx/history/upload_status",
+      locals: {upload: upload}
     )
   end
 end

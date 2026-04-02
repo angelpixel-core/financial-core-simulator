@@ -16,10 +16,10 @@ class CreateFxRateGaps < ActiveRecord::Migration[8.1]
     end
 
     add_index :fx_rate_gaps,
-              %i[operational_date base_currency quote_currency],
-              unique: true,
-              where: "status = 'open'",
-              name: 'idx_fx_rate_gaps_open'
+      %i[operational_date base_currency quote_currency],
+      unique: true,
+      where: "status = 'open'",
+      name: "idx_fx_rate_gaps_open"
     add_index :fx_rate_gaps, :placeholder_rate_id
     add_index :fx_rate_gaps, :resolved_rate_id
     add_index :fx_rate_gaps, :source_run_id

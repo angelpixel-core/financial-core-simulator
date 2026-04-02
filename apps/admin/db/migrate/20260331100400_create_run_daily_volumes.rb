@@ -9,6 +9,6 @@ class CreateRunDailyVolumes < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :run_daily_volumes, :run_snapshot_id, unique: true, name: 'idx_run_daily_volumes_snapshot'
+    add_index :run_daily_volumes, :run_snapshot_id, unique: true, name: "idx_run_daily_volumes_snapshot"
   end
 end

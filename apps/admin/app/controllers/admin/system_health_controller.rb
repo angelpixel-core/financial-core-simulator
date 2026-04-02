@@ -17,7 +17,7 @@ class Admin::SystemHealthController < ApplicationController
   def pnl_trend
     @metrics = Admin::Dashboard::ReadMetrics.new.call
     @pnl_trend_pagination = pnl_trend_pagination(metrics: @metrics, page: params[:page])
-    render partial: 'admin/system_health/pnl_trend_frame', locals: { pagination: @pnl_trend_pagination }
+    render partial: "admin/system_health/pnl_trend_frame", locals: {pagination: @pnl_trend_pagination}
   end
 
   private

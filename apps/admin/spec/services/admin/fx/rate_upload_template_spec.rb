@@ -1,6 +1,6 @@
-require 'rails_helper'
-require 'roo'
-require 'tempfile'
+require "rails_helper"
+require "roo"
+require "tempfile"
 
 RSpec.describe Admin::Fx::RateUploadTemplate do
   def normalize_date(value)
@@ -13,9 +13,9 @@ RSpec.describe Admin::Fx::RateUploadTemplate do
     Admin::Fx::RateUploadTemplate::RATE_BASES.fetch([base_currency, quote_currency]) + date.day
   end
 
-  it 'generates a single-sheet March 2026 template with descending dates' do
+  it "generates a single-sheet March 2026 template with descending dates" do
     template = described_class.generate
-    tempfile = Tempfile.new(['fx_rates_template', '.xlsx'])
+    tempfile = Tempfile.new(["fx_rates_template", ".xlsx"])
     tempfile.binmode
     tempfile.write(template.data)
     tempfile.flush
@@ -42,10 +42,10 @@ RSpec.describe Admin::Fx::RateUploadTemplate do
 
       expected_pairs = Admin::Fx::RateUploadTemplate::TEMPLATE_PAIRS
       grouped_pairs = data_rows.group_by { |row| normalize_date(row[1]) }
-                               .transform_values do |rows|
-        rows.map do |row|
-          [row[2].to_s, row[3].to_s]
-        end
+        .transform_values do |rows|
+          rows.map do |row|
+            [row[2].to_s, row[3].to_s]
+          end
       end
 
       grouped_pairs.each_value do |date_pairs|

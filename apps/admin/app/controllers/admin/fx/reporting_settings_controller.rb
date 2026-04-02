@@ -14,10 +14,10 @@ class Admin::Fx::ReportingSettingsController < ApplicationController
     )
 
     redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                  notice: t('admin.fx.flash.reporting_updated')
+      notice: t("admin.fx.flash.reporting_updated")
   rescue ActiveRecord::RecordInvalid => e
     redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                  alert: e.record.errors.full_messages.to_sentence
+      alert: e.record.errors.full_messages.to_sentence
   end
 
   private
@@ -28,7 +28,7 @@ class Admin::Fx::ReportingSettingsController < ApplicationController
 
   def request_context
     {
-      source: 'admin_overview',
+      source: "admin_overview",
       ip: request.remote_ip
     }
   end

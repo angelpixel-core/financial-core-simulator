@@ -39,10 +39,10 @@ module Admin
               base_currency: base_currency,
               quote_currency: quote_currency,
               rate: nil,
-              source: 'placeholder',
+              source: "placeholder",
               source_run_id: run&.id,
               source_upload_id: upload&.id,
-              created_context: { source: 'upload' }
+              created_context: {source: "upload"}
             )
           end
 
@@ -52,11 +52,11 @@ module Admin
             operational_date: operational_date,
             base_currency: base_currency,
             quote_currency: quote_currency,
-            status: 'open',
+            status: "open",
             placeholder_rate_id: placeholder.id,
             source_run_id: run&.id,
             source_upload_id: upload&.id,
-            created_context: { source: 'upload' }
+            created_context: {source: "upload"}
           )
         end
       end
@@ -65,21 +65,21 @@ module Admin
 
       def operational_dates_from(input)
         dates = []
-        trades = Array(input['trades'] || input[:trades])
+        trades = Array(input["trades"] || input[:trades])
         trades.each do |trade|
           next unless trade.is_a?(Hash)
 
-          timestamp = trade['timestamp'] || trade[:timestamp]
+          timestamp = trade["timestamp"] || trade[:timestamp]
           date = operational_date_for(timestamp)
           dates << date if date
         end
 
-        timeline = input['timeline'] || input[:timeline]
-        events = timeline.is_a?(Hash) ? Array(timeline['events'] || timeline[:events]) : []
+        timeline = input["timeline"] || input[:timeline]
+        events = timeline.is_a?(Hash) ? Array(timeline["events"] || timeline[:events]) : []
         events.each do |event|
           next unless event.is_a?(Hash)
 
-          timestamp = event['timestamp'] || event[:timestamp]
+          timestamp = event["timestamp"] || event[:timestamp]
           date = operational_date_for(timestamp)
           dates << date if date
         end

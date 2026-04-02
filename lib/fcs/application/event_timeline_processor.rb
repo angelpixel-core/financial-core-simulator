@@ -11,7 +11,7 @@ module FCS
     #   processor = FCS::Application::EventTimelineProcessor.new
     #   processor.call(events: events, ledger: ledger, valuation: valuation)
     class EventTimelineProcessor
-      ALL_ACCOUNTS_ID = 'all'
+      ALL_ACCOUNTS_ID = "all"
 
       # @param events [Array<Hash>] timeline events
       # @param ledger [FCS::Engine::LedgerEngine]
@@ -26,20 +26,20 @@ module FCS
         timeline_points = []
 
         events
-          .sort_by { |event| event.fetch('timelineSeq') }
+          .sort_by { |event| event.fetch("timelineSeq") }
           .each do |event|
-            timeline_seq = event.fetch('timelineSeq')
+            timeline_seq = event.fetch("timelineSeq")
             next if checkpoint_seq && timeline_seq <= checkpoint_seq
 
-            case event.fetch('eventType')
-            when 'PRICE_UPDATED'
+            case event.fetch("eventType")
+            when "PRICE_UPDATED"
               valuation.update_price!(
-                market_id: event.fetch('marketId'),
-                price_quote_per_base: event.fetch('priceQuotePerBase')
+                market_id: event.fetch("marketId"),
+                price_quote_per_base: event.fetch("priceQuotePerBase")
               )
               timeline_points << build_market_snapshot(event: event, ledger: ledger, valuation: valuation)
-            when 'TRADE_APPLIED'
-              trade = event.fetch('trade')
+            when "TRADE_APPLIED"
+              trade = event.fetch("trade")
               ledger.apply_trade!(trade)
               timeline_points << build_trade_snapshot(event: event, trade: trade, ledger: ledger, valuation: valuation)
             end
@@ -49,7 +49,7 @@ module FCS
               event_count: processed_events,
               timeline_seq: timeline_seq,
               state: capture_state(ledger),
-              input_hash: input_hash || ''
+              input_hash: input_hash || ""
             )
           end
 
@@ -61,25 +61,25 @@ module FCS
       def restore_checkpoint_state!(checkpoint:, ledger:)
         return nil unless checkpoint.is_a?(Hash)
 
-        accounts = checkpoint.dig('state', 'accounts')
+        accounts = checkpoint.dig("state", "accounts")
         return nil unless accounts.is_a?(Array)
 
         accounts.each do |account|
-          account_id = account.fetch('accountId')
-          markets = account.fetch('markets', [])
+          account_id = account.fetch("accountId")
+          markets = account.fetch("markets", [])
 
           markets.each do |market|
             restore_market_position!(
               ledger: ledger,
               account_id: account_id,
-              market_id: market.fetch('marketId'),
-              quantity: market.fetch('quantity', '0'),
-              avg_cost: market.fetch('avgCost', '0')
+              market_id: market.fetch("marketId"),
+              quantity: market.fetch("quantity", "0"),
+              avg_cost: market.fetch("avgCost", "0")
             )
           end
         end
 
-        checkpoint['timelineSeq']
+        checkpoint["timelineSeq"]
       end
 
       def restore_market_position!(ledger:, account_id:, market_id:, quantity:, avg_cost:)
@@ -98,27 +98,27 @@ module FCS
 
       def capture_state(ledger)
         grouped = ledger.state.positions.each_with_object(Hash.new { |h, k| h[k] = [] }) do |(key, position), acc|
-          account_id, market_id = key.split('|', 2)
+          account_id, market_id = key.split("|", 2)
           acc[account_id] << {
-            'marketId' => market_id,
-            'quantity' => position.qty.to_s,
-            'avgCost' => position.avg_cost.to_s
+            "marketId" => market_id,
+            "quantity" => position.qty.to_s,
+            "avgCost" => position.avg_cost.to_s
           }
         end
 
         {
-          'accounts' => grouped.sort_by { |account_id, _| account_id }.map do |account_id, markets|
+          "accounts" => grouped.sort_by { |account_id, _| account_id }.map do |account_id, markets|
             {
-              'accountId' => account_id,
-              'markets' => markets.sort_by { |market| market.fetch('marketId') }
+              "accountId" => account_id,
+              "markets" => markets.sort_by { |market| market.fetch("marketId") }
             }
           end
         }
       end
 
       def build_trade_snapshot(event:, trade:, ledger:, valuation:)
-        account_id = trade.fetch('accountId')
-        market_id = trade.fetch('marketId')
+        account_id = trade.fetch("accountId")
+        market_id = trade.fetch("marketId")
         position = ledger.state.position_for(account_id: account_id, market_id: market_id)
         realized = position.realized_pnl_quote
         realized_net = position.realized_net_quote
@@ -126,27 +126,27 @@ module FCS
         total = realized_net + unrealized
 
         {
-          'timestamp' => event.fetch('timestamp'),
-          'account_id' => account_id,
-          'market_id' => market_id,
-          'realized_pnl' => realized.to_s,
-          'unrealized_pnl' => unrealized.to_s,
-          'total_pnl' => total.to_s
+          "timestamp" => event.fetch("timestamp"),
+          "account_id" => account_id,
+          "market_id" => market_id,
+          "realized_pnl" => realized.to_s,
+          "unrealized_pnl" => unrealized.to_s,
+          "total_pnl" => total.to_s
         }
       end
 
       def build_market_snapshot(event:, ledger:, valuation:)
-        market_id = event.fetch('marketId')
+        market_id = event.fetch("marketId")
         totals = aggregate_market_pnl(market_id: market_id, ledger: ledger, valuation: valuation)
         return nil if totals.nil?
 
         {
-          'timestamp' => event.fetch('timestamp'),
-          'account_id' => ALL_ACCOUNTS_ID,
-          'market_id' => market_id,
-          'realized_pnl' => totals.fetch(:realized).to_s,
-          'unrealized_pnl' => totals.fetch(:unrealized).to_s,
-          'total_pnl' => totals.fetch(:total).to_s
+          "timestamp" => event.fetch("timestamp"),
+          "account_id" => ALL_ACCOUNTS_ID,
+          "market_id" => market_id,
+          "realized_pnl" => totals.fetch(:realized).to_s,
+          "unrealized_pnl" => totals.fetch(:unrealized).to_s,
+          "total_pnl" => totals.fetch(:total).to_s
         }
       end
 
@@ -160,7 +160,7 @@ module FCS
         total = z
 
         positions.each do |key, position|
-          _account_id, current_market = key.split('|', 2)
+          _account_id, current_market = key.split("|", 2)
           next unless current_market == market_id
 
           realized += position.realized_pnl_quote
@@ -170,7 +170,7 @@ module FCS
           total += realized_net + unreal
         end
 
-        { realized: realized, unrealized: unrealized, total: total }
+        {realized: realized, unrealized: unrealized, total: total}
       end
     end
   end

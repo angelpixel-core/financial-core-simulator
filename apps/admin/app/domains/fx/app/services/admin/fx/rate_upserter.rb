@@ -8,7 +8,7 @@ module Admin
         base_currency:,
         quote_currency:,
         rate:,
-        source: 'manual',
+        source: "manual",
         source_run_id: nil,
         source_upload_id: nil,
         enforce_operational_date: true,
@@ -36,7 +36,7 @@ module Admin
         base_currency:,
         quote_currency:,
         rate:,
-        source: 'manual',
+        source: "manual",
         source_run_id: nil,
         source_upload_id: nil,
         enforce_operational_date: true,
@@ -52,11 +52,11 @@ module Admin
         )
 
         if enforce_operational_date && operational_date != expected
-          rate_record.errors.add(:operational_date, 'must match operational timezone date')
+          rate_record.errors.add(:operational_date, "must match operational timezone date")
           raise ActiveRecord::RecordInvalid, rate_record
         end
 
-        if source.to_s == 'placeholder'
+        if source.to_s == "placeholder"
           return rate_record if rate_record.persisted? && rate_record.rate.present?
           return rate_record if rate_record.persisted? && rate_record.placeholder?
         end

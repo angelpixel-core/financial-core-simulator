@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'fileutils'
+require "fileutils"
 
 class Admin::DemoDatasetsController < ApplicationController
   include AdminUiAuthorizable
@@ -11,7 +11,7 @@ class Admin::DemoDatasetsController < ApplicationController
     file = params[:file]
     if file.blank?
       redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                    alert: t('admin.overview.dataset.flash.missing_file')
+        alert: t("admin.overview.dataset.flash.missing_file")
       return
     end
 
@@ -23,7 +23,7 @@ class Admin::DemoDatasetsController < ApplicationController
 
     if result.valid?
       run = Run.create!(input_json: result.input)
-      fee_enabled = result.input.dig('feeModel', 'enabled')
+      fee_enabled = result.input.dig("feeModel", "enabled")
       with_timeline_env(timeline_enabled) do
         Runs::Execute.new.call(run, fee_enabled: fee_enabled)
         Runs::VerifyInputHash.new.call(run)
@@ -36,26 +36,26 @@ class Admin::DemoDatasetsController < ApplicationController
         reporting_currency: ReportingSetting.current.reporting_currency
       )
       redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                    notice: t('admin.overview.dataset.flash.valid')
+        notice: t("admin.overview.dataset.flash.valid")
     else
       DemoDatasetUpload.create!(status: :invalid, validation_errors: result.errors)
       redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                    alert: t('admin.overview.dataset.flash.invalid')
+        alert: t("admin.overview.dataset.flash.invalid")
     end
   end
 
   def reset
     Run.delete_all
     DemoDatasetUpload.delete_all
-    FileUtils.rm_rf(Rails.root.join('storage', 'runs'))
+    FileUtils.rm_rf(Rails.root.join("storage", "runs"))
     redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                  notice: t('admin.overview.dataset.flash.reset')
+      notice: t("admin.overview.dataset.flash.reset")
   end
 
   def preview
     file = params[:file]
     if file.blank?
-      render_preview(state: :error, errors: [{ code: 'MISSING_FILE' }], status: :unprocessable_content)
+      render_preview(state: :error, errors: [{code: "MISSING_FILE"}], status: :unprocessable_content)
       return
     end
 
@@ -66,10 +66,10 @@ class Admin::DemoDatasetsController < ApplicationController
     input = result.input
     summary = build_preview_summary(input)
     sample_rows = if input.is_a?(Hash)
-                    Array(fetch_input_value(input, :trades))
-                  else
-                    []
-                  end
+      Array(fetch_input_value(input, :trades))
+    else
+      []
+    end
 
     render_preview(
       state: result.valid? ? :success : :invalid,
@@ -78,10 +78,10 @@ class Admin::DemoDatasetsController < ApplicationController
       errors: result.errors,
       file_name: file.original_filename
     )
-  rescue StandardError => e
+  rescue => e
     render_preview(
       state: :error,
-      errors: [{ code: 'PARSE_FAILED', message: e.message }],
+      errors: [{code: "PARSE_FAILED", message: e.message}],
       status: :unprocessable_content,
       file_name: file&.respond_to?(:original_filename) ? file.original_filename : nil
     )
@@ -96,7 +96,7 @@ class Admin::DemoDatasetsController < ApplicationController
     @errors = errors
     @file_name = file_name
 
-    render 'admin/demo_datasets/preview', status: status
+    render "admin/demo_datasets/preview", status: status
   end
 
   def build_preview_summary(input)
@@ -109,7 +109,7 @@ class Admin::DemoDatasetsController < ApplicationController
       accounts_count: Array(fetch_input_value(input, :accounts)).size,
       markets_count: Array(fetch_input_value(input, :markets)).size,
       schema_version: fetch_input_value(input, :schemaVersion),
-      fee_enabled: fee_model.is_a?(Hash) ? (fee_model[:enabled] || fee_model['enabled']) : nil
+      fee_enabled: fee_model.is_a?(Hash) ? (fee_model[:enabled] || fee_model["enabled"]) : nil
     }
   end
 
@@ -126,14 +126,14 @@ class Admin::DemoDatasetsController < ApplicationController
   end
 
   def with_timeline_env(enabled)
-    previous = ENV.fetch('FCS_TIMELINE_ENABLED', nil)
-    ENV['FCS_TIMELINE_ENABLED'] = enabled ? '1' : '0'
+    previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
+    ENV["FCS_TIMELINE_ENABLED"] = enabled ? "1" : "0"
     yield
   ensure
     if previous.nil?
-      ENV.delete('FCS_TIMELINE_ENABLED')
+      ENV.delete("FCS_TIMELINE_ENABLED")
     else
-      ENV['FCS_TIMELINE_ENABLED'] = previous
+      ENV["FCS_TIMELINE_ENABLED"] = previous
     end
   end
 end

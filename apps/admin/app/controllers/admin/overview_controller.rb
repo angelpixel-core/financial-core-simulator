@@ -37,9 +37,9 @@ class Admin::OverviewController < ApplicationController
     @metrics = dashboard_metrics
     @top_accounts_pagination = top_accounts_pagination(metrics: @metrics, page: params[:page])
     if turbo_frame_request? || request.xhr?
-      render partial: 'admin/overview/top_accounts_frame',
-             locals: { metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: true,
-                       navigation_context: @navigation_context }
+      render partial: "admin/overview/top_accounts_frame",
+        locals: {metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: true,
+                 navigation_context: @navigation_context}
     else
       render :top_accounts
     end
@@ -69,14 +69,14 @@ class Admin::OverviewController < ApplicationController
 
   def dashboard_financial_overview
     run = Run.find_by(id: params[:run_id])
-    return render json: { 'error' => 'run_not_found' }, status: :not_found if run.nil?
+    return render json: {"error" => "run_not_found"}, status: :not_found if run.nil?
 
     account_id = normalize_filter_value(params[:account_id])
     market_id = normalize_filter_value(params[:market_id])
     metrics = financial_overview_metrics(run: run, account_id: account_id, market_id: market_id).call
     render json: financial_overview_response_serializer.serialize(metrics: metrics), status: :ok
-  rescue StandardError
-    fallback_metrics = { trade_activity: [], trade_volume: [], pnl_daily: [] }
+  rescue
+    fallback_metrics = {trade_activity: [], trade_volume: [], pnl_daily: []}
     render json: financial_overview_response_serializer.serialize(metrics: fallback_metrics), status: :ok
   end
 
@@ -111,7 +111,7 @@ class Admin::OverviewController < ApplicationController
     @errors_pagination = ingestion_errors_pagination(errors: errors, page: params[:errors_page])
     @errors = @errors_pagination[:entries]
     if turbo_frame_request?
-      render partial: 'admin/overview/ingestion_validation_errors_frame', locals: {
+      render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
         errors: @errors,
         pagination: @errors_pagination,
         selected_source: @selected_source,
@@ -120,7 +120,7 @@ class Admin::OverviewController < ApplicationController
         navigation_context: @navigation_context
       }
     elsif request.xhr?
-      render partial: 'admin/overview/ingestion_validation_errors', locals: {
+      render partial: "admin/overview/ingestion_validation_errors", locals: {
         errors: @errors,
         pagination: @errors_pagination,
         selected_source: @selected_source,
@@ -190,8 +190,8 @@ class Admin::OverviewController < ApplicationController
 
   def render_dashboard_unavailable(_error)
     render json: {
-      'contractVersion' => Admin::Dashboard::CompatibilityGuard::CONTRACT_VERSION,
-      'error' => 'dashboard_read_unavailable'
+      "contractVersion" => Admin::Dashboard::CompatibilityGuard::CONTRACT_VERSION,
+      "error" => "dashboard_read_unavailable"
     }, status: :service_unavailable
   end
 
@@ -253,7 +253,7 @@ class Admin::OverviewController < ApplicationController
 
     if @fx_quote_currency == @fx_base_currency
       @fx_rate_state = Admin::Fx::RateResolver::Result.new(
-        rate: '1.0',
+        rate: "1.0",
         rate_date: @fx_operational_date,
         rate_source: Admin::Fx::RateResolver::IDENTITY_SOURCE,
         rate_missing: false,

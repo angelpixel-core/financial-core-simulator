@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
-require 'time'
+require "time"
 
 module Admin
   module Fx
     class OperationalDate
-      DEFAULT_TIMEZONE = 'UTC'
+      DEFAULT_TIMEZONE = "UTC"
 
       def self.call(timestamp: nil, timezone: nil)
         new(timezone: timezone).call(timestamp: timestamp)
       end
 
       def initialize(timezone: nil, clock: Time, time_zone: ActiveSupport::TimeZone)
-        @timezone = timezone || ENV.fetch('FCS_OPERATIONAL_TIMEZONE', DEFAULT_TIMEZONE)
+        @timezone = timezone || ENV.fetch("FCS_OPERATIONAL_TIMEZONE", DEFAULT_TIMEZONE)
         @clock = clock
         @time_zone = time_zone
       end
@@ -41,7 +41,7 @@ module Admin
           Time.iso8601(value.to_s)
         end
       rescue ArgumentError
-        raise ArgumentError, 'Invalid operational timestamp'
+        raise ArgumentError, "Invalid operational timestamp"
       end
     end
   end

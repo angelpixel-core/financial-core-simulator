@@ -37,7 +37,7 @@ module Admin
           base_currency: base_currency,
           quote_currency: quote_currency,
           rate: rate,
-          source: 'manual',
+          source: "manual",
           created_by_id: created_by_id,
           created_by_role: created_by_role,
           created_context: created_context
@@ -45,7 +45,7 @@ module Admin
 
         expected = OperationalDate.call
         if operational_date != expected
-          rate_record.errors.add(:operational_date, 'must match operational timezone date')
+          rate_record.errors.add(:operational_date, "must match operational timezone date")
           raise ActiveRecord::RecordInvalid, rate_record
         end
 

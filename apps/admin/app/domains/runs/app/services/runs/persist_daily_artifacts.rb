@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require 'bigdecimal'
-require 'json'
+require "bigdecimal"
+require "json"
 
 module Runs
   class PersistDailyArtifacts
-    SYMBOL_DELIMITERS = ['/', '-', '_'].freeze
+    SYMBOL_DELIMITERS = ["/", "-", "_"].freeze
 
     def self.call(run:)
       new.call(run: run)
@@ -38,11 +38,11 @@ module Runs
 
     def resolve_reporting_currency(run)
       context = normalize_fx_context(run.fx_context)
-      return context['reportingCurrency'] if context.is_a?(Hash) && context['reportingCurrency'].present?
+      return context["reportingCurrency"] if context.is_a?(Hash) && context["reportingCurrency"].present?
 
-      input_context = normalize_fx_context(run.input_json['fxContext']) if run.input_json.is_a?(Hash)
-      if input_context.is_a?(Hash) && input_context['reportingCurrency'].present?
-        return input_context['reportingCurrency']
+      input_context = normalize_fx_context(run.input_json["fxContext"]) if run.input_json.is_a?(Hash)
+      if input_context.is_a?(Hash) && input_context["reportingCurrency"].present?
+        return input_context["reportingCurrency"]
       end
 
       ReportingSetting.current.reporting_currency
@@ -59,12 +59,12 @@ module Runs
     end
 
     def persist_pnls(run, reporting_currency, payload)
-      points = payload.dig('timeline', 'points')
+      points = payload.dig("timeline", "points")
       return unless points.is_a?(Array)
 
       pnl_daily = Admin::Dashboard::PnlTimelineAggregator.new(points: points).call
       pnl_daily.each do |entry|
-        date = entry[:timestamp] || entry['timestamp']
+        date = entry[:timestamp] || entry["timestamp"]
         next if date.blank?
 
         snapshot = find_or_create_snapshot(run, reporting_currency, date)
@@ -110,17 +110,17 @@ module Runs
     end
 
     def persist_events(run, reporting_currency, input)
-      timeline = input['timeline'] || input[:timeline]
-      events = timeline.is_a?(Hash) ? Array(timeline['events'] || timeline[:events]) : []
+      timeline = input["timeline"] || input[:timeline]
+      events = timeline.is_a?(Hash) ? Array(timeline["events"] || timeline[:events]) : []
       return if events.empty?
 
       events.each_with_index do |event, index|
         next unless event.is_a?(Hash)
 
-        event_type = event['eventType'] || event[:eventType] || event['event_type'] || event[:event_type]
+        event_type = event["eventType"] || event[:eventType] || event["event_type"] || event[:event_type]
         next if event_type.blank?
 
-        timestamp = event['timestamp'] || event[:timestamp]
+        timestamp = event["timestamp"] || event[:timestamp]
         date = operational_date_for(timestamp)
         next if date.nil?
 
@@ -130,7 +130,7 @@ module Runs
         payload = event.is_a?(Hash) ? event : nil
         next if payload.nil? || payload.empty?
 
-        seq = event['timelineSeq'] || event[:timelineSeq] || event['eventSeq'] || event[:eventSeq] || (index + 1)
+        seq = event["timelineSeq"] || event[:timelineSeq] || event["eventSeq"] || event[:eventSeq] || (index + 1)
         record = RunDailyEvent.find_or_initialize_by(run_snapshot_id: snapshot.id, event_seq: seq)
         record.assign_attributes(
           event_type: event_type,
@@ -152,17 +152,17 @@ module Runs
     end
 
     def normalized_trades(input)
-      trades = Array(input['trades'] || input[:trades])
+      trades = Array(input["trades"] || input[:trades])
       trades.filter_map do |trade|
         next unless trade.is_a?(Hash)
 
-        timestamp = trade['timestamp'] || trade[:timestamp]
+        timestamp = trade["timestamp"] || trade[:timestamp]
         time = parse_time(timestamp)
         next if time.nil?
 
-        quantity = parse_decimal(trade['quantityBase'] || trade[:quantityBase] || trade['quantity'] || trade[:quantity])
-        price = parse_decimal(trade['priceQuotePerBase'] || trade[:priceQuotePerBase] || trade['price'] || trade[:price])
-        symbol = trade['marketId'] || trade[:marketId] || trade['symbol'] || trade[:symbol]
+        quantity = parse_decimal(trade["quantityBase"] || trade[:quantityBase] || trade["quantity"] || trade[:quantity])
+        price = parse_decimal(trade["priceQuotePerBase"] || trade[:priceQuotePerBase] || trade["price"] || trade[:price])
+        symbol = trade["marketId"] || trade[:marketId] || trade["symbol"] || trade[:symbol]
 
         next if quantity.nil? || price.nil?
         next if quantity <= 0 || price <= 0
@@ -184,7 +184,7 @@ module Runs
       return nil unless quote_codes.length == 1
 
       {
-        unit_type: 'quote',
+        unit_type: "quote",
         unit_code: quote_codes.first
       }
     end
@@ -199,7 +199,7 @@ module Runs
       base, quote = symbol_string.split(delimiter, 2).map { |value| value.to_s.strip }
       return nil if base.empty? || quote.empty?
 
-      { unit_code: quote }
+      {unit_code: quote}
     end
 
     def parse_time(raw)
@@ -236,9 +236,9 @@ module Runs
       context = normalize_fx_context(run.fx_context)
       return nil unless context.is_a?(Hash)
 
-      rate_missing = ActiveModel::Type::Boolean.new.cast(context['rateMissing'] || context[:rateMissing] ||
-        context['rate_missing'] || context[:rate_missing])
-      rate_value = context['rate'] || context[:rate]
+      rate_missing = ActiveModel::Type::Boolean.new.cast(context["rateMissing"] || context[:rateMissing] ||
+        context["rate_missing"] || context[:rate_missing])
+      rate_value = context["rate"] || context[:rate]
       return nil if rate_missing || rate_value.blank?
 
       rate = parse_decimal(rate_value)

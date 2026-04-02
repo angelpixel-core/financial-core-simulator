@@ -9,5 +9,5 @@ class RunSnapshot < ApplicationRecord
   validates :run_id, presence: true
   validates :operational_date, presence: true
   validates :reporting_currency, presence: true
-  validates :operational_date, uniqueness: { scope: %i[run_id reporting_currency] }
+  validates :operational_date, uniqueness: {scope: %i[run_id reporting_currency]}
 end

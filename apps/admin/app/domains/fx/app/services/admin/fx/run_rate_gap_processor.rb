@@ -3,7 +3,7 @@
 module Admin
   module Fx
     class RunRateGapProcessor
-      SYMBOL_DELIMITERS = ['/', '-', '_'].freeze
+      SYMBOL_DELIMITERS = ["/", "-", "_"].freeze
       SUPPORTED_PAIRS = [
         %w[USD ARS],
         %w[BTC USD],
@@ -33,9 +33,9 @@ module Admin
               base_currency: base_currency,
               quote_currency: quote_currency,
               rate: nil,
-              source: 'placeholder',
+              source: "placeholder",
               source_run_id: run.id,
-              created_context: { source: 'run' },
+              created_context: {source: "run"},
               enforce_operational_date: false
             )
 
@@ -52,10 +52,10 @@ module Admin
               operational_date: operational_date,
               base_currency: base_currency,
               quote_currency: quote_currency,
-              status: 'open',
+              status: "open",
               placeholder_rate_id: rate.id,
               source_run_id: run.id,
-              created_context: { source: 'run' }
+              created_context: {source: "run"}
             )
           end
         end
@@ -65,21 +65,21 @@ module Admin
 
       def operational_dates_from(input)
         dates = []
-        trades = Array(input['trades'] || input[:trades])
+        trades = Array(input["trades"] || input[:trades])
         trades.each do |trade|
           next unless trade.is_a?(Hash)
 
-          timestamp = trade['timestamp'] || trade[:timestamp]
+          timestamp = trade["timestamp"] || trade[:timestamp]
           date = operational_date_for(timestamp)
           dates << date if date
         end
 
-        timeline = input['timeline'] || input[:timeline]
-        events = timeline.is_a?(Hash) ? Array(timeline['events'] || timeline[:events]) : []
+        timeline = input["timeline"] || input[:timeline]
+        events = timeline.is_a?(Hash) ? Array(timeline["events"] || timeline[:events]) : []
         events.each do |event|
           next unless event.is_a?(Hash)
 
-          timestamp = event['timestamp'] || event[:timestamp]
+          timestamp = event["timestamp"] || event[:timestamp]
           date = operational_date_for(timestamp)
           dates << date if date
         end
@@ -94,10 +94,10 @@ module Admin
           base = base_currency.to_s.upcase
           quote = quote_currency.to_s.upcase
           pairs = [[base, quote]]
-          next pairs if quote == 'ARS'
+          next pairs if quote == "ARS"
 
-          pairs << [base, 'ARS'] unless base == 'ARS'
-          pairs << %w[USD ARS] if quote == 'USD'
+          pairs << [base, "ARS"] unless base == "ARS"
+          pairs << %w[USD ARS] if quote == "USD"
           pairs
         end
 
@@ -109,15 +109,15 @@ module Admin
       end
 
       def market_pairs_from(input)
-        markets = Array(input['markets'] || input[:markets]).filter_map do |market|
-          market_id = market.is_a?(Hash) ? (market['marketId'] || market[:marketId]) : market
+        markets = Array(input["markets"] || input[:markets]).filter_map do |market|
+          market_id = market.is_a?(Hash) ? (market["marketId"] || market[:marketId]) : market
           market_id.to_s.strip.presence
         end
 
-        trades = Array(input['trades'] || input[:trades]).filter_map do |trade|
+        trades = Array(input["trades"] || input[:trades]).filter_map do |trade|
           next unless trade.is_a?(Hash)
 
-          market_id = trade['marketId'] || trade[:marketId] || trade['symbol'] || trade[:symbol]
+          market_id = trade["marketId"] || trade[:marketId] || trade["symbol"] || trade[:symbol]
           market_id.to_s.strip.presence
         end
 

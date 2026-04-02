@@ -14,9 +14,9 @@ class CreateFxDailyRates < ActiveRecord::Migration[8.1]
     end
 
     add_index :fx_daily_rates,
-              %i[operational_date base_currency quote_currency],
-              unique: true,
-              name: 'idx_fx_daily_rates_unique'
+      %i[operational_date base_currency quote_currency],
+      unique: true,
+      name: "idx_fx_daily_rates_unique"
     add_index :fx_daily_rates, :source_rate_id
   end
 end

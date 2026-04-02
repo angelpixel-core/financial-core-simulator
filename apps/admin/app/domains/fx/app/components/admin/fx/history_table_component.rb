@@ -38,7 +38,7 @@ module Admin
       end
 
       def display_rate(rate)
-        return t('admin.fx.history.placeholder_value') if rate.nil? || rate.rate.nil?
+        return t("admin.fx.history.placeholder_value") if rate.nil? || rate.rate.nil?
 
         rate.rate.to_s
       end
@@ -48,7 +48,7 @@ module Admin
       end
 
       def toggle_sort_order
-        sort_order == 'asc' ? 'desc' : 'asc'
+        (sort_order == "asc") ? "desc" : "asc"
       end
 
       attr_reader :dates, :supported_pairs, :rates_by_pair, :role, :sort_order, :navigation_context

@@ -1,7 +1,7 @@
 module Admin
   module Dashboard
     class FinancialOverviewResponseSerializer
-      CONTRACT_VERSION = 'v1'
+      CONTRACT_VERSION = "v1"
 
       def serialize(metrics:)
         payload = {

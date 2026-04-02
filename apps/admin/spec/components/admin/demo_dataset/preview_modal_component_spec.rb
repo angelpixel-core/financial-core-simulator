@@ -26,12 +26,12 @@ RSpec.describe Admin::DemoDataset::PreviewModalComponent, type: :component do
     }
 
     render_inline(described_class.new(
-                    state: :success,
-                    summary: summary,
-                    sample_rows: rows,
-                    errors: [],
-                    file_name: "demo.xlsx"
-                  ))
+      state: :success,
+      summary: summary,
+      sample_rows: rows,
+      errors: [],
+      file_name: "demo.xlsx"
+    ))
 
     expect(rendered_content).to include(I18n.t("admin.overview.dataset.preview.summary_title"))
     expect(rendered_content).to include("trade-12")

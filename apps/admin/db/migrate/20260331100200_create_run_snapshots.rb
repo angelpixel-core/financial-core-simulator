@@ -8,8 +8,8 @@ class CreateRunSnapshots < ActiveRecord::Migration[8.1]
     end
 
     add_index :run_snapshots,
-              %i[run_id operational_date reporting_currency],
-              unique: true,
-              name: 'idx_run_snapshots_unique'
+      %i[run_id operational_date reporting_currency],
+      unique: true,
+      name: "idx_run_snapshots_unique"
   end
 end

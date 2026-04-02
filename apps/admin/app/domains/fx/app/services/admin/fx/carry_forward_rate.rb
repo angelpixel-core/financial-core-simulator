@@ -7,7 +7,7 @@ module Admin
         operational_date:,
         base_currency:,
         quote_currency:,
-        source: 'carry_forward',
+        source: "carry_forward",
         created_by_id: nil,
         created_by_role: nil,
         created_context: {}
@@ -27,17 +27,17 @@ module Admin
         operational_date:,
         base_currency:,
         quote_currency:,
-        source: 'carry_forward',
+        source: "carry_forward",
         created_by_id: nil,
         created_by_role: nil,
         created_context: {}
       )
         source_value = source.to_s
-        source_value = 'carry_forward' unless source_value == 'carry_forward'
+        source_value = "carry_forward" unless source_value == "carry_forward"
         expected = OperationalDate.call
         if operational_date != expected
           rate_record = FxDailyRate.new(operational_date: operational_date)
-          rate_record.errors.add(:operational_date, 'must match operational timezone date')
+          rate_record.errors.add(:operational_date, "must match operational timezone date")
           raise ActiveRecord::RecordInvalid, rate_record
         end
 
@@ -50,7 +50,7 @@ module Admin
 
         unless prior_rate
           rate_record = FxDailyRate.new(operational_date: operational_date)
-          rate_record.errors.add(:base, 'no prior rate available to carry forward')
+          rate_record.errors.add(:base, "no prior rate available to carry forward")
           raise ActiveRecord::RecordInvalid, rate_record
         end
 

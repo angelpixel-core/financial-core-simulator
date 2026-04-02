@@ -1,14 +1,14 @@
-require_relative 'routes/admin_routes'
-require_relative 'routes/dashboard_routes'
-require_relative 'routes/runs_routes'
-require_relative 'routes/legacy_routes'
-require_relative 'routes/system_routes'
-require_relative 'routes/development_routes'
+require_relative "routes/admin_routes"
+require_relative "routes/dashboard_routes"
+require_relative "routes/runs_routes"
+require_relative "routes/legacy_routes"
+require_relative "routes/system_routes"
+require_relative "routes/development_routes"
 
 Rails.application.routes.draw do
-  root to: 'landing#index'
-  get '/demo-datasets/valid', to: 'demo_datasets#valid', as: :demo_dataset_valid
-  get '/demo-datasets/invalid', to: 'demo_datasets#invalid', as: :demo_dataset_invalid
+  root to: "landing#index"
+  get "/demo-datasets/valid", to: "demo_datasets#valid", as: :demo_dataset_valid
+  get "/demo-datasets/invalid", to: "demo_datasets#invalid", as: :demo_dataset_invalid
 
   extend AdminRoutes
   extend DashboardRoutes

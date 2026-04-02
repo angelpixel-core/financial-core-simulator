@@ -20,11 +20,11 @@ module Admin
       end
 
       attr_reader :reporting_setting,
-                  :supported_currencies,
-                  :fx_rate_state,
-                  :operational_date,
-                  :base_currency,
-                  :quote_currency
+        :supported_currencies,
+        :fx_rate_state,
+        :operational_date,
+        :base_currency,
+        :quote_currency
     end
   end
 end
