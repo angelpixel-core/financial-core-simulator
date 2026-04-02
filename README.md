@@ -26,6 +26,10 @@ The project is designed as a technical portfolio piece to demonstrate production
 - Enable visualization of market depth and trade flow
 - Keep the core engine framework-agnostic
 
+## Known Issues
+
+- FX rate history: the dynamic chart does not refresh after a rate change; reload the page to see updates.
+
 ## Quality Tooling
 
 This repo runs CI checks for:
