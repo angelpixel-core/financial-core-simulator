@@ -2875,7 +2875,9 @@ body {
 .fx-history-table__header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
+  width: 100%;
 }
 
 .fx-history-table__th--date {

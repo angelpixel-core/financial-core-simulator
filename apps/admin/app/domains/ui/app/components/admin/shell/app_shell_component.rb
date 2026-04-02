@@ -1,53 +1,27 @@
 module Admin
   module Shell
     class AppShellComponent < ViewComponent::Base
-      ICON_PATHS = {
-        'overview' => [
-          'M3 12h8V3H3z',
-          'M13 21h8v-6h-8z',
-          'M13 10h8V3h-8z',
-          'M3 21h8v-7H3z'
-        ],
-        'runs' => [
-          'M5 4h10l4 4v12H5z',
-          'M15 4v4h4',
-          'M9 13h6',
-          'M9 17h6'
-        ],
-        'validation' => [
-          'M12 3l8 4v6c0 5-3.5 8-8 8s-8-3-8-8V7z',
-          'M9 12l2 2 4-4'
-        ],
-        'artifacts' => [
-          'M4 4h16v16H4z',
-          'M8 8h8',
-          'M8 12h8',
-          'M8 16h5'
-        ],
-        'docs' => [
-          'M4 5h12a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z',
-          'M8 5v12',
-          'M12 9h4',
-          'M12 13h4'
-        ],
-        'history' => [
-          'M12 8v5l3 3',
-          'M12 3a9 9 0 1 0 0.001 18.001'
-        ],
-        'dollar' => [
-          'M12 2v20',
-          'M17 7H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6'
-        ],
-        'support' => [
-          'M12 3a9 9 0 1 0 0.001 18.001',
-          'M12 7v5',
-          'M12 16h.01'
-        ],
-        'default' => [
-          'M4 12h16',
-          'M12 4v16'
-        ]
+      ICON_FILES = {
+        'overview' => 'layout-dashboard.svg',
+        'layout-dashboard' => 'layout-dashboard.svg',
+        'history' => 'dollar-sign.svg',
+        'fx-rates' => 'dollar-sign.svg',
+        'dollar' => 'dollar-sign.svg',
+        'dollar-sign' => 'dollar-sign.svg',
+        'runs' => 'heart-pulse.svg',
+        'health' => 'heart-pulse.svg',
+        'heart-pulse' => 'heart-pulse.svg',
+        'support' => 'wrench.svg',
+        'wrench' => 'wrench.svg',
+        'docs' => 'folder-open-dot.svg',
+        'folder-open-dot' => 'folder-open-dot.svg',
+        'default' => 'layout-dashboard.svg'
       }.freeze
+
+      FALLBACK_PATHS = [
+        'M4 12h16',
+        'M12 4v16'
+      ].freeze
 
       def initialize(sidebar_items:, breadcrumb:, environment:, primary_action:, secondary_action: nil,
                      topbar_links: [], presence_email: nil, sidebar_panels: nil)
@@ -63,7 +37,9 @@ module Admin
 
       def icon_svg_for(item_or_label)
         label = item_or_label.is_a?(Hash) ? (item_or_label[:icon_key] || item_or_label[:label]) : item_or_label
-        paths = ICON_PATHS.fetch(icon_key_for(label), ICON_PATHS.fetch('default'))
+        icon_key = icon_key_for(label)
+        svg_markup = svg_markup_for(icon_key)
+        return helpers.raw(svg_markup) if svg_markup.present?
 
         helpers.tag.svg(
           class: 'app-shell__nav-icon-svg',
@@ -75,7 +51,7 @@ module Admin
           "stroke-linejoin": 'round',
           "aria-hidden": 'true'
         ) do
-          helpers.safe_join(paths.map { |path| helpers.tag.path(d: path) })
+          helpers.safe_join(FALLBACK_PATHS.map { |path| helpers.tag.path(d: path) })
         end
       end
 
@@ -83,14 +59,33 @@ module Admin
 
       def icon_key_for(label)
         normalized = label.to_s.downcase
-        return 'overview' if normalized.include?('overview')
-        return 'runs' if normalized.include?('run')
-        return 'history' if normalized.include?('history')
-        return 'validation' if normalized.include?('validation')
-        return 'artifacts' if normalized.include?('artifact')
-        return 'docs' if normalized.include?('docs')
+        return normalized if ICON_FILES.key?(normalized)
+        return 'layout-dashboard' if normalized.include?('overview')
+        if normalized.include?('history') || normalized.include?('fx') || normalized.include?('dollar')
+          return 'dollar-sign'
+        end
+        return 'heart-pulse' if normalized.include?('run') || normalized.include?('health')
+        return 'wrench' if normalized.include?('support')
+        return 'folder-open-dot' if normalized.include?('docs')
 
         'default'
+      end
+
+      def svg_markup_for(icon_key)
+        file_name = ICON_FILES.fetch(icon_key, ICON_FILES.fetch('default'))
+        svg_path = Rails.root.join('..', '..', file_name).cleanpath
+        return nil unless File.exist?(svg_path)
+
+        normalize_svg(File.read(svg_path))
+      end
+
+      def normalize_svg(svg_markup)
+        sanitized = svg_markup.dup
+        sanitized.sub!(/<svg\b/, '<svg class="app-shell__nav-icon-svg" aria-hidden="true"')
+        sanitized.gsub!(/\s(width|height)="[^"]*"/, '')
+        sanitized.gsub!(/\sstroke="[^"]*"/, ' stroke="currentColor"')
+        sanitized.gsub!(/\sstyle="[^"]*"/, '')
+        sanitized
       end
     end
   end

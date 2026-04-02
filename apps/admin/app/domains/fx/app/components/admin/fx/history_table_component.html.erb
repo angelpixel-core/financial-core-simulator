@@ -13,17 +13,12 @@
                           data: { turbo: true } do %>
                 <span class="visually-hidden"><%= sort_label %></span>
                 <span class="fx-history-table__sort-icon" aria-hidden="true">
-                  <% if sort_order == "asc" %>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 19V5" />
-                      <path d="M6 11l6-6 6 6" />
-                    </svg>
-                  <% else %>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 5v14" />
-                      <path d="M18 13l-6 6-6-6" />
-                    </svg>
-                  <% end %>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21 16-4 4-4-4" />
+                    <path d="M17 20V4" />
+                    <path d="m3 8 4-4 4 4" />
+                    <path d="M7 4v16" />
+                  </svg>
                 </span>
               <% end %>
             </div>
