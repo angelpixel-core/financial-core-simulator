@@ -1,0 +1,16 @@
+<div id="<%= FxRateUpload.table_dom_id %>">
+  <% if empty_history %>
+    <section class="dashboard-card">
+      <p class="empty-state"><%= t("admin.fx.history.empty") %></p>
+    </section>
+  <% else %>
+    <%= render Admin::Fx::HistoryTableComponent.new(
+      dates: dates,
+      supported_pairs: supported_pairs,
+      rates_by_pair: rates_by_pair,
+      role: role,
+      sort_order: sort_order,
+      navigation_context: navigation_context
+    ) %>
+  <% end %>
+</div>

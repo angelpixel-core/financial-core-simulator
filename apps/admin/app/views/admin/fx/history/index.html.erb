@@ -64,20 +64,14 @@
       <% end %>
     </section>
     <section class="workspace__overview">
-      <% if @empty_history %>
-        <section class="dashboard-card">
-          <p class="empty-state"><%= t("admin.fx.history.empty") %></p>
-        </section>
-      <% else %>
-        <%= render Admin::Fx::HistoryTableComponent.new(
-          dates: @dates,
-          supported_pairs: @supported_pairs,
-          rates_by_pair: @rates_by_pair,
-          role: shell_role,
-          sort_order: @sort_order,
-          navigation_context: navigation_context
-        ) %>
-      <% end %>
+      <%= render "admin/fx/history/history_table",
+        dates: @dates,
+        supported_pairs: @supported_pairs,
+        rates_by_pair: @rates_by_pair,
+        role: shell_role,
+        sort_order: @sort_order,
+        navigation_context: navigation_context,
+        empty_history: @empty_history %>
     </section>
   </main>
 <% end %>

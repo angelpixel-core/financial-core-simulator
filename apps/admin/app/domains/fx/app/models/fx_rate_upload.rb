@@ -4,9 +4,9 @@ class FxRateUpload < ApplicationRecord
   STATUS_VISIBILITY_WINDOW = 30.minutes
 
   enum :status, {
-    processing: "processing",
-    success: "success",
-    error: "error"
+    processing: 'processing',
+    success: 'success',
+    error: 'error'
   }, suffix: true, validate: true
 
   scope :latest_first, -> { order(created_at: :desc) }
@@ -18,11 +18,15 @@ class FxRateUpload < ApplicationRecord
   end
 
   def self.status_stream_for(account_id: nil)
-    "fx_rate_upload_status:#{account_id.presence || "guest"}"
+    "fx_rate_upload_status:#{account_id.presence || 'guest'}"
   end
 
   def self.status_dom_id
-    "fx-rate-upload-status"
+    'fx-rate-upload-status'
+  end
+
+  def self.table_dom_id
+    'fx-rate-history-table'
   end
 
   def self.visible_for(account_id: nil, within: STATUS_VISIBILITY_WINDOW)
