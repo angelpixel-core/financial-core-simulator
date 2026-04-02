@@ -1,0 +1,91 @@
+<section class="fx-history-table" aria-label="<%= t("admin.fx.history.aria") %>">
+  <div class="shad-table-wrap">
+    <table class="shad-table fx-history-table__table">
+      <thead>
+        <tr class="shad-table__row shad-table__row--head">
+          <th class="shad-table__th fx-history-table__th fx-history-table__th--date">
+            <div class="fx-history-table__header">
+              <span><%= t("admin.fx.history.table.date") %></span>
+              <%= link_to admin_fx_history_index_path(navigation_context.merge(sort: toggle_sort_order)),
+                          class: "fx-history-table__sort",
+                          data: { turbo: true } do %>
+                <span><%= sort_label %></span>
+              <% end %>
+            </div>
+          </th>
+          <% pair_labels.each do |label, _base_currency, _quote_currency| %>
+            <th class="shad-table__th fx-history-table__th"><%= label %></th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody class="shad-table__body">
+        <% dates.each do |date| %>
+          <tr class="shad-table__row">
+            <td class="shad-table__td fx-history-table__date"><%= l(date) %></td>
+            <% pair_labels.each do |label, base_currency, quote_currency| %>
+              <% rate = rate_for(date, label) %>
+              <% status = gap_status(rate) %>
+              <% editable = editable_rate?(rate) %>
+              <td class="shad-table__td">
+                <div class="fx-history-cell<%= " fx-history-cell--editable" if editable %>"
+                     <% if editable %>data-controller="inline-edit" data-action="click->inline-edit#activate"<% end %>>
+                <div class="fx-history-cell__display" data-inline-edit-target="display">
+                  <span class="fx-history-cell__value"><%= display_rate(rate) %></span>
+                  <% if status.present? %>
+                    <span class="fx-history-cell__status fx-history-cell__status--<%= status %>">
+                      <%= t("admin.fx.history.gap_status.#{status}") %>
+                    </span>
+                  <% end %>
+                  <% if rate.present? %>
+                    <span class="fx-history-cell__source"><%= t("admin.fx.history.sources.#{rate.source}") %></span>
+                  <% end %>
+                </div>
+                <% if editable %>
+                  <% if rate.present? %>
+                    <%= form_with url: admin_fx_daily_rate_path(rate, locale: I18n.locale),
+                                    method: :patch,
+                                    local: true,
+                                    scope: nil,
+                                    class: "fx-history-cell__form" do |form| %>
+                      <%= form.number_field :rate,
+                          value: rate.rate,
+                          step: "0.000001",
+                          min: "0",
+                          class: "fx-history-cell__input",
+                          data: {
+                            inline_edit_target: "input",
+                            inline_edit_initial_value: rate.rate.to_s,
+                            action: "blur->inline-edit#commit keydown->inline-edit#handleKey click->inline-edit#stop"
+                          } %>
+                    <% end %>
+                  <% else %>
+                    <%= form_with url: admin_fx_daily_rates_path(locale: I18n.locale),
+                                    method: :post,
+                                    local: true,
+                                    scope: nil,
+                                    class: "fx-history-cell__form" do |form| %>
+                      <%= hidden_field_tag :operational_date, date.iso8601 %>
+                      <%= hidden_field_tag :base_currency, base_currency %>
+                      <%= hidden_field_tag :quote_currency, quote_currency %>
+                      <%= form.number_field :rate,
+                          value: nil,
+                          step: "0.000001",
+                          min: "0",
+                          class: "fx-history-cell__input",
+                          data: {
+                            inline_edit_target: "input",
+                            inline_edit_initial_value: "",
+                            action: "blur->inline-edit#commit keydown->inline-edit#handleKey click->inline-edit#stop"
+                          } %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </div>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+</section>
