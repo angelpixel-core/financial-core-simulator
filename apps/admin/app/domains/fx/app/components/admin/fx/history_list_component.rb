@@ -11,9 +11,13 @@ module Admin
       end
 
       def entries
-        @entries ||= FxDailyRate.where(base_currency: base_currency, quote_currency: quote_currency)
-          .includes(:resolved_gap, :placeholder_gap)
-          .order(operational_date: :desc)
+        @entries ||= begin
+          rates = FxDailyRate.where(base_currency: base_currency, quote_currency: quote_currency)
+                             .order(operational_date: :desc)
+                             .to_a
+          preload_gap_associations!(rates)
+          rates
+        end
       end
 
       def pair_label
@@ -36,7 +40,7 @@ module Admin
       end
 
       def display_rate(rate)
-        return t("admin.fx.history.placeholder_value") if rate.rate.nil?
+        return t('admin.fx.history.placeholder_value') if rate.rate.nil?
 
         rate.rate.to_s
       end
@@ -50,6 +54,28 @@ module Admin
       end
 
       attr_reader :base_currency, :quote_currency, :role
+
+      private
+
+      def preload_gap_associations!(records)
+        placeholder_rates = records.select(&:placeholder?)
+        if placeholder_rates.any?
+          ActiveRecord::Associations::Preloader.new(
+            records: placeholder_rates,
+            associations: :placeholder_gap
+          ).call
+        end
+
+        return unless can_edit?
+
+        editable_rates = records.select { |rate| rate.manual? || rate.placeholder? }
+        return if editable_rates.empty?
+
+        ActiveRecord::Associations::Preloader.new(
+          records: editable_rates,
+          associations: :resolved_gap
+        ).call
+      end
     end
   end
 end
