@@ -1,12 +1,12 @@
-require 'rails_helper'
-require 'capybara/rspec'
-require 'bcrypt'
-require 'json'
-require 'tempfile'
+require "rails_helper"
+require "capybara/rspec"
+require "bcrypt"
+require "json"
+require "tempfile"
 
-RSpec.describe 'Admin financial overview', type: :system, js: true do
-  let(:email) { 'ops@example.com' }
-  let(:password) { 'secret-pass' }
+RSpec.describe "Admin financial overview", type: :system, js: true do
+  let(:email) { "ops@example.com" }
+  let(:password) { "secret-pass" }
 
   before do
     driven_by(:selenium, using: :headless_chrome, screen_size: [1400, 900])
@@ -17,39 +17,39 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
     )
   end
 
-  it 'shows empty state when both series are empty' do
+  it "shows empty state when both series are empty" do
     Run.create!(
       status: :succeeded,
       input_json: {
-        'schemaVersion' => '1.0',
-        'trades' => []
+        "schemaVersion" => "1.0",
+        "trades" => []
       }
     )
 
     login_as_admin
-    visit '/admin/overview'
+    visit "/admin/overview"
 
     expect(page).to have_css('[data-financial-overview-target="emptyState"]:not([hidden])', wait: 10)
     within('[data-controller="financial-overview"]') do
       expect(page).to have_css('[data-financial-overview-target="cards"][hidden]', visible: :hidden)
-      expect(page).to have_content(I18n.t('admin.overview.financial_overview.empty_title'))
+      expect(page).to have_content(I18n.t("admin.overview.financial_overview.empty_title"))
     end
   end
 
-  it 'renders chart containers when series are present' do
-    temp = Tempfile.new(['result', '.json'])
+  it "renders chart containers when series are present" do
+    temp = Tempfile.new(["result", ".json"])
     temp.write(JSON.generate(
                  {
-                   'timeline' => {
-                     'schema_version' => '1.0',
-                     'points' => [
+                   "timeline" => {
+                     "schema_version" => "1.0",
+                     "points" => [
                        {
-                         'timestamp' => '2026-03-29T12:00:00Z',
-                         'account_id' => 'acc-1',
-                         'market_id' => 'BTC-USD',
-                         'realized_pnl' => '1',
-                         'unrealized_pnl' => '2',
-                         'total_pnl' => '3'
+                         "timestamp" => "2026-03-29T12:00:00Z",
+                         "account_id" => "acc-1",
+                         "market_id" => "BTC-USD",
+                         "realized_pnl" => "1",
+                         "unrealized_pnl" => "2",
+                         "total_pnl" => "3"
                        }
                      ]
                    }
@@ -60,27 +60,27 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
     Run.create!(
       status: :succeeded,
       input_json: {
-        'schemaVersion' => '1.0',
-        'trades' => [
+        "schemaVersion" => "1.0",
+        "trades" => [
           {
-            'timestamp' => '2026-03-29T12:00:00Z',
-            'quantity' => '1.0',
-            'price' => '100.0',
-            'symbol' => 'BTC-USD'
+            "timestamp" => "2026-03-29T12:00:00Z",
+            "quantity" => "1.0",
+            "price" => "100.0",
+            "symbol" => "BTC-USD"
           },
           {
-            'timestamp' => '2026-03-29T12:05:00Z',
-            'quantity' => '2.0',
-            'price' => '150.0',
-            'symbol' => 'BTC-USD'
+            "timestamp" => "2026-03-29T12:05:00Z",
+            "quantity" => "2.0",
+            "price" => "150.0",
+            "symbol" => "BTC-USD"
           }
         ]
       },
-      artifacts: { 'result_json_path' => temp.path }
+      artifacts: {"result_json_path" => temp.path}
     )
 
     login_as_admin
-    visit '/admin/overview'
+    visit "/admin/overview"
 
     expect(page).to have_css('[data-controller="financial-overview"][data-financial-overview-state="ready"]', wait: 10)
     within('[data-controller="financial-overview"]') do
@@ -98,120 +98,120 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
     temp.unlink
   end
 
-  it 'shows pnl empty state when timeline is missing' do
+  it "shows pnl empty state when timeline is missing" do
     Run.create!(
       status: :succeeded,
       input_json: {
-        'schemaVersion' => '1.0',
-        'trades' => [
+        "schemaVersion" => "1.0",
+        "trades" => [
           {
-            'timestamp' => '2026-03-29T12:00:00Z',
-            'quantity' => '1.0',
-            'price' => '100.0',
-            'symbol' => 'BTC-USD'
+            "timestamp" => "2026-03-29T12:00:00Z",
+            "quantity" => "1.0",
+            "price" => "100.0",
+            "symbol" => "BTC-USD"
           }
         ]
       }
     )
 
     login_as_admin
-    visit '/admin/overview'
+    visit "/admin/overview"
 
     expect(page).to have_css('[data-financial-overview-target="pnlFallback"]:not([hidden])', wait: 10)
   end
 
-  it 'falls back to empty state when the endpoint fails' do
+  it "falls back to empty state when the endpoint fails" do
     Run.create!(
       status: :succeeded,
       input_json: {
-        'schemaVersion' => '1.0',
-        'trades' => [
+        "schemaVersion" => "1.0",
+        "trades" => [
           {
-            'timestamp' => '2026-03-29T12:00:00Z',
-            'quantity' => '1.0',
-            'price' => '100.0',
-            'symbol' => 'BTC-USD'
+            "timestamp" => "2026-03-29T12:00:00Z",
+            "quantity" => "1.0",
+            "price" => "100.0",
+            "symbol" => "BTC-USD"
           }
         ]
       }
     )
 
     allow(Admin::Dashboard::FinancialOverviewMetrics).to receive(:new)
-      .and_raise(StandardError, 'financial-overview-error')
+      .and_raise(StandardError, "financial-overview-error")
 
     login_as_admin
-    visit '/admin/overview'
+    visit "/admin/overview"
 
     expect(page).to have_css('[data-controller="financial-overview"][data-financial-overview-state="empty"]', wait: 10)
     within('[data-controller="financial-overview"]') do
       expect(page).to have_css('[data-financial-overview-target="emptyState"]:not([hidden])')
       expect(page).to have_css('[data-financial-overview-target="cards"][hidden]', visible: :hidden)
-      expect(page).to have_content(I18n.t('admin.overview.financial_overview.empty_title'))
+      expect(page).to have_content(I18n.t("admin.overview.financial_overview.empty_title"))
     end
   end
 
-  it 'syncs filters to the URL' do
+  it "syncs filters to the URL" do
     Run.create!(
       status: :succeeded,
       input_json: {
-        'schemaVersion' => '1.0',
-        'accounts' => [{ 'accountId' => 'acc-1' }],
-        'markets' => [{ 'marketId' => 'BTC-USD' }],
-        'trades' => []
+        "schemaVersion" => "1.0",
+        "accounts" => [{"accountId" => "acc-1"}],
+        "markets" => [{"marketId" => "BTC-USD"}],
+        "trades" => []
       }
     )
 
     login_as_admin
-    visit '/admin/overview'
+    visit "/admin/overview"
 
     ensure_financial_filters_visible
 
-    select 'acc-1', from: 'financial-account-filter'
-    select 'BTC-USD', from: 'financial-market-filter'
+    select "acc-1", from: "financial-account-filter"
+    select "BTC-USD", from: "financial-market-filter"
 
     expect(page).to have_current_path(/account_id=acc-1/, url: true)
     expect(page).to have_current_path(/market_id=BTC-USD/, url: true)
   end
 
-  it 'highlights missing FX points and shows the tooltip warning' do
+  it "highlights missing FX points and shows the tooltip warning" do
     FxRateGap.create!(
       operational_date: Date.new(2026, 3, 29),
-      base_currency: 'USD',
-      quote_currency: 'ARS',
-      status: 'open'
+      base_currency: "USD",
+      quote_currency: "ARS",
+      status: "open"
     )
     FxDailyRate.create!(
       operational_date: Date.new(2026, 3, 30),
-      base_currency: 'USD',
-      quote_currency: 'ARS',
+      base_currency: "USD",
+      quote_currency: "ARS",
       rate: BigDecimal(100),
-      source: 'manual'
+      source: "manual"
     )
     FxDailyRate.create!(
       operational_date: Date.new(2026, 3, 31),
-      base_currency: 'USD',
-      quote_currency: 'ARS',
+      base_currency: "USD",
+      quote_currency: "ARS",
       rate: BigDecimal(110),
-      source: 'manual'
+      source: "manual"
     )
 
-    temp = Tempfile.new(['result', '.json'])
+    temp = Tempfile.new(["result", ".json"])
     temp.write(JSON.generate(
                  {
-                   'timeline' => {
-                     'schema_version' => '1.0',
-                     'points' => [
+                   "timeline" => {
+                     "schema_version" => "1.0",
+                     "points" => [
                        {
-                         'timestamp' => '2026-03-30T12:00:00Z',
-                         'realized_pnl' => '2',
-                         'unrealized_pnl' => '3',
-                         'total_pnl' => '5'
+                         "timestamp" => "2026-03-30T12:00:00Z",
+                         "realized_pnl" => "2",
+                         "unrealized_pnl" => "3",
+                         "total_pnl" => "5"
                        },
                        {
-                         'timestamp' => '2026-03-31T12:00:00Z',
-                         'realized_pnl' => '3',
-                         'unrealized_pnl' => '4',
-                         'total_pnl' => '7'
+                         "timestamp" => "2026-03-31T12:00:00Z",
+                         "realized_pnl" => "3",
+                         "unrealized_pnl" => "4",
+                         "total_pnl" => "7"
                        }
                      ]
                    }
@@ -222,29 +222,29 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
     Run.create!(
       status: :succeeded,
       input_json: {
-        'schemaVersion' => '1.0',
-        'trades' => [
-          { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => '1.0', 'price' => '100.0', 'symbol' => 'BTC-USD' },
-          { 'timestamp' => '2026-03-30T12:00:00Z', 'quantity' => '1.0', 'price' => '100.0', 'symbol' => 'BTC-USD' }
+        "schemaVersion" => "1.0",
+        "trades" => [
+          {"timestamp" => "2026-03-29T12:00:00Z", "quantity" => "1.0", "price" => "100.0", "symbol" => "BTC-USD"},
+          {"timestamp" => "2026-03-30T12:00:00Z", "quantity" => "1.0", "price" => "100.0", "symbol" => "BTC-USD"}
         ],
-        'fxContext' => { 'reportingCurrency' => 'ARS' }
+        "fxContext" => {"reportingCurrency" => "ARS"}
       },
-      artifacts: { 'result_json_path' => temp.path }
+      artifacts: {"result_json_path" => temp.path}
     )
 
     login_as_admin
-    visit '/admin/overview'
+    visit "/admin/overview"
 
     expect(page).to have_css('[data-financial-overview-target="volumeChart"].is-ready', wait: 10)
-    expect(page).to have_css('.trend-chart__dot--missing', visible: :all)
+    expect(page).to have_css(".trend-chart__dot--missing", visible: :all)
 
-    warning_text = I18n.t('admin.overview.financial_overview.missing_rate_tooltip')
+    warning_text = I18n.t("admin.overview.financial_overview.missing_rate_tooltip")
     within('[data-financial-overview-target="volumeChart"]') do
-      find('.trend-chart__dot--missing', match: :first, visible: :all).hover
+      find(".trend-chart__dot--missing", match: :first, visible: :all).hover
       expect(page).to have_content(warning_text)
     end
     within('[data-financial-overview-target="pnlChart"]') do
-      find('.recharts-line-curve', match: :first).hover
+      find(".recharts-line-curve", match: :first).hover
       expect(page).not_to have_content(warning_text)
     end
   ensure
@@ -253,28 +253,28 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
   end
 
   def login_as_admin
-    visit '/admin/login'
-    fill_in 'admin-login-email', with: email
-    fill_in 'admin-login-password', with: password
-    click_button I18n.t('admin.auth.form.submit')
+    visit "/admin/login"
+    fill_in "admin-login-email", with: email
+    fill_in "admin-login-password", with: password
+    click_button I18n.t("admin.auth.form.submit")
   end
 
   def ensure_sidebar_expanded
-    page.has_css?('.app-shell', wait: 10)
+    page.has_css?(".app-shell", wait: 10)
 
-    if page.has_css?('.app-shell.app-shell--sidebar-collapsed', wait: 5)
+    if page.has_css?(".app-shell.app-shell--sidebar-collapsed", wait: 5)
       find('button[data-action="sidebar#expand"]', visible: :all).click
     end
 
-    expect(page).to have_no_css('.app-shell.app-shell--sidebar-collapsed', wait: 10)
+    expect(page).to have_no_css(".app-shell.app-shell--sidebar-collapsed", wait: 10)
   end
 
   def ensure_financial_filters_visible
     ensure_sidebar_expanded
-    return if page.has_css?('#financial-account-filter', wait: 5)
+    return if page.has_css?("#financial-account-filter", wait: 5)
 
-    click_link I18n.t('admin.nav.history')
+    click_link I18n.t("admin.nav.history")
     ensure_sidebar_expanded
-    expect(page).to have_css('#financial-account-filter', wait: 10)
+    expect(page).to have_css("#financial-account-filter", wait: 10)
   end
 end
