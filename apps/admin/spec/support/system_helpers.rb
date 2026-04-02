@@ -1,6 +1,11 @@
 module SystemHelpers
   def wait_for_app_shell
+    find("body", wait: 10)
+
+    visit(current_path) unless page.has_css?(".app-shell", wait: 2)
+
     find(".app-shell", wait: 10)
+    find(".app-shell__nav--desktop, .app-shell__topbar", wait: 10)
   end
 
   def expand_sidebar
