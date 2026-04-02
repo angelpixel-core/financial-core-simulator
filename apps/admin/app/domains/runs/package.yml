@@ -4,4 +4,6 @@ public_path: app
 dependencies:
   - "app/domains/core"
   - "app/domains/artifacts"
+  - "app/domains/dashboard"
+  - "app/domains/fx"
   - "app/domains/validation"

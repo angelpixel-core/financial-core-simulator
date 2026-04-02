@@ -2,7 +2,6 @@ enforce_dependencies: true
 enforce_privacy: true
 public_path: app
 dependencies:
-  - "app/domains/fx"
+  - "app/domains/core"
+  - "app/domains/demo"
   - "app/domains/runs"
-  - "app/domains/ui"
-  - "app/domains/validation"
