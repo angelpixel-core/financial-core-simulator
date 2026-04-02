@@ -81,8 +81,10 @@ module Admin
 
       def normalize_svg(svg_markup)
         sanitized = svg_markup.dup
-        sanitized.sub!(/<svg\b/, '<svg class="app-shell__nav-icon-svg" aria-hidden="true"')
-        sanitized.gsub!(/\s(width|height)="[^"]*"/, '')
+        sanitized.sub!(/<svg\b[^>]*>/) do |match|
+          updated = match.sub(/<svg\b/, '<svg class="app-shell__nav-icon-svg" aria-hidden="true"')
+          updated.gsub(/\s(width|height)="[^"]*"/, '')
+        end
         sanitized.gsub!(/\sstroke="[^"]*"/, ' stroke="currentColor"')
         sanitized.gsub!(/\sstyle="[^"]*"/, '')
         sanitized
