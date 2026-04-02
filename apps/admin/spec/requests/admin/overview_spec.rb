@@ -21,7 +21,6 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response.body).to include(admin_t('overview.system_metrics.title', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_overview.title', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_results.title', locale: :en))
-    expect(response.body).to include(admin_t('overview.validation.title', locale: :en))
     expect(response.body).to include(admin_t('overview.simulation_context.empty', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_results.input_traceability.empty', locale: :en))
     expect(response.body).to include('data-controller="poll"')
@@ -32,7 +31,6 @@ RSpec.describe 'Admin overview', type: :request do
     metrics_index = response.body.index(admin_t('overview.system_metrics.title', locale: :en))
     financial_overview_index = response.body.index(admin_t('overview.financial_overview.title', locale: :en))
     financial_index = response.body.index(admin_t('overview.financial_results.title', locale: :en))
-    quality_index = response.body.index(admin_t('overview.validation.title', locale: :en))
 
     expect(control_index).to be < dataset_index
     expect(dataset_index).to be < state_index
@@ -40,12 +38,12 @@ RSpec.describe 'Admin overview', type: :request do
     expect(simulation_context_index).to be < metrics_index
     expect(metrics_index).to be < financial_overview_index
     expect(financial_overview_index).to be < financial_index
-    expect(financial_index).to be < quality_index
 
     get admin_system_health_path, headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t('overview.financial_results.latest_run.empty', locale: :en))
+    expect(response.body).to include(admin_t('overview.validation.title', locale: :en))
   end
 
   it 'renders Spanish labels when locale is set' do
@@ -63,10 +61,8 @@ RSpec.describe 'Admin overview', type: :request do
 
     expect(nav_labels).to include(
       admin_t('nav.overview', locale: :es),
-      admin_t('nav.runs', locale: :es),
       admin_t('nav.history', locale: :es),
-      admin_t('nav.validation', locale: :es),
-      admin_t('nav.artifacts', locale: :es),
+      admin_t('nav.runs', locale: :es),
       admin_t('nav.docs', locale: :es)
     )
 
@@ -85,15 +81,13 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response.body).to include(%(href="#{admin_system_health_path}"))
 
     overview_index = response.body.index(admin_t('nav.overview', locale: :en))
-    runs_index = response.body.index(admin_t('nav.runs', locale: :en))
     history_index = response.body.index(admin_t('nav.history', locale: :en))
-    validation_index = response.body.index(admin_t('nav.validation', locale: :en))
-    artifacts_index = response.body.index(admin_t('nav.artifacts', locale: :en))
+    runs_index = response.body.index(admin_t('nav.runs', locale: :en))
+    docs_index = response.body.index(admin_t('nav.docs', locale: :en))
 
-    expect(overview_index).to be < runs_index
-    expect(runs_index).to be < history_index
-    expect(history_index).to be < validation_index
-    expect(validation_index).to be < artifacts_index
+    expect(overview_index).to be < history_index
+    expect(history_index).to be < runs_index
+    expect(runs_index).to be < docs_index
   end
 
   it 'renders authenticated shell identity and logout affordance on overview' do
@@ -135,10 +129,8 @@ RSpec.describe 'Admin overview', type: :request do
 
     expect(nav_labels).to include(
       admin_t('nav.overview', locale: :en),
-      admin_t('nav.runs', locale: :en),
       admin_t('nav.history', locale: :en),
-      admin_t('nav.validation', locale: :en),
-      admin_t('nav.artifacts', locale: :en),
+      admin_t('nav.runs', locale: :en),
       admin_t('nav.docs', locale: :en)
     )
     expect(nav_labels).not_to include(admin_t('nav.support', locale: :en))
@@ -190,10 +182,8 @@ RSpec.describe 'Admin overview', type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t('overview.top_accounts.cta_label', locale: :en))
-    expect(response.body).to include(admin_t('overview.validation.cta_label', locale: :en))
 
     expect(response.body).to include(%(href="#{admin_overview_top_accounts_path}"))
-    expect(response.body).to include(%(href="#{admin_overview_ingestion_validation_errors_path}"))
 
     get admin_system_health_path, headers: admin_session_headers
 
@@ -201,8 +191,10 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response.body).to include(admin_t('overview.activity.run_trend.link', locale: :en))
     expect(response.body).to include(admin_t('overview.activity.status_mix.link', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_results.latest_run.link', locale: :en))
+    expect(response.body).to include(admin_t('overview.validation.cta_label', locale: :en))
     expect(response.body).to include(%(href="#{admin_overview_runs_trend_path}"))
     expect(response.body).to include(%(href="#{admin_overview_status_mix_path}"))
+    expect(response.body).to include(%(href="#{admin_overview_ingestion_validation_errors_path}"))
     expect(response.body).to include(%(href="/admin/resources/runs/#{run.id}"))
   end
 

@@ -1,11 +1,10 @@
 es:
   admin:
     nav:
-      overview: "Resumen financiero"
-      runs: "Salud del sistema"
-      history: "Historial"
+      overview: "Resumen"
+      runs: "Salud"
+      history: "Tipos de cambio"
       validation: "Validacion"
-      artifacts: "Artifacts"
       docs: "Docs"
       workspace: "Workspace"
       open_runs: "Abrir runs"

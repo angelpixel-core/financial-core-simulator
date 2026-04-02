@@ -3,7 +3,7 @@ require 'fileutils'
 require 'nokogiri'
 
 RSpec.describe 'Admin keyboard navigation flow', type: :request do
-  it 'supports state-first navigation from overview to run detail, validation, and artifacts' do
+  it 'supports state-first navigation from overview to health and docs' do
     base_dir = Rails.root.join('storage', 'runs', 'spec_keyboard_flow')
     FileUtils.mkdir_p(base_dir)
     result_path = base_dir.join('result.json')
@@ -32,24 +32,28 @@ RSpec.describe 'Admin keyboard navigation flow', type: :request do
     links = nav.css('a')
 
     labels = links.map { |link| link.text.strip }
-    expect(labels).to include('Financial Overview', 'System Health', 'History', 'Validation', 'Artifacts')
+    expected_labels = ['Overview', 'FX Rates', 'Health', 'Docs']
+    ordered_labels = labels.select { |label| expected_labels.include?(label) }
+    expect(ordered_labels).to eq(expected_labels)
+    expect(labels).not_to include('Support', 'Validation', 'Artifacts')
 
-    overview_link = links.find { |node| node.text.strip == 'Financial Overview' }
-    runs_link = links.find { |node| node.text.strip == 'System Health' }
-    validation_link = links.find { |node| node.text.strip == 'Validation' }
-    artifacts_link = links.find { |node| node.text.strip == 'Artifacts' }
+    overview_link = links.find { |node| node.text.strip == 'Overview' }
+    health_link = links.find { |node| node.text.strip == 'Health' }
+    docs_link = links.find { |node| node.text.strip == 'Docs' }
 
     expect(overview_link['aria-current'].delete('"')).to eq('page')
 
-    get runs_link['href'], headers: admin_session_headers
+    expect(overview_link['href']).to start_with('/admin/overview')
+    expect(health_link['href']).to start_with('/admin/system-health')
+    expect(docs_link['href']).to start_with('/admin/docs')
+
+    get health_link['href'], headers: admin_session_headers
     expect(response).to have_http_status(:ok)
 
-    get validation_link['href'], params: context, headers: admin_session_headers
-    expect(response).to have_http_status(:ok)
+    expect(response.body).to include(I18n.t('admin.overview.validation.title'))
 
-    get artifacts_link['href'], params: context, headers: admin_session_headers
+    get docs_link['href'], params: context, headers: admin_session_headers
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include('accounts')
   ensure
     FileUtils.rm_f(result_path) if defined?(result_path)
   end

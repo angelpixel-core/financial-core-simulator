@@ -101,9 +101,12 @@ RSpec.describe 'Admin FX reporting', type: :system do
 
   def ensure_sidebar_expanded
     page.has_css?('.app-shell', wait: 10)
-    return unless page.has_css?('.app-shell.app-shell--sidebar-collapsed', wait: 2)
 
-    find('button[data-action="sidebar#expand"]').click
-    expect(page).to have_no_css('.app-shell.app-shell--sidebar-collapsed', wait: 5)
+    if page.has_css?('.app-shell.app-shell--sidebar-collapsed', wait: 5)
+      find('button[data-action="sidebar#expand"]', visible: :all).click
+    end
+
+    expect(page).to have_no_css('.app-shell.app-shell--sidebar-collapsed', wait: 10)
+    expect(page).to have_css('.app-shell__sidebar-panels', wait: 10)
   end
 end

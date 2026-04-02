@@ -10,8 +10,8 @@ RSpec.describe Admin::Shell::AppShellComponent, type: :component do
 
   it 'renders sidebar links and topbar actions' do
     sidebar_items = [
-      { label: 'Financial Overview', path: '/admin/overview', active: true },
-      { label: 'System Health', path: '/admin/system-health' }
+      { label: 'Overview', path: '/admin/overview', active: true },
+      { label: 'Health', path: '/admin/system-health' }
     ]
     breadcrumb = [
       { label: 'Workspace', path: '/admin/overview' },
@@ -26,8 +26,8 @@ RSpec.describe Admin::Shell::AppShellComponent, type: :component do
                     primary_action: primary_action
                   )) { 'Main content' }
 
-    expect(rendered_content).to include('Financial Overview')
-    expect(rendered_content).to include('System Health')
+    expect(rendered_content).to include('Overview')
+    expect(rendered_content).to include('Health')
     expect(rendered_content).to include('Open Latest Reliable Run')
     expect(rendered_content).to include('Main content')
     expect(rendered_content).to include("aria-label=\"#{I18n.t('admin.shell.sidebar_aria')}\"")
