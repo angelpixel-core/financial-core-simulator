@@ -1,0 +1,10 @@
+en:
+  admin:
+    docs:
+      sections:
+        fx_rates:
+          title: "FX Rates"
+          description: "Rate sources, overrides, and coverage across runs."
+          placeholder:
+            title: "What FX rates coverage delivers"
+            body: "Track FX inputs, overrides, and the timing of rate updates for each run."

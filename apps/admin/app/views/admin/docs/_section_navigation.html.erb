@@ -1,0 +1,20 @@
+<% fallback_key ||= "admin.docs.index.sections_fallback" %>
+<ul class="detail-list">
+  <% sections.each do |section| %>
+    <li>
+      <span><%= section_title(section) %></span>
+      <% if section[:children].present? %>
+        <strong>
+          <%= safe_join(
+            section[:children].map { |child| link_to(section_title(child), admin_docs_section_path(child[:slug])) },
+            ", "
+          ) %>
+        </strong>
+      <% elsif section[:items].present? %>
+        <strong><%= section[:items].join(", ") %></strong>
+      <% else %>
+        <strong><%= t(fallback_key) %></strong>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

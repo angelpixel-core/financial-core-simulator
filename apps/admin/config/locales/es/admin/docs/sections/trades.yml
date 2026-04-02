@@ -1,0 +1,10 @@
+es:
+  admin:
+    docs:
+      sections:
+        trades:
+          title: "Operaciones"
+          description: "Resultados por operación, atribución y cobertura por ejecución."
+          placeholder:
+            title: "Qué aporta la cobertura de operaciones"
+            body: "Define cómo influyen las operaciones en los resultados y dónde investigar desvíos entre ejecuciones."

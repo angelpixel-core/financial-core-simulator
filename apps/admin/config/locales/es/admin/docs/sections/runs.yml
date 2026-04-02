@@ -1,0 +1,10 @@
+es:
+  admin:
+    docs:
+      sections:
+        runs:
+          title: "Ejecuciones"
+          description: "Resúmenes por ejecución que conectan operaciones y tipos de cambio con cada simulación."
+          placeholder:
+            title: "Qué aporta la cobertura de ejecuciones"
+            body: "Usa este espacio para alinear los hallazgos por ejecución con operaciones y tasas FX. Próximamente habrá más detalle."

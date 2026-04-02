@@ -1,0 +1,10 @@
+es:
+  admin:
+    docs:
+      sections:
+        fx_rates:
+          title: "Tipos de cambio"
+          description: "Fuentes de tasas, anulaciones y cobertura entre ejecuciones."
+          placeholder:
+            title: "Qué aporta la cobertura de tipos de cambio"
+            body: "Controla insumos FX, anulaciones y el momento de actualización de tasas por ejecución."

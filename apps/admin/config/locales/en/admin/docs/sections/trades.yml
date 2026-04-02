@@ -1,0 +1,10 @@
+en:
+  admin:
+    docs:
+      sections:
+        trades:
+          title: "Trades"
+          description: "Trade-level results, attribution, and coverage per run."
+          placeholder:
+            title: "What trades coverage delivers"
+            body: "Capture how trades influence outcomes and where to investigate mismatches across runs."

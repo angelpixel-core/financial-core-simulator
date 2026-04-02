@@ -1,0 +1,10 @@
+en:
+  admin:
+    docs:
+      sections:
+        runs:
+          title: "Runs"
+          description: "Execution-level summaries that connect trades and FX rates to each simulation run."
+          placeholder:
+            title: "What runs coverage delivers"
+            body: "Use this space to align run-level insights with trading outcomes and FX inputs. Detailed guidance will follow."

@@ -35,25 +35,27 @@
       </div>
       <div class="dashboard-card">
         <h2><%= t("admin.docs.index.sections_title") %></h2>
-        <ul class="detail-list">
-          <% @sections.each do |section| %>
-            <li>
-              <span><%= section[:title] %></span>
-              <strong><%= section[:items].presence || t("admin.docs.index.sections_fallback") %></strong>
-            </li>
-          <% end %>
-        </ul>
+        <%= render "section_navigation", sections: @sections, fallback_key: "admin.docs.index.sections_fallback" %>
       </div>
     </section>
     <section class="workspace__overview">
       <% @sections.each do |section| %>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
-            <h2><%= section[:title] %></h2>
+            <h2><%= section_title(section) %></h2>
             <a class="overview__link" href="<%= admin_docs_section_path(section[:slug]) %>"><%= t("admin.common.open") %></a>
           </header>
-          <p class="dashboard-card__meta"><%= section[:description] %></p>
-          <% if section[:items].present? %>
+          <p class="dashboard-card__meta"><%= section_description(section) %></p>
+          <% if section[:children].present? %>
+            <ul class="detail-list">
+              <% section[:children].each do |child| %>
+                <li>
+                  <span><%= section_title(child) %></span>
+                  <strong><%= section_description(child) %></strong>
+                </li>
+              <% end %>
+            </ul>
+          <% elsif section[:items].present? %>
             <ul class="detail-list">
               <% section[:items].each do |item| %>
                 <li><span><%= item %></span></li>
