@@ -74,6 +74,12 @@ group :development, :test do
   # Ruby style formatter/linter
   gem "standard", require: false
 
+  # Schema annotations on models
+  gem "annotate", require: false
+
+  # Entity relationship diagrams
+  gem "rails-erd", require: false
+
   gem "rspec-rails", "~> 8.0"
   gem "capybara"
   gem "selenium-webdriver"

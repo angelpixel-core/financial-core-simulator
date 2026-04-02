@@ -1,0 +1,6 @@
+# Annotate configuration for Rails models
+position_in_class: "after"
+position_in_fixture: "after"
+position_in_test: "after"
+position_in_spec: "after"
+position_in_factory: "after"

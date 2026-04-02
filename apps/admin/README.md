@@ -27,3 +27,7 @@ Things you may want to cover:
 
 - Preview endpoint: `POST /admin/demo-datasets/preview` (Turbo Frame: `demo-dataset-preview`).
 - Use the Preview Excel button on the admin overview page to review parsed rows and validation issues before running a full upload.
+
+## ERD and model annotations
+
+- Documentation: `docs/erd.md`.
