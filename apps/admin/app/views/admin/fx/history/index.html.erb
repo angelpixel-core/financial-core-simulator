@@ -4,7 +4,7 @@
 <% sidebar_items = [
   { label: t("admin.nav.overview"), path: admin_overview_path(navigation_context), active: false, icon_key: "overview", external: false }
 ] %>
-<% sidebar_items << { label: t("admin.nav.history"), path: admin_fx_history_index_path(navigation_context), active: true, icon_key: "history", external: false } %>
+<% sidebar_items << { label: t("admin.nav.history"), path: admin_fx_history_index_path(navigation_context), active: true, icon_key: "dollar", external: false } %>
 <% runs_item = { label: t("admin.nav.runs"), path: admin_system_health_path(navigation_context), active: false, icon_key: "runs", external: false } %>
 <% runs_item[:icon_variant] = "sensitive" if shell_role == "admin" %>
 <% sidebar_items << runs_item %>
