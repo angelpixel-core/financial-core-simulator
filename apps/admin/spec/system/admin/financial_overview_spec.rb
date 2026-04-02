@@ -3,6 +3,7 @@ require "capybara/rspec"
 require "bcrypt"
 require "json"
 require "tempfile"
+require_relative "../../support/system_helpers"
 
 RSpec.describe "Admin financial overview", type: :system, js: true do
   let(:email) { "ops@example.com" }
@@ -28,6 +29,7 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
 
     login_as_admin
     visit "/admin/overview"
+    wait_for_financial_overview
 
     expect(page).to have_css('[data-financial-overview-target="emptyState"]:not([hidden])', wait: 10)
     within('[data-controller="financial-overview"]') do
@@ -81,6 +83,7 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
 
     login_as_admin
     visit "/admin/overview"
+    wait_for_financial_overview
 
     expect(page).to have_css('[data-controller="financial-overview"][data-financial-overview-state="ready"]', wait: 10)
     within('[data-controller="financial-overview"]') do
@@ -116,6 +119,7 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
 
     login_as_admin
     visit "/admin/overview"
+    wait_for_financial_overview
 
     expect(page).to have_css('[data-financial-overview-target="pnlFallback"]:not([hidden])', wait: 10)
   end
@@ -141,6 +145,7 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
 
     login_as_admin
     visit "/admin/overview"
+    wait_for_financial_overview
 
     expect(page).to have_css('[data-controller="financial-overview"][data-financial-overview-state="empty"]', wait: 10)
     within('[data-controller="financial-overview"]') do
@@ -163,6 +168,7 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
 
     login_as_admin
     visit "/admin/overview"
+    wait_for_financial_overview
 
     ensure_financial_filters_visible
 
@@ -234,6 +240,7 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
 
     login_as_admin
     visit "/admin/overview"
+    wait_for_financial_overview
 
     expect(page).to have_css('[data-financial-overview-target="volumeChart"].is-ready', wait: 10)
     expect(page).to have_css(".trend-chart__dot--missing", visible: :all)
@@ -259,22 +266,12 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
     click_button I18n.t("admin.auth.form.submit")
   end
 
-  def ensure_sidebar_expanded
-    page.has_css?(".app-shell", wait: 10)
-
-    if page.has_css?(".app-shell.app-shell--sidebar-collapsed", wait: 5)
-      find('button[data-action="sidebar#expand"]', visible: :all).click
-    end
-
-    expect(page).to have_no_css(".app-shell.app-shell--sidebar-collapsed", wait: 10)
-  end
-
   def ensure_financial_filters_visible
-    ensure_sidebar_expanded
+    expand_sidebar
     return if page.has_css?("#financial-account-filter", wait: 5)
 
-    click_link I18n.t("admin.nav.history")
-    ensure_sidebar_expanded
+    click_sidebar_nav("admin.nav.history")
+    expand_sidebar
     expect(page).to have_css("#financial-account-filter", wait: 10)
   end
 end

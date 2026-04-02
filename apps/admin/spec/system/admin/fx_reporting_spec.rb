@@ -1,6 +1,7 @@
 require "rails_helper"
 require "capybara/rspec"
 require "bcrypt"
+require_relative "../../support/system_helpers"
 
 RSpec.describe "Admin FX reporting", type: :system do
   around do |example|
@@ -19,19 +20,23 @@ RSpec.describe "Admin FX reporting", type: :system do
   it "shows the default reporting currency" do
     login
     visit "/admin/overview"
-    ensure_sidebar_expanded
+    wait_for_sidebar_panel("admin.fx.reporting.aria")
 
-    expect(page).to have_select("reporting-currency", selected: "USD")
+    within_sidebar_panel("admin.fx.reporting.aria") do
+      expect(page).to have_select("reporting-currency", selected: "USD")
+    end
   end
 
   it "auto-saves the reporting currency on change" do
     login
     visit "/admin/overview"
-    ensure_sidebar_expanded
+    wait_for_sidebar_panel("admin.fx.reporting.aria")
 
-    select "ARS", from: "reporting-currency"
-
-    expect(page).to have_select("reporting-currency", selected: "ARS")
+    within_sidebar_panel("admin.fx.reporting.aria") do
+      expect(page).to have_css('form[data-controller="auto-submit"] select#reporting-currency', wait: 10)
+      select "ARS", from: "reporting-currency"
+      expect(page).to have_select("reporting-currency", selected: "ARS")
+    end
     expect(ReportingSetting.current.reporting_currency).to eq("ARS")
   end
 
@@ -47,10 +52,14 @@ RSpec.describe "Admin FX reporting", type: :system do
 
     login
     visit "/admin/overview"
-    ensure_sidebar_expanded
+    wait_for_sidebar_panel("admin.fx.reporting.aria")
 
-    fill_in I18n.t("admin.fx.reporting.rate_label", pair: "USD/ARS"), with: "1200.5"
-    find("body").click
+    within_sidebar_panel("admin.fx.reporting.aria") do
+      expect(page).to have_css('form[data-controller="auto-submit"] input#current-daily-rate', wait: 10)
+      fill_in I18n.t("admin.fx.reporting.rate_label", pair: "USD/ARS"), with: "1200.5"
+    end
+
+    page.find("body").click
 
     expect(page).to have_field("current-daily-rate", with: "1200.5", wait: 10)
     expect(FxDailyRate.where(operational_date: Date.new(2026, 3, 30)).exists?).to be(true)
@@ -62,7 +71,7 @@ RSpec.describe "Admin FX reporting", type: :system do
 
     login
     visit "/admin/overview"
-    ensure_sidebar_expanded
+    wait_for_sidebar_panel("admin.fx.reporting.aria")
 
     expect(page).to have_css(".fx-missing-rate")
     fill_in I18n.t("admin.fx.popup.rate_label"), with: "1000.25"
@@ -84,7 +93,7 @@ RSpec.describe "Admin FX reporting", type: :system do
 
     login
     visit "/admin/overview"
-    ensure_sidebar_expanded
+    wait_for_sidebar_panel("admin.fx.reporting.aria")
 
     click_button I18n.t("admin.fx.popup.carry_forward_cta")
 
@@ -97,18 +106,5 @@ RSpec.describe "Admin FX reporting", type: :system do
     fill_in "admin-login-email", with: "ops@example.com"
     fill_in "admin-login-password", with: "secret-pass"
     click_button I18n.t("admin.auth.form.submit")
-  end
-
-  def ensure_sidebar_expanded
-    page.has_css?('[data-controller="sidebar"]', wait: 10)
-
-    if page.has_css?('[data-controller="sidebar"].app-shell--sidebar-collapsed', wait: 5)
-      find('button[data-action="sidebar#expand"]', visible: :all).click
-    end
-
-    expect(page).to have_no_css('[data-controller="sidebar"].app-shell--sidebar-collapsed', wait: 10)
-    expect(page).to have_css(
-      '[data-controller="sidebar"] form[data-controller="auto-submit"] select#reporting-currency', wait: 10
-    )
   end
 end
