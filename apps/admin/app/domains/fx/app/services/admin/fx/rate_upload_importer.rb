@@ -5,9 +5,9 @@ require 'roo'
 module Admin
   module Fx
     class RateUploadImporter
-      Result = Struct.new(:valid?, :errors, keyword_init: true)
+      Result = Struct.new(:valid?, :errors, :message, keyword_init: true)
 
-      REQUIRED_HEADERS = %w[operational_date rate].freeze
+      REQUIRED_HEADERS = %w[id operational_date base_currency quote_currency rate].freeze
 
       def self.call(file_path:, created_by_id: nil, created_by_role: nil, created_context: {}, source_upload_id: nil)
         new(
@@ -37,32 +37,27 @@ module Admin
           return result(false)
         end
 
-        validate_sheet_names!(sheet_names)
-        return result(false) if @errors.any?
-
-        sheet_names.each do |sheet_name|
-          base_currency, quote_currency = pair_from_sheet_name(sheet_name)
-          next if base_currency.nil? || quote_currency.nil?
-
-          sheet = workbook.sheet(sheet_name)
-          headers = sheet.row(1).map { |value| value.to_s.strip }
-          validate_headers!(headers, sheet_name)
-          next if @errors.any?
-
-          next if sheet.last_row.nil? || sheet.last_row < 2
-
-          (2..sheet.last_row).each do |line|
-            row = Hash[[headers, sheet.row(line)].transpose]
-            next if row.values.all?(&:blank?)
-
-            parse_row(row, line, base_currency: base_currency, quote_currency: quote_currency, sheet_name: sheet_name)
-          end
-        end
-
-        if @rows.empty? && @errors.empty?
-          register_error(1, 'EMPTY_FILE', 'No data rows found')
+        if sheet_names.size > 1
+          register_error(1, 'MULTIPLE_SHEETS', 'Template must include a single worksheet')
           return result(false)
         end
+
+        sheet_name = sheet_names.first
+        sheet = workbook.sheet(sheet_name)
+        headers = Array(sheet.row(1)).map { |value| normalize_header(value) }
+        validate_headers!(headers, sheet_name)
+        return result(false) if @errors.any?
+
+        return result(true, message: 'No FX rates found. Upload skipped.') if sheet.last_row.nil? || sheet.last_row < 2
+
+        (2..sheet.last_row).each do |line|
+          row = headers.zip(sheet.row(line)).to_h
+          next if row.values.all?(&:blank?)
+
+          parse_row(row, line, sheet_name: sheet_name)
+        end
+
+        return result(true, message: 'No FX rates found. Upload skipped.') if @rows.empty? && @errors.empty?
 
         return result(false) if @errors.any?
 
@@ -96,13 +91,36 @@ module Admin
         register_error(1, 'INVALID_HEADERS', "Sheet #{sheet_name} missing columns: #{missing.join(', ')}")
       end
 
-      def parse_row(row, line, base_currency:, quote_currency:, sheet_name:)
+      def normalize_header(value)
+        value.to_s.strip.downcase.gsub(/\s+/, '_')
+      end
+
+      def parse_row(row, line, sheet_name:)
+        return if row['rate'].blank?
+
         operational_date = parse_date(row['operational_date'])
         rate = parse_rate(row['rate'])
+        base_currency = row['base_currency'].to_s.strip.upcase
+        quote_currency = row['quote_currency'].to_s.strip.upcase
         line_label = "#{sheet_name}:#{line}"
 
         if operational_date.nil?
           register_error(line_label, 'INVALID_DATE', 'Invalid operational date')
+          return
+        end
+
+        if base_currency.empty? || quote_currency.empty?
+          register_error(line_label, 'MISSING_FIELDS', 'Missing required currency values')
+          return
+        end
+
+        unless base_currency.match?(FxDailyRate::CURRENCY_CODE_FORMAT) && quote_currency.match?(FxDailyRate::CURRENCY_CODE_FORMAT)
+          register_error(line_label, 'INVALID_PAIR', 'Invalid currency code format')
+          return
+        end
+
+        unless supported_pair?(base_currency, quote_currency)
+          register_error(line_label, 'UNSUPPORTED_PAIR', 'Unsupported FX pair')
           return
         end
 
@@ -128,12 +146,18 @@ module Admin
         return value.to_date if value.respond_to?(:to_date)
         return nil if value.nil?
 
+        return Date.new(1899, 12, 30) + value.to_i if value.is_a?(Numeric)
+
         string_value = value.to_s.strip
         return nil if string_value.empty?
 
         Date.iso8601(string_value)
       rescue ArgumentError
-        nil
+        begin
+          Date.parse(string_value)
+        rescue ArgumentError
+          nil
+        end
       end
 
       def parse_rate(value)
@@ -142,7 +166,15 @@ module Admin
         string_value = value.to_s.strip
         return nil if string_value.empty?
 
-        BigDecimal(string_value)
+        normalized = if string_value.include?(',') && string_value.include?('.')
+                       string_value.delete(',')
+                     elsif string_value.include?(',')
+                       string_value.tr(',', '.')
+                     else
+                       string_value
+                     end
+
+        BigDecimal(normalized)
       rescue ArgumentError
         nil
       end
@@ -156,34 +188,12 @@ module Admin
                              .map { |pair| pair.map(&:upcase) }
       end
 
-      def validate_sheet_names!(sheet_names)
-        invalid_sheets = sheet_names.reject do |sheet_name|
-          base_currency, quote_currency = pair_from_sheet_name(sheet_name)
-          next true if base_currency.nil? || quote_currency.nil?
-
-          valid_codes = base_currency.match?(FxDailyRate::CURRENCY_CODE_FORMAT) &&
-                        quote_currency.match?(FxDailyRate::CURRENCY_CODE_FORMAT)
-          valid_codes && supported_pair?(base_currency, quote_currency)
-        end
-
-        return if invalid_sheets.empty?
-
-        register_error(1, 'UNSUPPORTED_PAIR', "Unsupported FX pair sheets: #{invalid_sheets.join(', ')}")
-      end
-
-      def pair_from_sheet_name(sheet_name)
-        tokens = sheet_name.to_s.strip.upcase.split(/[^A-Z0-9]+/)
-        return [nil, nil] unless tokens.size == 2
-
-        [tokens[0], tokens[1]]
-      end
-
       def register_error(line, code, message)
         @errors << { line: line, code: code, message: message }
       end
 
-      def result(valid)
-        Result.new(valid?: valid, errors: @errors)
+      def result(valid, message: nil)
+        Result.new(valid?: valid, errors: @errors, message: message)
       end
     end
   end

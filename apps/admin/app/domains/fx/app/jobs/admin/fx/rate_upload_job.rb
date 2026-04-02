@@ -17,7 +17,7 @@ class Admin::Fx::RateUploadJob < ApplicationJob
       upload.update!(
         status: 'success',
         error_count: 0,
-        error_message: nil,
+        error_message: result.message,
         processed_at: Time.current
       )
     else

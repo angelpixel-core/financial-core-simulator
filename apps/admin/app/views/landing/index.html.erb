@@ -25,7 +25,7 @@
       <p class="landing-page__cta-note"><%= t("admin.landing.hero.cta.dataset_note") %></p>
     </div>
     <div class="landing-page__cta-group landing-page__cta-group--secondary">
-      <a class="landing-page__cta landing-page__cta--ghost" href="<%= template_admin_fx_rate_uploads_path(locale: I18n.locale) %>"><%= t("admin.fx.history.upload.template_cta") %></a>
+      <a class="landing-page__cta landing-page__cta--ghost" href="<%= template_admin_fx_rate_uploads_path(locale: I18n.locale) %>" data-turbo="false" download><%= t("admin.fx.history.upload.template_cta") %></a>
     </div>
   </section>
   <section class="landing-page__section">

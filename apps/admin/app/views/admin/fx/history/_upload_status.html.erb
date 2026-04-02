@@ -3,5 +3,8 @@
     <p class="fx-history-upload__status-text">
       <%= t("admin.fx.history.upload.status.#{upload.status}", count: upload.error_count.to_i) %>
     </p>
+    <% if upload.error_message.present? %>
+      <p class="fx-history-upload__status-detail"><%= upload.error_message %></p>
+    <% end %>
   <% end %>
 </div>

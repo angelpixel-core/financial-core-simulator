@@ -4,6 +4,7 @@ class Admin::Fx::RateUploadsController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :authorize_admin_session_operator!
+  skip_before_action :authorize_admin_session_operator!, only: :template
 
   def create
     upload = nil
@@ -21,6 +22,8 @@ class Admin::Fx::RateUploadsController < ApplicationController
       created_context: request_context,
       original_filename: file.original_filename
     )
+    session[:fx_rate_upload_id] = upload.id
+    session[:fx_rate_upload_active] = true
 
     upload.update!(file_path: persist_file(file, upload.id))
     broadcast_status(upload)
