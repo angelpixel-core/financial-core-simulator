@@ -27,42 +27,43 @@
   secondary_action: secondary_action
 ) do %>
   <main class="workspace fx-history-page">
-    <section class="workspace__hero">
-      <div class="workspace__intro">
+    <section class="workspace__hero fx-history-hero">
+      <div class="workspace__intro fx-history-hero__intro">
         <p class="workspace__eyebrow"><%= t("admin.nav.workspace") %></p>
         <h1><%= t("admin.fx.history.title") %></h1>
         <p class="workspace__subtitle"><%= t("admin.fx.history.subtitle") %></p>
       </div>
+      <% if admin_shell_operator? || admin_shell_admin? %>
+        <div class="fx-history-hero__upload">
+          <% if @upload_status_stream.present? %>
+            <%= turbo_stream_from @upload_status_stream %>
+          <% end %>
+          <section class="dashboard-card fx-history-upload">
+            <header class="dashboard-card__header">
+              <h2><%= t("admin.fx.history.upload.title") %></h2>
+              <p class="dashboard-card__meta"><%= t("admin.fx.history.upload.subtitle") %></p>
+            </header>
+            <%= form_with url: admin_fx_rate_uploads_path(locale: I18n.locale),
+                          method: :post,
+                          multipart: true,
+                          local: true,
+                          class: "fx-history-upload__form",
+                          data: { controller: "auto-submit" } do |form| %>
+              <%= hidden_field_tag :locale, I18n.locale %>
+              <div class="fx-history-upload__row">
+                <%= form.file_field :file,
+                  accept: ".xlsx",
+                  class: "fx-history-upload__file",
+                  data: { action: "change->auto-submit#submit" } %>
+              </div>
+              <p class="fx-history-upload__hint"><%= t("admin.fx.history.upload.hint") %></p>
+            <% end %>
+            <%= render "admin/fx/history/upload_status", upload: @latest_upload %>
+          </section>
+        </div>
+      <% end %>
     </section>
     <section class="workspace__overview">
-      <% if admin_shell_operator? || admin_shell_admin? %>
-        <% if @upload_status_stream.present? %>
-          <%= turbo_stream_from @upload_status_stream %>
-        <% end %>
-        <section class="dashboard-card fx-history-upload">
-          <header class="dashboard-card__header">
-            <h2><%= t("admin.fx.history.upload.title") %></h2>
-            <p class="dashboard-card__meta"><%= t("admin.fx.history.upload.subtitle") %></p>
-          </header>
-          <%= form_with url: admin_fx_rate_uploads_path(locale: I18n.locale),
-                        method: :post,
-                        multipart: true,
-                        local: true,
-                        class: "fx-history-upload__form",
-                        data: { controller: "auto-submit" } do |form| %>
-            <%= hidden_field_tag :locale, I18n.locale %>
-            <div class="fx-history-upload__row">
-              <%= form.file_field :file,
-                accept: ".xlsx",
-                class: "fx-history-upload__file",
-                data: { action: "change->auto-submit#submit" } %>
-              <%= form.submit t("admin.fx.history.upload.cta"), class: "fx-history-upload__button" %>
-            </div>
-            <p class="fx-history-upload__hint"><%= t("admin.fx.history.upload.hint") %></p>
-          <% end %>
-          <%= render "admin/fx/history/upload_status", upload: @latest_upload %>
-        </section>
-      <% end %>
       <% if @empty_history %>
         <section class="dashboard-card">
           <p class="empty-state"><%= t("admin.fx.history.empty") %></p>
