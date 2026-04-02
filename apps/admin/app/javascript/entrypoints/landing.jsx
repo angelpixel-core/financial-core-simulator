@@ -182,7 +182,6 @@ function Landing({ demoPath, sourceUrl, documentationUrl }) {
             <div className="landing__hero-actions">
               <a id="demo" className="landing__primary-cta" href={demoPath}>View Demo</a>
               <a className="landing__secondary-cta" href="#architecture">Explore Architecture</a>
-              <a className="landing__secondary-cta" href={documentationUrl}>Documentation</a>
             </div>
 
             <div className="landing__stats">
