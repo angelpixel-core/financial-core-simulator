@@ -167,6 +167,85 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
     expect(page).to have_current_path(/market_id=BTC-USD/, url: true)
   end
 
+  it 'highlights missing FX points and shows the tooltip warning' do
+    FxRateGap.create!(
+      operational_date: Date.new(2026, 3, 29),
+      base_currency: 'USD',
+      quote_currency: 'ARS',
+      status: 'open'
+    )
+    FxDailyRate.create!(
+      operational_date: Date.new(2026, 3, 30),
+      base_currency: 'USD',
+      quote_currency: 'ARS',
+      rate: BigDecimal(100),
+      source: 'manual'
+    )
+    FxDailyRate.create!(
+      operational_date: Date.new(2026, 3, 31),
+      base_currency: 'USD',
+      quote_currency: 'ARS',
+      rate: BigDecimal(110),
+      source: 'manual'
+    )
+
+    temp = Tempfile.new(['result', '.json'])
+    temp.write(JSON.generate(
+                 {
+                   'timeline' => {
+                     'schema_version' => '1.0',
+                     'points' => [
+                       {
+                         'timestamp' => '2026-03-30T12:00:00Z',
+                         'realized_pnl' => '2',
+                         'unrealized_pnl' => '3',
+                         'total_pnl' => '5'
+                       },
+                       {
+                         'timestamp' => '2026-03-31T12:00:00Z',
+                         'realized_pnl' => '3',
+                         'unrealized_pnl' => '4',
+                         'total_pnl' => '7'
+                       }
+                     ]
+                   }
+                 }
+               ))
+    temp.rewind
+
+    Run.create!(
+      status: :succeeded,
+      input_json: {
+        'schemaVersion' => '1.0',
+        'trades' => [
+          { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => '1.0', 'price' => '100.0', 'symbol' => 'BTC-USD' },
+          { 'timestamp' => '2026-03-30T12:00:00Z', 'quantity' => '1.0', 'price' => '100.0', 'symbol' => 'BTC-USD' }
+        ],
+        'fxContext' => { 'reportingCurrency' => 'ARS' }
+      },
+      artifacts: { 'result_json_path' => temp.path }
+    )
+
+    login_as_admin
+    visit '/admin/overview'
+
+    expect(page).to have_css('[data-financial-overview-target="volumeChart"].is-ready', wait: 10)
+    expect(page).to have_css('.trend-chart__dot--missing', visible: :all)
+
+    warning_text = I18n.t('admin.overview.financial_overview.missing_rate_tooltip')
+    within('[data-financial-overview-target="volumeChart"]') do
+      find('.trend-chart__dot--missing', match: :first, visible: :all).hover
+      expect(page).to have_content(warning_text)
+    end
+    within('[data-financial-overview-target="pnlChart"]') do
+      find('.recharts-line-curve', match: :first).hover
+      expect(page).not_to have_content(warning_text)
+    end
+  ensure
+    temp.close
+    temp.unlink
+  end
+
   def login_as_admin
     visit '/admin/login'
     fill_in 'admin-login-email', with: email

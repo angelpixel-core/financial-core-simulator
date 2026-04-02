@@ -125,6 +125,14 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
     end
 
     it 'scales trade volume using the FX rate when present' do
+      FxDailyRate.create!(
+        operational_date: Date.new(2026, 3, 29),
+        base_currency: 'USD',
+        quote_currency: 'ARS',
+        rate: BigDecimal(100),
+        source: 'manual'
+      )
+
       run = Run.create!(
         status: :succeeded,
         input_json: {
@@ -132,39 +140,6 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
             { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 2, 'price' => 10, 'symbol' => 'BTC-USD' },
             { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 1, 'price' => 5, 'symbol' => 'BTC-USD' }
           ]
-        },
-        fx_context: {
-          'reportingCurrency' => 'ARS',
-          'rate' => '100',
-          'rateMissing' => false
-        }
-      )
-
-      metrics = described_class.new(run: run).call
-
-      expect(metrics[:trade_volume]).to eq([
-                                             {
-                                               timestamp: '2026-03-29',
-                                               volume: 2500.0,
-                                               unit_type: 'quote',
-                                               unit_code: 'ARS'
-                                             }
-                                           ])
-    end
-
-    it 'uses fxContext from input_json when run fx_context is incomplete' do
-      run = Run.create!(
-        status: :succeeded,
-        input_json: {
-          'trades' => [
-            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 2, 'price' => 10, 'symbol' => 'BTC-USD' },
-            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 1, 'price' => 5, 'symbol' => 'BTC-USD' }
-          ],
-          'fxContext' => {
-            'reportingCurrency' => 'ARS',
-            'rate' => '100',
-            'rateMissing' => 'false'
-          }
         },
         fx_context: {
           'reportingCurrency' => 'ARS'
@@ -178,7 +153,47 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
                                                timestamp: '2026-03-29',
                                                volume: 2500.0,
                                                unit_type: 'quote',
-                                               unit_code: 'ARS'
+                                               unit_code: 'ARS',
+                                               fx_rate: '100.0',
+                                               fx_rate_date: '2026-03-29',
+                                               fx_missing: false
+                                             }
+                                           ])
+    end
+
+    it 'uses fxContext from input_json when run fx_context is missing' do
+      FxDailyRate.create!(
+        operational_date: Date.new(2026, 3, 29),
+        base_currency: 'USD',
+        quote_currency: 'ARS',
+        rate: BigDecimal(100),
+        source: 'manual'
+      )
+
+      run = Run.create!(
+        status: :succeeded,
+        input_json: {
+          'trades' => [
+            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 2, 'price' => 10, 'symbol' => 'BTC-USD' },
+            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 1, 'price' => 5, 'symbol' => 'BTC-USD' }
+          ],
+          'fxContext' => {
+            'reportingCurrency' => 'ARS'
+          }
+        }
+      )
+
+      metrics = described_class.new(run: run).call
+
+      expect(metrics[:trade_volume]).to eq([
+                                             {
+                                               timestamp: '2026-03-29',
+                                               volume: 2500.0,
+                                               unit_type: 'quote',
+                                               unit_code: 'ARS',
+                                               fx_rate: '100.0',
+                                               fx_rate_date: '2026-03-29',
+                                               fx_missing: false
                                              }
                                            ])
     end
@@ -331,6 +346,14 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
     end
 
     it 'scales pnl daily values using the FX rate when present' do
+      FxDailyRate.create!(
+        operational_date: Date.new(2026, 3, 29),
+        base_currency: 'USD',
+        quote_currency: 'ARS',
+        rate: BigDecimal(150),
+        source: 'manual'
+      )
+
       temp = Tempfile.new(['result', '.json'])
       temp.write(JSON.generate(
                    {
@@ -354,21 +377,181 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
         input_json: { 'trades' => [] },
         artifacts: { 'result_json_path' => temp.path },
         fx_context: {
-          'reportingCurrency' => 'ARS',
-          'rate' => '150',
-          'rateMissing' => false
+          'reportingCurrency' => 'ARS'
         }
       )
 
       metrics = described_class.new(run: run).call
 
       expect(metrics[:pnl_daily]).to eq([
-                                          { timestamp: '2026-03-29', realized_pnl: 150.0, unrealized_pnl: 300.0,
-                                            total_pnl: 450.0 }
+                                          {
+                                            timestamp: '2026-03-29',
+                                            realized_pnl: 150.0,
+                                            unrealized_pnl: 300.0,
+                                            total_pnl: 450.0,
+                                            fx_rate: '150.0',
+                                            fx_rate_date: '2026-03-29',
+                                            fx_missing: false
+                                          }
                                         ])
     ensure
       temp.close
       temp.unlink
+    end
+
+    it 'keeps USD values when the daily FX rate is missing' do
+      FxRateGap.create!(
+        operational_date: Date.new(2026, 3, 29),
+        base_currency: 'USD',
+        quote_currency: 'ARS',
+        status: 'open'
+      )
+
+      temp = Tempfile.new(['result', '.json'])
+      temp.write(JSON.generate(
+                   {
+                     'timeline' => {
+                       'schema_version' => '1.0',
+                       'points' => [
+                         {
+                           'timestamp' => '2026-03-29T12:00:00Z',
+                           'realized_pnl' => '1',
+                           'unrealized_pnl' => '2',
+                           'total_pnl' => '3'
+                         }
+                       ]
+                     }
+                   }
+                 ))
+      temp.rewind
+
+      run = Run.create!(
+        status: :succeeded,
+        input_json: {
+          'trades' => [
+            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 2, 'price' => 10, 'symbol' => 'BTC-USD' },
+            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 1, 'price' => 5, 'symbol' => 'BTC-USD' }
+          ]
+        },
+        artifacts: { 'result_json_path' => temp.path },
+        fx_context: {
+          'reportingCurrency' => 'ARS'
+        }
+      )
+
+      metrics = described_class.new(run: run).call
+
+      expect(metrics[:trade_volume]).to eq([
+                                             {
+                                               timestamp: '2026-03-29',
+                                               volume: 25.0,
+                                               unit_type: 'quote',
+                                               unit_code: 'USD',
+                                               fx_rate: nil,
+                                               fx_rate_date: '2026-03-29',
+                                               fx_missing: true
+                                             }
+                                           ])
+      expect(metrics[:pnl_daily]).to eq([
+                                          {
+                                            timestamp: '2026-03-29',
+                                            realized_pnl: 1.0,
+                                            unrealized_pnl: 2.0,
+                                            total_pnl: 3.0,
+                                            fx_rate: nil,
+                                            fx_rate_date: '2026-03-29',
+                                            fx_missing: true
+                                          }
+                                        ])
+    ensure
+      temp.close
+      temp.unlink
+    end
+
+    it 'does not apply per-day FX when reporting currency is USD' do
+      temp = Tempfile.new(['result', '.json'])
+      temp.write(JSON.generate(
+                   {
+                     'timeline' => {
+                       'schema_version' => '1.0',
+                       'points' => [
+                         {
+                           'timestamp' => '2026-03-29T12:00:00Z',
+                           'realized_pnl' => '1',
+                           'unrealized_pnl' => '2',
+                           'total_pnl' => '3'
+                         }
+                       ]
+                     }
+                   }
+                 ))
+      temp.rewind
+
+      run = Run.create!(
+        status: :succeeded,
+        input_json: {
+          'trades' => [
+            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 2, 'price' => 10, 'symbol' => 'BTC-USD' }
+          ]
+        },
+        artifacts: { 'result_json_path' => temp.path },
+        fx_context: {
+          'reportingCurrency' => 'USD'
+        }
+      )
+
+      metrics = described_class.new(run: run).call
+
+      expect(metrics[:trade_volume]).to eq([
+                                             {
+                                               timestamp: '2026-03-29',
+                                               volume: 20.0,
+                                               unit_type: 'quote',
+                                               unit_code: 'USD'
+                                             }
+                                           ])
+      expect(metrics[:pnl_daily]).to eq([
+                                          { timestamp: '2026-03-29', realized_pnl: 1.0, unrealized_pnl: 2.0,
+                                            total_pnl: 3.0 }
+                                        ])
+    ensure
+      temp.close
+      temp.unlink
+    end
+
+    it 'batches FX availability lookups for daily conversion' do
+      FxDailyRate.create!(
+        operational_date: Date.new(2026, 3, 29),
+        base_currency: 'USD',
+        quote_currency: 'ARS',
+        rate: BigDecimal(100),
+        source: 'manual'
+      )
+      FxDailyRate.create!(
+        operational_date: Date.new(2026, 3, 30),
+        base_currency: 'USD',
+        quote_currency: 'ARS',
+        rate: BigDecimal(110),
+        source: 'manual'
+      )
+
+      run = Run.create!(
+        status: :succeeded,
+        input_json: {
+          'trades' => [
+            { 'timestamp' => '2026-03-29T12:00:00Z', 'quantity' => 1, 'price' => 10, 'symbol' => 'BTC-USD' },
+            { 'timestamp' => '2026-03-30T12:00:00Z', 'quantity' => 1, 'price' => 10, 'symbol' => 'BTC-USD' }
+          ]
+        },
+        fx_context: {
+          'reportingCurrency' => 'ARS'
+        }
+      )
+
+      expect(FxDailyRate).to receive(:where).once.and_call_original
+      expect(FxRateGap).to receive(:open_status).once.and_call_original
+
+      described_class.new(run: run).call
     end
   end
 end

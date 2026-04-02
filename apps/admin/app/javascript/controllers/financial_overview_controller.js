@@ -33,7 +33,8 @@ export default class extends Controller {
     activityTooltipLabel: { type: String, default: "Trades" },
     volumeTooltipLabel: { type: String, default: "Volume" },
     pnlTitle: { type: String, default: "PnL" },
-    pnlTooltipLabel: { type: String, default: "Total PnL" }
+    pnlTooltipLabel: { type: String, default: "Total PnL" },
+    missingRateTooltip: { type: String, default: "" }
   }
 
   connect() {
@@ -194,7 +195,8 @@ export default class extends Controller {
 
     const chartData = points.map((point) => ({
       label: this.formatTimestamp(point.timestamp),
-      volume: Number(point.volume || 0)
+      volume: Number(point.volume || 0),
+      fxMissing: Boolean(point.fx_missing)
     }))
 
     this.volumeRoot = this.volumeRoot || createRoot(this.volumeChartTarget)
@@ -202,6 +204,18 @@ export default class extends Controller {
     const tooltip = ({ active, payload, label }) => {
       if (!active || !payload || !payload.length) return null
       const value = Number(payload[0]?.value || 0)
+      const fxMissing = Boolean(payload[0]?.payload?.fxMissing)
+      const missingLine = fxMissing && this.missingRateTooltipValue
+        ? React.createElement(
+            "p",
+            { className: "trend-chart__tooltip-warning" },
+            React.createElement("span", {
+              className: "trend-chart__tooltip-dot trend-chart__tooltip-dot--missing",
+              "aria-hidden": "true"
+            }),
+            React.createElement("span", null, this.missingRateTooltipValue)
+          )
+        : null
 
       return React.createElement(
         "div",
@@ -213,8 +227,20 @@ export default class extends Controller {
           React.createElement("span", { className: "trend-chart__tooltip-dot", "aria-hidden": "true" }),
           React.createElement("span", null, this.volumeTooltipLabelValue),
           React.createElement("strong", null, value.toFixed(2))
-        )
+        ),
+        missingLine
       )
+    }
+
+    const dot = (props) => {
+      if (!props?.payload?.fxMissing) return null
+
+      return React.createElement("circle", {
+        cx: props.cx,
+        cy: props.cy,
+        r: 4,
+        className: "trend-chart__dot trend-chart__dot--missing"
+      })
     }
 
     this.volumeRoot.render(
@@ -255,7 +281,7 @@ export default class extends Controller {
               name: this.volumeTooltipLabelValue,
               stroke: "#38bdf8",
               strokeWidth: 2,
-              dot: false
+              dot: dot
             })
           )
         )
@@ -270,7 +296,8 @@ export default class extends Controller {
 
     const chartData = points.map((point) => ({
       label: this.formatTimestamp(point.timestamp),
-      totalPnl: Number(point.total_pnl || 0)
+      totalPnl: Number(point.total_pnl || 0),
+      fxMissing: Boolean(point.fx_missing)
     }))
 
     this.pnlRoot = this.pnlRoot || createRoot(this.pnlChartTarget)
@@ -278,6 +305,18 @@ export default class extends Controller {
     const tooltip = ({ active, payload, label }) => {
       if (!active || !payload || !payload.length) return null
       const value = Number(payload[0]?.value || 0)
+      const fxMissing = Boolean(payload[0]?.payload?.fxMissing)
+      const missingLine = fxMissing && this.missingRateTooltipValue
+        ? React.createElement(
+            "p",
+            { className: "trend-chart__tooltip-warning" },
+            React.createElement("span", {
+              className: "trend-chart__tooltip-dot trend-chart__tooltip-dot--missing",
+              "aria-hidden": "true"
+            }),
+            React.createElement("span", null, this.missingRateTooltipValue)
+          )
+        : null
 
       return React.createElement(
         "div",
@@ -289,8 +328,20 @@ export default class extends Controller {
           React.createElement("span", { className: "trend-chart__tooltip-dot", "aria-hidden": "true" }),
           React.createElement("span", null, this.pnlTooltipLabelValue),
           React.createElement("strong", null, value.toFixed(2))
-        )
+        ),
+        missingLine
       )
+    }
+
+    const dot = (props) => {
+      if (!props?.payload?.fxMissing) return null
+
+      return React.createElement("circle", {
+        cx: props.cx,
+        cy: props.cy,
+        r: 4,
+        className: "trend-chart__dot trend-chart__dot--missing"
+      })
     }
 
     this.pnlRoot.render(
@@ -331,7 +382,7 @@ export default class extends Controller {
               name: this.pnlTooltipLabelValue,
               stroke: "#f59e0b",
               strokeWidth: 2,
-              dot: false
+              dot: dot
             })
           )
         )

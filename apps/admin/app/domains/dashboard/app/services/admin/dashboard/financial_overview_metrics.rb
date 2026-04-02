@@ -15,14 +15,23 @@ module Admin
 
       def call
         persisted = persisted_metrics
-        return persisted if persisted
+        return persisted if persisted && !apply_daily_fx?
 
         trades = filtered_trades
-        pnl_daily = apply_fx_to_pnl(PnlTimelineAggregator.new(points: filtered_timeline_points).call)
+        trade_volume_points = trade_volume(trades)
+        pnl_daily = PnlTimelineAggregator.new(points: filtered_timeline_points).call
+
+        if apply_daily_fx?
+          fx_map = build_fx_map(trade_volume_points, pnl_daily)
+          trade_volume_points = apply_daily_fx_to_trade_volume(trade_volume_points, fx_map)
+          pnl_daily = apply_daily_fx_to_pnl(pnl_daily, fx_map)
+        else
+          pnl_daily = apply_fx_to_pnl(pnl_daily)
+        end
 
         {
           trade_activity: trade_activity(trades),
-          trade_volume: trade_volume(trades),
+          trade_volume: trade_volume_points,
           pnl_daily: pnl_daily
         }
       end
@@ -172,8 +181,8 @@ module Admin
         unit = resolve_unit(trades)
         return [] if unit.nil?
 
-        rate = fx_rate_multiplier
-        reporting_currency = rate.nil? ? nil : fx_reporting_currency
+        rate = apply_daily_fx? ? nil : fx_rate_multiplier
+        reporting_currency = rate.nil? ? nil : reporting_currency_value
 
         grouped = trades.group_by { |trade| trade[:timestamp] }
 
@@ -278,6 +287,149 @@ module Admin
         end
       end
 
+      def apply_daily_fx_to_trade_volume(points, fx_map)
+        base_currency = Admin::Fx::RateResolver::BASE_CURRENCY
+        reporting_currency = reporting_currency_value
+
+        points.map do |point|
+          next point unless point.is_a?(Hash)
+
+          timestamp = point[:timestamp] || point['timestamp']
+          operational_date = operational_date_for(timestamp)
+          fx_entry = fx_entry_for(fx_map, operational_date)
+
+          volume = parse_decimal(point[:volume] || point['volume'])
+          if fx_entry[:missing] || volume.nil?
+            converted_volume = volume.nil? ? point[:volume] || point['volume'] : volume.to_f
+            unit_code = base_currency
+          else
+            converted_volume = (volume * fx_entry[:rate]).to_f
+            unit_code = reporting_currency
+          end
+
+          {
+            timestamp: timestamp,
+            volume: converted_volume,
+            unit_type: point[:unit_type] || point['unit_type'],
+            unit_code: unit_code,
+            fx_rate: fx_entry[:rate_payload],
+            fx_rate_date: fx_entry[:rate_date]&.iso8601,
+            fx_missing: fx_entry[:missing]
+          }
+        end
+      end
+
+      def apply_daily_fx_to_pnl(points, fx_map)
+        points.map do |entry|
+          next entry unless entry.is_a?(Hash)
+
+          timestamp = entry[:timestamp] || entry['timestamp']
+          operational_date = operational_date_for(timestamp)
+          fx_entry = fx_entry_for(fx_map, operational_date)
+
+          realized = parse_decimal(entry[:realized_pnl] || entry['realized_pnl'])
+          unrealized = parse_decimal(entry[:unrealized_pnl] || entry['unrealized_pnl'])
+          total = parse_decimal(entry[:total_pnl] || entry['total_pnl'])
+
+          if fx_entry[:missing] || realized.nil? || unrealized.nil? || total.nil?
+            realized_value = realized.nil? ? entry[:realized_pnl] || entry['realized_pnl'] : realized.to_f
+            unrealized_value = unrealized.nil? ? entry[:unrealized_pnl] || entry['unrealized_pnl'] : unrealized.to_f
+            total_value = total.nil? ? entry[:total_pnl] || entry['total_pnl'] : total.to_f
+          else
+            realized_value = (realized * fx_entry[:rate]).to_f
+            unrealized_value = (unrealized * fx_entry[:rate]).to_f
+            total_value = (total * fx_entry[:rate]).to_f
+          end
+
+          {
+            timestamp: timestamp,
+            realized_pnl: realized_value,
+            unrealized_pnl: unrealized_value,
+            total_pnl: total_value,
+            fx_rate: fx_entry[:rate_payload],
+            fx_rate_date: fx_entry[:rate_date]&.iso8601,
+            fx_missing: fx_entry[:missing]
+          }
+        end
+      end
+
+      def apply_daily_fx?
+        reporting_currency = reporting_currency_value
+        reporting_currency.present? && reporting_currency != Admin::Fx::RateResolver::BASE_CURRENCY
+      end
+
+      def build_fx_map(*series)
+        reporting_currency = reporting_currency_value
+        return {} if reporting_currency.blank?
+
+        dates = series.flat_map { |points| collect_operational_dates(points) }.uniq
+        return {} if dates.empty?
+
+        base_currency = Admin::Fx::RateResolver::BASE_CURRENCY
+
+        rates = FxDailyRate.where(
+          operational_date: dates,
+          base_currency: base_currency,
+          quote_currency: reporting_currency
+        )
+        rates_by_date = rates.index_by(&:operational_date)
+
+        gaps = FxRateGap.open_status.where(
+          operational_date: dates,
+          base_currency: base_currency,
+          quote_currency: reporting_currency
+        )
+        gaps_by_date = gaps.index_by(&:operational_date)
+
+        dates.each_with_object({}) do |date, acc|
+          rate_record = rates_by_date[date]
+          gap = gaps_by_date[date]
+          missing = gap.present? || rate_record.nil? || rate_record.rate.nil? || rate_record.source == 'placeholder'
+          rate_value = missing || rate_record.nil? ? nil : parse_decimal(rate_record.rate)
+
+          acc[date] = {
+            rate: rate_value,
+            rate_payload: rate_value&.to_s('F'),
+            missing: missing,
+            rate_date: date
+          }
+        end
+      end
+
+      def collect_operational_dates(points)
+        Array(points).filter_map do |point|
+          next unless point.is_a?(Hash)
+
+          timestamp = point[:timestamp] || point['timestamp']
+          operational_date_for(timestamp)
+        end
+      end
+
+      def operational_date_for(timestamp)
+        return nil if timestamp.blank?
+
+        return timestamp if timestamp.is_a?(Date)
+
+        return Date.iso8601(timestamp) if timestamp.is_a?(String) && timestamp.match?(/\A\d{4}-\d{2}-\d{2}\z/)
+
+        Admin::Fx::OperationalDate.call(timestamp: timestamp)
+      rescue ArgumentError
+        nil
+      end
+
+      def fx_entry_for(fx_map, operational_date)
+        entry = operational_date.nil? ? nil : fx_map[operational_date]
+
+        return entry if entry
+
+        {
+          rate: nil,
+          rate_payload: nil,
+          missing: true,
+          rate_date: operational_date
+        }
+      end
+
       def fx_rate_multiplier
         context = fx_context
         return nil unless context
@@ -292,16 +444,16 @@ module Admin
         rate
       end
 
-      def fx_reporting_currency
+      def reporting_currency_value
         context = fx_context
-        return nil unless context
-
-        rate_missing = cast_boolean(context_value(context, 'rateMissing', :rateMissing, 'rate_missing', :rate_missing))
-        return nil if rate_missing
+        return ReportingSetting.current.reporting_currency unless context
 
         value = context_value(context, 'reportingCurrency', :reportingCurrency, 'reporting_currency',
                               :reporting_currency)
-        value.to_s.strip.presence
+        value = value.to_s.strip.presence
+        return value if value.present?
+
+        ReportingSetting.current.reporting_currency
       end
 
       def fx_context

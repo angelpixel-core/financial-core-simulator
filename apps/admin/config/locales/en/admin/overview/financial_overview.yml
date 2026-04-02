@@ -7,6 +7,7 @@ en:
         empty_title: "No trade activity yet."
         empty_body: "Load a dataset with trades to populate trade activity and volume."
         reporting_currency: "Reporting currency: %{currency}"
+        missing_rate_tooltip: "FX rate missing for this day; value shown in USD."
         filters:
           account: "Account"
           account_all: "All accounts"
