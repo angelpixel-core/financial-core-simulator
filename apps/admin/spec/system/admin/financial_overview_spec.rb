@@ -160,6 +160,8 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
     login_as_admin
     visit "/admin/overview"
 
+    ensure_financial_filters_visible
+
     select "acc-1", from: "financial-account-filter"
     select "BTC-USD", from: "financial-market-filter"
 
@@ -251,5 +253,24 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
     fill_in "admin-login-email", with: email
     fill_in "admin-login-password", with: password
     click_button I18n.t("admin.auth.form.submit")
+  end
+
+  def ensure_sidebar_expanded
+    page.has_css?(".app-shell", wait: 10)
+
+    if page.has_css?(".app-shell.app-shell--sidebar-collapsed", wait: 5)
+      find('button[data-action="sidebar#expand"]', visible: :all).click
+    end
+
+    expect(page).to have_no_css(".app-shell.app-shell--sidebar-collapsed", wait: 10)
+  end
+
+  def ensure_financial_filters_visible
+    ensure_sidebar_expanded
+    return if page.has_css?("#financial-account-filter", wait: 5)
+
+    click_link I18n.t("admin.nav.history")
+    ensure_sidebar_expanded
+    expect(page).to have_css("#financial-account-filter", wait: 10)
   end
 end
