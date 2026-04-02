@@ -29,12 +29,18 @@ module Admin
 
       def call
         sheet = Roo::Spreadsheet.open(@file_path).sheet(0)
-        headers = sheet.row(1).map(&:to_s)
+        headers = sheet.row(1).map { |value| value.to_s.strip }
 
         validate_headers!(headers)
 
         (2..sheet.last_row).each do |i|
-          row = headers.zip(sheet.row(i)).to_h
+          row_values = sheet.row(i)
+          row = {}
+          headers.each_with_index do |header, index|
+            next if header.empty?
+
+            row[header] = row_values[index]
+          end
           parse_row(row, i)
         end
 
@@ -190,6 +196,8 @@ module Admin
 
       def normalize_timestamp(value)
         return nil if value.nil?
+        return nil if value.respond_to?(:value) && value.value.nil?
+        return nil if value.respond_to?(:empty?) && value.empty?
 
         return value.to_time.to_i if value.respond_to?(:to_time)
         return value.to_i if value.is_a?(Numeric)
