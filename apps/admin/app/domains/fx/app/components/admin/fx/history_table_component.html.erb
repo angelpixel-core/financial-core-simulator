@@ -8,8 +8,23 @@
               <span><%= t("admin.fx.history.table.date") %></span>
               <%= link_to admin_fx_history_index_path(navigation_context.merge(sort: toggle_sort_order)),
                           class: "fx-history-table__sort",
+                          aria: { label: sort_label },
+                          title: sort_label,
                           data: { turbo: true } do %>
-                <span><%= sort_label %></span>
+                <span class="visually-hidden"><%= sort_label %></span>
+                <span class="fx-history-table__sort-icon" aria-hidden="true">
+                  <% if sort_order == "asc" %>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 19V5" />
+                      <path d="M6 11l6-6 6 6" />
+                    </svg>
+                  <% else %>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 5v14" />
+                      <path d="M18 13l-6 6-6-6" />
+                    </svg>
+                  <% end %>
+                </span>
               <% end %>
             </div>
           </th>
