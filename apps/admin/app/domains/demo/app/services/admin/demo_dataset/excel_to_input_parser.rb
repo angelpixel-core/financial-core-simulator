@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "roo"
-require "time"
+require 'roo'
+require 'time'
 
 module Admin
   module DemoDataset
@@ -34,7 +34,7 @@ module Admin
         validate_headers!(headers)
 
         (2..sheet.last_row).each do |i|
-          row = [[headers, sheet.row(i)].transpose].to_h
+          row = headers.zip(sheet.row(i)).to_h
           parse_row(row, i)
         end
 
@@ -56,21 +56,21 @@ module Admin
 
         @errors << {
           line: 1,
-          code: "INVALID_HEADERS",
-          message: "Missing columns: #{missing.join(", ")}"
+          code: 'INVALID_HEADERS',
+          message: "Missing columns: #{missing.join(', ')}"
         }
       end
 
       def parse_row(row, line)
         trade = {
-          tradeId: row["trade_id"]&.to_s,
-          accountId: row["account_id"]&.to_s,
-          marketId: row["market_id"]&.to_s,
-          timestamp: normalize_timestamp(row["timestamp"]),
-          seq: row["seq"]&.to_i,
-          side: row["side"]&.to_s,
-          quantityBase: row["quantity_base"]&.to_s,
-          priceQuotePerBase: row["price_quote_per_base"]&.to_s,
+          tradeId: row['trade_id']&.to_s,
+          accountId: row['account_id']&.to_s,
+          marketId: row['market_id']&.to_s,
+          timestamp: normalize_timestamp(row['timestamp']),
+          seq: row['seq']&.to_i,
+          side: row['side']&.to_s,
+          quantityBase: row['quantity_base']&.to_s,
+          priceQuotePerBase: row['price_quote_per_base']&.to_s,
           line: line
         }
 
@@ -82,28 +82,28 @@ module Admin
         line = trade[:line]
 
         if trade.values_at(:tradeId, :accountId, :marketId, :timestamp, :side).any? { |value| value.blank? }
-          register_error(line, "MISSING_FIELDS")
+          register_error(line, 'MISSING_FIELDS')
           return
         end
 
         unless ALLOWED_SIDES.include?(trade[:side])
-          register_error(line, "INVALID_SIDE")
+          register_error(line, 'INVALID_SIDE')
           return
         end
 
         unless ALLOWED_MARKETS.include?(trade[:marketId])
-          register_error(line, "UNKNOWN_MARKET")
+          register_error(line, 'UNKNOWN_MARKET')
           return
         end
 
         if trade[:priceQuotePerBase].to_f <= 0
-          register_error(line, "INVALID_PRICE")
+          register_error(line, 'INVALID_PRICE')
           return
         end
 
         return unless trade[:quantityBase].to_f <= 0
 
-        register_error(line, "INVALID_QUANTITY")
+        register_error(line, 'INVALID_QUANTITY')
         nil
       end
 
@@ -113,11 +113,11 @@ module Admin
         grouped.each_value do |rows|
           rows.each_cons(2) do |prev, current|
             if current[:seq] <= prev[:seq]
-              register_error(current[:line], "SEQ_OUT_OF_ORDER")
+              register_error(current[:line], 'SEQ_OUT_OF_ORDER')
               next
             end
 
-            register_error(current[:line], "TIMESTAMP_INCONSISTENT") if current[:timestamp] < prev[:timestamp]
+            register_error(current[:line], 'TIMESTAMP_INCONSISTENT') if current[:timestamp] < prev[:timestamp]
           end
         end
       end
@@ -126,7 +126,7 @@ module Admin
         duplicates = valid_rows.group_by { |row| row[:tradeId] }.select { |_id, rows| rows.size > 1 }
         duplicates.each_value do |rows|
           rows.drop(1).each do |row|
-            register_error(row[:line], "DUPLICATE_TRADE_ID")
+            register_error(row[:line], 'DUPLICATE_TRADE_ID')
           end
         end
       end
@@ -135,21 +135,21 @@ module Admin
         return if @row_errors.key?(line)
 
         @row_errors[line] = code
-        @errors << {line: line, code: code}
+        @errors << { line: line, code: code }
       end
 
       def build_input
         trades = @rows.map { |row| row.except(:line) }
         input = {
-          schemaVersion: "1.0",
-          accounts: unique(:accountId).map { |id| {accountId: id} },
-          markets: unique(:marketId).map { |id| {marketId: id} },
+          schemaVersion: '1.0',
+          accounts: unique(:accountId).map { |id| { accountId: id } },
+          markets: unique(:marketId).map { |id| { marketId: id } },
           trades: trades,
           priceSnapshot: default_price_snapshot,
-          feeModel: {enabled: false}
+          feeModel: { enabled: false }
         }
 
-        input[:timeline] = {events: build_timeline_events} if @timeline_enabled
+        input[:timeline] = { events: build_timeline_events } if @timeline_enabled
 
         input
       end
@@ -160,10 +160,10 @@ module Admin
         sorted.map.with_index(1) do |row, index|
           trade = row.except(:line)
           {
-            eventType: "TRADE_APPLIED",
+            eventType: 'TRADE_APPLIED',
             timelineSeq: index,
             timestamp: timeline_iso_timestamp(trade[:timestamp]),
-            source: "admin.demo_dataset",
+            source: 'admin.demo_dataset',
             externalId: trade[:tradeId],
             trade: trade
           }
@@ -178,9 +178,9 @@ module Admin
         {
           valuationTimestamp: Time.now.utc.iso8601,
           prices: unique(:marketId).map do |market|
-            {marketId: market, priceQuotePerBase: "100"}
+            { marketId: market, priceQuotePerBase: '100' }
           end,
-          fx: {quoteUsd: "1"}
+          fx: { quoteUsd: '1' }
         }
       end
 
@@ -207,7 +207,7 @@ module Admin
       def timeline_iso_timestamp(timestamp)
         return nil unless timestamp.is_a?(Integer)
 
-        Time.at(timestamp).utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+        Time.at(timestamp).utc.strftime('%Y-%m-%dT%H:%M:%SZ')
       end
     end
   end
