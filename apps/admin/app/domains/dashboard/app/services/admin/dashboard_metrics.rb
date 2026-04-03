@@ -1,5 +1,5 @@
-require 'json'
-require 'bigdecimal'
+require "json"
+require "bigdecimal"
 
 module Admin
   class DashboardMetrics
@@ -111,8 +111,8 @@ module Admin
     def expanded_source_aliases(value)
       normalized = normalize_filter_query(value)
       variants = [normalized]
-      variants << normalized.gsub('source', 'src') if normalized.include?('source')
-      variants << normalized.gsub('src', 'source') if normalized.include?('src')
+      variants << normalized.gsub("source", "src") if normalized.include?("source")
+      variants << normalized.gsub("src", "source") if normalized.include?("src")
       variants.uniq
     end
 
@@ -157,18 +157,18 @@ module Admin
       total = scope.count
       return 0 if total.zero?
 
-      ok = scope.where(status: Run.statuses.fetch('succeeded')).count
+      ok = scope.where(status: Run.statuses.fetch("succeeded")).count
       ((ok.to_f / total) * 100).round(0)
     end
 
     def avg_duration_for_scope(scope)
-      average = scope.where(status: Run.statuses.fetch('succeeded')).where.not(duration_ms: nil).average(:duration_ms)
+      average = scope.where(status: Run.statuses.fetch("succeeded")).where.not(duration_ms: nil).average(:duration_ms)
       average&.to_f&.round(1)
     end
 
     def delta_metadata(current_value, previous_value, inverse_good: false)
-      return { direction: 'unknown', delta_abs: nil, delta_pct: nil } if previous_value.nil?
-      return { direction: 'unknown', delta_abs: nil, delta_pct: nil } if previous_value.to_f.zero?
+      return {direction: "unknown", delta_abs: nil, delta_pct: nil} if previous_value.nil?
+      return {direction: "unknown", delta_abs: nil, delta_pct: nil} if previous_value.to_f.zero?
 
       difference = current_value.to_f - previous_value.to_f
       {
@@ -179,17 +179,17 @@ module Admin
     end
 
     def normalized_direction(difference, inverse_good: false)
-      return 'flat' if difference.zero?
+      return "flat" if difference.zero?
 
       raw_direction = if difference.positive?
-                        'up'
-                      else
-                        'down'
-                      end
+        "up"
+      else
+        "down"
+      end
 
       return raw_direction unless inverse_good
 
-      raw_direction == 'up' ? 'down' : 'up'
+      (raw_direction == "up") ? "down" : "up"
     end
 
     def latest_run
@@ -218,7 +218,7 @@ module Admin
         events_count: events_count_for(latest_run),
         markets: markets_for(latest_run, payload: payload),
         input_hash: latest_run.input_hash,
-        deterministic: 'YES'
+        deterministic: "YES"
       }
     end
 
@@ -231,9 +231,9 @@ module Admin
       current_payload = canonical_result_payload_for(current_run)
       previous_payload = previous_run.nil? ? nil : canonical_result_payload_for(previous_run)
 
-      total_delta = delta_from_payloads(previous_payload, current_payload, key: 'totalPnLQuote')
-      realized_delta = delta_from_payloads(previous_payload, current_payload, key: 'realizedNetPnLQuote')
-      unrealized_delta = delta_from_payloads(previous_payload, current_payload, key: 'unrealizedPnLQuote')
+      total_delta = delta_from_payloads(previous_payload, current_payload, key: "totalPnLQuote")
+      realized_delta = delta_from_payloads(previous_payload, current_payload, key: "realizedNetPnLQuote")
+      unrealized_delta = delta_from_payloads(previous_payload, current_payload, key: "unrealizedPnLQuote")
 
       {
         current_run_id: current_run.id,
@@ -282,7 +282,7 @@ module Admin
       payload = latest_payload
       return nil if payload.nil?
 
-      payload['global']
+      payload["global"]
     end
 
     def top_accounts_data(live_state)
@@ -292,7 +292,7 @@ module Admin
       payload = latest_payload
       return [] if payload.nil?
 
-      accounts = payload.fetch('accounts', [])
+      accounts = payload.fetch("accounts", [])
       accounts
         .map { |account| account_metrics(account) }
         .sort_by { |entry| -entry[:total_pnl_quote] }
@@ -301,27 +301,27 @@ module Admin
 
     def live_state_metrics
       Admin::LiveStateMetrics.new.call
-    rescue StandardError
+    rescue
       nil
     end
 
     def account_metrics(account)
-      totals = account.fetch('totals', {})
+      totals = account.fetch("totals", {})
       {
-        account_id: account['accountId'],
-        total_pnl_quote: decimal_value(totals['totalPnLQuote']),
-        realized_net_pnl_quote: decimal_value(totals['realizedNetPnLQuote']),
-        unrealized_pnl_quote: decimal_value(totals['unrealizedPnLQuote'])
+        account_id: account["accountId"],
+        total_pnl_quote: decimal_value(totals["totalPnLQuote"]),
+        realized_net_pnl_quote: decimal_value(totals["realizedNetPnLQuote"]),
+        unrealized_pnl_quote: decimal_value(totals["unrealizedPnLQuote"])
       }
     end
 
     def runs_trend_14d
       start_date = 13.days.ago.to_date
-      counts = runs_since(TREND_POINTS_LIMIT.days).group('DATE(created_at)').count
+      counts = runs_since(TREND_POINTS_LIMIT.days).group("DATE(created_at)").count
 
       (start_date..Date.current).map do |day|
         count = counts[day] || counts[day.to_s] || 0
-        { day: day.strftime('%m-%d'), count: count }
+        {day: day.strftime("%m-%d"), count: count}
       end
     end
 
@@ -337,16 +337,16 @@ module Admin
       payload = canonical_result_payload_for(run)
       return nil if payload.nil?
 
-      total = parse_decimal_or_nil(payload.dig('global', 'totalPnLQuote'))
+      total = parse_decimal_or_nil(payload.dig("global", "totalPnLQuote"))
       return nil if total.nil?
 
       timestamp = run.valuation_timestamp || run.created_at
       return nil if timestamp.nil?
 
       {
-        label: timestamp.utc.strftime('%m-%d %H:%M UTC'),
+        label: timestamp.utc.strftime("%m-%d %H:%M UTC"),
         timestamp: timestamp.utc.iso8601,
-        total_pnl_quote: total.to_s('F')
+        total_pnl_quote: total.to_s("F")
       }
     end
 
@@ -362,14 +362,14 @@ module Admin
 
     def dataset_name_for(run)
       input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
-      input_json['dataset'] || input_json['datasetName'] || 'N/A'
+      input_json["dataset"] || input_json["datasetName"] || "N/A"
     end
 
     def events_count_for(run)
       input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
-      events = input_json['events']
-      trades = input_json['trades']
-      orders = input_json['orders']
+      events = input_json["events"]
+      trades = input_json["trades"]
+      orders = input_json["orders"]
 
       return events.length if events.is_a?(Array)
       return trades.length if trades.is_a?(Array)
@@ -380,10 +380,10 @@ module Admin
 
     def accounts_count_for(run, payload:)
       input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
-      input_accounts = input_json['accounts']
+      input_accounts = input_json["accounts"]
       return input_accounts.length if input_accounts.is_a?(Array)
 
-      payload_accounts = payload&.fetch('accounts', nil)
+      payload_accounts = payload&.fetch("accounts", nil)
       return payload_accounts.length if payload_accounts.is_a?(Array)
 
       nil
@@ -392,31 +392,31 @@ module Admin
     def markets_for(run, payload:)
       input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
 
-      input_markets = input_json['markets']
+      input_markets = input_json["markets"]
       if input_markets.is_a?(Array)
         normalized = input_markets.filter_map { |entry| entry.to_s.strip.presence }.uniq
-        return normalized.join(', ') if normalized.any?
+        return normalized.join(", ") if normalized.any?
       end
 
-      events = input_json['events']
+      events = input_json["events"]
       if events.is_a?(Array)
-        from_events = events.filter_map { |entry| entry.is_a?(Hash) ? entry['marketId'].to_s.strip.presence : nil }.uniq
-        return from_events.join(', ') if from_events.any?
+        from_events = events.filter_map { |entry| entry.is_a?(Hash) ? entry["marketId"].to_s.strip.presence : nil }.uniq
+        return from_events.join(", ") if from_events.any?
       end
 
-      payload_accounts = payload&.fetch('accounts', nil)
+      payload_accounts = payload&.fetch("accounts", nil)
       if payload_accounts.is_a?(Array)
         from_payload = payload_accounts.filter_map do |entry|
           next unless entry.is_a?(Hash)
 
-          risk_events = entry['riskEvents']
+          risk_events = entry["riskEvents"]
           next unless risk_events.is_a?(Array)
 
           risk_events.filter_map do |risk_event|
-            risk_event.is_a?(Hash) ? risk_event['marketId'].to_s.strip.presence : nil
+            risk_event.is_a?(Hash) ? risk_event["marketId"].to_s.strip.presence : nil
           end
         end.flatten.uniq
-        return from_payload.join(', ') if from_payload.any?
+        return from_payload.join(", ") if from_payload.any?
       end
 
       nil
@@ -425,26 +425,26 @@ module Admin
     def delta_from_payloads(previous_payload, current_payload, key:)
       return nil if previous_payload.nil? || current_payload.nil?
 
-      previous_value = parse_decimal_or_nil(previous_payload.dig('global', key))
-      current_value = parse_decimal_or_nil(current_payload.dig('global', key))
+      previous_value = parse_decimal_or_nil(previous_payload.dig("global", key))
+      current_value = parse_decimal_or_nil(current_payload.dig("global", key))
       return nil if previous_value.nil? || current_value.nil?
 
-      (current_value - previous_value).to_s('F')
+      (current_value - previous_value).to_s("F")
     end
 
     def deterministic_result_label(current_run:, previous_run:, total_delta:, realized_delta:, unrealized_delta:)
-      return 'Comparison unavailable (need at least two succeeded runs).' if previous_run.nil?
-      return 'Comparison unavailable (missing canonical artifacts).' if [total_delta, realized_delta,
-                                                                         unrealized_delta].all?(&:nil?)
+      return "Comparison unavailable (need at least two succeeded runs)." if previous_run.nil?
+      return "Comparison unavailable (missing canonical artifacts)." if [total_delta, realized_delta,
+        unrealized_delta].all?(&:nil?)
 
       same_input = current_run.input_hash.present? &&
-                   previous_run.input_hash.present? &&
-                   current_run.input_hash == previous_run.input_hash
+        previous_run.input_hash.present? &&
+        current_run.input_hash == previous_run.input_hash
       deltas_zero = [total_delta, realized_delta, unrealized_delta].compact.all? { |value| BigDecimal(value).zero? }
 
-      return 'Identical output for matching input hash.' if same_input && deltas_zero
+      return "Identical output for matching input hash." if same_input && deltas_zero
 
-      'Differences detected between latest runs.'
+      "Differences detected between latest runs."
     end
 
     def relative_to_project_root(path)
@@ -470,10 +470,10 @@ module Admin
     def status_mix_30d
       raw = runs_since(WINDOW_30_DAYS).group(:status).count
       {
-        queued: raw.fetch('queued', 0) + raw.fetch(0, 0),
-        running: raw.fetch('running', 0) + raw.fetch(1, 0),
-        succeeded: raw.fetch('succeeded', 0) + raw.fetch(2, 0),
-        failed: raw.fetch('failed', 0) + raw.fetch(3, 0)
+        queued: raw.fetch("queued", 0) + raw.fetch(0, 0),
+        running: raw.fetch("running", 0) + raw.fetch(1, 0),
+        succeeded: raw.fetch("succeeded", 0) + raw.fetch(2, 0),
+        failed: raw.fetch("failed", 0) + raw.fetch(3, 0)
       }
     end
 
