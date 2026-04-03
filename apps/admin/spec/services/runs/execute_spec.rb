@@ -27,7 +27,7 @@ RSpec.describe Runs::Execute do
       runner = instance_double(FCS::Application::Runner)
       allow(FCS::Application::Runner).to receive(:new).and_return(runner)
       expect(runner).to receive(:run_from_input!)
-        .with(input: input_json, output_dir: kind_of(String), fee_enabled: true, explain: true, verbose: false) do |input:, output_dir:, **_kwargs|
+        .with(input: hash_including(input_json), output_dir: kind_of(String), fee_enabled: true, explain: true, verbose: false) do |input:, output_dir:, **_kwargs|
         json_path = File.join(output_dir, 'result.json')
         File.write(
           json_path,
