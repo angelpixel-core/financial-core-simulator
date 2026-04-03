@@ -15,22 +15,22 @@ class Admin::Fx::RateUploadJob < ApplicationJob
 
     if result.valid?
       upload.update!(
-        status: 'success',
+        status: "success",
         error_count: 0,
         error_message: result.message,
         processed_at: Time.current
       )
     else
       upload.update!(
-        status: 'error',
+        status: "error",
         error_count: result.errors.size,
         error_message: result.errors.first&.dig(:message),
         processed_at: Time.current
       )
     end
-  rescue StandardError => e
+  rescue => e
     upload&.update!(
-      status: 'error',
+      status: "error",
       error_count: [upload.error_count.to_i, 1].max,
       error_message: e.message,
       processed_at: Time.current
@@ -57,8 +57,8 @@ class Admin::Fx::RateUploadJob < ApplicationJob
       Turbo::StreamsChannel.broadcast_replace_to(
         FxRateUpload.status_stream_for(account_id: upload.created_by_id),
         target: FxRateUpload.status_dom_id,
-        partial: 'admin/fx/history/upload_status',
-        locals: { upload: upload }
+        partial: "admin/fx/history/upload_status",
+        locals: {upload: upload}
       )
     end
   end
@@ -68,11 +68,11 @@ class Admin::Fx::RateUploadJob < ApplicationJob
     return if upload.blank?
 
     I18n.with_locale(locale_for(upload)) do
-      snapshot = FxDailyRate.uncached { Admin::Fx::HistorySnapshot.call(sort_order: 'desc') }
+      snapshot = FxDailyRate.uncached { Admin::Fx::HistorySnapshot.call(sort_order: "desc") }
       Turbo::StreamsChannel.broadcast_replace_to(
         FxRateUpload.status_stream_for(account_id: upload.created_by_id),
         target: FxRateUpload.table_dom_id,
-        partial: 'admin/fx/history/history_table',
+        partial: "admin/fx/history/history_table",
         locals: {
           dates: snapshot.fetch(:dates),
           supported_pairs: snapshot.fetch(:supported_pairs),
@@ -87,6 +87,6 @@ class Admin::Fx::RateUploadJob < ApplicationJob
   end
 
   def locale_for(upload)
-    upload.created_context&.dig('locale') || upload.created_context&.dig(:locale) || I18n.default_locale
+    upload.created_context&.dig("locale") || upload.created_context&.dig(:locale) || I18n.default_locale
   end
 end

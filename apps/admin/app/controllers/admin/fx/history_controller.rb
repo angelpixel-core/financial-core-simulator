@@ -16,11 +16,11 @@ class Admin::Fx::HistoryController < ApplicationController
     session_upload_id = session[:fx_rate_upload_id]
     upload_active = session[:fx_rate_upload_active] == true
     @latest_upload = if upload_active && session_upload_id.present?
-                       FxRateUpload.visible_for_upload(
-                         upload_id: session_upload_id,
-                         account_id: current_admin_account&.id
-                       )
-                     end
+      FxRateUpload.visible_for_upload(
+        upload_id: session_upload_id,
+        account_id: current_admin_account&.id
+      )
+    end
     if @latest_upload.blank?
       session.delete(:fx_rate_upload_id)
       session.delete(:fx_rate_upload_active)
@@ -29,8 +29,8 @@ class Admin::Fx::HistoryController < ApplicationController
       session.delete(:fx_rate_upload_active)
     end
     @upload_status_stream = if admin_shell_operator? || admin_shell_admin?
-                              FxRateUpload.status_stream_for(account_id: current_admin_account&.id)
-                            end
+      FxRateUpload.status_stream_for(account_id: current_admin_account&.id)
+    end
   end
 
   private

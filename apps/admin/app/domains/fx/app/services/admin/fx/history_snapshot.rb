@@ -3,12 +3,12 @@
 module Admin
   module Fx
     class HistorySnapshot
-      def self.call(sort_order: 'desc', supported_pairs: Admin::Fx::RunRateGapProcessor::SUPPORTED_PAIRS)
+      def self.call(sort_order: "desc", supported_pairs: Admin::Fx::RunRateGapProcessor::SUPPORTED_PAIRS)
         new(sort_order: sort_order, supported_pairs: supported_pairs).call
       end
 
       def initialize(sort_order:, supported_pairs:)
-        @sort_order = sort_order.to_s == 'asc' ? 'asc' : 'desc'
+        @sort_order = (sort_order.to_s == "asc") ? "asc" : "desc"
         @supported_pairs = supported_pairs
       end
 
@@ -18,14 +18,14 @@ module Admin
         end
 
         rates = FxDailyRate.where(*supported_pair_conditions)
-                           .order(operational_date: sort_order)
-                           .to_a
+          .order(operational_date: sort_order)
+          .to_a
 
         preload_placeholder_gaps!(rates)
 
         dates = rates.map(&:operational_date).uniq
         dates.sort!
-        dates.reverse! if sort_order == 'desc'
+        dates.reverse! if sort_order == "desc"
 
         rates.each do |rate|
           rates_by_pair["#{rate.base_currency}/#{rate.quote_currency}"][rate.operational_date] = rate
@@ -45,7 +45,7 @@ module Admin
       attr_reader :sort_order, :supported_pairs
 
       def supported_pair_conditions
-        statement = supported_pairs.map { '(base_currency = ? AND quote_currency = ?)' }.join(' OR ')
+        statement = supported_pairs.map { "(base_currency = ? AND quote_currency = ?)" }.join(" OR ")
         [statement, *supported_pairs.flatten]
       end
 
