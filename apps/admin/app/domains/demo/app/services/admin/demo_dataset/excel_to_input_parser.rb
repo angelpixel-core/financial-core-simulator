@@ -203,13 +203,18 @@ module Admin
         return nil if value.respond_to?(:value) && value.value.nil?
         return nil if value.respond_to?(:empty?) && value.empty?
 
-        return value.to_time.to_i if value.respond_to?(:to_time)
+        if value.is_a?(Time) || value.is_a?(Date) || value.is_a?(DateTime) || value.is_a?(ActiveSupport::TimeWithZone)
+          return value.to_time.to_i
+        end
+
         return value.to_i if value.is_a?(Numeric)
 
         string_value = value.to_s.strip
         return nil if string_value.empty?
 
-        Integer(string_value)
+        return Integer(string_value) if string_value.match?(/\A-?\d+\z/)
+
+        Time.iso8601(string_value).to_i
       rescue ArgumentError
         begin
           Time.parse(string_value).to_i
