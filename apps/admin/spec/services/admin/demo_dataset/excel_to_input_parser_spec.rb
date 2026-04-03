@@ -47,4 +47,22 @@ RSpec.describe Admin::DemoDataset::ExcelToInputParser do
       tempfile.unlink
     end
   end
+
+  it "returns missing field errors for invalid timestamps" do
+    csv = <<~CSV
+      trade_id,account_id,market_id,timestamp,seq,side,quantity_base,price_quote_per_base
+      trade-3,account-3,ETH-USD,not-a-timestamp,1,BUY,1.0,99.5
+    CSV
+
+    tempfile = write_csv(csv)
+
+    begin
+      result = described_class.call(file_path: tempfile.path)
+
+      expect(result.errors).to include(hash_including(line: 2, code: "MISSING_FIELDS"))
+    ensure
+      tempfile.close
+      tempfile.unlink
+    end
+  end
 end
