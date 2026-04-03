@@ -4,8 +4,8 @@ module SystemHelpers
 
     visit(current_path) unless page.has_css?(".app-shell", wait: 2)
 
-    find(".app-shell", wait: 10)
-    find(".app-shell__nav--desktop, .app-shell__topbar", wait: 10)
+    find(".app-shell", match: :first, wait: 10)
+    find(".app-shell__nav--desktop, .app-shell__topbar", match: :first, wait: 10)
   end
 
   def expand_sidebar
