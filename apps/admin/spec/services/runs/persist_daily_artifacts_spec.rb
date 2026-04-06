@@ -1,25 +1,25 @@
-require 'rails_helper'
-require 'json'
-require 'tempfile'
+require "rails_helper"
+require "json"
+require "tempfile"
 
 RSpec.describe Runs::PersistDailyArtifacts do
-  it 'persists daily artifacts idempotently' do
-    temp = Tempfile.new(['result', '.json'])
+  it "persists daily artifacts idempotently" do
+    temp = Tempfile.new(["result", ".json"])
     temp.write(JSON.generate(
                  {
-                   'timeline' => {
-                     'points' => [
+                   "timeline" => {
+                     "points" => [
                        {
-                         'timestamp' => '2026-03-29T12:00:00Z',
-                         'realized_pnl' => '1',
-                         'unrealized_pnl' => '2',
-                         'total_pnl' => '3'
+                         "timestamp" => "2026-03-29T12:00:00Z",
+                         "realized_pnl" => "1",
+                         "unrealized_pnl" => "2",
+                         "total_pnl" => "3"
                        },
                        {
-                         'timestamp' => '2026-03-30T12:00:00Z',
-                         'realized_pnl' => '2',
-                         'unrealized_pnl' => '3',
-                         'total_pnl' => '5'
+                         "timestamp" => "2026-03-30T12:00:00Z",
+                         "realized_pnl" => "2",
+                         "unrealized_pnl" => "3",
+                         "total_pnl" => "5"
                        }
                      ]
                    }
@@ -28,35 +28,35 @@ RSpec.describe Runs::PersistDailyArtifacts do
     temp.rewind
 
     input = {
-      'trades' => [
+      "trades" => [
         {
-          'timestamp' => Time.utc(2026, 3, 29, 12, 0, 0).to_i,
-          'quantityBase' => '2',
-          'priceQuotePerBase' => '10',
-          'marketId' => 'ETH-USD',
-          'valid' => true
+          "timestamp" => Time.utc(2026, 3, 29, 12, 0, 0).to_i,
+          "quantityBase" => "2",
+          "priceQuotePerBase" => "10",
+          "marketId" => "ETH-USD",
+          "valid" => true
         },
         {
-          'timestamp' => Time.utc(2026, 3, 30, 12, 0, 0).to_i,
-          'quantityBase' => '1',
-          'priceQuotePerBase' => '5',
-          'marketId' => 'ETH-USD',
-          'valid' => true
+          "timestamp" => Time.utc(2026, 3, 30, 12, 0, 0).to_i,
+          "quantityBase" => "1",
+          "priceQuotePerBase" => "5",
+          "marketId" => "ETH-USD",
+          "valid" => true
         }
       ],
-      'timeline' => {
-        'events' => [
+      "timeline" => {
+        "events" => [
           {
-            'eventType' => 'TRADE_APPLIED',
-            'timelineSeq' => 1,
-            'timestamp' => '2026-03-29T12:00:00Z',
-            'trade' => { 'valid' => true }
+            "eventType" => "TRADE_APPLIED",
+            "timelineSeq" => 1,
+            "timestamp" => "2026-03-29T12:00:00Z",
+            "trade" => {"valid" => true}
           },
           {
-            'eventType' => 'TRADE_APPLIED',
-            'timelineSeq' => 2,
-            'timestamp' => '2026-03-30T12:00:00Z',
-            'trade' => { 'valid' => true }
+            "eventType" => "TRADE_APPLIED",
+            "timelineSeq" => 2,
+            "timestamp" => "2026-03-30T12:00:00Z",
+            "trade" => {"valid" => true}
           }
         ]
       }
@@ -66,11 +66,11 @@ RSpec.describe Runs::PersistDailyArtifacts do
       status: :succeeded,
       input_json: input,
       fx_context: {
-        'reportingCurrency' => 'ARS',
-        'rate' => '100',
-        'rateMissing' => false
+        "reportingCurrency" => "ARS",
+        "rate" => "100",
+        "rateMissing" => false
       },
-      artifacts: { 'result_json_path' => temp.path }
+      artifacts: {"result_json_path" => temp.path}
     )
 
     described_class.call(run: run)
@@ -86,7 +86,7 @@ RSpec.describe Runs::PersistDailyArtifacts do
 
     expect(volume.notional_volume.to_f).to eq(2000.0)
     expect(volume.trade_count).to eq(1)
-    expect(volume.unit_code).to eq('ARS')
+    expect(volume.unit_code).to eq("ARS")
   ensure
     temp.close
     temp.unlink
