@@ -86,14 +86,14 @@ module FCS
       #     fee_enabled: true
       #   )
       #   result[:run_id]
-      def run_from_input!(input:, output_dir:, fee_enabled:, explain: false, verbose: false, input_source: 'input')
+      def run_from_input!(input:, output_dir:, fee_enabled:, explain: false, verbose: false, input_source: "input")
         @logger.info("fcs.run.start input=#{input_source} output=#{output_dir}")
 
         raw_input = deep_copy(input)
 
         normalized_input = deep_copy(raw_input)
-        normalized_input['feeModel'] ||= {}
-        normalized_input['feeModel']['enabled'] = fee_enabled unless fee_enabled.nil?
+        normalized_input["feeModel"] ||= {}
+        normalized_input["feeModel"]["enabled"] = fee_enabled unless fee_enabled.nil?
         validation_result = @validator.validate_with_errors!(normalized_input)
         annotated_input = validation_result.fetch(:input)
         validation_errors = validation_result.fetch(:validation_errors)
@@ -109,14 +109,14 @@ module FCS
         execution_input = filter_valid_trades_for_execution(execution_input)
         execution_input = prepare_execution_input(execution_input)
 
-        schema_version = execution_input.fetch('schemaVersion')
-        valuation_ts = execution_input.dig('priceSnapshot', 'valuationTimestamp')
+        schema_version = execution_input.fetch("schemaVersion")
+        valuation_ts = execution_input.dig("priceSnapshot", "valuationTimestamp")
 
         run_id = deterministic_run_id(input_hash)
 
         checkpoint_store = build_checkpoint_store(output_dir: output_dir, schema_version: schema_version)
         checkpoint = checkpoint_store&.latest_checkpoint
-        execution_input['checkpoint'] ||= checkpoint unless checkpoint.nil?
+        execution_input["checkpoint"] ||= checkpoint unless checkpoint.nil?
 
         result = @simulate.call(
           execution_input,
@@ -131,10 +131,10 @@ module FCS
           input_hash: input_hash,
           run_id: run_id,
           valuation_timestamp: valuation_ts,
-          accounts: result.fetch('accounts'),
-          global: result.fetch('global'),
+          accounts: result.fetch("accounts"),
+          global: result.fetch("global"),
           replay: build_replay_metadata(input: execution_input, checkpoint: checkpoint),
-          timeline: result['timeline']
+          timeline: result["timeline"]
         )
 
         artifacts = @artifacts_writer.write_all!(
@@ -144,7 +144,7 @@ module FCS
 
         json_path = artifacts.fetch(:json_path)
 
-        @cli.print(payload, artifacts: artifacts, status: 'success') if verbose
+        @cli.print(payload, artifacts: artifacts, status: "success") if verbose
 
         @logger.info("fcs.run.done run_id=#{run_id} output=#{json_path}")
 
@@ -171,40 +171,40 @@ module FCS
         else
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,
-            'timeline input requires FCS_TIMELINE_ENABLED=1',
-            details: { field: 'timeline' }
+            "timeline input requires FCS_TIMELINE_ENABLED=1",
+            details: {field: "timeline"}
           )
         end
       end
 
       def prepare_batch_input(input)
-        input.delete('timeline')
-        input['trades'] = @sorter.sort(input.fetch('trades'))
+        input.delete("timeline")
+        input["trades"] = @sorter.sort(input.fetch("trades"))
         input
       end
 
       def prepare_timeline_input(input)
-        events = input.fetch('timeline').fetch('events').sort_by { |event| event.fetch('timelineSeq') }
-        input['timeline']['events'] = events
-        input['trades'] = events.select { |event| event.fetch('eventType') == 'TRADE_APPLIED' }
-                                .map { |event| event.fetch('trade') }
+        events = input.fetch("timeline").fetch("events").sort_by { |event| event.fetch("timelineSeq") }
+        input["timeline"]["events"] = events
+        input["trades"] = events.select { |event| event.fetch("eventType") == "TRADE_APPLIED" }
+          .map { |event| event.fetch("trade") }
         input
       end
 
       def filter_valid_trades_for_execution(input)
         return input unless input.is_a?(Hash)
 
-        trades = input['trades']
-        input['trades'] = trades.select { |trade| valid_trade?(trade) } if trades.is_a?(Array)
+        trades = input["trades"]
+        input["trades"] = trades.select { |trade| valid_trade?(trade) } if trades.is_a?(Array)
 
-        timeline = input['timeline']
+        timeline = input["timeline"]
         if timeline.is_a?(Hash)
-          events = Array(timeline['events'])
-          timeline['events'] = events.select do |event|
+          events = Array(timeline["events"])
+          timeline["events"] = events.select do |event|
             next true unless event.is_a?(Hash)
-            next true unless event.fetch('eventType', nil) == 'TRADE_APPLIED'
+            next true unless event.fetch("eventType", nil) == "TRADE_APPLIED"
 
-            valid_trade?(event['trade'])
+            valid_trade?(event["trade"])
           end
         end
 
@@ -214,18 +214,18 @@ module FCS
       def valid_trade?(trade)
         return false unless trade.is_a?(Hash)
 
-        valid = trade['valid']
+        valid = trade["valid"]
         valid.nil? || valid == true
       end
 
       def normalize_collections_for_determinism!(input)
-        input['accounts'] = sort_collection(input['accounts']) { |item| item.fetch('accountId') }
-        input['markets'] = sort_collection(input['markets']) { |item| item.fetch('marketId') }
+        input["accounts"] = sort_collection(input["accounts"]) { |item| item.fetch("accountId") }
+        input["markets"] = sort_collection(input["markets"]) { |item| item.fetch("marketId") }
 
-        prices = input.dig('priceSnapshot', 'prices')
+        prices = input.dig("priceSnapshot", "prices")
         return unless prices.is_a?(Array)
 
-        input['priceSnapshot']['prices'] = sort_collection(prices) { |item| item.fetch('marketId') }
+        input["priceSnapshot"]["prices"] = sort_collection(prices) { |item| item.fetch("marketId") }
       end
 
       def sort_collection(collection, &)
@@ -239,13 +239,13 @@ module FCS
       end
 
       def timeline_present?(input)
-        input['timeline'].is_a?(Hash) && input['timeline']['events'].is_a?(Array)
+        input["timeline"].is_a?(Hash) && input["timeline"]["events"].is_a?(Array)
       end
 
       def build_checkpoint_store(output_dir:, schema_version:)
         return nil unless timeline_feature_enabled?
 
-        checkpoint_every = ENV.fetch('FCS_CHECKPOINT_EVERY', '100').to_i
+        checkpoint_every = ENV.fetch("FCS_CHECKPOINT_EVERY", "100").to_i
         return nil if checkpoint_every <= 0
 
         FCS::Application::CheckpointStore.new(
@@ -257,17 +257,17 @@ module FCS
       end
 
       def timeline_feature_enabled?
-        ENV['FCS_TIMELINE_ENABLED'] == '1'
+        ENV["FCS_TIMELINE_ENABLED"] == "1"
       end
 
       def build_replay_metadata(input:, checkpoint:)
-        timeline = input['timeline']
-        return nil unless timeline.is_a?(Hash) && timeline['events'].is_a?(Array)
+        timeline = input["timeline"]
+        return nil unless timeline.is_a?(Hash) && timeline["events"].is_a?(Array)
 
-        metadata = { 'mode' => 'timeline' }
-        if checkpoint.is_a?(Hash) && checkpoint.key?('timelineSeq')
-          metadata['checkpointTimelineSeq'] =
-            checkpoint['timelineSeq']
+        metadata = {"mode" => "timeline"}
+        if checkpoint.is_a?(Hash) && checkpoint.key?("timelineSeq")
+          metadata["checkpointTimelineSeq"] =
+            checkpoint["timelineSeq"]
         end
         metadata
       end
