@@ -46,9 +46,6 @@
                       <%= t("admin.fx.history.gap_status.#{status}") %>
                     </span>
                   <% end %>
-                  <% if rate.present? %>
-                    <span class="fx-history-cell__source"><%= t("admin.fx.history.sources.#{rate.source}") %></span>
-                  <% end %>
                 </div>
                 <% if editable %>
                   <% if rate.present? %>
