@@ -5,15 +5,13 @@ const rootElement = document.getElementById("landing-react-root")
 
 if (rootElement) {
   const demoPath = rootElement.dataset.demoPath || "/admin/login"
-  const sourceUrl = rootElement.dataset.sourceUrl || "https://github.com"
-  const documentationUrl = rootElement.dataset.documentationUrl || "https://docs.ruby-lang.org"
+  const sourceUrl = rootElement.dataset.sourceUrl || "https://github.com/angelpixel-core/financial-core-simulator"
   const root = createRoot(rootElement)
 
   root.render(
     <Landing
       demoPath={demoPath}
       sourceUrl={sourceUrl}
-      documentationUrl={documentationUrl}
     />
   )
 
@@ -23,7 +21,7 @@ if (rootElement) {
   }
 }
 
-function Landing({ demoPath, sourceUrl, documentationUrl }) {
+function Landing({ demoPath, sourceUrl }) {
   const navItems = [
     { label: "Why it exists", href: "#why" },
     { label: "How it works", href: "#how" },
@@ -323,7 +321,6 @@ function Landing({ demoPath, sourceUrl, documentationUrl }) {
             <p className="landing__footer-title">Project</p>
             <div className="landing__footer-links">
               <a href="#architecture">Architecture</a>
-              <a href={documentationUrl}>Documentation</a>
               <a href={sourceUrl}>View source</a>
             </div>
           </div>
