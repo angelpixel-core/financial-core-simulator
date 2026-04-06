@@ -75,7 +75,7 @@ RSpec.describe FCS::Application::Runner do
   end
 
   let(:parser) { instance_double(FCS::Ingestion::Parser, parse_file: base_input) }
-  let(:validator) { instance_double(FCS::Ingestion::Validator, validate!: true) }
+  let(:validator) { instance_double(FCS::Ingestion::Validator) }
   let(:sorter) { instance_double(FCS::Engine::TradeSorter, sort: []) }
   let(:simulate) { instance_double(FCS::Application::Simulate, call: result) }
   let(:artifacts_writer) do
@@ -91,6 +91,12 @@ RSpec.describe FCS::Application::Runner do
   let(:cli) { instance_double(FCS::Reporting::CliSummary, print: true) }
   let(:logger) { double("logger", info: true) }
   let(:checkpoint_store) { instance_double(FCS::Application::CheckpointStore, latest_checkpoint: nil) }
+
+  before do
+    allow(validator).to receive(:validate_with_errors!) do |input_arg|
+      {input: input_arg, validation_errors: [], reliable: true}
+    end
+  end
 
   around do |example|
     previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
