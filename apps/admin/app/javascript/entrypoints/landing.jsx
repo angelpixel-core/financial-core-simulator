@@ -28,7 +28,6 @@ function Landing({ demoPath, sourceUrl, documentationUrl }) {
     { label: "Why it exists", href: "#why" },
     { label: "How it works", href: "#how" },
     { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
     { label: "FAQ", href: "#faq" },
   ]
 
@@ -53,51 +52,6 @@ function Landing({ demoPath, sourceUrl, documentationUrl }) {
     {
       title: "Execute deterministically",
       body: "Generate reproducible financial outputs with traceable runs, artifacts, and projections.",
-    },
-  ]
-
-  const pricing = [
-    {
-      name: "Basic",
-      price: "$49.99",
-      subtitle: "Available now",
-      featured: true,
-      cta: "Start now",
-      items: [
-        "Upload CSV and Excel datasets",
-        "Deterministic execution",
-        "Basic dashboards for PnL and trades",
-        "Limited run history",
-        "CLI access",
-      ],
-    },
-    {
-      name: "Pro",
-      price: "$79.99",
-      subtitle: "Coming soon",
-      featured: false,
-      cta: "Incoming",
-      items: [
-        "Advanced analytics",
-        "Multi-portfolio support",
-        "FX multi-currency switching",
-        "API integrations",
-        "Extended run history",
-      ],
-    },
-    {
-      name: "Enterprise",
-      price: "$149.99",
-      subtitle: "Coming soon",
-      featured: false,
-      cta: "Incoming",
-      items: [
-        "Custom integrations",
-        "High-volume processing",
-        "Dedicated infrastructure",
-        "Priority support",
-        "SLA and onboarding",
-      ],
     },
   ]
 
@@ -158,7 +112,6 @@ function Landing({ demoPath, sourceUrl, documentationUrl }) {
           </nav>
 
           <div className="landing__header-actions">
-            <a className="landing__chip-link" href="#pricing">Pricing</a>
             <a className="landing__primary-cta" href={demoPath}>View Demo</a>
           </div>
         </div>
@@ -247,10 +200,8 @@ function Landing({ demoPath, sourceUrl, documentationUrl }) {
             <h2 className="landing__section-title">Financial systems are hard to trust. We make them reproducible.</h2>
           </div>
           <div className="landing__why-grid">
-            <div className="landing__panel landing__panel--bold">
-              <p>Raw datasets often travel through fragile workflows before they reach reports, dashboards, and operational decisions.</p>
-            </div>
             <div className="landing__panel">
+              <p>Raw datasets often travel through fragile workflows before they reach reports, dashboards, and operational decisions.</p>
               <p>
                 Deterministic Financial Engine validates, normalizes, and executes financial event streams into reproducible outputs.
                 That means every run can be audited, replayed, and trusted.
@@ -333,54 +284,21 @@ function Landing({ demoPath, sourceUrl, documentationUrl }) {
           </div>
         </section>
 
-        <section id="pricing" className="landing__section">
-          <div className="landing__section-header">
-            <p className="landing__section-eyebrow">Pricing</p>
-            <h2 className="landing__section-title">Start with the core. Expand when the workflow grows.</h2>
-          </div>
-          <div className="landing__pricing-grid">
-            {pricing.map((plan) => (
-              <div
-                key={plan.name}
-                className={`landing__plan ${plan.featured ? "landing__plan--featured" : ""}`}
-              >
-                {!plan.featured && <span className="landing__plan-tag">Incoming</span>}
-                <p className="landing__plan-title">{plan.name}</p>
-                <p className="landing__plan-price">{plan.price}</p>
-                <p className="landing__plan-subtitle">{plan.subtitle}</p>
-                <button className="landing__plan-cta" type="button" disabled={!plan.featured}>
-                  {plan.cta}
-                </button>
-                <ul className="landing__plan-list">
-                  {plan.items.map((item) => (
-                    <li key={item}>
-                      <span />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-
         <section id="faq" className="landing__section">
-          <div className="landing__section-header">
+          <div className="landing__section-header landing__section-header--center">
             <p className="landing__section-eyebrow">FAQ</p>
             <h2 className="landing__section-title">Questions teams ask before they trust financial outputs.</h2>
+            <p className="landing__section-subtitle">Frequently asked questions</p>
           </div>
-          <div className="landing__faq-grid">
-            <div className="landing__panel landing__panel--bold">
-              <p>Frequently asked questions</p>
-            </div>
-            <div>
-              {faqs.map((item) => (
-                <details className="landing__faq-card" key={item.q}>
-                  <summary>{item.q}</summary>
-                  <p>{item.a}</p>
-                </details>
-              ))}
-            </div>
+          <div className="landing__faq-stack">
+            {faqs.map((item) => (
+              <details className="landing__faq-card" key={item.q}>
+                <summary>
+                  <span className="landing__faq-question">{item.q}</span>
+                </summary>
+                <p className="landing__faq-answer">{item.a}</p>
+              </details>
+            ))}
           </div>
         </section>
       </main>

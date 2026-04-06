@@ -25,11 +25,9 @@
         <a href="#why">Why it exists</a>
         <a href="#how">How it works</a>
         <a href="#features">Features</a>
-        <a href="#pricing">Pricing</a>
         <a href="#faq">FAQ</a>
       </nav>
       <div class="landing__header-actions">
-        <a class="landing__chip-link" href="#pricing">Pricing</a>
         <a class="landing__primary-cta" href="<%= @demo_path %>">View Demo</a>
       </div>
     </div>
@@ -119,10 +117,8 @@
         <h2 class="landing__section-title">Financial systems are hard to trust. We make them reproducible.</h2>
       </div>
       <div class="landing__why-grid">
-        <div class="landing__panel landing__panel--bold">
-          <p>Raw datasets often travel through fragile workflows before they reach reports, dashboards, and operational decisions.</p>
-        </div>
         <div class="landing__panel">
+          <p>Raw datasets often travel through fragile workflows before they reach reports, dashboards, and operational decisions.</p>
           <p>
             Deterministic Financial Engine validates, normalizes, and executes financial event streams into reproducible outputs.
             That means every run can be audited, replayed, and trusted.
@@ -253,82 +249,29 @@
         </div>
       </div>
     </section>
-    <section id="pricing" class="landing__section">
-      <div class="landing__section-header">
-        <p class="landing__section-eyebrow">Pricing</p>
-        <h2 class="landing__section-title">Start with the core. Expand when the workflow grows.</h2>
-      </div>
-      <div class="landing__pricing-grid">
-        <div class="landing__plan landing__plan--featured">
-          <p class="landing__plan-title">Basic</p>
-          <p class="landing__plan-price">$49.99</p>
-          <p class="landing__plan-subtitle">Available now</p>
-          <button class="landing__plan-cta" type="button">Start now</button>
-          <ul class="landing__plan-list">
-            <li><span></span>Upload CSV and Excel datasets</li>
-            <li><span></span>Deterministic execution</li>
-            <li><span></span>Basic dashboards for PnL and trades</li>
-            <li><span></span>Limited run history</li>
-            <li><span></span>CLI access</li>
-          </ul>
-        </div>
-        <div class="landing__plan">
-          <span class="landing__plan-tag">Incoming</span>
-          <p class="landing__plan-title">Pro</p>
-          <p class="landing__plan-price">$79.99</p>
-          <p class="landing__plan-subtitle">Coming soon</p>
-          <button class="landing__plan-cta" type="button" disabled>Incoming</button>
-          <ul class="landing__plan-list">
-            <li><span></span>Advanced analytics</li>
-            <li><span></span>Multi-portfolio support</li>
-            <li><span></span>FX multi-currency switching</li>
-            <li><span></span>API integrations</li>
-            <li><span></span>Extended run history</li>
-          </ul>
-        </div>
-        <div class="landing__plan">
-          <span class="landing__plan-tag">Incoming</span>
-          <p class="landing__plan-title">Enterprise</p>
-          <p class="landing__plan-price">$149.99</p>
-          <p class="landing__plan-subtitle">Coming soon</p>
-          <button class="landing__plan-cta" type="button" disabled>Incoming</button>
-          <ul class="landing__plan-list">
-            <li><span></span>Custom integrations</li>
-            <li><span></span>High-volume processing</li>
-            <li><span></span>Dedicated infrastructure</li>
-            <li><span></span>Priority support</li>
-            <li><span></span>SLA and onboarding</li>
-          </ul>
-        </div>
-      </div>
-    </section>
     <section id="faq" class="landing__section">
-      <div class="landing__section-header">
+      <div class="landing__section-header landing__section-header--center">
         <p class="landing__section-eyebrow">FAQ</p>
         <h2 class="landing__section-title">Questions teams ask before they trust financial outputs.</h2>
+        <p class="landing__section-subtitle">Frequently asked questions</p>
       </div>
-      <div class="landing__faq-grid">
-        <div class="landing__panel landing__panel--bold">
-          <p>Frequently asked questions</p>
-        </div>
-        <div>
-          <details class="landing__faq-card">
-            <summary>What does deterministic mean here?</summary>
-            <p>The same validated input always produces the same output. That makes runs reproducible, debuggable, and auditable.</p>
-          </details>
-          <details class="landing__faq-card">
-            <summary>What happens if a dataset contains errors?</summary>
-            <p>Invalid rows are isolated and reported so you can keep visibility into failures without losing operational context.</p>
-          </details>
-          <details class="landing__faq-card">
-            <summary>Is this only for trading teams?</summary>
-            <p>No. It is useful anywhere financial data must be validated before it reaches dashboards, reports, or operational decisions.</p>
-          </details>
-          <details class="landing__faq-card">
-            <summary>Can it integrate with existing systems?</summary>
-            <p>Yes. The platform is designed around CLI, API, and workspace-driven ingestion so it can fit into real workflows.</p>
-          </details>
-        </div>
+      <div class="landing__faq-stack">
+        <details class="landing__faq-card">
+          <summary><span class="landing__faq-question">What does deterministic mean here?</span></summary>
+          <p class="landing__faq-answer">The same validated input always produces the same output. That makes runs reproducible, debuggable, and auditable.</p>
+        </details>
+        <details class="landing__faq-card">
+          <summary><span class="landing__faq-question">What happens if a dataset contains errors?</span></summary>
+          <p class="landing__faq-answer">Invalid rows are isolated and reported so you can keep visibility into failures without losing operational context.</p>
+        </details>
+        <details class="landing__faq-card">
+          <summary><span class="landing__faq-question">Is this only for trading teams?</span></summary>
+          <p class="landing__faq-answer">No. It is useful anywhere financial data must be validated before it reaches dashboards, reports, or operational decisions.</p>
+        </details>
+        <details class="landing__faq-card">
+          <summary><span class="landing__faq-question">Can it integrate with existing systems?</span></summary>
+          <p class="landing__faq-answer">Yes. The platform is designed around CLI, API, and workspace-driven ingestion so it can fit into real workflows.</p>
+        </details>
       </div>
     </section>
   </main>
@@ -346,7 +289,6 @@
           <a href="#why">Why it exists</a>
           <a href="#how">How it works</a>
           <a href="#features">Features</a>
-          <a href="#pricing">Pricing</a>
           <a href="#faq">FAQ</a>
         </div>
       </div>

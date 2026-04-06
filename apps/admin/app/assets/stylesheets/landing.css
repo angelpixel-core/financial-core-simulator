@@ -433,6 +433,12 @@ body.landing-body {
   margin-bottom: 28px;
 }
 
+.landing__section-header--center {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .landing__section-eyebrow {
   margin: 0;
   text-transform: uppercase;
@@ -449,11 +455,23 @@ body.landing-body {
   color: #fff;
 }
 
-.landing__why-grid,
-.landing__faq-grid {
+.landing__section-subtitle {
+  margin: 12px 0 0;
+  font-size: 16px;
+  color: var(--landing-muted);
+}
+
+.landing__why-grid {
   display: grid;
   gap: 18px;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.landing__faq-stack {
+  max-width: 760px;
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
 }
 
 .landing__panel {
@@ -470,10 +488,8 @@ body.landing-body {
   color: var(--landing-muted);
 }
 
-.landing__panel--bold p {
-  font-size: 20px;
-  font-weight: 600;
-  color: #fff;
+.landing__panel p + p {
+  margin-top: 12px;
 }
 
 .landing__how-grid {
@@ -718,25 +734,63 @@ body.landing-body {
 }
 
 .landing__faq-card {
-  border-radius: 20px;
+  border-radius: 16px;
   border: 1px solid var(--landing-border);
-  background: rgba(255, 255, 255, 0.05);
-  padding: 18px;
+  background: rgba(7, 14, 26, 0.88);
+  padding: 18px 20px;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
+
+.landing__faq-card:hover {
+  border-color: rgba(103, 232, 249, 0.4);
+  background: rgba(10, 20, 36, 0.92);
+  transform: translateY(-2px);
+}
+
+.landing__faq-card[open] {
+  border-color: rgba(34, 211, 238, 0.45);
+  background: rgba(9, 18, 32, 0.95);
+  box-shadow: 0 20px 50px rgba(2, 6, 23, 0.5);
+}
+
 
 .landing__faq-card summary {
   cursor: pointer;
   list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.landing__faq-question {
+  flex: 1;
   font-size: 18px;
   font-weight: 600;
   color: #fff;
+  text-align: center;
 }
 
 .landing__faq-card summary::-webkit-details-marker {
   display: none;
 }
 
-.landing__faq-card p {
+.landing__faq-card summary::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid rgba(226, 232, 240, 0.7);
+  border-bottom: 2px solid rgba(226, 232, 240, 0.7);
+  transform: rotate(45deg);
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.landing__faq-card[open] summary::after {
+  border-color: rgba(103, 232, 249, 0.9);
+  transform: rotate(-135deg);
+}
+
+.landing__faq-answer {
   margin: 12px 0 0;
   color: var(--landing-muted);
   line-height: 1.6;
@@ -802,5 +856,9 @@ body.landing-body {
 
   .landing__hero {
     padding: 36px 20px 56px;
+  }
+
+  .landing__faq-card {
+    margin-left: 0;
   }
 }
