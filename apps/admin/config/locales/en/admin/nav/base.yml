@@ -5,7 +5,6 @@ en:
       runs: "Health"
       history: "FX Rates"
       validation: "Validation"
-      docs: "Docs"
       workspace: "Workspace"
       open_runs: "Open Runs"
       support: "Support"

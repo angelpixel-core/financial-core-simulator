@@ -11,12 +11,8 @@
 <% if admin_shell_admin? %>
   <% sidebar_items << { label: t("admin.nav.support"), path: Avo.configuration.root_path, active: false, icon_key: "support", external: false } %>
 <% end %>
-<% sidebar_items << { label: t("admin.nav.docs"), path: admin_docs_path(navigation_context), active: false, icon_key: "docs", external: false } %>
 <%= render Admin::Shell::AppShellComponent.new(
   sidebar_items: sidebar_items,
-  topbar_links: [
-    { label: t("admin.nav.docs"), path: admin_docs_path(navigation_context) }
-  ],
   breadcrumb: [
     { label: t("admin.nav.workspace"), path: admin_overview_path(navigation_context) },
     { label: t("admin.nav.validation") }

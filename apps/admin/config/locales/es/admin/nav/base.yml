@@ -5,7 +5,6 @@ es:
       runs: "Salud"
       history: "Tipos de cambio"
       validation: "Validacion"
-      docs: "Docs"
       workspace: "Workspace"
       open_runs: "Abrir runs"
       support: "Soporte"
