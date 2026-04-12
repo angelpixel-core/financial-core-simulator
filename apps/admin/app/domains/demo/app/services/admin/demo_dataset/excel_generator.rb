@@ -57,10 +57,12 @@ module Admin
         trades = []
         seq = 1
         inventories = Hash.new(0.0)
-        start_date = Time.now.utc - (DAYS * 24 * 60 * 60)
+        end_date = Time.zone.today - 1
+        start_date = end_date - (DAYS - 1)
 
         DAYS.times do |day|
-          date = start_date + (day * 24 * 60 * 60)
+          date = start_date + day
+          date_time = date.to_time(:utc)
           trades_per_day = rand(TRADES_PER_DAY_RANGE)
           timestamps = Array.new(trades_per_day) { rand(0..86_399) }.sort
 
@@ -82,7 +84,7 @@ module Admin
               trade_id: "t-#{SecureRandom.hex(4)}",
               account_id: account_id,
               market_id: market_id,
-              timestamp: (date + offset).to_i,
+              timestamp: (date_time + offset).to_i,
               seq: seq,
               side: side,
               quantity_base: quantity_base,

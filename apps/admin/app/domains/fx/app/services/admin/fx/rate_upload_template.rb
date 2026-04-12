@@ -6,8 +6,6 @@ module Admin
   module Fx
     class RateUploadTemplate
       HEADERS = %w[id operational_date base_currency quote_currency rate].freeze
-      TEMPLATE_START_DATE = Date.new(2026, 3, 1)
-      TEMPLATE_END_DATE = Date.new(2026, 3, 30)
       TEMPLATE_SHEET_NAME = "FX Rates"
       TEMPLATE_PAIRS = [
         %w[USD ARS],
@@ -67,7 +65,9 @@ module Admin
       end
 
       def template_dates
-        (TEMPLATE_START_DATE..TEMPLATE_END_DATE).to_a.reverse
+        end_date = Time.zone.today - 1
+        start_date = end_date - 29
+        (start_date..end_date).to_a.reverse
       end
 
       def row_id_for(date, base_currency, quote_currency)
