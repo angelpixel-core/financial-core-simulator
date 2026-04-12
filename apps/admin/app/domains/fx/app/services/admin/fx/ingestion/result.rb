@@ -3,7 +3,7 @@
 module Admin
   module Fx
     module Ingestion
-      class Result < FCS::OperationResult
+      class Result < FCS::Application::Base::Result
       end
     end
   end
