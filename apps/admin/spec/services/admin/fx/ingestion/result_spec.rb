@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Admin::Fx::Ingestion::Result do
+RSpec.describe FCS::OperationResult do
   describe ".success" do
     it "builds a successful result with data and metadata" do
       result = described_class.success(data: {"rates" => 2}, metadata: {"source" => "BCRA"})
