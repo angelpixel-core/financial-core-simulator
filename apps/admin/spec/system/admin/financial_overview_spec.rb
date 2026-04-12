@@ -264,6 +264,7 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
     fill_in "admin-login-email", with: email
     fill_in "admin-login-password", with: password
     click_button I18n.t("admin.auth.form.submit")
+    wait_for_app_shell
   end
 
   def ensure_financial_filters_visible

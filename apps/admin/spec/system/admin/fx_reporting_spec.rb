@@ -108,6 +108,7 @@ RSpec.describe "Admin FX reporting", type: :system do
     fill_in "admin-login-email", with: "ops@example.com"
     fill_in "admin-login-password", with: "secret-pass"
     click_button I18n.t("admin.auth.form.submit")
+    wait_for_app_shell
   end
 
   def wait_for_reporting_currency(value)
