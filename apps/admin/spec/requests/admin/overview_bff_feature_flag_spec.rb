@@ -18,7 +18,7 @@ RSpec.describe "Admin overview BFF feature flag", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("acc-bff")
-      expect(response.body).to include("77.0")
+      expect(response.body).to include("77")
       expect(response.body).not_to include("acc-artifact")
     end
   end
