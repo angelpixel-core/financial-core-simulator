@@ -14,16 +14,24 @@
       autocomplete="username"
       required
     >
-    </div>
-    <div>
-      <label for="admin-login-password"><%= t("admin.auth.form.password_label") %></label>
-      <input
+  </div>
+  <div>
+    <label for="admin-login-password"><%= t("admin.auth.form.password_label") %></label>
+    <input
       id="admin-login-password"
       type="password"
       name="<%= password_param %>"
       autocomplete="current-password"
       required
     >
-      </div>
-      <input type="submit" value="<%= t("admin.auth.form.submit") %>">
-    <% end %>
+  </div>
+  <input type="submit" value="<%= t("admin.auth.form.submit") %>">
+<% end %>
+<div class="auth-downloads">
+  <p class="auth-downloads__title">Download test data</p>
+  <div class="auth-downloads__links">
+    <a class="auth-downloads__link" href="<%= demo_dataset_valid_path(locale: I18n.locale) %>">Trades (valid)</a>
+    <a class="auth-downloads__link" href="<%= demo_dataset_invalid_path(locale: I18n.locale) %>">Trades (invalid)</a>
+    <a class="auth-downloads__link" href="<%= template_admin_fx_rate_uploads_path(locale: I18n.locale) %>">FX rates</a>
+  </div>
+</div>
