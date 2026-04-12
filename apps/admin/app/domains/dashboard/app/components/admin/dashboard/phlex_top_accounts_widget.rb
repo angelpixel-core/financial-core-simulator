@@ -1,6 +1,8 @@
 require "bigdecimal"
 
 class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
+  include ApplicationHelper
+
   def initialize(accounts:, updated_at:, drilldown_path: nil, drilldown_label: nil)
     @accounts = Array(accounts)
     @updated_at = updated_at
@@ -9,6 +11,8 @@ class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
   end
 
   def view_template
+    currency = reporting_currency
+
     article(class: "dashboard-card") do
       header(class: "dashboard-card__header") do
         h3 { "Top accounts (live)" }
@@ -38,9 +42,9 @@ class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
             accounts.each do |account|
               tr do
                 td { account[:account_id] }
-                td { account[:total_pnl_quote].to_s("F") }
-                td { account[:realized_net_pnl_quote].to_s("F") }
-                td { account[:unrealized_pnl_quote].to_s("F") }
+                td { truncate_fiat(account[:total_pnl_quote], currency) }
+                td { truncate_fiat(account[:realized_net_pnl_quote], currency) }
+                td { truncate_fiat(account[:unrealized_pnl_quote], currency) }
               end
             end
           end
@@ -59,5 +63,9 @@ class Admin::Dashboard::PhlexTopAccountsWidget < Phlex::HTML
     BigDecimal(value.to_s)
   rescue ArgumentError
     BigDecimal(0)
+  end
+
+  def reporting_currency
+    @reporting_currency ||= ReportingSetting.current.reporting_currency
   end
 end

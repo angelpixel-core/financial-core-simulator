@@ -2,6 +2,7 @@
 <% navigation_context = local_assigns.fetch(:navigation_context, {}) %>
 <% drilldown_path = show_drilldown ? admin_overview_top_accounts_path(navigation_context) : nil %>
 <% pagination = local_assigns[:pagination] %>
+<% reporting_currency = ReportingSetting.current.reporting_currency %>
 <% accounts = if pagination
   pagination[:entries]
 else
@@ -10,9 +11,9 @@ end %>
 <% rows = accounts.map do |account|
   {
     account: account[:account_id],
-    total_pnl_quote: account[:total_pnl_quote].to_s("F"),
-    realized_net: account[:realized_net_pnl_quote].to_s("F"),
-    unrealized: account[:unrealized_pnl_quote].to_s("F")
+    total_pnl_quote: truncate_fiat(account[:total_pnl_quote], reporting_currency),
+    realized_net: truncate_fiat(account[:realized_net_pnl_quote], reporting_currency),
+    unrealized: truncate_fiat(account[:unrealized_pnl_quote], reporting_currency)
   }
 end %>
 <%= render Admin::Ui::WorkspaceWidgetComponent.new(

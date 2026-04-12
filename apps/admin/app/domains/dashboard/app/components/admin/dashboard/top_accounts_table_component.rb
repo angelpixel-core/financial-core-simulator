@@ -15,13 +15,20 @@ class Admin::Dashboard::TopAccountsTableComponent < ViewComponent::Base
   end
 
   def rows
+    currency = reporting_currency
     @accounts.map do |account|
       {
         account: account[:account_id],
-        total_pnl_quote: account[:total_pnl_quote].to_s("F"),
-        realized_net: account[:realized_net_pnl_quote].to_s("F"),
-        unrealized: account[:unrealized_pnl_quote].to_s("F")
+        total_pnl_quote: helpers.truncate_fiat(account[:total_pnl_quote], currency),
+        realized_net: helpers.truncate_fiat(account[:realized_net_pnl_quote], currency),
+        unrealized: helpers.truncate_fiat(account[:unrealized_pnl_quote], currency)
       }
     end
+  end
+
+  private
+
+  def reporting_currency
+    @reporting_currency ||= ReportingSetting.current.reporting_currency
   end
 end

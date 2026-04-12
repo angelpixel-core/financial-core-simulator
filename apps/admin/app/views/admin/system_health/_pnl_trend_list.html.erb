@@ -1,8 +1,9 @@
+<% reporting_currency = ReportingSetting.current.reporting_currency %>
 <ul class="trend-line-fallback" aria-label="<%= t("admin.overview.activity.pnl_trend.fallback_aria") %>">
   <% pagination[:entries].each do |point| %>
     <li>
       <span><%= point[:label] %></span>
-      <strong><%= point[:total_pnl_quote] %></strong>
+      <strong><%= truncate_fiat(point[:total_pnl_quote], reporting_currency) %></strong>
     </li>
   <% end %>
 </ul>

@@ -5,6 +5,7 @@
 <% latest_run_hash = @metrics.dig(:latest_run, :input_hash).to_s %>
 <% latest_run_hash_present = latest_run_hash.present? %>
 <% latest_run_hash_truncated = latest_run_hash_present ? "#{latest_run_hash.first(10)}..." : nil %>
+<% reporting_currency = ReportingSetting.current.reporting_currency %>
 <% sidebar_items = [
   { label: t("admin.nav.overview"), path: admin_overview_path(navigation_context), active: false, icon_key: "overview", external: false }
 ] %>
@@ -210,10 +211,10 @@
             <p class="empty-state"><%= t("admin.overview.financial_results.global_pnl.empty") %></p>
           <% else %>
             <ul class="detail-list">
-              <li><span><%= t("admin.overview.financial_results.global_pnl.total") %></span><strong><%= @metrics[:latest_global]["totalPnLQuote"] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.global_pnl.realized_net") %></span><strong><%= @metrics[:latest_global]["realizedNetPnLQuote"] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.global_pnl.unrealized") %></span><strong><%= @metrics[:latest_global]["unrealizedPnLQuote"] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.global_pnl.total_usd") %></span><strong><%= @metrics[:latest_global]["totalPnLUsd"] || t("admin.common.na") %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.global_pnl.total") %></span><strong><%= truncate_fiat(@metrics[:latest_global]["totalPnLQuote"], reporting_currency) %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.global_pnl.realized_net") %></span><strong><%= truncate_fiat(@metrics[:latest_global]["realizedNetPnLQuote"], reporting_currency) %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.global_pnl.unrealized") %></span><strong><%= truncate_fiat(@metrics[:latest_global]["unrealizedPnLQuote"], reporting_currency) %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.global_pnl.total_usd") %></span><strong><%= @metrics[:latest_global]["totalPnLUsd"].present? ? truncate_fiat(@metrics[:latest_global]["totalPnLUsd"], "USD") : t("admin.common.na") %></strong></li>
             </ul>
           <% end %>
         </section>
@@ -228,9 +229,9 @@
             <ul class="detail-list">
               <li><span><%= t("admin.overview.financial_results.run_comparison.current_run") %></span><strong>#<%= run_comparison[:current_run_id] %></strong></li>
               <li><span><%= t("admin.overview.financial_results.run_comparison.previous_run") %></span><strong>#<%= run_comparison[:previous_run_id] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.pnl_delta") %></span><strong><%= run_comparison[:total_pnl_delta] || t("admin.common.na") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.realized_delta") %></span><strong><%= run_comparison[:realized_delta] || t("admin.common.na") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.unrealized_delta") %></span><strong><%= run_comparison[:unrealized_delta] || t("admin.common.na") %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.run_comparison.pnl_delta") %></span><strong><%= run_comparison[:total_pnl_delta].present? ? truncate_fiat(run_comparison[:total_pnl_delta], reporting_currency) : t("admin.common.na") %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.run_comparison.realized_delta") %></span><strong><%= run_comparison[:realized_delta].present? ? truncate_fiat(run_comparison[:realized_delta], reporting_currency) : t("admin.common.na") %></strong></li>
+              <li><span><%= t("admin.overview.financial_results.run_comparison.unrealized_delta") %></span><strong><%= run_comparison[:unrealized_delta].present? ? truncate_fiat(run_comparison[:unrealized_delta], reporting_currency) : t("admin.common.na") %></strong></li>
             </ul>
             <p class="dashboard-card__meta"><%= run_comparison[:deterministic_result] %></p>
           <% end %>

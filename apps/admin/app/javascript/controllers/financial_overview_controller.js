@@ -226,7 +226,7 @@ export default class extends Controller {
           { className: "trend-chart__tooltip-value" },
           React.createElement("span", { className: "trend-chart__tooltip-dot", "aria-hidden": "true" }),
           React.createElement("span", null, this.volumeTooltipLabelValue),
-          React.createElement("strong", null, value.toFixed(2))
+          React.createElement("strong", null, this.formatFiatValue(value))
         ),
         missingLine
       )
@@ -327,7 +327,7 @@ export default class extends Controller {
           { className: "trend-chart__tooltip-value" },
           React.createElement("span", { className: "trend-chart__tooltip-dot", "aria-hidden": "true" }),
           React.createElement("span", null, this.pnlTooltipLabelValue),
-          React.createElement("strong", null, value.toFixed(2))
+          React.createElement("strong", null, this.formatFiatValue(value))
         ),
         missingLine
       )
@@ -507,6 +507,15 @@ export default class extends Controller {
     }
 
     return url.toString()
+  }
+
+  formatFiatValue(value) {
+    const numeric = Number(value)
+    if (!Number.isFinite(numeric)) return ""
+
+    const truncated = Math.trunc(numeric * 100) / 100
+    const formatted = truncated.toFixed(2)
+    return formatted.replace(/\.0+$/, "").replace(/(\.\d*[1-9])0+$/, "$1")
   }
 
   formatTimestamp(timestamp) {

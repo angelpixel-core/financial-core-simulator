@@ -36,7 +36,7 @@ module Admin
       def display_rate(rate)
         return t("admin.fx.history.placeholder_value") if rate.rate.nil?
 
-        rate.rate.to_s
+        helpers.truncate_fiat(rate.rate, rate.quote_currency)
       end
 
       def editable_rate?(rate)
