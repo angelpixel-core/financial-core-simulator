@@ -6,6 +6,14 @@ require_relative "../../support/system_helpers"
 
 RSpec.describe "Admin FX reporting", type: :system do
   around do |example|
+    previous_token = ENV["ADMIN_UI_TOKEN"]
+    ENV["ADMIN_UI_TOKEN"] = nil
+    example.run
+  ensure
+    ENV["ADMIN_UI_TOKEN"] = previous_token
+  end
+
+  around do |example|
     travel_to(Time.zone.parse("2026-03-30 10:00:00")) { example.run }
   end
 

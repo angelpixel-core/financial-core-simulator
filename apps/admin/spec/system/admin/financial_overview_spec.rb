@@ -6,6 +6,14 @@ require "tempfile"
 require_relative "../../support/system_helpers"
 
 RSpec.describe "Admin financial overview", type: :system, js: true do
+  around do |example|
+    previous_token = ENV["ADMIN_UI_TOKEN"]
+    ENV["ADMIN_UI_TOKEN"] = nil
+    example.run
+  ensure
+    ENV["ADMIN_UI_TOKEN"] = previous_token
+  end
+
   let(:email) { "ops@example.com" }
   let(:password) { "secret-pass" }
 
