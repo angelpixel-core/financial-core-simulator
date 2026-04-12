@@ -3,6 +3,7 @@
 require "json"
 require "optparse"
 require "fileutils"
+require "yaml"
 require "bcrypt"
 
 module SeedAdminEvidence
@@ -129,6 +130,7 @@ module SeedAdminFlows
     upsert_account(email: "ops@example.com", password: password)
     upsert_account(email: "admin@example.com", password: password)
 
+    seed_fx_sources
     seed_verified_runs
 
     puts "Done."
@@ -384,10 +386,39 @@ module SeedAdminFlows
   end
 
   def seed_dashboard_demo
+    seed_fx_sources
     Admin::Seeds::DashboardDemoSeed.new(
       evidence: SeedAdminEvidence,
       logger: seed_admin_logger
     ).call
+  end
+
+  def seed_fx_sources
+    path = Rails.root.join("config", "fx_sources.yml")
+    unless File.exist?(path)
+      puts "fx_sources.yml not found; skipping seed" if ENV["SEED_ADMIN_VERBOSE"] == "1"
+      return
+    end
+
+    config = YAML.safe_load_file(path, aliases: true) || {}
+    env_config = config.fetch(Rails.env, {})
+    sources = Array(env_config["sources"])
+
+    sources.each do |attrs|
+      next if attrs.nil?
+
+      source = FxRateSource.find_or_initialize_by(
+        code: attrs["code"],
+        source_type: attrs["source_type"],
+        version: attrs["version"]
+      )
+      source.name = attrs["name"]
+      source.active = attrs.fetch("active", true)
+      source.config = attrs.fetch("config", {})
+      source.save!
+    end
+
+    SeedAdminEvidence.add_detail("fx_sources_seeded", sources.map { |s| s["code"] })
   end
 
   def seed_admin_logger
@@ -397,104 +428,111 @@ module SeedAdminFlows
   end
 end
 
-SUPPORTED_TYPES = {
-  "verified" => :seed_verified_runs,
-  "interactive" => :seed_interactive_runs,
-  "dashboard" => :seed_dashboard_demo,
-  "ops" => :seed_ops_daily,
-  "local-demo" => :seed_local_demo
-}.freeze
+module SeedAdminRunner
+  SUPPORTED_TYPES = {
+    "verified" => :seed_verified_runs,
+    "interactive" => :seed_interactive_runs,
+    "dashboard" => :seed_dashboard_demo,
+    "ops" => :seed_ops_daily,
+    "local-demo" => :seed_local_demo,
+    "fx-sources" => :seed_fx_sources
+  }.freeze
 
-options = {
-  type: nil,
-  dry_run: false,
-  verbose: false
-}
-
-parser = OptionParser.new do |opts|
-  opts.banner = "Usage: rails runner apps/admin/script/seed_admin.rb --type TYPE [--dry-run] [--verbose]"
-  opts.on("--type=TYPE", String, "Seed type (#{SUPPORTED_TYPES.keys.join(", ")})") do |value|
-    options[:type] = value
-  end
-  opts.on("--dry-run", "Show what would run without executing") do
-    options[:dry_run] = true
-  end
-  opts.on("--verbose", "Verbose output") do
-    options[:verbose] = true
-  end
-end
-
-parser.parse!
-
-type = options[:type]
-
-unless SUPPORTED_TYPES.key?(type)
-  supported = SUPPORTED_TYPES.keys.join(", ")
-  puts "Unsupported seed type: #{type || "(none)"}"
-  puts "Supported types: #{supported}"
-  puts parser.banner
-  puts "status: failure"
-  puts "type: #{type || "unknown"}"
-  puts "artifacts: []"
-  puts "report_path: none"
-  exit 1
-end
-
-report_dir = Rails.root.join("storage", "runs", "seed_reports")
-FileUtils.mkdir_p(report_dir)
-report_path = report_dir.join("seed_#{Time.now.utc.strftime("%Y%m%dT%H%M%SZ")}.json")
-
-status = "success"
-failure = nil
-SeedAdminEvidence.reset!
-
-if options[:dry_run]
-  status = "dry_run"
-else
-  begin
-    ENV["SEED_ADMIN_ENTRY"] = "1"
-    ENV["SEED_ADMIN_TYPE"] = type
-    ENV["SEED_ADMIN_VERBOSE"] = options[:verbose] ? "1" : "0"
-    puts "Running seed type: #{type}" if options[:verbose]
-    method_name = SUPPORTED_TYPES.fetch(type)
-    SeedAdminFlows.public_send(method_name)
-  rescue => e
-    status = "failure"
-    failure = {
-      "errorClass" => e.class.name,
-      "message" => e.message,
-      "backtrace" => e.backtrace&.first(10)
+  def self.run!(argv)
+    options = {
+      type: nil,
+      dry_run: false,
+      verbose: false
     }
+
+    parser = OptionParser.new do |opts|
+      opts.banner = "Usage: rails runner apps/admin/script/seed_admin.rb --type TYPE [--dry-run] [--verbose]"
+      opts.on("--type=TYPE", String, "Seed type (#{SUPPORTED_TYPES.keys.join(", ")})") do |value|
+        options[:type] = value
+      end
+      opts.on("--dry-run", "Show what would run without executing") do
+        options[:dry_run] = true
+      end
+      opts.on("--verbose", "Verbose output") do
+        options[:verbose] = true
+      end
+    end
+
+    parser.parse!(argv)
+
+    type = options[:type]
+
+    unless SUPPORTED_TYPES.key?(type)
+      supported = SUPPORTED_TYPES.keys.join(", ")
+      puts "Unsupported seed type: #{type || "(none)"}"
+      puts "Supported types: #{supported}"
+      puts parser.banner
+      puts "status: failure"
+      puts "type: #{type || "unknown"}"
+      puts "artifacts: []"
+      puts "report_path: none"
+      exit 1
+    end
+
+    report_dir = Rails.root.join("storage", "runs", "seed_reports")
+    FileUtils.mkdir_p(report_dir)
+    report_path = report_dir.join("seed_#{Time.now.utc.strftime("%Y%m%dT%H%M%SZ")}.json")
+
+    status = "success"
+    failure = nil
+    SeedAdminEvidence.reset!
+
+    if options[:dry_run]
+      status = "dry_run"
+    else
+      begin
+        ENV["SEED_ADMIN_ENTRY"] = "1"
+        ENV["SEED_ADMIN_TYPE"] = type
+        ENV["SEED_ADMIN_VERBOSE"] = options[:verbose] ? "1" : "0"
+        puts "Running seed type: #{type}" if options[:verbose]
+        method_name = SUPPORTED_TYPES.fetch(type)
+        SeedAdminFlows.public_send(method_name)
+      rescue => e
+        status = "failure"
+        failure = {
+          "errorClass" => e.class.name,
+          "message" => e.message,
+          "backtrace" => e.backtrace&.first(10)
+        }
+      end
+    end
+
+    evidence_artifacts = SeedAdminEvidence.artifacts
+    artifacts = if evidence_artifacts.any?
+      evidence_artifacts.uniq
+    else
+      case type
+      when "dashboard"
+        base = Rails.root.join("storage", "runs", "dashboard_seed")
+        Dir.exist?(base) ? [base.to_s] : []
+      else
+        []
+      end
+    end
+
+    report = {
+      "status" => status,
+      "type" => type,
+      "artifacts" => artifacts,
+      "evidence" => SeedAdminEvidence.details,
+      "failure" => failure,
+      "created_at" => Time.now.utc.iso8601
+    }
+
+    File.write(report_path, JSON.pretty_generate(report))
+
+    puts "status: #{status}"
+    puts "type: #{type}"
+    puts "artifacts: #{artifacts}"
+    puts "evidence: #{SeedAdminEvidence.details}"
+    puts "report_path: #{report_path}"
+    puts "failure: #{failure}" if failure
   end
 end
 
-evidence_artifacts = SeedAdminEvidence.artifacts
-artifacts = if evidence_artifacts.any?
-  evidence_artifacts.uniq
-else
-  case type
-  when "dashboard"
-    base = Rails.root.join("storage", "runs", "dashboard_seed")
-    Dir.exist?(base) ? [base.to_s] : []
-  else
-    []
-  end
-end
-
-report = {
-  "status" => status,
-  "type" => type,
-  "artifacts" => artifacts,
-  "evidence" => SeedAdminEvidence.details,
-  "failure" => failure,
-  "created_at" => Time.now.utc.iso8601
-}
-
-File.write(report_path, JSON.pretty_generate(report))
-
-puts "status: #{status}"
-puts "type: #{type}"
-puts "artifacts: #{artifacts}"
-puts "evidence: #{SeedAdminEvidence.details}"
-puts "report_path: #{report_path}"
-puts "failure: #{failure}" if failure
+SeedAdminRunner.run!(ARGV) if $PROGRAM_NAME == __FILE__

@@ -3,3 +3,4 @@ puts "Canonical: BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rails runner apps
 
 ARGV.replace(["--type", "dashboard"])
 load Rails.root.join("script", "seed_admin.rb")
+SeedAdminRunner.run!(ARGV)
