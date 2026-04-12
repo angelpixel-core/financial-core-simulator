@@ -13,7 +13,11 @@ module FCS
         end
 
         def publish(event:)
-          return Result.success(data: {published: false, event_type: event[:event_type]}) unless enabled?
+          unless enabled?
+            return FCS::Application::Base::Result.success(
+              data: {published: false, event_type: event[:event_type]}
+            )
+          end
 
           raise NotImplementedError, "publish must be implemented"
         end
@@ -21,7 +25,7 @@ module FCS
 
       class NoopPublisher < Publisher
         def publish(event:)
-          Result.success(data: {published: false, event_type: event[:event_type]})
+          FCS::Application::Base::Result.success(data: {published: false, event_type: event[:event_type]})
         end
       end
     end

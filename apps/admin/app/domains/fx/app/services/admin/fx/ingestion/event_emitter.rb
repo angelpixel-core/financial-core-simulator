@@ -4,25 +4,43 @@ module Admin
   module Fx
     module Ingestion
       class EventEmitter
-        def initialize(result_class: Result, event_class: FCS::Application::Base::Event)
+        def initialize(result_class: Result, event_class: FCS::Application::Base::Event,
+          publisher: FCS::Application::Base::NoopPublisher.new, publish_enabled: true)
           @result_class = result_class
           @event_class = event_class
+          @publisher = publisher
+          @publish_enabled = publish_enabled
         end
 
         def emit(event_type:, data: {}, metadata: {})
           event = event_class.new(event_type: event_type, data: data, metadata: metadata)
           record = FxRateEvent.create!(event.to_h)
+          publish_result = if publish_enabled?
+            publisher.publish(event: event.to_h)
+          else
+            FCS::Application::Base::Result.success(
+              data: {published: false, event_type: event.event_type}
+            )
+          end
 
-          result_class.success(data: {event_id: record.event_id}, metadata: {event_type: event.event_type})
+          result_class.success(
+            data: {event_id: record.event_id},
+            metadata: {event_type: event.event_type, publish_result: publish_result.to_h}
+          )
         rescue ArgumentError => e
           result_class.failure(error_code: "event_invalid", context: {message: e.message, event_type: event_type})
         rescue => e
-          result_class.failure(error_code: "event_persist_failed", context: {message: e.message, event_type: event_type})
+          result_class.failure(error_code: "event_persist_failed",
+            context: {message: e.message, event_type: event_type})
         end
 
         private
 
-        attr_reader :result_class, :event_class
+        def publish_enabled?
+          @publish_enabled
+        end
+
+        attr_reader :result_class, :event_class, :publisher
       end
     end
   end

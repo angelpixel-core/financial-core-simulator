@@ -34,6 +34,7 @@ module Admin
 
     config.x.currency = config_for(:currency)
     config.x.fx_sources = config_for(:fx_sources)
+    config.x.fx_event_publish_enabled = ENV.fetch("FX_EVENT_PUBLISH_ENABLED", "1") == "1"
 
     domain_roots = Dir[Rails.root.join("app/domains/*/app")]
     domain_subdirs = %w[models services serializers components jobs mailers helpers]
