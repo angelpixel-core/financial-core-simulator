@@ -18,13 +18,12 @@ RSpec.describe Admin::Fx::Ingestion::Adapters::BcraAdapter do
   end
 
   let(:success_response) do
-    instance_double(Net::HTTPSuccess, code: "200", body: "{\"status\":200,\"metadata\":{\"resultset\":{\"count\":0,\"offset\":0,\"limit\":1000}},\"results\":[]}")
+    instance_double(Net::HTTPSuccess, code: "200",
+      body: '{"status":200,"metadata":{"resultset":{"count":0,"offset":0,"limit":1000}},"results":[]}')
   end
 
-  it "returns a success result with payload" do
-    allow(Net::HTTP).to receive(:get_response).and_return(success_response)
-
-    result = adapter.fetch(date_from: Date.new(2026, 4, 1), date_to: Date.new(2026, 4, 2))
+  it "returns a success result with payload", :vcr do
+    result = adapter.fetch(date_from: Date.new(2024, 6, 12), date_to: Date.new(2024, 6, 12))
 
     expect(result).to be_success
     expect(result.data[:payload]["status"]).to eq(200)
