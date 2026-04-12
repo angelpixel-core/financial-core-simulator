@@ -32,6 +32,8 @@ module Admin
     config.i18n.available_locales = %i[en es]
     config.i18n.fallbacks = true
 
+    config.x.currency = config_for(:currency)
+
     domain_roots = Dir[Rails.root.join("app/domains/*/app")]
     domain_subdirs = %w[models services serializers components jobs mailers helpers]
     domain_roots.each do |root|

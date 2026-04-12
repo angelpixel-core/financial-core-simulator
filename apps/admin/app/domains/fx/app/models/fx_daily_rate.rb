@@ -2,7 +2,7 @@
 
 class FxDailyRate < ApplicationRecord
   SOURCES = %w[manual carry_forward upload placeholder].freeze
-  CURRENCY_CODE_FORMAT = /\A[A-Z]{3}\z/
+  CURRENCY_CODE_FORMAT = FCS::Currency::CODE_FORMAT
 
   has_one :placeholder_gap, class_name: "FxRateGap", foreign_key: :placeholder_rate_id, dependent: :nullify
   has_one :resolved_gap, class_name: "FxRateGap", foreign_key: :resolved_rate_id, dependent: :nullify

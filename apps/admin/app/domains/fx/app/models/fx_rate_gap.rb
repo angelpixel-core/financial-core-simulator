@@ -2,7 +2,7 @@
 
 class FxRateGap < ApplicationRecord
   STATUSES = %w[open resolved ignored].freeze
-  CURRENCY_CODE_FORMAT = /\A[A-Z]{3}\z/
+  CURRENCY_CODE_FORMAT = FCS::Currency::CODE_FORMAT
 
   belongs_to :placeholder_rate, class_name: "FxDailyRate", optional: true
   belongs_to :resolved_rate, class_name: "FxDailyRate", optional: true

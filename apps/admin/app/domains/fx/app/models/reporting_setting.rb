@@ -3,12 +3,11 @@
 class ReportingSetting < ApplicationRecord
   DEFAULT_SINGLETON_KEY = "reporting"
   DEFAULT_REPORTING_CURRENCY = "USD"
-  SUPPORTED_CURRENCIES = %w[USD ARS].freeze
-  CURRENCY_CODE_FORMAT = /\A[A-Z]{3}\z/
+  CURRENCY_CODE_FORMAT = FCS::Currency::CODE_FORMAT
 
   validates :singleton_key, presence: true, inclusion: {in: [DEFAULT_SINGLETON_KEY]}
   validates :reporting_currency, presence: true, format: {with: CURRENCY_CODE_FORMAT},
-    inclusion: {in: SUPPORTED_CURRENCIES}
+    inclusion: {in: ->(_record) { FCS::Currency.supported_fiat }}
   validates :singleton_key, uniqueness: true
 
   before_validation :set_defaults
@@ -18,6 +17,10 @@ class ReportingSetting < ApplicationRecord
     find_or_create_by!(singleton_key: DEFAULT_SINGLETON_KEY) do |setting|
       setting.reporting_currency = DEFAULT_REPORTING_CURRENCY
     end
+  end
+
+  def self.supported_currencies
+    FCS::Currency.supported_fiat
   end
 
   private

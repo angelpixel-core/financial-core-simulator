@@ -1,0 +1,16 @@
+default: &default
+  supported_fiat:
+    - USD
+    - ARS
+  supported_crypto:
+    - BTC
+    - ETH
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

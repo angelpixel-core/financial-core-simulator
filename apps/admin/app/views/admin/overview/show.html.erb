@@ -26,7 +26,7 @@
 <% if admin_shell_operator? || admin_shell_admin? %>
   <% sidebar_panels << render(Admin::Fx::ReportingCurrencyFormComponent.new(
     reporting_setting: @reporting_setting,
-    supported_currencies: ReportingSetting::SUPPORTED_CURRENCIES,
+    supported_currencies: ReportingSetting.supported_currencies,
     fx_rate_state: @fx_rate_state,
     operational_date: @fx_operational_date,
     base_currency: @fx_base_currency,
