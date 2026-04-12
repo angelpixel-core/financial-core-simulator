@@ -5,7 +5,7 @@ module Admin
     module Ingestion
       module Validators
         class BcraContract < Dry::Validation::Contract
-          params do
+          schema do
             required(:status).filled(:integer)
             required(:metadata).hash do
               required(:resultset).hash do
