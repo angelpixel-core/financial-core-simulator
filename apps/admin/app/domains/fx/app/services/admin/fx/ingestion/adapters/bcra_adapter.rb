@@ -30,7 +30,7 @@ module Admin
             response = Net::HTTP.get_response(uri)
             status = response.code.to_i
 
-            return failure("http_error", status: status, url: uri.to_s) unless response.is_a?(Net::HTTPSuccess)
+            return failure("http_error", status: status, url: uri.to_s) unless status.between?(200, 299)
 
             payload = JSON.parse(response.body)
 

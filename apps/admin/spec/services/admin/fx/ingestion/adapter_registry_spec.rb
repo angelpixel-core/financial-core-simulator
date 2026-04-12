@@ -21,7 +21,7 @@ RSpec.describe Admin::Fx::Ingestion::AdapterRegistry do
       code: "MANUAL",
       source_type: "manual",
       version: "v1",
-      config: {}
+      config: {"note" => "n/a"}
     )
 
     expect(described_class.build(source)).to be_nil
