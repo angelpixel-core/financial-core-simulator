@@ -1,0 +1,16 @@
+--dir
+app/domains/fx/app/services/admin/fx/value_objects
+--dir
+app/domains/fx/app/services/admin/fx/ingestion
+--dir
+sorbet/rbi
+--ignore
+app/domains/fx/app/services/admin/fx/ingestion/event_emitter.rb
+--ignore
+app/domains/fx/app/services/admin/fx/ingestion/adapter_registry.rb
+--ignore
+app/domains/fx/app/services/admin/fx/ingestion/adapters/bcra_adapter.rb
+--ignore
+app/domains/fx/app/services/admin/fx/ingestion/validators
+--ignore
+app/domains/fx/app/services/admin/fx/ingestion/result.rb

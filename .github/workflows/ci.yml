@@ -153,6 +153,10 @@ jobs:
         run: bundle install
         working-directory: apps/admin
 
+      - name: Run Sorbet typecheck
+        run: bundle exec srb tc
+        working-directory: apps/admin
+
       - name: Install node modules
         run: npm ci
         working-directory: apps/admin

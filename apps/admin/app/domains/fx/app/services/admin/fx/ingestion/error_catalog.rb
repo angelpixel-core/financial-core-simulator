@@ -1,20 +1,24 @@
+# typed: true
 # frozen_string_literal: true
+
+require "sorbet-runtime"
 
 module Admin
   module Fx
     module Ingestion
       class ErrorCatalog
-        Entry = Struct.new(
-          :code,
-          :severity,
-          :message,
-          :user_message_key,
-          :action_hint_key,
-          :retryable,
-          keyword_init: true
-        )
+        extend T::Sig
 
-        ENTRIES = {
+        class Entry < T::Struct
+          const :code, String
+          const :severity, String
+          const :message, String
+          const :user_message_key, String
+          const :action_hint_key, String
+          const :retryable, T::Boolean
+        end
+
+        ENTRIES = T.let({
           "adapter_missing" => Entry.new(
             code: "adapter_missing",
             severity: "error",
@@ -55,12 +59,16 @@ module Admin
             action_hint_key: "admin.fx.ingestion_errors.job_error.action_hint",
             retryable: true
           )
-        }.freeze
+        }.freeze, T::Hash[String, Entry])
 
+        sig { params(code: T.untyped).returns(Entry) }
         def self.fetch(code)
           ENTRIES[code.to_s] || fallback(code)
         end
 
+        # @param code [String]
+        # @return [Hash]
+        sig { params(code: T.untyped).returns(T::Hash[Symbol, T.untyped]) }
         def self.details_for(code)
           entry = fetch(code)
           {
@@ -73,6 +81,7 @@ module Admin
           }
         end
 
+        sig { params(code: T.untyped).returns(Entry) }
         def self.fallback(code)
           Entry.new(
             code: code.to_s,

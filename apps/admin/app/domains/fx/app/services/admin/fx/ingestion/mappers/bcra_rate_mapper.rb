@@ -1,19 +1,27 @@
+# typed: true
 # frozen_string_literal: true
+
+require "sorbet-runtime"
 
 module Admin
   module Fx
     module Ingestion
       module Mappers
         class BcraRateMapper
+          extend T::Sig
+
+          sig { params(payload: T::Hash[T.untyped, T.untyped], source: FxRateSource).returns(Result) }
           def self.call(payload:, source:)
             new(payload: payload, source: source).call
           end
 
+          sig { params(payload: T::Hash[T.untyped, T.untyped], source: FxRateSource).void }
           def initialize(payload:, source:)
             @payload = payload
             @source = source
           end
 
+          sig { returns(Result) }
           def call
             return failure("missing_payload", message: "Payload is required") unless payload.is_a?(Hash)
 
@@ -67,19 +75,36 @@ module Admin
 
           private
 
-          attr_reader :payload, :source
+          sig { returns(T::Hash[T.untyped, T.untyped]) }
+          attr_reader :payload
 
+          sig { returns(FxRateSource) }
+          attr_reader :source
+
+          sig { params(key: String).returns(T.untyped) }
           def config_value(key)
-            config = source&.config
+            config = source.config
             return nil unless config.is_a?(Hash)
 
             config[key] || config[key.to_sym]
           end
 
+          sig { params(value: T.untyped).returns(String) }
           def normalize_currency(value)
             FCS::Currency.normalize(value)
           end
 
+          # @return [Hash]
+          sig do
+            params(
+              entry_index: Integer,
+              detail_index: T.nilable(Integer),
+              field: String,
+              message: String,
+              raw_entry: T.nilable(T::Hash[T.untyped, T.untyped]),
+              raw_detail: T.nilable(T::Hash[T.untyped, T.untyped])
+            ).returns(T::Hash[Symbol, T.untyped])
+          end
           def build_error(entry_index, detail_index, field, message, raw_entry: nil, raw_detail: nil)
             {
               entry_index: entry_index,
@@ -91,11 +116,12 @@ module Admin
             }
           end
 
+          sig { params(error_code: String, context: T::Hash[T.untyped, T.untyped]).returns(Result) }
           def failure(error_code, context = {})
             Admin::Fx::Ingestion::Result.failure(
               error_code: error_code,
               context: context,
-              metadata: {source_id: source&.id}
+              metadata: {source_id: source.id}
             )
           end
         end
