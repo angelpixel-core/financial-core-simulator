@@ -3,7 +3,7 @@
     <h2><%= t("admin.fx.history.sync.title") %></h2>
     <p class="dashboard-card__meta"><%= t("admin.fx.history.sync.subtitle") %></p>
   </header>
-  <%= form_with url: admin_fx_ingestions_sync_path(locale: I18n.locale), method: :post, local: false,
+  <%= form_with url: sync_admin_fx_ingestions_path(locale: I18n.locale), method: :post, local: false,
     class: "fx-history-sync__form" do |form| %>
     <%= hidden_field_tag :locale, I18n.locale %>
     <div class="fx-history-sync__row">
