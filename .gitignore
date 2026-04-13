@@ -11,3 +11,6 @@ lib/log/
 # YARD artifacts
 .yardoc/
 docs/yard/
+
+# Local bundler config
+.bundle/
