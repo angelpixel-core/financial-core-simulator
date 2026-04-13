@@ -64,5 +64,6 @@ RSpec.describe Admin::Fx::Ingestion::Mappers::BcraRateMapper do
     expect(result).to be_failure
     expect(result.error_code).to eq("mapping_failed")
     expect(result.context[:errors]).not_to be_empty
+    expect(result.context[:errors].first[:raw_entry]).to be_present
   end
 end

@@ -9,14 +9,14 @@ module Admin
         attr_reader :operational_date, :base_currency, :quote_currency, :rate, :source_id, :source_code, :raw_payload
 
         def initialize(operational_date:, base_currency:, quote_currency:, rate:, source_id: nil, source_code: nil,
-          raw_payload: {})
+          raw_payload: nil)
           @operational_date = normalize_date(operational_date)
           @base_currency = normalize_currency(base_currency)
           @quote_currency = normalize_currency(quote_currency)
           @rate = normalize_rate(rate)
           @source_id = source_id
           @source_code = source_code
-          @raw_payload = raw_payload || {}
+          @raw_payload = raw_payload
         end
 
         def to_upsert_attributes(source: "ingestion")

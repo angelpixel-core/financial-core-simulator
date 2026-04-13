@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "bigdecimal"
-
 module Admin
   module Fx
     module Ingestion
@@ -29,45 +27,37 @@ module Admin
 
             errors = []
             rates = []
+            adapter = Admin::Fx::Ingestion::Adapters::BcraPayloadAdapter.new(payload)
 
-            Array(payload["results"]).each_with_index do |entry, entry_index|
-              date = parse_date(entry["fecha"])
-              if date.nil?
-                errors << build_error(entry_index, nil, "fecha", "Invalid date")
-                next
-              end
+            begin
+              adapter.entries.each do |entry|
+                date = entry.date
+                entry.details.each do |detail|
+                  if currency_code.present? && normalize_currency(detail.currency_code) != normalize_currency(currency_code)
+                    next
+                  end
 
-              details = Array(entry["detalle"])
-              if details.empty?
-                errors << build_error(entry_index, nil, "detalle", "Missing detail entries")
-                next
-              end
+                  rate = Admin::Fx::ValueObjects::FxRate.new(
+                    operational_date: date,
+                    base_currency: base_currency,
+                    quote_currency: quote_currency,
+                    rate: detail.rate,
+                    source_id: source.id,
+                    source_code: source.code
+                  )
 
-              details.each_with_index do |detail, detail_index|
-                if currency_code.present? && normalize_currency(detail["codigoMoneda"]) != normalize_currency(currency_code)
-                  next
+                  rates << rate
                 end
-
-                rate_value = parse_rate(detail["tipoCotizacion"])
-                if rate_value.nil?
-                  errors << build_error(entry_index, detail_index, "tipoCotizacion", "Invalid rate")
-                  next
-                end
-
-                rate = Admin::Fx::ValueObjects::FxRate.new(
-                  operational_date: date,
-                  base_currency: base_currency,
-                  quote_currency: quote_currency,
-                  rate: rate_value,
-                  source_id: source.id,
-                  source_code: source.code,
-                  raw_payload: {"entry" => entry, "detail" => detail}
-                )
-
-                rates << rate
-              rescue ArgumentError => e
-                errors << build_error(entry_index, detail_index, "rate", e.message)
               end
+            rescue Admin::Fx::Ingestion::Adapters::BcraPayloadAdapter::Error => e
+              errors << build_error(
+                e.entry_index,
+                e.detail_index,
+                e.field,
+                e.message,
+                raw_entry: e.raw_entry,
+                raw_detail: e.raw_detail
+              )
             end
 
             return failure("mapping_failed", errors: errors) if errors.any?
@@ -90,31 +80,14 @@ module Admin
             FCS::Currency.normalize(value)
           end
 
-          def parse_date(value)
-            return nil if value.blank?
-
-            Date.iso8601(value.to_s)
-          rescue ArgumentError
-            nil
-          end
-
-          def parse_rate(value)
-            return nil if value.blank?
-
-            decimal = BigDecimal(value.to_s)
-            return nil unless decimal.positive?
-
-            decimal
-          rescue ArgumentError
-            nil
-          end
-
-          def build_error(entry_index, detail_index, field, message)
+          def build_error(entry_index, detail_index, field, message, raw_entry: nil, raw_detail: nil)
             {
               entry_index: entry_index,
               detail_index: detail_index,
               field: field,
-              message: message
+              message: message,
+              raw_entry: raw_entry,
+              raw_detail: raw_detail
             }
           end
 
