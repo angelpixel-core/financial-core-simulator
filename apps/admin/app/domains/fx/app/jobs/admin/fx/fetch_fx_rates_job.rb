@@ -55,11 +55,31 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
         event_type: "fx_rate.validation_failed")
     end
 
+    mapper_result = Admin::Fx::Ingestion::Mappers::BcraRateMapper.call(payload: payload, source: source)
+    if mapper_result.failure?
+      return fail_ingestion(ingestion, "mapping_failed", source: source,
+        context: mapper_result.context,
+        event_type: "fx_rate.mapping_failed")
+    end
+
+    rates = mapper_result.data.fetch(:rates)
+    rates.each do |rate|
+      Admin::Fx::RateUpserter.call(
+        **rate.to_upsert_attributes(source: "ingestion"),
+        enforce_operational_date: false,
+        created_context: {
+          ingestion_id: ingestion.id,
+          source_code: source.code
+        }
+      )
+    end
+
     emit_event(
       ingestion: ingestion,
       event_type: "fx_rate.persisted",
       data: {
         record_count: record_count,
+        persisted_count: rates.length,
         date_from: date_from.to_s,
         date_to: date_to.to_s,
         base_currency: source.config["base_currency"],
@@ -118,7 +138,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     metrics.increment("fcs_fx_ingestion_failed_total", tags: metrics_tags(source))
     return unless error_code == "validation_failed"
 
-    + metrics.increment("fcs_fx_ingestion_validation_failed_total",
+    metrics.increment("fcs_fx_ingestion_validation_failed_total",
       tags: metrics_tags(source))
   end
 

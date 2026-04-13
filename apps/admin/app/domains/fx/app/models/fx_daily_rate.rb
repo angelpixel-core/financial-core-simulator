@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class FxDailyRate < ApplicationRecord
-  SOURCES = %w[manual carry_forward upload placeholder].freeze
+  SOURCES = %w[manual carry_forward upload ingestion placeholder].freeze
   CURRENCY_CODE_FORMAT = FCS::Currency::CODE_FORMAT
 
   belongs_to :rate_source, class_name: "FxRateSource", foreign_key: :source_id, optional: true
