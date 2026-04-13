@@ -3,13 +3,14 @@
 module Admin
   module Fx
     class HistoryTableComponent < ViewComponent::Base
-      def initialize(dates:, supported_pairs:, rates_by_pair:, role:, sort_order:, navigation_context:)
+      def initialize(dates:, supported_pairs:, rates_by_pair:, role:, sort_order:, navigation_context:, source_id: nil)
         @dates = dates
         @supported_pairs = supported_pairs
         @rates_by_pair = rates_by_pair
         @role = role
         @sort_order = sort_order
         @navigation_context = navigation_context
+        @source_id = source_id
       end
 
       def pair_labels
@@ -51,7 +52,7 @@ module Admin
         (sort_order == "asc") ? "desc" : "asc"
       end
 
-      attr_reader :dates, :supported_pairs, :rates_by_pair, :role, :sort_order, :navigation_context
+      attr_reader :dates, :supported_pairs, :rates_by_pair, :role, :sort_order, :navigation_context, :source_id
     end
   end
 end

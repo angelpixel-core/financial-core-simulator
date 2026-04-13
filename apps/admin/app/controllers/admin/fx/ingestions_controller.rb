@@ -31,7 +31,11 @@ class Admin::Fx::IngestionsController < ApplicationController
           turbo_stream.replace(
             "fx-ingestion-status",
             partial: "admin/fx/history/ingestion_status",
-            locals: {fx_sources: @fx_sources, latest_ingestions: @latest_ingestions}
+            locals: {
+              fx_sources: @fx_sources,
+              latest_ingestions: @latest_ingestions,
+              selected_source: source
+            }
           ),
           turbo_stream.replace(
             "fx-recent-events",

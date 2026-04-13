@@ -7,17 +7,25 @@
     class: "fx-history-sync__form" do |form| %>
     <%= hidden_field_tag :locale, I18n.locale %>
     <div class="fx-history-sync__row">
-      <%= form.label :source_id, t("admin.fx.history.sync.source_label") %>
-      <%= form.select :source_id,
-        fx_sources.map { |source| [source.name, source.id] },
-        {},
-        class: "fx-history-sync__select" %>
+      <span class="fx-history-sync__label"><%= t("admin.fx.history.sync.source_label") %></span>
+      <% if selected_source.present? %>
+        <strong class="fx-history-sync__value"><%= selected_source.name %></strong>
+        <%= form.hidden_field :source_id, value: selected_source.id %>
+      <% else %>
+        <strong class="fx-history-sync__value"><%= t("admin.fx.history.filter.all_sources") %></strong>
+      <% end %>
     </div>
-    <%= form.submit t("admin.fx.history.sync.cta"), class: "fx-history-sync__cta" %>
+    <%= form.submit t("admin.fx.history.sync.cta"),
+      class: "fx-history-sync__cta",
+      disabled: selected_source.blank? %>
+    <% if selected_source.blank? %>
+      <p class="fx-history-sync__hint"><%= t("admin.fx.history.sync.select_source_hint") %></p>
+    <% end %>
   <% end %>
   <div id="fx-ingestion-status">
     <%= render "admin/fx/history/ingestion_status",
       fx_sources: fx_sources,
-      latest_ingestions: latest_ingestions %>
+      latest_ingestions: latest_ingestions,
+      selected_source: selected_source %>
   </div>
 </section>

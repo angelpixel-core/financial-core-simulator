@@ -29,12 +29,16 @@ es:
         sidebar_title: "Historial"
         title: "Historial de FX"
         subtitle: "Tasas recientes y faltantes."
+        filter:
+          label: "Fuente"
+          all_sources: "Todas las fuentes"
         empty: "Aun no hay historial de FX."
         sync:
           title: "Sincronizar tasas FX"
           subtitle: "Obtiene tasas diarias desde una fuente configurada."
           source_label: "Fuente"
           cta: "Sincronizar"
+          select_source_hint: "Selecciona una fuente para sincronizar."
           started: "Sincronizacion en cola"
           status_title: "Estado de la ultima sincronizacion"
           status:

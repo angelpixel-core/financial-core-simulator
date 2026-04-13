@@ -29,12 +29,16 @@ en:
         sidebar_title: "History"
         title: "FX rate history"
         subtitle: "Recent rates and missing placeholders."
+        filter:
+          label: "Source"
+          all_sources: "All sources"
         empty: "No FX history available yet."
         sync:
           title: "Sync FX rates"
           subtitle: "Fetch daily rates from a configured source."
           source_label: "Source"
           cta: "Sync now"
+          select_source_hint: "Select a source to sync."
           started: "Sync queued"
           status_title: "Latest sync status"
           status:

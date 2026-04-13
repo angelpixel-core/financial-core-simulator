@@ -28,6 +28,21 @@
         <p class="workspace__eyebrow"><%= t("admin.nav.workspace") %></p>
         <h1><%= t("admin.fx.history.title") %></h1>
         <p class="workspace__subtitle"><%= t("admin.fx.history.subtitle") %></p>
+        <%= form_with url: admin_fx_history_index_path(navigation_context),
+                      method: :get,
+                      local: true,
+                      class: "fx-history-hero__filter",
+                      data: { controller: "auto-submit" } do |form| %>
+          <%= hidden_field_tag :sort, @sort_order if @sort_order.present? %>
+          <div class="fx-history-hero__filter-row">
+            <%= form.label :source_id, t("admin.fx.history.filter.label") %>
+            <%= form.select :source_id,
+              [[t("admin.fx.history.filter.all_sources"), ""]] + @fx_sources.map { |source| [source.name, source.id] },
+              { selected: @selected_source&.id },
+              class: "fx-history-hero__filter-select",
+              data: { action: "change->auto-submit#submit" } %>
+          </div>
+        <% end %>
       </div>
       <% if admin_shell_operator? || admin_shell_admin? %>
         <div class="fx-history-hero__upload">
@@ -64,6 +79,7 @@
         <%= render "admin/fx/history/sync_panel",
           fx_sources: @fx_sources,
           latest_ingestions: @latest_ingestions,
+          selected_source: @selected_source,
           navigation_context: navigation_context %>
       </section>
     <% end %>
@@ -78,7 +94,8 @@
         role: shell_role,
         sort_order: @sort_order,
         navigation_context: navigation_context,
-        empty_history: @empty_history %>
+        empty_history: @empty_history,
+        selected_source: @selected_source %>
     </section>
   </main>
 <% end %>

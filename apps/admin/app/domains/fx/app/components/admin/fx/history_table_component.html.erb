@@ -6,7 +6,7 @@
           <th class="shad-table__th fx-history-table__th fx-history-table__th--date">
             <div class="fx-history-table__header">
               <span><%= t("admin.fx.history.table.date") %></span>
-              <%= link_to admin_fx_history_index_path(navigation_context.merge(sort: toggle_sort_order)),
+              <%= link_to admin_fx_history_index_path(navigation_context.merge(sort: toggle_sort_order, source_id: source_id)),
                           class: "fx-history-table__sort",
                           aria: { label: sort_label },
                           title: sort_label,
