@@ -32,4 +32,27 @@ RSpec.describe Admin::Fx::Ingestion::EventEmitter do
     expect(result).to be_failure
     expect(result.error_code).to eq("event_invalid")
   end
+
+  it "emits ingestion events with standard metadata" do
+    ingestion = FxRateIngestion.create!(
+      source: source,
+      status: "pending",
+      correlation_id: "corr-1"
+    )
+    emitter = described_class.new
+
+    result = emitter.emit_ingestion(
+      event_type: "fx_rate.ingested",
+      ingestion: ingestion,
+      source: source,
+      data: {record_count: 2}
+    )
+
+    expect(result).to be_success
+    event = FxRateEvent.last
+    expect(event.data["source_id"]).to eq(source.id)
+    expect(event.data["source_code"]).to eq("BCRA")
+    expect(event.metadata["ingestion_id"]).to eq(ingestion.id)
+    expect(event.metadata["correlation_id"]).to eq("corr-1")
+  end
 end

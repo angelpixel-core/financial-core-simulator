@@ -34,6 +34,14 @@ module Admin
             context: {message: e.message, event_type: event_type})
         end
 
+        def emit_ingestion(event_type:, ingestion:, source:, data: {}, error: {}, metadata: {})
+          emit(
+            event_type: event_type,
+            data: standard_data(data: data, error: error, source: source),
+            metadata: standard_metadata(metadata: metadata, ingestion: ingestion)
+          )
+        end
+
         private
 
         def publish_enabled?
@@ -41,6 +49,23 @@ module Admin
         end
 
         attr_reader :result_class, :event_class, :publisher
+
+        def standard_data(data:, error:, source:)
+          base = {
+            source_id: source.id,
+            source_code: source.code
+          }
+          base.merge(data).merge(error)
+        end
+
+        def standard_metadata(metadata:, ingestion:)
+          {
+            correlation_id: ingestion.correlation_id,
+            causation_id: ingestion.causation_id,
+            source_id: ingestion.source_id,
+            ingestion_id: ingestion.id
+          }.merge(metadata)
+        end
       end
     end
   end
