@@ -3,7 +3,8 @@
 module Admin
   module Fx
     class HistoryTableComponent < ViewComponent::Base
-      def initialize(dates:, supported_pairs:, rates_by_pair:, role:, sort_order:, navigation_context:, source_id: nil)
+      def initialize(dates:, supported_pairs:, rates_by_pair:, role:, sort_order:, navigation_context:, source_id: nil,
+        rate_lineage: {})
         @dates = dates
         @supported_pairs = supported_pairs
         @rates_by_pair = rates_by_pair
@@ -11,6 +12,7 @@ module Admin
         @sort_order = sort_order
         @navigation_context = navigation_context
         @source_id = source_id
+        @rate_lineage = rate_lineage
       end
 
       def pair_labels
@@ -21,6 +23,12 @@ module Admin
 
       def rate_for(date, pair_label)
         rates_by_pair.fetch(pair_label, {})[date]
+      end
+
+      def lineage_for(rate)
+        return {} if rate.blank?
+
+        rate_lineage[rate.id] || {}
       end
 
       def editable_rate?(rate)
@@ -52,7 +60,8 @@ module Admin
         (sort_order == "asc") ? "desc" : "asc"
       end
 
-      attr_reader :dates, :supported_pairs, :rates_by_pair, :role, :sort_order, :navigation_context, :source_id
+      attr_reader :dates, :supported_pairs, :rates_by_pair, :role, :sort_order, :navigation_context, :source_id,
+        :rate_lineage
     end
   end
 end

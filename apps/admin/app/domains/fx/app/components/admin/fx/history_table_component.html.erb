@@ -91,6 +91,88 @@
             </td>
           <% end %>
         </tr>
+        <tr class="shad-table__row fx-history-table__lineage-row">
+          <td class="shad-table__td" colspan="<%= pair_labels.size + 1 %>">
+            <details class="fx-history-lineage">
+              <summary class="fx-history-lineage__summary">
+                <%= t("admin.fx.history.lineage.title") %>
+              </summary>
+              <div class="fx-history-lineage__content">
+                <% pair_labels.each do |label, _base_currency, _quote_currency| %>
+                  <% rate = rate_for(date, label) %>
+                  <% lineage = lineage_for(rate) %>
+                  <div class="fx-history-lineage__item">
+                    <h4 class="fx-history-lineage__pair"><%= label %></h4>
+                    <% if rate.present? %>
+                      <dl class="fx-history-lineage__meta">
+                        <div>
+                          <dt><%= t("admin.fx.history.lineage.source_label") %></dt>
+                          <dd><%= [lineage[:source_label], lineage[:source]].compact.join(" · ") %></dd>
+                        </div>
+                        <div>
+                          <dt><%= t("admin.fx.history.lineage.source_id") %></dt>
+                          <dd><%= lineage[:source_id].presence || t("admin.common.na") %></dd>
+                        </div>
+                        <div>
+                          <dt><%= t("admin.fx.history.lineage.ingestion_id") %></dt>
+                          <dd><%= lineage[:ingestion_id].presence || t("admin.common.na") %></dd>
+                        </div>
+                        <div>
+                          <dt><%= t("admin.fx.history.lineage.ingestion_status") %></dt>
+                          <dd><%= lineage[:ingestion_status].presence || t("admin.common.na") %></dd>
+                        </div>
+                        <div>
+                          <dt><%= t("admin.fx.history.lineage.upload_id") %></dt>
+                          <dd><%= lineage[:upload_id].presence || t("admin.common.na") %></dd>
+                        </div>
+                        <div>
+                          <dt><%= t("admin.fx.history.lineage.upload_status") %></dt>
+                          <dd><%= lineage[:upload_status].presence || t("admin.common.na") %></dd>
+                        </div>
+                        <div>
+                          <dt><%= t("admin.fx.history.lineage.created_by") %></dt>
+                          <dd><%= [lineage[:created_by_role], lineage[:created_by_id]].compact.join(" · ").presence || t("admin.common.na") %></dd>
+                        </div>
+                        <div>
+                          <dt><%= t("admin.fx.history.lineage.created_at") %></dt>
+                          <dd><%= lineage[:created_at].present? ? l(lineage[:created_at], format: :short) : t("admin.common.na") %></dd>
+                        </div>
+                        <div>
+                          <dt><%= t("admin.fx.history.lineage.updated_at") %></dt>
+                          <dd><%= lineage[:updated_at].present? ? l(lineage[:updated_at], format: :short) : t("admin.common.na") %></dd>
+                        </div>
+                        <div>
+                          <dt><%= t("admin.fx.history.lineage.gap_status") %></dt>
+                          <dd><%= lineage[:placeholder_gap_status].presence || t("admin.common.na") %></dd>
+                        </div>
+                      </dl>
+                      <div class="fx-history-lineage__events">
+                        <h5><%= t("admin.fx.history.lineage.events_title") %></h5>
+                        <% if lineage[:events].blank? %>
+                          <p><%= t("admin.fx.history.lineage.events_empty") %></p>
+                        <% else %>
+                          <ul>
+                            <% lineage[:events].each do |event| %>
+                              <li>
+                                <span><%= event.event_type %></span>
+                                <span><%= l(event.created_at, format: :short) %></span>
+                                <% if event.data["error_code"].present? %>
+                                  <span><%= event.data["error_code"] %></span>
+                                <% end %>
+                              </li>
+                            <% end %>
+                          </ul>
+                        <% end %>
+                      </div>
+                    <% else %>
+                      <p><%= t("admin.fx.history.lineage.no_rate") %></p>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            </details>
+          </td>
+        </tr>
       <% end %>
     </tbody>
   </table>

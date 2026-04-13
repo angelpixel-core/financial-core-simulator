@@ -14,6 +14,7 @@ class Admin::Fx::HistoryController < ApplicationController
     @rates_by_pair = snapshot.fetch(:rates_by_pair)
     @dates = snapshot.fetch(:dates)
     @empty_history = snapshot.fetch(:empty_history)
+    @rate_lineage = build_rate_lineage(snapshot.fetch(:rates))
     @fx_sources = FxRateSource.order(:name)
     @latest_ingestions = latest_ingestions(@fx_sources, selected_source: @selected_source)
     @recent_events = recent_events(selected_source: @selected_source)
@@ -61,6 +62,52 @@ class Admin::Fx::HistoryController < ApplicationController
     return nil if source_id.blank?
 
     FxRateSource.find_by(id: source_id)
+  end
+
+  def build_rate_lineage(rates)
+    rates = rates.compact
+    ingestion_ids = rates.map do |rate|
+      rate.created_context&.dig("ingestion_id") || rate.created_context&.dig(:ingestion_id)
+    end
+      .compact
+    upload_ids = rates.map(&:source_upload_id).compact
+    ingestions = FxRateIngestion.where(id: ingestion_ids).index_by(&:id)
+    uploads = FxRateUpload.where(id: upload_ids).index_by(&:id)
+    events_by_ingestion = fx_events_by_ingestion(ingestion_ids)
+
+    rates.each_with_object({}) do |rate, acc|
+      ingestion_id = rate.created_context&.dig("ingestion_id") || rate.created_context&.dig(:ingestion_id)
+      ingestion = ingestion_id.present? ? ingestions[ingestion_id.to_i] : nil
+      upload = rate.source_upload_id.present? ? uploads[rate.source_upload_id] : nil
+      events = ingestion_id.present? ? events_by_ingestion[ingestion_id.to_s] || [] : []
+
+      acc[rate.id] = {
+        source: rate.source,
+        source_id: rate.source_id,
+        source_label: rate.rate_source&.name,
+        ingestion_id: ingestion_id,
+        ingestion_status: ingestion&.status,
+        upload_id: rate.source_upload_id,
+        upload_status: upload&.status,
+        created_by_id: rate.created_by_id,
+        created_by_role: rate.created_by_role,
+        created_at: rate.created_at,
+        updated_at: rate.updated_at,
+        placeholder_gap_id: rate.placeholder_gap&.id,
+        placeholder_gap_status: rate.placeholder_gap&.status,
+        events: events
+      }
+    end
+  end
+
+  def fx_events_by_ingestion(ingestion_ids)
+    return {} if ingestion_ids.empty?
+
+    ids = ingestion_ids.map(&:to_s)
+    FxRateEvent.where("metadata ->> 'ingestion_id' IN (?)", ids)
+      .order(created_at: :desc)
+      .group_by { |event| event.metadata["ingestion_id"].to_s }
+      .transform_values { |events| events.first(3) }
   end
 
   def load_navigation_context
