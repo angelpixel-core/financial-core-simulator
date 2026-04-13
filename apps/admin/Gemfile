@@ -56,7 +56,6 @@ group :development do
 
   # Component catalog and preview UI for ViewComponent/Phlex
   gem "lookbook", "~> 2.3"
-
 end
 
 group :development, :test do
@@ -100,6 +99,9 @@ group :development, :test do
   gem "simplecov", require: false
   gem "vcr"
   gem "webmock"
+  gem "rswag-api"
+  gem "rswag-specs"
+  gem "rswag-ui"
   gem "sorbet", require: false
 end
 

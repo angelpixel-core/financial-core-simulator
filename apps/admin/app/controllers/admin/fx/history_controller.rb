@@ -8,6 +8,10 @@ class Admin::Fx::HistoryController < ApplicationController
 
   def index
     @selected_source = resolve_source(params[:source_id])
+    if request.format.json? && params[:source_id].present? && @selected_source.nil?
+      return render json: {error: "invalid_source_id"}, status: :unprocessable_content
+    end
+
     snapshot = Admin::Fx::HistorySnapshot.call(sort_order: params[:sort], source_id: @selected_source&.id)
     @supported_pairs = snapshot.fetch(:supported_pairs)
     @sort_order = snapshot.fetch(:sort_order)
@@ -36,6 +40,15 @@ class Admin::Fx::HistoryController < ApplicationController
     @upload_status_stream = if admin_shell_operator? || admin_shell_admin?
       FxRateUpload.status_stream_for(account_id: current_admin_account&.id)
     end
+
+    respond_to do |format|
+      format.html
+      format.json { render json: history_json }
+    end
+  rescue => e
+    raise unless request.format.json?
+
+    render json: {error: "internal_error", message: e.message}, status: :internal_server_error
   end
 
   private
@@ -96,6 +109,64 @@ class Admin::Fx::HistoryController < ApplicationController
         placeholder_gap_id: rate.placeholder_gap&.id,
         placeholder_gap_status: rate.placeholder_gap&.status,
         events: events
+      }
+    end
+  end
+
+  def history_json
+    {
+      source_id: @selected_source&.id,
+      source_name: @selected_source&.name,
+      sort_order: @sort_order,
+      dates: @dates.map(&:iso8601),
+      pairs: @supported_pairs.map { |base, quote| {base_currency: base, quote_currency: quote} },
+      rates_by_pair: serialized_rates_by_pair,
+      lineage: serialized_lineage
+    }
+  end
+
+  def serialized_rates_by_pair
+    @rates_by_pair.transform_values do |by_date|
+      by_date.transform_keys(&:iso8601).transform_values do |rate|
+        next if rate.nil?
+
+        {
+          id: rate.id,
+          operational_date: rate.operational_date.iso8601,
+          base_currency: rate.base_currency,
+          quote_currency: rate.quote_currency,
+          rate: rate.rate&.to_s("F"),
+          source: rate.source,
+          source_id: rate.source_id
+        }
+      end
+    end
+  end
+
+  def serialized_lineage
+    @rate_lineage.transform_values do |lineage|
+      {
+        source: lineage[:source],
+        source_id: lineage[:source_id],
+        source_label: lineage[:source_label],
+        ingestion_id: lineage[:ingestion_id],
+        ingestion_status: lineage[:ingestion_status],
+        upload_id: lineage[:upload_id],
+        upload_status: lineage[:upload_status],
+        created_by_id: lineage[:created_by_id],
+        created_by_role: lineage[:created_by_role],
+        created_at: lineage[:created_at]&.iso8601,
+        updated_at: lineage[:updated_at]&.iso8601,
+        placeholder_gap_id: lineage[:placeholder_gap_id],
+        placeholder_gap_status: lineage[:placeholder_gap_status],
+        events: lineage[:events].map do |event|
+          {
+            event_type: event.event_type,
+            created_at: event.created_at.iso8601,
+            error_code: event.data["error_code"],
+            severity: event.data["severity"]
+          }
+        end
       }
     end
   end

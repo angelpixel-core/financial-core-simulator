@@ -6,6 +6,8 @@ require_relative "routes/system_routes"
 require_relative "routes/development_routes"
 
 Rails.application.routes.draw do
+  mount Rswag::Ui::Engine => "/api-docs"
+  mount Rswag::Api::Engine => "/api-docs"
   root to: "landing#index"
   get "/demo-datasets/valid", to: "demo_datasets#valid", as: :demo_dataset_valid
   get "/demo-datasets/invalid", to: "demo_datasets#invalid", as: :demo_dataset_invalid

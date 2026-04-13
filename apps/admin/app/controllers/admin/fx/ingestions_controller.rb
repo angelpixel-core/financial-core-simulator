@@ -7,7 +7,21 @@ class Admin::Fx::IngestionsController < ApplicationController
   before_action :load_navigation_context
 
   def sync
-    source = FxRateSource.find(params[:source_id])
+    if params[:source_id].blank?
+      return render json: {error: "missing_source_id"}, status: :unprocessable_content if request.format.json?
+
+      return redirect_to admin_fx_history_index_path(@navigation_context),
+        alert: t("admin.fx.history.sync.select_source_hint")
+    end
+
+    source = FxRateSource.find_by(id: params[:source_id])
+    if source.nil?
+      return render json: {error: "invalid_source_id"}, status: :unprocessable_content if request.format.json?
+
+      return redirect_to admin_fx_history_index_path(@navigation_context),
+        alert: t("admin.fx.history.sync.select_source_hint")
+    end
+
     correlation_id = SecureRandom.uuid
     ingestion = FxRateIngestion.create!(
       source: source,
@@ -44,11 +58,52 @@ class Admin::Fx::IngestionsController < ApplicationController
           )
         ]
       end
+      format.json do
+        render json: {
+          status: "queued",
+          ingestion_id: ingestion.id,
+          source_id: source.id
+        }, status: :ok
+      end
       format.html do
         redirect_to admin_fx_history_index_path(@navigation_context),
           notice: t("admin.fx.history.sync.started")
       end
     end
+  rescue => e
+    raise unless request.format.json?
+
+    render json: {error: "internal_error", message: e.message}, status: :internal_server_error
+  end
+
+  def index
+    if params[:source_id].present?
+      source = FxRateSource.find_by(id: params[:source_id])
+      return render json: {error: "invalid_source_id"}, status: :unprocessable_content if source.nil?
+    end
+
+    sources = FxRateSource.order(:name)
+    sources = sources.where(id: params[:source_id]) if params[:source_id].present?
+    latest = latest_ingestions(sources)
+
+    render json: {
+      sources: sources.map do |source|
+        ingestion = latest[source.id]
+        {
+          source_id: source.id,
+          source_name: source.name,
+          ingestion_id: ingestion&.id,
+          status: ingestion&.status,
+          error_code: ingestion&.error_code,
+          created_at: ingestion&.created_at&.iso8601,
+          updated_at: ingestion&.updated_at&.iso8601
+        }
+      end
+    }, status: :ok
+  rescue => e
+    raise unless request.format.json?
+
+    render json: {error: "internal_error", message: e.message}, status: :internal_server_error
   end
 
   private
