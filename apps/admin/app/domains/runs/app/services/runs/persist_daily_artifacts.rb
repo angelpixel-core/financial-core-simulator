@@ -19,6 +19,7 @@ module Runs
 
       reporting_currency = resolve_reporting_currency(run)
       input = run.input_json.is_a?(Hash) ? run.input_json : {}
+      @invalid_trade_ids = invalid_trade_ids_for(run)
 
       persist_pnls(run, reporting_currency, payload)
       persist_volumes(run, reporting_currency, input)
@@ -187,7 +188,27 @@ module Runs
 
       valid = trade["valid"]
       valid = trade[:valid] if valid.nil?
-      valid.nil? || valid == true
+      return false if valid == false
+
+      trade_id = trade_id_for(trade)
+      return false if trade_id && invalid_trade_ids.include?(trade_id)
+
+      true
+    end
+
+    def trade_id_for(trade)
+      raw = trade["tradeId"] || trade[:tradeId] || trade["trade_id"] || trade[:trade_id]
+      value = raw.to_s.strip
+      value.empty? ? nil : value
+    end
+
+    def invalid_trade_ids_for(run)
+      ids = run.run_validation_errors.where.not(trade_id: [nil, ""]).pluck(:trade_id)
+      Set.new(ids.compact.map { |id| id.to_s })
+    end
+
+    def invalid_trade_ids
+      @invalid_trade_ids ||= Set.new
     end
 
     def resolve_unit(trades)

@@ -65,6 +65,43 @@ RSpec.describe Runs::Execute do
       expect(run.pnl_csv_path).to end_with("pnl.csv")
     end
 
+    it "marks run as unreliable when validation errors are present" do
+      run = Run.create!(input_json: input_json)
+
+      runner = instance_double(FCS::Application::Runner)
+      allow(FCS::Application::Runner).to receive(:new).and_return(runner)
+      expect(runner).to receive(:run_from_input!)
+        .with(input: hash_including(input_json), output_dir: kind_of(String), fee_enabled: true, explain: true,
+          verbose: false) do |input:, output_dir:, **_kwargs|
+        json_path = File.join(output_dir, "result.json")
+        File.write(
+          json_path,
+          JSON.pretty_generate(
+            {
+              "engineVersion" => "test-engine",
+              "schemaVersion" => "1.0",
+              "runId" => "run-123",
+              "inputHash" => "abc123",
+              "valuationTimestamp" => "2026-02-25T03:00:00Z",
+              "global" => {"totalPnLQuote" => "0.0"}
+            }
+          ) + "\n"
+        )
+        {
+          json_path: json_path,
+          annotated_input: input,
+          validation_errors: [{message: "invalid trade"}],
+          reliable: true
+        }
+      end
+
+      service.call(run)
+      run.reload
+
+      expect(run).to be_succeeded
+      expect(run.reliable).to eq(false)
+    end
+
     it "marks run as failed with error metadata when runner raises" do
       run = Run.create!(input_json: input_json)
 

@@ -22,7 +22,7 @@ RSpec.describe Admin::Fx::Ingestion::Adapters::BcraAdapter do
       body: '{"status":200,"metadata":{"resultset":{"count":0,"offset":0,"limit":1000}},"results":[]}')
   end
 
-  it "returns a success result with payload", :vcr, cassette_name: "admin/fx/ingestion/adapters/bcra/success" do
+  it "returns a success result with payload", vcr: {cassette_name: "admin/fx/ingestion/adapters/bcra/success"} do
     result = adapter.fetch(date_from: Date.new(2024, 6, 12), date_to: Date.new(2024, 6, 12))
 
     expect(result).to be_success

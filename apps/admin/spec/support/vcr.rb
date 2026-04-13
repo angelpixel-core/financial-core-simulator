@@ -9,11 +9,7 @@ VCR.configure do |config|
   config.configure_rspec_metadata!
   config.allow_http_connections_when_no_cassette = false
   config.ignore_request do |request|
-    uri = URI(request.uri)
+    uri = URI(request.uri.to_s)
     ["localhost", "127.0.0.1"].include?(uri.host)
-  end
-  config.filter_sensitive_data("<BCRA_BASE_URL>") do |interaction|
-    uri = URI(interaction.request.uri)
-    "#{uri.scheme}://#{uri.host}"
   end
 end

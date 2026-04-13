@@ -91,4 +91,89 @@ RSpec.describe Runs::PersistDailyArtifacts do
     temp.close
     temp.unlink
   end
+
+  it "filters trades flagged by validation errors" do
+    temp = Tempfile.new(["result", ".json"])
+    temp.write(JSON.generate(
+                 {
+                   "timeline" => {
+                     "points" => [
+                       {
+                         "timestamp" => "2026-03-29T12:00:00Z",
+                         "realized_pnl" => "1",
+                         "unrealized_pnl" => "2",
+                         "total_pnl" => "3"
+                       }
+                     ]
+                   }
+                 }
+               ))
+    temp.rewind
+
+    input = {
+      "trades" => [
+        {
+          "tradeId" => "t-1",
+          "timestamp" => Time.utc(2026, 3, 29, 12, 0, 0).to_i,
+          "quantityBase" => "2",
+          "priceQuotePerBase" => "10",
+          "marketId" => "ETH-USD"
+        },
+        {
+          "tradeId" => "t-2",
+          "timestamp" => Time.utc(2026, 3, 29, 12, 0, 0).to_i,
+          "quantityBase" => "1",
+          "priceQuotePerBase" => "5",
+          "marketId" => "ETH-USD"
+        }
+      ],
+      "timeline" => {
+        "events" => [
+          {
+            "eventType" => "TRADE_APPLIED",
+            "timelineSeq" => 1,
+            "timestamp" => "2026-03-29T12:00:00Z",
+            "trade" => {"tradeId" => "t-1"}
+          },
+          {
+            "eventType" => "TRADE_APPLIED",
+            "timelineSeq" => 2,
+            "timestamp" => "2026-03-29T12:00:00Z",
+            "trade" => {"tradeId" => "t-2"}
+          }
+        ]
+      }
+    }
+
+    run = Run.create!(
+      status: :succeeded,
+      input_json: input,
+      fx_context: {
+        "reportingCurrency" => "ARS",
+        "rate" => "100",
+        "rateMissing" => false
+      },
+      artifacts: {"result_json_path" => temp.path}
+    )
+
+    RunValidationError.create!(
+      run_id: run.id,
+      message: "invalid trade",
+      trade_id: "t-2"
+    )
+
+    described_class.call(run: run)
+
+    expect(RunDailyVolume.count).to eq(1)
+    expect(RunDailyEvent.count).to eq(1)
+
+    snapshot = RunSnapshot.find_by!(operational_date: Date.new(2026, 3, 29))
+    volume = snapshot.run_daily_volume
+
+    expect(volume.notional_volume.to_f).to eq(2000.0)
+    expect(volume.trade_count).to eq(1)
+  ensure
+    temp.close
+    temp.unlink
+  end
 end

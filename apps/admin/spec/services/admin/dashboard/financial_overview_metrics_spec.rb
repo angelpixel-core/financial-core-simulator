@@ -58,6 +58,37 @@ RSpec.describe Admin::Dashboard::FinancialOverviewMetrics do
       expect(metrics[:trade_activity].first).to include(timestamp: "2026-03-29", trade_count: 1)
     end
 
+    it "excludes trades flagged by validation errors" do
+      run = Run.create!(status: :succeeded, input_json: {
+        "trades" => [
+          {"tradeId" => "t-1", "timestamp" => "2026-03-29T12:00:00Z", "quantity" => 2, "price" => 10,
+           "symbol" => "BTC-USD"},
+          {"tradeId" => "t-2", "timestamp" => "2026-03-29T12:00:00Z", "quantity" => 1, "price" => 5,
+           "symbol" => "BTC-USD"}
+        ]
+      })
+
+      RunValidationError.create!(
+        run_id: run.id,
+        message: "invalid trade",
+        trade_id: "t-2"
+      )
+
+      metrics = described_class.new(run: run).call
+
+      expect(metrics[:trade_activity]).to eq([
+        {timestamp: "2026-03-29", trade_count: 1}
+      ])
+      expect(metrics[:trade_volume]).to eq([
+        {
+          timestamp: "2026-03-29",
+          volume: 20.0,
+          unit_type: "quote",
+          unit_code: "USD"
+        }
+      ])
+    end
+
     it "groups trade activity by normalized day" do
       run = Run.create!(status: :succeeded, input_json: {
         "trades" => [

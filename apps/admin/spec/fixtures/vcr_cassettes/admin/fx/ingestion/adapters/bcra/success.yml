@@ -2,7 +2,7 @@
 http_interactions:
 - request:
     method: get
-    uri: <BCRA_BASE_URL>/estadisticascambiarias/v1.0/Cotizaciones/USD?fechadesde=2024-06-12&fechahasta=2024-06-12&limit=1000&offset=0
+    uri: https://api.bcra.gob.ar/estadisticascambiarias/v1.0/Cotizaciones/USD?fechadesde=2024-06-12&fechahasta=2024-06-12&limit=1000&offset=0
     body:
       encoding: US-ASCII
       string: ""
@@ -18,5 +18,5 @@ http_interactions:
       encoding: UTF-8
       string: '{"status":200,"metadata":{"resultset":{"count":0,"offset":0,"limit":1000}},"results":[]}'
     http_version: "1.1"
-  recorded_at: 2026-04-12T18:10:00Z
+  recorded_at: "Sun, 12 Apr 2026 18:10:00 GMT"
 recorded_with: VCR 6.2.0

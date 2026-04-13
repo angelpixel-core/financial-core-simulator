@@ -31,6 +31,7 @@ module Runs
       annotated_input = result.fetch(:annotated_input)
       validation_errors = result.fetch(:validation_errors)
       reliable = result.fetch(:reliable)
+      reliable = false if validation_errors.present?
 
       write_input_json(annotated_input, output_dir)
 

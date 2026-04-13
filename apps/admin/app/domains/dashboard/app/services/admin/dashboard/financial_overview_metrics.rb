@@ -529,7 +529,27 @@ module Admin
 
       def trade_valid?(trade)
         valid = trade_field(trade, "valid")
-        valid.nil? || valid == true
+        return false if valid == false
+
+        trade_id = trade_id_for(trade)
+        return false if trade_id && invalid_trade_ids.include?(trade_id)
+
+        true
+      end
+
+      def trade_id_for(trade)
+        raw = trade_field(trade, "tradeId") || trade_field(trade, "trade_id")
+        value = raw.to_s.strip
+        value.empty? ? nil : value
+      end
+
+      def invalid_trade_ids
+        return Set.new if @run.nil?
+
+        @invalid_trade_ids ||= begin
+          ids = @run.run_validation_errors.where.not(trade_id: [nil, ""]).pluck(:trade_id)
+          Set.new(ids.compact.map { |id| id.to_s })
+        end
       end
 
       def normalize_filter_value(value)
