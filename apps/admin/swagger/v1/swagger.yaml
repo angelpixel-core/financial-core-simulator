@@ -221,7 +221,8 @@ paths:
           description: queued
           content:
             application/json:
-              schema: "$/components/schemas/FxIngestion"
+              schema:
+                "$ref": "#/components/schemas/FxIngestion"
         '422':
           description: invalid request
           content:
@@ -263,7 +264,8 @@ paths:
           description: history payload
           content:
             application/json:
-              schema: "$/components/schemas/FxHistoryResponse"
+              schema:
+                "$ref": "#/components/schemas/FxHistoryResponse"
         '422':
           description: invalid request
           content:
@@ -305,7 +307,8 @@ paths:
           description: ingestion list
           content:
             application/json:
-              schema: "$/components/schemas/FxIngestionList"
+              schema:
+                "$ref": "#/components/schemas/FxIngestionList"
         '422':
           description: invalid request
           content:

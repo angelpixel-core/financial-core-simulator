@@ -18,7 +18,7 @@ RSpec.describe "Admin FX API", type: :request do
       security [{AdminUser: [], AdminRole: []}]
 
       response "200", "queued" do
-        schema "$/components/schemas/FxIngestion"
+        schema({"$ref" => "#/components/schemas/FxIngestion"})
 
         let(:source) do
           FxRateSource.create!(
@@ -86,7 +86,7 @@ RSpec.describe "Admin FX API", type: :request do
       security [{AdminUser: [], AdminRole: []}]
 
       response "200", "history payload" do
-        schema "$/components/schemas/FxHistoryResponse"
+        schema({"$ref" => "#/components/schemas/FxHistoryResponse"})
 
         before do
           FxRateSource.create!(
@@ -141,7 +141,7 @@ RSpec.describe "Admin FX API", type: :request do
       security [{AdminUser: [], AdminRole: []}]
 
       response "200", "ingestion list" do
-        schema "$/components/schemas/FxIngestionList"
+        schema({"$ref" => "#/components/schemas/FxIngestionList"})
 
         before do
           FxRateSource.create!(
