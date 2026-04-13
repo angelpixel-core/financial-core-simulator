@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "securerandom"
+require 'securerandom'
 
 class Admin::Fx::FetchFxRatesJob < ApplicationJob
   queue_as :default
@@ -11,37 +11,37 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     correlation_id ||= ingestion&.correlation_id || SecureRandom.uuid
     ingestion ||= FxRateIngestion.create!(
       source: source,
-      status: "running",
+      status: 'running',
       correlation_id: correlation_id,
       causation_id: causation_id,
       started_at: Time.current
     )
-    ingestion.update!(status: "running", started_at: Time.current)
+    ingestion.update!(status: 'running', started_at: Time.current)
 
-    metrics.increment("fcs_fx_ingestion_started_total", tags: metrics_tags(source))
+    metrics.increment('fcs_fx_ingestion_started_total', tags: metrics_tags(source))
 
     adapter = Admin::Fx::Ingestion::AdapterRegistry.build(source)
-    return fail_ingestion(ingestion, "adapter_missing", source: source) if adapter.nil?
+    return fail_ingestion(ingestion, 'adapter_missing', source: source) if adapter.nil?
 
     date_from, date_to = adapter.default_range
     fetch_result = adapter.fetch(date_from: date_from, date_to: date_to)
 
     if fetch_result.failure?
       return fail_ingestion(ingestion, fetch_result.error_code, source: source,
-        context: fetch_result.context, event_type: "fx_rate.fetch_failed")
+                                                                context: fetch_result.context, event_type: 'fx_rate.fetch_failed')
     end
 
     payload = fetch_result.data.fetch(:payload)
-    record_count = payload.dig("metadata", "resultset", "count")
+    record_count = payload.dig('metadata', 'resultset', 'count')
     emit_event(
       ingestion: ingestion,
-      event_type: "fx_rate.ingested",
+      event_type: 'fx_rate.ingested',
       data: {
         record_count: record_count,
         date_from: date_from.to_s,
         date_to: date_to.to_s,
-        base_currency: source.config["base_currency"],
-        quote_currency: source.config["quote_currency"],
+        base_currency: source.config['base_currency'],
+        quote_currency: source.config['quote_currency'],
         source_code: source.code
       }
     )
@@ -50,23 +50,23 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     validation = contract.call(payload)
     unless validation.success?
       sample, payload_size = sample_payload(payload)
-      return fail_ingestion(ingestion, "validation_failed", source: source,
-        context: {errors: validation.errors.to_h, sample: sample, payload_size: payload_size},
-        event_type: "fx_rate.validation_failed")
+      return fail_ingestion(ingestion, 'validation_failed', source: source,
+                                                            context: { errors: validation.errors.to_h, sample: sample, payload_size: payload_size },
+                                                            event_type: 'fx_rate.validation_failed')
     end
 
     mapper_result = Admin::Fx::Ingestion::Mappers::BcraRateMapper.call(payload: payload, source: source)
     if mapper_result.failure?
       log_mapping_failure(ingestion: ingestion, source: source, context: mapper_result.context)
-      return fail_ingestion(ingestion, "mapping_failed", source: source,
-        context: mapper_result.context,
-        event_type: "fx_rate.mapping_failed")
+      return fail_ingestion(ingestion, 'mapping_failed', source: source,
+                                                         context: mapper_result.context,
+                                                         event_type: 'fx_rate.mapping_failed')
     end
 
     rates = mapper_result.data.fetch(:rates)
     rates.each do |rate|
       Admin::Fx::RateUpserter.call(
-        **rate.to_upsert_attributes(source: "ingestion"),
+        **rate.to_upsert_attributes(source: 'ingestion'),
         enforce_operational_date: false,
         created_context: {
           ingestion_id: ingestion.id,
@@ -77,31 +77,31 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
 
     emit_event(
       ingestion: ingestion,
-      event_type: "fx_rate.persisted",
+      event_type: 'fx_rate.persisted',
       data: {
         record_count: record_count,
         persisted_count: rates.length,
         date_from: date_from.to_s,
         date_to: date_to.to_s,
-        base_currency: source.config["base_currency"],
-        quote_currency: source.config["quote_currency"],
+        base_currency: source.config['base_currency'],
+        quote_currency: source.config['quote_currency'],
         source_code: source.code
       }
     )
 
-    ingestion.update!(status: "success", finished_at: Time.current)
-    metrics.increment("fcs_fx_ingestion_success_total", tags: metrics_tags(source))
-  rescue => e
+    ingestion.update!(status: 'success', finished_at: Time.current)
+    metrics.increment('fcs_fx_ingestion_success_total', tags: metrics_tags(source))
+  rescue StandardError => e
     if ingestion.present?
-      ingestion.update!(status: "failed", error_code: "job_error", context: {message: e.message},
-        finished_at: Time.current)
+      ingestion.update!(status: 'failed', error_code: 'job_error', context: { message: e.message },
+                        finished_at: Time.current)
     end
-    metrics.increment("fcs_fx_ingestion_failed_total", tags: metrics_tags(source)) if source.present?
+    metrics.increment('fcs_fx_ingestion_failed_total', tags: metrics_tags(source)) if source.present?
     raise
   ensure
     if ingestion.present?
       duration_ms = ((Time.current - ingestion.started_at) * 1000).to_i
-      metrics.observe("fcs_fx_ingestion_duration_ms", duration_ms, tags: metrics_tags(source)) if source.present?
+      metrics.observe('fcs_fx_ingestion_duration_ms', duration_ms, tags: metrics_tags(source)) if source.present?
     end
   end
 
@@ -123,7 +123,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
   def fail_ingestion(ingestion, error_code, source:, context: {}, event_type: nil)
     error_details = Admin::Fx::Ingestion::ErrorCatalog.details_for(error_code)
     context = context.merge(error_details)
-    ingestion.update!(status: "failed", error_code: error_code, context: context, finished_at: Time.current)
+    ingestion.update!(status: 'failed', error_code: error_code, context: context, finished_at: Time.current)
 
     if event_type.present?
       error_count = extract_error_count(context)
@@ -145,31 +145,31 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
       )
     end
 
-    metrics.increment("fcs_fx_ingestion_failed_total", tags: metrics_tags(source))
-    return unless error_code == "validation_failed"
+    metrics.increment('fcs_fx_ingestion_failed_total', tags: metrics_tags(source))
+    return unless error_code == 'validation_failed'
 
-    metrics.increment("fcs_fx_ingestion_validation_failed_total",
-      tags: metrics_tags(source))
+    metrics.increment('fcs_fx_ingestion_validation_failed_total',
+                      tags: metrics_tags(source))
   end
 
   def sample_payload(payload)
-    results = payload["results"] || []
+    results = payload['results'] || []
     size = results.size
-    sample = (size <= 10) ? results : results.first(3)
+    sample = size <= 10 ? results : results.first(3)
     [sample, size]
   end
 
   def log_mapping_failure(ingestion:, source:, context: {})
     error_count = extract_error_count(context)
     error_sample = extract_error_sample(context)
-    Rails.logger.warn(
-      "Fx ingestion mapping failed",
+    Rails.logger.warn({
+      message: 'Fx ingestion mapping failed',
       ingestion_id: ingestion.id,
       source_id: source.id,
       source_code: source.code,
       error_count: error_count,
       error_sample: error_sample
-    )
+    }.to_json)
   end
 
   def extract_error_count(context)
@@ -190,8 +190,8 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
   def metrics_tags(source)
     {
       source_code: source.code,
-      base_currency: source.config["base_currency"],
-      quote_currency: source.config["quote_currency"]
+      base_currency: source.config['base_currency'],
+      quote_currency: source.config['quote_currency']
     }
   end
 
