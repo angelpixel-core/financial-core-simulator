@@ -121,6 +121,8 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
   end
 
   def fail_ingestion(ingestion, error_code, source:, context: {}, event_type: nil)
+    error_details = Admin::Fx::Ingestion::ErrorCatalog.details_for(error_code)
+    context = context.merge(error_details)
     ingestion.update!(status: "failed", error_code: error_code, context: context, finished_at: Time.current)
 
     if event_type.present?
@@ -131,6 +133,10 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
         event_type: event_type,
         data: {
           error_code: error_code,
+          severity: context[:severity],
+          user_message_key: context[:user_message_key],
+          action_hint_key: context[:action_hint_key],
+          retryable: context[:retryable],
           sample: context[:sample],
           error_count: error_count,
           error_sample: error_sample,

@@ -12,6 +12,7 @@ class Admin::SystemHealthController < ApplicationController
     ingestion_errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
     @ingestion_errors_pagination = ingestion_errors_pagination(errors: ingestion_errors, page: params[:errors_page])
     @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
+    @fx_ingestion_failures = fx_ingestion_failures
   end
 
   def pnl_trend
@@ -71,6 +72,36 @@ class Admin::SystemHealthController < ApplicationController
       total_pages: total_pages,
       per_page: per_page
     }
+  end
+
+  def fx_ingestion_failures
+    FxRateIngestion.includes(:source)
+      .where(status: "failed")
+      .order(created_at: :desc)
+      .limit(10)
+      .map { |ingestion| map_fx_ingestion_failure(ingestion) }
+  end
+
+  def map_fx_ingestion_failure(ingestion)
+    context = ingestion.context.is_a?(Hash) ? ingestion.context : {}
+    details = Admin::Fx::Ingestion::ErrorCatalog.details_for(ingestion.error_code)
+    user_message_key = context["user_message_key"] || details[:user_message_key]
+    action_hint_key = context["action_hint_key"] || details[:action_hint_key]
+
+    {
+      source: ingestion.source&.name || ingestion.source_id,
+      error_code: ingestion.error_code,
+      severity: context["severity"] || details[:severity],
+      user_message: translate_catalog_key(user_message_key),
+      action_hint: translate_catalog_key(action_hint_key),
+      occurred_at: ingestion.updated_at&.utc&.iso8601
+    }
+  end
+
+  def translate_catalog_key(key)
+    return nil if key.blank?
+
+    I18n.t(key, default: key.to_s)
   end
 
   def dashboard_read_path_config

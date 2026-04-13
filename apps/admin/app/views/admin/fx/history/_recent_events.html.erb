@@ -15,6 +15,16 @@
               <% if event.data["error_code"].present? %>
                 <span class="fx-history-events__error"><%= event.data["error_code"] %></span>
               <% end %>
+              <% if event.data["user_message_key"].present? %>
+                <span class="fx-history-events__error"><%= t(event.data["user_message_key"], default: event.data["user_message_key"]) %></span>
+              <% elsif event.data["user_message"].present? %>
+                <span class="fx-history-events__error"><%= event.data["user_message"] %></span>
+              <% end %>
+              <% if event.data["action_hint_key"].present? %>
+                <span class="fx-history-events__error"><%= t(event.data["action_hint_key"], default: event.data["action_hint_key"]) %></span>
+              <% elsif event.data["action_hint"].present? %>
+                <span class="fx-history-events__error"><%= event.data["action_hint"] %></span>
+              <% end %>
             </div>
             <time class="fx-history-events__time"><%= l(event.created_at, format: :short) %></time>
           </li>

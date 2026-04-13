@@ -157,6 +157,39 @@
             navigation_context: navigation_context
           } %>
         </section>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2><%= t("admin.overview.validation.fx_ingestion_title") %></h2>
+          </header>
+          <% if @fx_ingestion_failures.blank? %>
+            <p class="empty-state"><%= t("admin.overview.validation.fx_ingestion_empty") %></p>
+          <% else %>
+            <ul class="detail-list">
+              <% @fx_ingestion_failures.each do |failure| %>
+                <li>
+                  <span><%= t("admin.overview.validation.fx_ingestion_source") %></span>
+                  <strong><%= failure[:source] %></strong>
+                </li>
+                <li>
+                  <span><%= t("admin.overview.validation.fx_ingestion_error") %></span>
+                  <strong><%= failure[:error_code] %></strong>
+                </li>
+                <li>
+                  <span><%= t("admin.overview.validation.fx_ingestion_message") %></span>
+                  <strong><%= failure[:user_message] || t("admin.common.na") %></strong>
+                </li>
+                <li>
+                  <span><%= t("admin.overview.validation.fx_ingestion_action") %></span>
+                  <strong><%= failure[:action_hint] || t("admin.common.na") %></strong>
+                </li>
+                <li>
+                  <span><%= t("admin.overview.validation.fx_ingestion_occurred") %></span>
+                  <strong><%= failure[:occurred_at].presence || t("admin.common.na") %></strong>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </section>
       </section>
       <section class="overview__domain" aria-label="<%= t("admin.overview.financial_results.aria") %>">
         <h2 class="overview__domain-title"><%= t("admin.overview.financial_results.title") %></h2>

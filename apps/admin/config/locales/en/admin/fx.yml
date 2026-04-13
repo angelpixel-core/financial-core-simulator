@@ -88,3 +88,22 @@ en:
       rate_deleted: "Daily FX rate deleted."
       rate_delete_blocked: "This rate cannot be deleted."
       rate_edit_blocked: "Only manual or placeholder rates can be edited."
+      ingestion_errors:
+        adapter_missing:
+          message: "No adapter available for the FX source."
+          action_hint: "Check the FX source configuration and adapter registry."
+        http_error:
+          message: "Unable to fetch FX payload from the source."
+          action_hint: "Retry later or verify connectivity and credentials."
+        validation_failed:
+          message: "FX payload does not match the expected schema."
+          action_hint: "Review API changes or update the contract."
+        mapping_failed:
+          message: "FX payload could not be mapped into internal objects."
+          action_hint: "Verify required fields and mapping rules."
+        job_error:
+          message: "FX ingestion job failed."
+          action_hint: "Review job logs and retry."
+        unknown:
+          message: "Unknown FX ingestion error."
+          action_hint: "Review logs for more details."

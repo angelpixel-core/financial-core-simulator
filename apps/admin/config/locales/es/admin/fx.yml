@@ -88,3 +88,22 @@ es:
       rate_deleted: "Tasa FX diaria eliminada."
       rate_delete_blocked: "Esta tasa no se puede eliminar."
       rate_edit_blocked: "Solo las tasas manuales o placeholder se pueden editar."
+      ingestion_errors:
+        adapter_missing:
+          message: "No hay un adaptador disponible para la fuente FX."
+          action_hint: "Revisa la configuracion de la fuente y el registry de adapters."
+        http_error:
+          message: "No se pudo obtener el payload desde la fuente FX."
+          action_hint: "Reintenta mas tarde o verifica conectividad y credenciales."
+        validation_failed:
+          message: "El payload FX no coincide con el esquema esperado."
+          action_hint: "Revisa cambios en la API o actualiza el contrato."
+        mapping_failed:
+          message: "No se pudo mapear el payload FX a objetos internos."
+          action_hint: "Verifica campos requeridos y reglas de mapeo."
+        job_error:
+          message: "Fallo el job de ingesta FX."
+          action_hint: "Revisa los logs del job y reintenta."
+        unknown:
+          message: "Error desconocido de ingesta FX."
+          action_hint: "Revisa los logs para mas detalles."
