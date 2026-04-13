@@ -57,6 +57,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
 
     mapper_result = Admin::Fx::Ingestion::Mappers::BcraRateMapper.call(payload: payload, source: source)
     if mapper_result.failure?
+      log_mapping_failure(ingestion: ingestion, source: source, context: mapper_result.context)
       return fail_ingestion(ingestion, "mapping_failed", source: source,
         context: mapper_result.context,
         event_type: "fx_rate.mapping_failed")
@@ -123,13 +124,16 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     ingestion.update!(status: "failed", error_code: error_code, context: context, finished_at: Time.current)
 
     if event_type.present?
+      error_count = extract_error_count(context)
+      error_sample = extract_error_sample(context)
       emit_event(
         ingestion: ingestion,
         event_type: event_type,
         data: {
           error_code: error_code,
           sample: context[:sample],
-          error_count: context[:errors].is_a?(Hash) ? context[:errors].length : nil,
+          error_count: error_count,
+          error_sample: error_sample,
           payload_size: context[:payload_size]
         }.compact
       )
@@ -147,6 +151,34 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     size = results.size
     sample = (size <= 10) ? results : results.first(3)
     [sample, size]
+  end
+
+  def log_mapping_failure(ingestion:, source:, context: {})
+    error_count = extract_error_count(context)
+    error_sample = extract_error_sample(context)
+    Rails.logger.warn(
+      "Fx ingestion mapping failed",
+      ingestion_id: ingestion.id,
+      source_id: source.id,
+      source_code: source.code,
+      error_count: error_count,
+      error_sample: error_sample
+    )
+  end
+
+  def extract_error_count(context)
+    errors = context[:errors]
+    return errors.length if errors.is_a?(Array)
+    return errors.length if errors.is_a?(Hash)
+
+    nil
+  end
+
+  def extract_error_sample(context)
+    errors = context[:errors]
+    return errors.first(3) if errors.is_a?(Array)
+
+    errors.to_a.first(3) if errors.is_a?(Hash)
   end
 
   def metrics_tags(source)
