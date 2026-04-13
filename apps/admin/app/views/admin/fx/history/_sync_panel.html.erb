@@ -1,0 +1,23 @@
+<section class="dashboard-card fx-history-sync-panel">
+  <header class="dashboard-card__header">
+    <h2><%= t("admin.fx.history.sync.title") %></h2>
+    <p class="dashboard-card__meta"><%= t("admin.fx.history.sync.subtitle") %></p>
+  </header>
+  <%= form_with url: admin_fx_ingestions_sync_path(locale: I18n.locale), method: :post, local: false,
+    class: "fx-history-sync__form" do |form| %>
+    <%= hidden_field_tag :locale, I18n.locale %>
+    <div class="fx-history-sync__row">
+      <%= form.label :source_id, t("admin.fx.history.sync.source_label") %>
+      <%= form.select :source_id,
+        fx_sources.map { |source| [source.name, source.id] },
+        {},
+        class: "fx-history-sync__select" %>
+    </div>
+    <%= form.submit t("admin.fx.history.sync.cta"), class: "fx-history-sync__cta" %>
+  <% end %>
+  <div id="fx-ingestion-status">
+    <%= render "admin/fx/history/ingestion_status",
+      fx_sources: fx_sources,
+      latest_ingestions: latest_ingestions %>
+  </div>
+</section>

@@ -30,6 +30,23 @@ es:
         title: "Historial de FX"
         subtitle: "Tasas recientes y faltantes."
         empty: "Aun no hay historial de FX."
+        sync:
+          title: "Sincronizar tasas FX"
+          subtitle: "Obtiene tasas diarias desde una fuente configurada."
+          source_label: "Fuente"
+          cta: "Sincronizar"
+          started: "Sincronizacion en cola"
+          status_title: "Estado de la ultima sincronizacion"
+          status:
+            none: "Sin ejecuciones"
+            pending: "En cola"
+            running: "En proceso"
+            success: "Exitoso"
+            failed: "Fallido"
+        events:
+          title: "Eventos recientes"
+          subtitle: "Ultimos eventos de ingestión FX."
+          empty: "Aun no hay eventos."
         table:
           date: "Fecha"
           sort_asc: "Mas antiguas primero"

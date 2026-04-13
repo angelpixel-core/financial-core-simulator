@@ -59,6 +59,17 @@
         </div>
       <% end %>
     </section>
+    <% if admin_shell_operator? || admin_shell_admin? %>
+      <section class="workspace__overview fx-history-sync">
+        <%= render "admin/fx/history/sync_panel",
+          fx_sources: @fx_sources,
+          latest_ingestions: @latest_ingestions,
+          navigation_context: navigation_context %>
+      </section>
+    <% end %>
+    <section class="workspace__overview fx-history-events">
+      <%= render "admin/fx/history/recent_events", events: @recent_events %>
+    </section>
     <section class="workspace__overview">
       <%= render "admin/fx/history/history_table",
         dates: @dates,

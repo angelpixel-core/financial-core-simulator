@@ -30,6 +30,23 @@ en:
         title: "FX rate history"
         subtitle: "Recent rates and missing placeholders."
         empty: "No FX history available yet."
+        sync:
+          title: "Sync FX rates"
+          subtitle: "Fetch daily rates from a configured source."
+          source_label: "Source"
+          cta: "Sync now"
+          started: "Sync queued"
+          status_title: "Latest sync status"
+          status:
+            none: "Not run yet"
+            pending: "Queued"
+            running: "Running"
+            success: "Success"
+            failed: "Failed"
+        events:
+          title: "Recent events"
+          subtitle: "Latest FX ingestion events."
+          empty: "No events yet."
         table:
           date: "Date"
           sort_asc: "Oldest first"

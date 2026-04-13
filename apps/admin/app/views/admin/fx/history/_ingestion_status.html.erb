@@ -1,0 +1,21 @@
+<div class="fx-ingestion-status">
+  <h3 class="fx-ingestion-status__title"><%= t("admin.fx.history.sync.status_title") %></h3>
+  <ul class="fx-ingestion-status__list">
+    <% fx_sources.each do |source| %>
+      <% ingestion = latest_ingestions[source.id] %>
+      <li class="fx-ingestion-status__item">
+        <span class="fx-ingestion-status__source"><%= source.name %></span>
+        <span class="fx-ingestion-status__state">
+          <% if ingestion.present? %>
+            <%= t("admin.fx.history.sync.status.#{ingestion.status}") %>
+          <% else %>
+            <%= t("admin.fx.history.sync.status.none") %>
+          <% end %>
+        </span>
+        <% if ingestion&.created_at.present? %>
+          <time class="fx-ingestion-status__time"><%= l(ingestion.created_at, format: :short) %></time>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>

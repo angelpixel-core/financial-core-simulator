@@ -12,6 +12,9 @@ module Admin
           resources :rate_uploads, only: :create do
             get :template, on: :collection
           end
+          resources :ingestions, only: [] do
+            post :sync, on: :collection
+          end
           resource :reporting_settings, only: %i[update]
           resources :history, only: :index
         end

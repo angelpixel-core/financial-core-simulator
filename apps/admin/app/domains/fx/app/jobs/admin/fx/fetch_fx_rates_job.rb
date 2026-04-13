@@ -5,16 +5,18 @@ require "securerandom"
 class Admin::Fx::FetchFxRatesJob < ApplicationJob
   queue_as :default
 
-  def perform(source_id, correlation_id: nil, causation_id: nil)
-    source = FxRateSource.find(source_id)
-    correlation_id ||= SecureRandom.uuid
-    ingestion = FxRateIngestion.create!(
+  def perform(source_id, correlation_id: nil, causation_id: nil, ingestion_id: nil)
+    ingestion = ingestion_id.present? ? FxRateIngestion.find(ingestion_id) : nil
+    source = ingestion&.source || FxRateSource.find(source_id)
+    correlation_id ||= ingestion&.correlation_id || SecureRandom.uuid
+    ingestion ||= FxRateIngestion.create!(
       source: source,
       status: "running",
       correlation_id: correlation_id,
       causation_id: causation_id,
       started_at: Time.current
     )
+    ingestion.update!(status: "running", started_at: Time.current)
 
     metrics.increment("fcs_fx_ingestion_started_total", tags: metrics_tags(source))
 
@@ -114,7 +116,10 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     end
 
     metrics.increment("fcs_fx_ingestion_failed_total", tags: metrics_tags(source))
-    + metrics.increment("fcs_fx_ingestion_validation_failed_total", tags: metrics_tags(source)) if error_code == "validation_failed"
+    return unless error_code == "validation_failed"
+
+    + metrics.increment("fcs_fx_ingestion_validation_failed_total",
+      tags: metrics_tags(source))
   end
 
   def sample_payload(payload)
