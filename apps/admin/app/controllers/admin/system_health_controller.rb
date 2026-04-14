@@ -20,6 +20,7 @@ class Admin::SystemHealthController < ApplicationController
       source_id: @fx_observability_source&.id,
       days: @fx_observability_days
     )
+    @fx_observability_recent_failure = recent_fx_failure(@fx_observability_snapshot)
   end
 
   def pnl_trend
@@ -122,6 +123,17 @@ class Admin::SystemHealthController < ApplicationController
     return number if number.positive?
 
     Admin::Fx::ObservabilitySnapshot::DEFAULT_DAYS
+  end
+
+  def recent_fx_failure(snapshot)
+    events = Array(snapshot[:events])
+    failure = events.find { |event| event[:error_code].present? }
+    return nil if failure.nil?
+
+    {
+      error_code: failure[:error_code],
+      occurred_at: failure[:created_at]
+    }
   end
 
   def dashboard_read_path_config

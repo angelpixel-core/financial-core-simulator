@@ -120,6 +120,8 @@ en:
           failed: "Failed"
           running: "Running"
           pending: "Queued"
+          recent_failure: "Most recent failure"
+          recent_failure_empty: "None"
         sources:
           title: "Latest source status"
           columns:
@@ -141,6 +143,7 @@ en:
             error_code: "Error code"
             severity: "Severity"
             count: "Count"
+          unknown: "Unknown"
         events:
           title: "Recent events"
           empty: "No FX events in this range."
@@ -148,6 +151,16 @@ en:
           ingestion: "Ingestion"
           error_code: "Error code"
           severity: "Severity"
+        charts:
+          success_vs_failure:
+            title: "Success vs failure by source"
+            tooltip_label: "Source"
+            success_label: "Success"
+            failed_label: "Failed"
+          failures_by_code:
+            title: "Failures by error code"
+            tooltip_label: "Error code"
+            count_label: "Failures"
         status:
           none: "No runs"
           pending: "Queued"

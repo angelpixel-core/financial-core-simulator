@@ -63,6 +63,19 @@
     <% counts_by_source = @snapshot.fetch(:counts_by_source) %>
     <% failures_by_code = @snapshot.fetch(:failures_by_code) %>
     <% events = @snapshot.fetch(:events) %>
+    <% success_failure_points = counts_by_source.map do |source|
+      {
+        label: source[:source_name],
+        success: source[:success],
+        failed: source[:failed]
+      }
+    end %>
+    <% failures_points = failures_by_code.map do |failure|
+      {
+        label: failure[:error_code] || t("admin.fx.observability.failures.unknown"),
+        count: failure[:count]
+      }
+    end %>
     <section class="workspace__overview">
       <section class="overview__domain" aria-label="<%= t("admin.fx.observability.summary.title") %>">
         <h2 class="overview__domain-title"><%= t("admin.fx.observability.summary.title") %></h2>
@@ -93,6 +106,63 @@
               <strong><%= summary[:pending] %></strong>
             </li>
           </ul>
+        </section>
+      </section>
+      <section class="overview__domain" aria-label="<%= t("admin.fx.observability.charts.success_vs_failure.title") %>">
+        <h2 class="overview__domain-title"><%= t("admin.fx.observability.charts.success_vs_failure.title") %></h2>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2><%= t("admin.fx.observability.charts.success_vs_failure.title") %></h2>
+          </header>
+          <div
+            data-controller="fx--observability--chart"
+            data-fx--observability--chart-title-value="<%= t("admin.fx.observability.charts.success_vs_failure.title") %>"
+            data-fx--observability--chart-x-key-value="label"
+            data-fx--observability--chart-tooltip-label-value="<%= t("admin.fx.observability.charts.success_vs_failure.tooltip_label") %>"
+            data-fx--observability--chart-points-value="<%= success_failure_points.to_json %>"
+            data-fx--observability--chart-series-value="<%= [
+              { key: "success", label: t("admin.fx.observability.charts.success_vs_failure.success_label"), color: "#22c55e" },
+              { key: "failed", label: t("admin.fx.observability.charts.success_vs_failure.failed_label"), color: "#f87171" }
+            ].to_json %>"
+          >
+            <div class="trend-chart" data-fx--observability--chart-target="chart" aria-label="<%= t("admin.fx.observability.charts.success_vs_failure.title") %>"></div>
+            <ul class="trend-line-fallback" data-fx--observability--chart-target="fallback">
+              <% success_failure_points.each do |point| %>
+                <li>
+                  <span><%= point[:label] %></span>
+                  <strong><%= t("admin.fx.observability.charts.success_vs_failure.success_label") %>: <%= point[:success] %> · <%= t("admin.fx.observability.charts.success_vs_failure.failed_label") %>: <%= point[:failed] %></strong>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </section>
+      </section>
+      <section class="overview__domain" aria-label="<%= t("admin.fx.observability.charts.failures_by_code.title") %>">
+        <h2 class="overview__domain-title"><%= t("admin.fx.observability.charts.failures_by_code.title") %></h2>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2><%= t("admin.fx.observability.charts.failures_by_code.title") %></h2>
+          </header>
+          <div
+            data-controller="fx--observability--chart"
+            data-fx--observability--chart-title-value="<%= t("admin.fx.observability.charts.failures_by_code.title") %>"
+            data-fx--observability--chart-x-key-value="label"
+            data-fx--observability--chart-tooltip-label-value="<%= t("admin.fx.observability.charts.failures_by_code.tooltip_label") %>"
+            data-fx--observability--chart-points-value="<%= failures_points.to_json %>"
+            data-fx--observability--chart-series-value="<%= [
+              { key: "count", label: t("admin.fx.observability.charts.failures_by_code.count_label"), color: "#38bdf8" }
+            ].to_json %>"
+          >
+            <div class="trend-chart" data-fx--observability--chart-target="chart" aria-label="<%= t("admin.fx.observability.charts.failures_by_code.title") %>"></div>
+            <ul class="trend-line-fallback" data-fx--observability--chart-target="fallback">
+              <% failures_points.each do |point| %>
+                <li>
+                  <span><%= point[:label] %></span>
+                  <strong><%= point[:count] %></strong>
+                </li>
+              <% end %>
+            </ul>
+          </div>
         </section>
       </section>
       <section class="overview__domain" aria-label="<%= t("admin.fx.observability.sources.title") %>">

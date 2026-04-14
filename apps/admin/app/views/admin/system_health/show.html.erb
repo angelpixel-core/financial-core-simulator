@@ -68,6 +68,7 @@
       </section>
       <% fx_range = @fx_observability_snapshot.fetch(:range) %>
       <% fx_summary = @fx_observability_snapshot.fetch(:summary) %>
+      <% recent_failure = @fx_observability_recent_failure %>
       <section class="overview__domain" aria-label="<%= t("admin.fx.observability.aria") %>">
         <h2 class="overview__domain-title"><%= t("admin.fx.observability.title") %></h2>
         <section class="dashboard-card">
@@ -110,20 +111,18 @@
               <strong><%= fx_summary[:total] %></strong>
             </li>
             <li>
-              <span><%= t("admin.fx.observability.summary.success") %></span>
-              <strong><%= fx_summary[:success] %></strong>
-            </li>
-            <li>
               <span><%= t("admin.fx.observability.summary.failed") %></span>
               <strong><%= fx_summary[:failed] %></strong>
             </li>
             <li>
-              <span><%= t("admin.fx.observability.summary.running") %></span>
-              <strong><%= fx_summary[:running] %></strong>
-            </li>
-            <li>
-              <span><%= t("admin.fx.observability.summary.pending") %></span>
-              <strong><%= fx_summary[:pending] %></strong>
+              <span><%= t("admin.fx.observability.summary.recent_failure") %></span>
+              <strong>
+                <% if recent_failure.present? %>
+                  <%= recent_failure[:error_code] %> · <%= recent_failure[:occurred_at] %>
+                <% else %>
+                  <%= t("admin.fx.observability.summary.recent_failure_empty") %>
+                <% end %>
+              </strong>
             </li>
           </ul>
         </section>

@@ -120,6 +120,8 @@ es:
           failed: "Fallido"
           running: "En proceso"
           pending: "En cola"
+          recent_failure: "Falla mas reciente"
+          recent_failure_empty: "Ninguna"
         sources:
           title: "Estado reciente por fuente"
           columns:
@@ -141,6 +143,7 @@ es:
             error_code: "Codigo de error"
             severity: "Severidad"
             count: "Conteo"
+          unknown: "Desconocido"
         events:
           title: "Eventos recientes"
           empty: "No hay eventos FX en este rango."
@@ -148,6 +151,16 @@ es:
           ingestion: "Ingesta"
           error_code: "Codigo de error"
           severity: "Severidad"
+        charts:
+          success_vs_failure:
+            title: "Exitos vs fallas por fuente"
+            tooltip_label: "Fuente"
+            success_label: "Exitos"
+            failed_label: "Fallas"
+          failures_by_code:
+            title: "Fallas por codigo de error"
+            tooltip_label: "Codigo de error"
+            count_label: "Fallas"
         status:
           none: "Sin corridas"
           pending: "En cola"
