@@ -10,6 +10,7 @@
   { label: t("admin.nav.overview"), path: admin_overview_path(navigation_context), active: false, icon_key: "overview", external: false }
 ] %>
 <% sidebar_items << { label: t("admin.nav.history"), path: admin_fx_history_index_path(navigation_context), active: false, icon_key: "dollar", external: false } %>
+<% sidebar_items << { label: t("admin.nav.observability"), path: admin_fx_observability_path(navigation_context), active: false, icon_key: "layout-dashboard", external: false } %>
 <% runs_item = {
   label: t("admin.nav.runs"),
   path: admin_system_health_path(navigation_context),
@@ -61,6 +62,68 @@
             <li>
               <span><%= t("admin.overview.system_metrics.avg_duration.title") %></span>
               <strong><%= @metrics[:avg_duration_ms_last_50].nil? ? t("admin.common.na") : "#{@metrics[:avg_duration_ms_last_50]} #{t("admin.common.ms")}" %></strong>
+            </li>
+          </ul>
+        </section>
+      </section>
+      <% fx_range = @fx_observability_snapshot.fetch(:range) %>
+      <% fx_summary = @fx_observability_snapshot.fetch(:summary) %>
+      <section class="overview__domain" aria-label="<%= t("admin.fx.observability.aria") %>">
+        <h2 class="overview__domain-title"><%= t("admin.fx.observability.title") %></h2>
+        <section class="dashboard-card">
+          <header class="dashboard-card__header">
+            <h2><%= t("admin.fx.observability.title") %></h2>
+            <a class="overview__link" href="<%= admin_fx_observability_path(navigation_context.merge(source_id: @fx_observability_source&.id, days: @fx_observability_days)) %>"><%= t("admin.common.view_details") %></a>
+          </header>
+          <p class="dashboard-card__meta"><%= t("admin.fx.observability.range", from: fx_range[:from], to: fx_range[:to]) %></p>
+          <%= form_with url: admin_system_health_path(navigation_context),
+                        method: :get,
+                        local: true,
+                        class: "fx-observability-filters",
+                        data: { controller: "auto-submit" } do |form| %>
+            <%= hidden_field_tag :source, @selected_source if @selected_source.present? %>
+            <%= hidden_field_tag :field, @selected_field if @selected_field.present? %>
+            <div class="fx-observability-filters__row">
+              <%= form.label :fx_source_id, t("admin.fx.observability.filter.label") %>
+              <%= form.select :fx_source_id,
+                [[t("admin.fx.observability.filter.all_sources"), ""]] + @fx_observability_sources.map { |source| [source.name, source.id] },
+                { selected: @fx_observability_source&.id },
+                class: "fx-observability-filters__select",
+                data: { action: "change->auto-submit#submit" } %>
+            </div>
+            <div class="fx-observability-filters__row">
+              <%= form.label :fx_days, t("admin.fx.observability.filter.range_label") %>
+              <%= form.select :fx_days,
+                [
+                  [t("admin.fx.observability.filter.range_7d"), 7],
+                  [t("admin.fx.observability.filter.range_14d"), 14],
+                  [t("admin.fx.observability.filter.range_30d"), 30]
+                ],
+                { selected: @fx_observability_days },
+                class: "fx-observability-filters__select",
+                data: { action: "change->auto-submit#submit" } %>
+            </div>
+          <% end %>
+          <ul class="detail-list">
+            <li>
+              <span><%= t("admin.fx.observability.summary.total") %></span>
+              <strong><%= fx_summary[:total] %></strong>
+            </li>
+            <li>
+              <span><%= t("admin.fx.observability.summary.success") %></span>
+              <strong><%= fx_summary[:success] %></strong>
+            </li>
+            <li>
+              <span><%= t("admin.fx.observability.summary.failed") %></span>
+              <strong><%= fx_summary[:failed] %></strong>
+            </li>
+            <li>
+              <span><%= t("admin.fx.observability.summary.running") %></span>
+              <strong><%= fx_summary[:running] %></strong>
+            </li>
+            <li>
+              <span><%= t("admin.fx.observability.summary.pending") %></span>
+              <strong><%= fx_summary[:pending] %></strong>
             </li>
           </ul>
         </section>

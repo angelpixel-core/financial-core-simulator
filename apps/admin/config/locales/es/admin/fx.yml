@@ -100,6 +100,60 @@ es:
           events_title: "Eventos recientes"
           events_empty: "Sin eventos para esta tasa."
           no_rate: "Sin tasa disponible."
+      observability:
+        aria: "Observabilidad FX"
+        title: "Observabilidad FX"
+        subtitle: "Senales operativas sobre la ingesta FX."
+        range: "Rango %{from} a %{to}"
+        empty: "No hay fuentes FX disponibles."
+        filter:
+          label: "Fuente"
+          all_sources: "Todas las fuentes"
+          range_label: "Rango"
+          range_7d: "Ultimos 7 dias"
+          range_14d: "Ultimos 14 dias"
+          range_30d: "Ultimos 30 dias"
+        summary:
+          title: "Resumen de ingesta"
+          total: "Total"
+          success: "Exitoso"
+          failed: "Fallido"
+          running: "En proceso"
+          pending: "En cola"
+        sources:
+          title: "Estado reciente por fuente"
+          columns:
+            source: "Fuente"
+            status: "Estado"
+            error_code: "Codigo de error"
+            updated_at: "Ultima actualizacion"
+        counts:
+          title: "Conteo por fuente"
+          columns:
+            source: "Fuente"
+            success: "Exitoso"
+            failed: "Fallido"
+            running: "En proceso"
+            pending: "En cola"
+        failures:
+          title: "Fallas por codigo"
+          columns:
+            error_code: "Codigo de error"
+            severity: "Severidad"
+            count: "Conteo"
+        events:
+          title: "Eventos recientes"
+          empty: "No hay eventos FX en este rango."
+          source: "Fuente"
+          ingestion: "Ingesta"
+          error_code: "Codigo de error"
+          severity: "Severidad"
+        status:
+          none: "Sin corridas"
+          pending: "En cola"
+          running: "En proceso"
+          success: "Exitoso"
+          failed: "Fallido"
       flash:
         rate_saved: "Tasa FX diaria guardada."
         rate_carried_forward: "Tasa FX diaria copiada."

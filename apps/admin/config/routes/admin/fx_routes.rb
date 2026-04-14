@@ -15,6 +15,7 @@ module Admin
           resources :ingestions, only: :index do
             post :sync, on: :collection
           end
+          resource :observability, only: :show
           resource :reporting_settings, only: %i[update]
           resources :history, only: :index
         end

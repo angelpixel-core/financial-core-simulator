@@ -100,6 +100,60 @@ en:
           events_title: "Recent events"
           events_empty: "No events for this rate."
           no_rate: "No rate available."
+      observability:
+        aria: "FX observability"
+        title: "FX observability"
+        subtitle: "Operational signals across FX ingestion."
+        range: "Range %{from} to %{to}"
+        empty: "No FX sources available."
+        filter:
+          label: "Source"
+          all_sources: "All sources"
+          range_label: "Range"
+          range_7d: "Last 7 days"
+          range_14d: "Last 14 days"
+          range_30d: "Last 30 days"
+        summary:
+          title: "Ingestion summary"
+          total: "Total"
+          success: "Success"
+          failed: "Failed"
+          running: "Running"
+          pending: "Queued"
+        sources:
+          title: "Latest source status"
+          columns:
+            source: "Source"
+            status: "Status"
+            error_code: "Error code"
+            updated_at: "Last update"
+        counts:
+          title: "Counts by source"
+          columns:
+            source: "Source"
+            success: "Success"
+            failed: "Failed"
+            running: "Running"
+            pending: "Queued"
+        failures:
+          title: "Failures by code"
+          columns:
+            error_code: "Error code"
+            severity: "Severity"
+            count: "Count"
+        events:
+          title: "Recent events"
+          empty: "No FX events in this range."
+          source: "Source"
+          ingestion: "Ingestion"
+          error_code: "Error code"
+          severity: "Severity"
+        status:
+          none: "No runs"
+          pending: "Queued"
+          running: "Running"
+          success: "Success"
+          failed: "Failed"
       flash:
         rate_saved: "Daily FX rate saved."
         rate_carried_forward: "Daily FX rate carried forward."

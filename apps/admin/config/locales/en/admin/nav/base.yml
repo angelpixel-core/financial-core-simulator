@@ -4,6 +4,7 @@ en:
       overview: "Overview"
       runs: "Health"
       history: "FX Rates"
+      observability: "Observability"
       validation: "Validation"
       workspace: "Workspace"
       open_runs: "Open Runs"

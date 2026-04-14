@@ -13,6 +13,13 @@ class Admin::SystemHealthController < ApplicationController
     @ingestion_errors_pagination = ingestion_errors_pagination(errors: ingestion_errors, page: params[:errors_page])
     @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
     @fx_ingestion_failures = fx_ingestion_failures
+    @fx_observability_sources = FxRateSource.order(:name)
+    @fx_observability_source = resolve_fx_source(params[:fx_source_id])
+    @fx_observability_days = normalize_fx_days(params[:fx_days])
+    @fx_observability_snapshot = Admin::Fx::ObservabilitySnapshot.call(
+      source_id: @fx_observability_source&.id,
+      days: @fx_observability_days
+    )
   end
 
   def pnl_trend
@@ -102,6 +109,19 @@ class Admin::SystemHealthController < ApplicationController
     return nil if key.blank?
 
     I18n.t(key, default: key.to_s)
+  end
+
+  def resolve_fx_source(source_id)
+    return nil if source_id.blank?
+
+    FxRateSource.find_by(id: source_id)
+  end
+
+  def normalize_fx_days(value)
+    number = value.to_i
+    return number if number.positive?
+
+    Admin::Fx::ObservabilitySnapshot::DEFAULT_DAYS
   end
 
   def dashboard_read_path_config
