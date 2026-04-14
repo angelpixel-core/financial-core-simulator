@@ -35,12 +35,25 @@
             <% pair_labels.each do |label, base_currency, quote_currency| %>
               <% rate = rate_for(date, label) %>
               <% status = gap_status(rate) %>
+              <% missing_rate = rate.nil? || rate.rate.nil? %>
               <% editable = editable_rate?(rate) %>
               <td class="shad-table__td">
                 <div class="fx-history-cell<%= " fx-history-cell--editable" if editable %>"
                      <% if editable %>data-controller="inline-edit" data-action="click->inline-edit#activate"<% end %>>
                 <div class="fx-history-cell__display" data-inline-edit-target="display">
-                  <span class="fx-history-cell__value"><%= display_rate(rate) %></span>
+                  <span class="fx-history-cell__value<%= " fx-history-cell__value--missing" if missing_rate %>">
+                    <% if missing_rate %>
+                      <span class="visually-hidden"><%= t("admin.fx.history.placeholder_value") %></span>
+                      <span class="fx-history-cell__missing-icon" aria-hidden="true" title="<%= t("admin.fx.history.edit_cta") %>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 20h9" />
+                          <path d="m16.5 3.5 4 4L8 20l-4 1 1-4Z" />
+                        </svg>
+                      </span>
+                    <% else %>
+                      <%= display_rate(rate) %>
+                    <% end %>
+                  </span>
                   <% if status.present? %>
                     <span class="fx-history-cell__status fx-history-cell__status--<%= status %>">
                       <%= t("admin.fx.history.gap_status.#{status}") %>
@@ -77,13 +90,21 @@
                             ingestion: lineage[:ingestion_id].present? ? "/avo/resources/fx_rate_ingestions/#{lineage[:ingestion_id]}" : nil
                           }
                         } %>
-                      <button
-                          type="button"
-                          class="fx-history-lineage__cta"
-                          data-action="click->fx--lineage-panel#open"
-                        data-lineage-payload="<%= lineage_payload.to_json %>">
-                        <%= t("admin.fx.history.lineage.cta") %>
-                      </button>
+                      <span class="fx-history-cell__hover-hint">
+                        <button
+                            type="button"
+                            class="fx-history-lineage__cta"
+                            aria-label="<%= t("admin.fx.history.lineage.cta") %>"
+                            title="<%= t("admin.fx.history.lineage.cta") %>"
+                            data-action="click->fx--lineage-panel#open"
+                          data-lineage-payload="<%= lineage_payload.to_json %>">
+                          <span aria-hidden="true">i</span>
+                        </button>
+                      </span>
+                    <% elsif status == "open" %>
+                      <span class="fx-history-cell__hover-hint" title="<%= t("admin.fx.history.gap_status.open") %>">
+                        <span class="fx-history-lineage__cta" aria-hidden="true">i</span>
+                      </span>
                     <% end %>
                   <% end %>
                 </div>
