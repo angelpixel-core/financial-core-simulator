@@ -171,6 +171,20 @@ RSpec.configure do |config|
               source_id: {type: :integer},
               source_code: {type: :string, nullable: true},
               source_name: {type: :string},
+              time_bucket: {type: :string, format: :date},
+              success: {type: :integer},
+              failed: {type: :integer},
+              running: {type: :integer},
+              pending: {type: :integer}
+            },
+            required: %i[source_id source_name time_bucket success failed running pending]
+          },
+          FxObservabilitySourceTotals: {
+            type: :object,
+            properties: {
+              source_id: {type: :integer},
+              source_code: {type: :string, nullable: true},
+              source_name: {type: :string},
               success: {type: :integer},
               failed: {type: :integer},
               running: {type: :integer},
@@ -179,6 +193,16 @@ RSpec.configure do |config|
             required: %i[source_id source_name success failed running pending]
           },
           FxObservabilityFailure: {
+            type: :object,
+            properties: {
+              error_code: {type: :string, nullable: true},
+              severity: {type: :string, nullable: true},
+              time_bucket: {type: :string, format: :date},
+              count: {type: :integer}
+            },
+            required: %i[time_bucket count]
+          },
+          FxObservabilityFailureTotals: {
             type: :object,
             properties: {
               error_code: {type: :string, nullable: true},
@@ -192,13 +216,14 @@ RSpec.configure do |config|
             properties: {
               event_type: {type: :string},
               created_at: {type: :string, format: :date_time},
+              time_bucket: {type: :string, format: :date},
               error_code: {type: :string, nullable: true},
               severity: {type: :string, nullable: true},
               source_id: {type: :integer, nullable: true},
               source_code: {type: :string, nullable: true},
               ingestion_id: {type: :integer, nullable: true}
             },
-            required: %i[event_type created_at]
+            required: %i[event_type created_at time_bucket]
           },
           FxObservabilityResponse: {
             type: :object,
@@ -215,9 +240,17 @@ RSpec.configure do |config|
                 type: :array,
                 items: {"$ref" => "#/components/schemas/FxObservabilitySourceCounts"}
               },
+              counts_by_source_totals: {
+                type: :array,
+                items: {"$ref" => "#/components/schemas/FxObservabilitySourceTotals"}
+              },
               failures_by_code: {
                 type: :array,
                 items: {"$ref" => "#/components/schemas/FxObservabilityFailure"}
+              },
+              failures_by_code_totals: {
+                type: :array,
+                items: {"$ref" => "#/components/schemas/FxObservabilityFailureTotals"}
               },
               events: {
                 type: :array,

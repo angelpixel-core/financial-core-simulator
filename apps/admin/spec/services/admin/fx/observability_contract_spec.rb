@@ -8,7 +8,9 @@ RSpec.describe Admin::Fx::ObservabilityContract do
     expect(snapshot[:summary]).to include(total: 0, success: 0, failed: 0, running: 0, pending: 0)
     expect(snapshot[:sources]).to eq([])
     expect(snapshot[:counts_by_source]).to eq([])
+    expect(snapshot[:counts_by_source_totals]).to eq([])
     expect(snapshot[:failures_by_code]).to eq([])
+    expect(snapshot[:failures_by_code_totals]).to eq([])
     expect(snapshot[:events]).to eq([])
   end
 end

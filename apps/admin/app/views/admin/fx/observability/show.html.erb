@@ -60,8 +60,8 @@
     <% summary = @snapshot.fetch(:summary) %>
     <% range = @snapshot.fetch(:range) %>
     <% sources = @snapshot.fetch(:sources) %>
-    <% counts_by_source = @snapshot.fetch(:counts_by_source) %>
-    <% failures_by_code = @snapshot.fetch(:failures_by_code) %>
+    <% counts_by_source = @snapshot.fetch(:counts_by_source_totals, []) %>
+    <% failures_by_code = @snapshot.fetch(:failures_by_code_totals, []) %>
     <% events = @snapshot.fetch(:events) %>
     <% success_failure_points = counts_by_source.map do |source|
       {

@@ -30,6 +30,8 @@ RSpec.describe Admin::Fx::ObservabilitySnapshot do
     expect(snapshot[:summary][:total]).to eq(2)
     expect(snapshot[:summary][:failed]).to eq(1)
     expect(snapshot[:failures_by_code].first[:error_code]).to eq("http_error")
+    expect(snapshot[:failures_by_code].first[:time_bucket]).to be_present
     expect(snapshot[:events].first[:event_type]).to eq("fx_rate.fetch_failed")
+    expect(snapshot[:events].first[:time_bucket]).to be_present
   end
 end

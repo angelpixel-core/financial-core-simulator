@@ -39,6 +39,7 @@ module Admin
             source_id: entry[:source_id],
             source_code: entry[:source_code],
             source_name: entry[:source_name],
+            time_bucket: entry[:time_bucket],
             range_days: range[:days]
           }
 
@@ -59,6 +60,7 @@ module Admin
             {
               error_code: entry[:error_code],
               severity: entry[:severity],
+              time_bucket: entry[:time_bucket],
               range_days: range[:days]
             }
           )
