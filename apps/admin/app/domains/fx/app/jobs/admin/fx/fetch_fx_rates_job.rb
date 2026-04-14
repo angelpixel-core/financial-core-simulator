@@ -173,28 +173,30 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
   def log_mapping_failure(ingestion:, source:, context: {})
     error_count = extract_error_count(context)
     error_sample = extract_error_sample(context)
-    Rails.logger.warn({
+    Rails.logger.warn(Admin::Fx::Ingestion::LogPayload.call(
+      ingestion: ingestion,
+      source: source,
       message: "Fx ingestion mapping failed",
-      ingestion_id: ingestion.id,
-      correlation_id: ingestion.correlation_id,
-      source_id: source.id,
-      source_code: source.code,
-      error_count: error_count,
-      error_sample: error_sample
-    }.to_json)
+      error_code: nil,
+      severity: nil,
+      extra: {
+        error_count: error_count,
+        error_sample: error_sample
+      }
+    ).to_json)
   end
 
   def log_ingestion_failure(ingestion:, source:, context: {})
-    Rails.logger.warn({
+    Rails.logger.warn(Admin::Fx::Ingestion::LogPayload.call(
+      ingestion: ingestion,
+      source: source,
       message: "Fx ingestion failed",
-      ingestion_id: ingestion.id,
-      correlation_id: ingestion.correlation_id,
-      source_id: source.id,
-      source_code: source.code,
       error_code: context[:error_code],
       severity: context[:severity],
-      retryable: context[:retryable]
-    }.to_json)
+      extra: {
+        retryable: context[:retryable]
+      }
+    ).to_json)
   end
 
   def extract_error_count(context)
