@@ -87,6 +87,7 @@ en:
           ignored: "Ignored"
         lineage:
           title: "Lineage"
+          cta: "View lineage"
           source_label: "Source"
           source_id: "Source ID"
           ingestion_id: "Ingestion ID"
@@ -100,6 +101,9 @@ en:
           events_title: "Recent events"
           events_empty: "No events for this rate."
           no_rate: "No rate available."
+          detail_source: "View source"
+          detail_ingestion: "View ingestion"
+          detail_event: "View event"
       observability:
         aria: "FX observability"
         title: "FX observability"

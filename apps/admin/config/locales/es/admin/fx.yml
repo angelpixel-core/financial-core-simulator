@@ -87,6 +87,7 @@ es:
           ignored: "Ignorado"
         lineage:
           title: "Lineage"
+          cta: "Ver lineage"
           source_label: "Fuente"
           source_id: "ID de fuente"
           ingestion_id: "ID de ingesta"
@@ -100,6 +101,9 @@ es:
           events_title: "Eventos recientes"
           events_empty: "Sin eventos para esta tasa."
           no_rate: "Sin tasa disponible."
+          detail_source: "Ver fuente"
+          detail_ingestion: "Ver ingesta"
+          detail_event: "Ver evento"
       observability:
         aria: "Observabilidad FX"
         title: "Observabilidad FX"
