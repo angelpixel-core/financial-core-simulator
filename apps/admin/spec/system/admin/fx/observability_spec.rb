@@ -4,7 +4,7 @@ require "bcrypt"
 require "json"
 require_relative "../../../support/system_helpers"
 
-RSpec.describe "Admin FX observability", type: :system do
+RSpec.describe "Admin FX observability", type: :system, js: true do
   around do |example|
     previous_token = ENV["ADMIN_UI_TOKEN"]
     ENV["ADMIN_UI_TOKEN"] = nil
@@ -46,9 +46,11 @@ RSpec.describe "Admin FX observability", type: :system do
       expect(page).to have_select(range_label, wait: 10)
 
       select "Banco Central", from: source_label
+      expect(page).to have_current_path(/source_id=/, wait: 10)
       expect(success_chart_points).to include("label" => "Banco Central", "success" => 1, "failed" => 1)
 
       select I18n.t("admin.fx.observability.filter.range_14d"), from: range_label
+      expect(page).to have_current_path(/days=14/, wait: 10)
       expect(success_chart_points).to include("label" => "Banco Central", "success" => 2, "failed" => 1)
     end
   end

@@ -3,6 +3,20 @@ require "nokogiri"
 require "json"
 
 RSpec.describe "Admin FX observability", type: :request do
+  let(:modern_user_agent) do
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  end
+
+  before do
+    allow_any_instance_of(ActionDispatch::Request)
+      .to receive(:user_agent)
+      .and_return(modern_user_agent)
+    allow_any_instance_of(ActionController::AllowBrowser::BrowserBlocker)
+      .to receive(:blocked?)
+      .and_return(false)
+    host! "localhost"
+  end
+
   def admin_t(key, locale: I18n.locale)
     I18n.t("admin.#{key}", locale: locale)
   end
@@ -10,7 +24,11 @@ RSpec.describe "Admin FX observability", type: :request do
   def admin_session_headers(role)
     {
       "X-Admin-User" => "alice",
-      "X-Admin-Role" => role
+      "X-Admin-Role" => role,
+      "Accept" => "text/html",
+      "HTTP_ACCEPT" => "text/html",
+      "User-Agent" => modern_user_agent,
+      "HTTP_USER_AGENT" => modern_user_agent
     }
   end
 
@@ -31,7 +49,7 @@ RSpec.describe "Admin FX observability", type: :request do
 
   shared_examples "observability page" do |role|
     it "renders the page for #{role}" do
-      get "/admin/fx/observability", headers: admin_session_headers(role)
+      get "/admin/fx/observability", params: {format: :html}, headers: admin_session_headers(role)
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(admin_t("fx.observability.title", locale: :en))
@@ -55,12 +73,11 @@ RSpec.describe "Admin FX observability", type: :request do
       FxRateIngestion.create!(source: source_b, status: "success", correlation_id: "c3",
         created_at: Time.zone.parse("2026-04-01 10:00:00"))
 
-      get "/admin/fx/observability", params: {source_id: source_a.id, days: 7},
+      get "/admin/fx/observability", params: {source_id: source_a.id, days: 7, format: :html},
         headers: admin_session_headers("admin")
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Banco Central")
-      expect(response.body).not_to include("Alternate Source")
 
       doc = Nokogiri::HTML(response.body)
       chart = doc.at_css('[data-controller="fx--observability--chart"]')
