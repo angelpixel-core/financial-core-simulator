@@ -132,6 +132,99 @@ RSpec.configure do |config|
               }
             },
             required: %i[dates pairs rates_by_pair lineage]
+          },
+          FxObservabilityRange: {
+            type: :object,
+            properties: {
+              from: {type: :string, format: :date_time},
+              to: {type: :string, format: :date_time},
+              days: {type: :integer}
+            },
+            required: %i[from to days]
+          },
+          FxObservabilitySummary: {
+            type: :object,
+            properties: {
+              total: {type: :integer},
+              success: {type: :integer},
+              failed: {type: :integer},
+              running: {type: :integer},
+              pending: {type: :integer}
+            },
+            required: %i[total success failed running pending]
+          },
+          FxObservabilitySourceStatus: {
+            type: :object,
+            properties: {
+              source_id: {type: :integer},
+              source_code: {type: :string, nullable: true},
+              source_name: {type: :string},
+              status: {type: :string, nullable: true},
+              error_code: {type: :string, nullable: true},
+              updated_at: {type: :string, format: :date_time, nullable: true}
+            },
+            required: %i[source_id source_name]
+          },
+          FxObservabilitySourceCounts: {
+            type: :object,
+            properties: {
+              source_id: {type: :integer},
+              source_code: {type: :string, nullable: true},
+              source_name: {type: :string},
+              success: {type: :integer},
+              failed: {type: :integer},
+              running: {type: :integer},
+              pending: {type: :integer}
+            },
+            required: %i[source_id source_name success failed running pending]
+          },
+          FxObservabilityFailure: {
+            type: :object,
+            properties: {
+              error_code: {type: :string, nullable: true},
+              severity: {type: :string, nullable: true},
+              count: {type: :integer}
+            },
+            required: %i[count]
+          },
+          FxObservabilityEvent: {
+            type: :object,
+            properties: {
+              event_type: {type: :string},
+              created_at: {type: :string, format: :date_time},
+              error_code: {type: :string, nullable: true},
+              severity: {type: :string, nullable: true},
+              source_id: {type: :integer, nullable: true},
+              source_code: {type: :string, nullable: true},
+              ingestion_id: {type: :integer, nullable: true}
+            },
+            required: %i[event_type created_at]
+          },
+          FxObservabilityResponse: {
+            type: :object,
+            properties: {
+              source_id: {type: :integer, nullable: true},
+              source_name: {type: :string, nullable: true},
+              range: {"$ref" => "#/components/schemas/FxObservabilityRange"},
+              summary: {"$ref" => "#/components/schemas/FxObservabilitySummary"},
+              sources: {
+                type: :array,
+                items: {"$ref" => "#/components/schemas/FxObservabilitySourceStatus"}
+              },
+              counts_by_source: {
+                type: :array,
+                items: {"$ref" => "#/components/schemas/FxObservabilitySourceCounts"}
+              },
+              failures_by_code: {
+                type: :array,
+                items: {"$ref" => "#/components/schemas/FxObservabilityFailure"}
+              },
+              events: {
+                type: :array,
+                items: {"$ref" => "#/components/schemas/FxObservabilityEvent"}
+              }
+            },
+            required: %i[range summary sources counts_by_source failures_by_code events]
           }
         }
       },
