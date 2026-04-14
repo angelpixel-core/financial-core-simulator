@@ -50,6 +50,20 @@ RSpec.describe Admin::Fx::Ingestion::Adapters::BcraAdapter do
     expect(result.error_code).to eq("invalid_json")
   end
 
+  it "normalizes array payloads into the contract shape" do
+    array_response = instance_double(Net::HTTPSuccess, code: "200",
+      body: '[{"fecha":"2026-04-10","detalle":[{"codigoMoneda":"USD","tipoCotizacion":1350.0}]}]')
+    allow(Net::HTTP).to receive(:get_response).and_return(array_response)
+
+    result = adapter.fetch(date_from: Date.new(2026, 4, 10), date_to: Date.new(2026, 4, 10))
+
+    expect(result).to be_success
+    payload = result.data[:payload]
+    expect(payload["status"]).to eq(200)
+    expect(payload["metadata"]["resultset"]["count"]).to eq(1)
+    expect(payload["results"]).to be_an(Array)
+  end
+
   it "returns failure for non-success status" do
     error_response = instance_double(Net::HTTPServerError, code: "500", body: "error")
     allow(Net::HTTP).to receive(:get_response).and_return(error_response)

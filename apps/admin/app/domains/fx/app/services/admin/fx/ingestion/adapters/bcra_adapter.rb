@@ -34,9 +34,10 @@ module Admin
             return failure("http_error", status: status, url: uri.to_s) unless status.between?(200, 299)
 
             payload = JSON.parse(response.body)
+            normalized_payload = normalize_payload(payload, status: status, limit: limit, offset: offset)
 
             Admin::Fx::Ingestion::Result.success(
-              data: {payload: payload},
+              data: {payload: normalized_payload},
               metadata: {status: status, url: uri.to_s}
             )
           rescue JSON::ParserError => e
@@ -73,6 +74,37 @@ module Admin
 
           def missing_config_result(key)
             failure("missing_config", missing_key: key)
+          end
+
+          def normalize_payload(payload, status:, limit:, offset:)
+            if payload.is_a?(Hash) && payload.key?("status") && payload.key?("metadata") && payload.key?("results")
+              return payload
+            end
+
+            if payload.is_a?(Array)
+              return {
+                "status" => status,
+                "metadata" => {
+                  "resultset" => {
+                    "count" => payload.length,
+                    "offset" => offset,
+                    "limit" => limit
+                  }
+                },
+                "results" => payload
+              }
+            end
+
+            normalized = payload.is_a?(Hash) ? payload.dup : {"results" => payload}
+            normalized["status"] ||= status
+            normalized["results"] ||= []
+            normalized["metadata"] ||= {}
+            normalized["metadata"]["resultset"] ||= {
+              "count" => normalized["results"].length,
+              "offset" => offset,
+              "limit" => limit
+            }
+            normalized
           end
 
           def failure(error_code, context = {})
