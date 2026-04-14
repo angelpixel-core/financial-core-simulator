@@ -92,28 +92,28 @@ module Admin
         line = trade[:line]
 
         if trade.values_at(:tradeId, :accountId, :marketId, :timestamp, :side).any? { |value| value.blank? }
-          register_error(line, "MISSING_FIELDS")
+          register_error(line, "MISSING_FIELDS", trade)
           return
         end
 
         unless ALLOWED_SIDES.include?(trade[:side])
-          register_error(line, "INVALID_SIDE")
+          register_error(line, "INVALID_SIDE", trade)
           return
         end
 
         unless ALLOWED_MARKETS.include?(trade[:marketId])
-          register_error(line, "UNKNOWN_MARKET")
+          register_error(line, "UNKNOWN_MARKET", trade)
           return
         end
 
         if trade[:priceQuotePerBase].to_f <= 0
-          register_error(line, "INVALID_PRICE")
+          register_error(line, "INVALID_PRICE", trade)
           return
         end
 
         return unless trade[:quantityBase].to_f <= 0
 
-        register_error(line, "INVALID_QUANTITY")
+        register_error(line, "INVALID_QUANTITY", trade)
         nil
       end
 
@@ -123,11 +123,11 @@ module Admin
         grouped.each_value do |rows|
           rows.each_cons(2) do |prev, current|
             if current[:seq] <= prev[:seq]
-              register_error(current[:line], "SEQ_OUT_OF_ORDER")
+              register_error(current[:line], "SEQ_OUT_OF_ORDER", current)
               next
             end
 
-            register_error(current[:line], "TIMESTAMP_INCONSISTENT") if current[:timestamp] < prev[:timestamp]
+            register_error(current[:line], "TIMESTAMP_INCONSISTENT", current) if current[:timestamp] < prev[:timestamp]
           end
         end
       end
@@ -136,20 +136,28 @@ module Admin
         duplicates = valid_rows.group_by { |row| row[:tradeId] }.select { |_id, rows| rows.size > 1 }
         duplicates.each_value do |rows|
           rows.drop(1).each do |row|
-            register_error(row[:line], "DUPLICATE_TRADE_ID")
+            register_error(row[:line], "DUPLICATE_TRADE_ID", row)
           end
         end
       end
 
-      def register_error(line, code)
+      def register_error(line, code, trade = nil)
         return if @row_errors.key?(line)
 
         @row_errors[line] = code
-        @errors << {line: line, code: code}
+        @errors << {
+          line: line,
+          code: code,
+          source: "dataset_upload",
+          row_index: line.to_i - 2,
+          trade_id: trade&.dig(:tradeId),
+          account_id: trade&.dig(:accountId),
+          market_id: trade&.dig(:marketId)
+        }
       end
 
       def build_input
-        trades = @rows.map { |row| row.except(:line) }
+        trades = valid_rows.map { |row| row.except(:line) }
         input = {
           schemaVersion: "1.0",
           accounts: unique(:accountId).map { |id| {accountId: id} },
@@ -165,7 +173,7 @@ module Admin
       end
 
       def build_timeline_events
-        sorted = @rows.sort_by { |row| [row[:timestamp] || 0, row[:seq] || 0, row[:line] || 0] }
+        sorted = valid_rows.sort_by { |row| [row[:timestamp] || 0, row[:seq] || 0, row[:line] || 0] }
 
         sorted.map.with_index(1) do |row, index|
           trade = row.except(:line)
@@ -181,7 +189,7 @@ module Admin
       end
 
       def unique(key)
-        @rows.map { |row| row[key] }.uniq
+        valid_rows.map { |row| row[key] }.uniq
       end
 
       def default_price_snapshot

@@ -9,7 +9,7 @@ es:
           subtitle: "Subi el dataset valido/invalido de trades para validar ingestion."
           cta: "Procesar Excel"
           hint: "Los validos simulan; los invalidos muestran errores."
-          timeline_label: "Habilitar generacion de timeline detallado de PnL"
+          file_hint: "Al seleccionar un archivo se mantiene habilitado el timeline de PnL."
         reset:
           cta: "Resetear base de datos"
         preview:
@@ -41,7 +41,7 @@ es:
           valid: "Dataset valido"
           valid_detail: "La simulacion se ejecuto y los artifacts estan disponibles."
           invalid: "Dataset invalido"
-          invalid_detail: "La simulacion se freno por errores de validacion."
+          invalid_detail: "La simulacion termino con errores de validacion por fila."
           empty: "Sin dataset"
           empty_detail: "Subi un dataset para evaluar la validacion."
         errors:
@@ -51,4 +51,5 @@ es:
           missing_file: "El archivo es requerido"
           valid: "Dataset procesado correctamente"
           invalid: "El dataset tiene errores de validacion"
+          partial: "Dataset procesado con errores por fila; se omitieron trades invalidos"
           reset: "Base de datos reseteada"

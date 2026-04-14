@@ -65,4 +65,25 @@ RSpec.describe Admin::DemoDataset::ExcelToInputParser do
       tempfile.unlink
     end
   end
+
+  it "keeps valid trades when some rows are invalid" do
+    csv = <<~CSV
+      trade_id,account_id,market_id,timestamp,seq,side,quantity_base,price_quote_per_base
+      trade-4,account-4,ETH-USD,1700000000,1,BUY,1.0,120.0
+      trade-5,account-5,ETH-USD,1700000001,2,HOLD,1.0,130.0
+    CSV
+
+    tempfile = write_csv(csv)
+
+    begin
+      result = described_class.call(file_path: tempfile.path)
+
+      expect(result.valid?).to eq(false)
+      expect(result.input[:trades].map { |trade| trade[:tradeId] }).to eq(["trade-4"])
+      expect(result.errors).to include(hash_including(line: 3, code: "INVALID_SIDE", trade_id: "trade-5"))
+    ensure
+      tempfile.close
+      tempfile.unlink
+    end
+  end
 end

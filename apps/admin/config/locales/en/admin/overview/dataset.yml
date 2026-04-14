@@ -9,7 +9,7 @@ en:
           subtitle: "Upload the valid/invalid trade dataset to validate ingestion."
           cta: "Process Excel"
           hint: "Valid runs simulate; invalid runs show errors."
-          timeline_label: "Enable detailed PnL timeline generation"
+          file_hint: "Selecting a file keeps timeline generation enabled."
         reset:
           cta: "Reset database"
         preview:
@@ -41,7 +41,7 @@ en:
           valid: "Valid dataset"
           valid_detail: "Simulation executed and artifacts are available."
           invalid: "Invalid dataset"
-          invalid_detail: "Simulation aborted due to validation errors."
+          invalid_detail: "Simulation completed with row-level validation issues."
           empty: "No dataset uploaded"
           empty_detail: "Upload a dataset to evaluate validation."
         errors:
@@ -51,4 +51,5 @@ en:
           missing_file: "File is required"
           valid: "Dataset processed successfully"
           invalid: "Dataset contains validation errors"
+          partial: "Dataset processed with row errors; invalid trades were skipped"
           reset: "Database reset"

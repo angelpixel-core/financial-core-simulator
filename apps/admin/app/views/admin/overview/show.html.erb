@@ -96,10 +96,13 @@
             } do |form| %>
                 <%= hidden_field_tag :locale, I18n.locale %>
                 <div class="demo-dataset-form__row">
-                  <%= form.file_field :file,
-                    accept: ".xlsx",
-                    class: "demo-dataset-form__file",
-                    id: "demo-dataset-upload-file" %>
+                  <div class="demo-dataset-form__file-wrap">
+                    <%= form.file_field :file,
+                      accept: ".xlsx",
+                      class: "demo-dataset-form__file",
+                      id: "demo-dataset-upload-file" %>
+                    <span class="demo-dataset-form__file-hint"><%= t("admin.overview.dataset.upload.file_hint") %></span>
+                  </div>
                   <%= form.submit t("admin.overview.dataset.upload.cta"), class: "demo-dataset-button" %>
                   <%= button_tag t("admin.overview.dataset.preview.cta"),
                   type: :submit,
@@ -107,12 +110,6 @@
                   formaction: admin_demo_datasets_preview_path(locale: I18n.locale),
                   formmethod: :post,
                   data: { turbo_frame: "demo-dataset-preview", demo_dataset_preview_submit: true } %>
-                </div>
-                <div class="demo-dataset-form__row">
-                  <label class="demo-dataset-form__toggle">
-                    <%= form.check_box :timeline_enabled, { checked: true, class: "demo-dataset-form__checkbox" }, "1", "0" %>
-                    <span><%= t("admin.overview.dataset.upload.timeline_label") %></span>
-                  </label>
                 </div>
               <% end %>
               <div class="demo-dataset-form__row">
