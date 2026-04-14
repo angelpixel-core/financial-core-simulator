@@ -54,7 +54,7 @@
                       <%= display_rate(rate) %>
                     <% end %>
                   </span>
-                  <% if status.present? %>
+                  <% if status.present? && status != "open" %>
                     <span class="fx-history-cell__status fx-history-cell__status--<%= status %>">
                       <%= t("admin.fx.history.gap_status.#{status}") %>
                     </span>
