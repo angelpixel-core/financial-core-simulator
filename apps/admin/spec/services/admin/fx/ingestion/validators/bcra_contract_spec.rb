@@ -20,8 +20,8 @@ RSpec.describe Admin::Fx::Ingestion::Validators::BcraContract do
             {
               codigoMoneda: "USD",
               descripcion: "Dolar",
-              tipoPase: "1.12940000",
-              tipoCotizacion: "49.32089800"
+              tipoPase: 1.1294,
+              tipoCotizacion: 49.320898
             }
           ]
         }

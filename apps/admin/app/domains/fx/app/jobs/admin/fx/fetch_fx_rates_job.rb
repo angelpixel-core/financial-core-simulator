@@ -31,7 +31,11 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
         context: fetch_result.context, event_type: "fx_rate.fetch_failed")
     end
 
-    payload = fetch_result.data.fetch(:payload)
+    raw_payload = fetch_result.data.fetch(:payload)
+    limit = raw_payload.is_a?(Hash) ? raw_payload.dig("metadata", "resultset", "limit") : nil
+    offset = raw_payload.is_a?(Hash) ? raw_payload.dig("metadata", "resultset", "offset") : nil
+    payload = normalize_payload(raw_payload, status: fetch_result.metadata[:status], limit: limit,
+      offset: offset)
     record_count = payload.dig("metadata", "resultset", "count")
     emit_event(
       ingestion: ingestion,
@@ -48,7 +52,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     )
 
     contract = Admin::Fx::Ingestion::Validators::BcraContract.new
-    validation = contract.call(payload)
+    validation = contract.call(payload.deep_symbolize_keys)
     unless validation.success?
       sample, payload_size = sample_payload(payload)
       return fail_ingestion(ingestion, "validation_failed", source: source,
@@ -125,6 +129,40 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     )
   end
 
+  def normalize_payload(payload, status:, limit:, offset:)
+    if payload.is_a?(Hash) && payload.key?("status") && payload.key?("metadata") && payload.key?("results")
+      return payload
+    end
+
+    limit ||= payload.is_a?(Array) ? payload.length : 0
+    offset ||= 0
+
+    if payload.is_a?(Array)
+      return {
+        "status" => status,
+        "metadata" => {
+          "resultset" => {
+            "count" => payload.length,
+            "offset" => offset,
+            "limit" => limit
+          }
+        },
+        "results" => payload
+      }
+    end
+
+    normalized = payload.is_a?(Hash) ? payload.dup : {"results" => payload}
+    normalized["status"] ||= status
+    normalized["results"] ||= []
+    normalized["metadata"] ||= {}
+    normalized["metadata"]["resultset"] ||= {
+      "count" => normalized["results"].length,
+      "offset" => offset,
+      "limit" => limit
+    }
+    normalized
+  end
+
   def fail_ingestion(ingestion, error_code, source:, context: {}, event_type: nil)
     error_details = Admin::Fx::Ingestion::ErrorCatalog.details_for(error_code)
     context = context.merge(error_details)
@@ -133,12 +171,15 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     if event_type.present?
       error_count = extract_error_count(context)
       error_sample = extract_error_sample(context)
+      sample = context[:sample]
+      sample = JSON.generate(sample) if sample.present?
+      error_sample = JSON.generate(error_sample) if error_sample.present?
       emit_event(
         ingestion: ingestion,
         source: source,
         event_type: event_type,
         data: {
-          sample: context[:sample],
+          sample: sample,
           error_count: error_count,
           error_sample: error_sample,
           payload_size: context[:payload_size]

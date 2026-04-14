@@ -19,9 +19,9 @@ module Admin
               required(:fecha).filled(:string)
               required(:detalle).array(:hash) do
                 required(:codigoMoneda).filled(:string)
-                required(:tipoCotizacion).filled(:string)
+                required(:tipoCotizacion).filled(:float)
                 optional(:descripcion).maybe(:string)
-                optional(:tipoPase).maybe(:string)
+                optional(:tipoPase).maybe(:float)
               end
             end
           end
