@@ -1,4 +1,10 @@
-<div class="app-shell" data-controller="sidebar" data-sidebar-storage-key-value="admin.shell.sidebar.collapsed" data-sidebar-collapsed-class="app-shell--sidebar-collapsed">
+<div
+  class="app-shell"
+  data-controller="sidebar<%= " fx--right-panel" if @right_panel.present? %>"
+  data-sidebar-storage-key-value="admin.shell.sidebar.collapsed"
+  data-sidebar-collapsed-class="app-shell--sidebar-collapsed"
+  <%= @right_panel.present? ? 'data-action="keydown.esc@window->fx--right-panel#close"' : "" %>
+>
   <a class="app-shell__skip-link" href="#workspace-main"><%= t("admin.shell.skip_to_content") %></a>
   <aside class="app-shell__sidebar" aria-label="<%= t("admin.shell.sidebar_aria") %>">
     <div class="app-shell__sidebar-header">
@@ -149,7 +155,23 @@
         <% if @environment.present? %>
           <span class="app-shell__env-badge"><%= t("admin.shell.env_badge", environment: @environment) %></span>
         <% end %>
-        <% if @secondary_action.present? %>
+        <% if @right_panel.present? %>
+          <button
+            type="button"
+            class="app-shell__icon-action"
+            data-fx--right-panel-target="toggle"
+            aria-label="<%= @right_panel[:label] %>"
+            title="<%= @right_panel[:label] %>"
+            aria-controls="<%= @right_panel[:panel_id] %>"
+            aria-expanded="false"
+            data-action="click->fx--right-panel#toggle"
+            >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+              <path d="M15 4v16"></path>
+            </svg>
+          </button>
+        <% elsif @secondary_action.present? %>
           <a class="app-shell__cta app-shell__cta--ghost" href="<%= @secondary_action[:path] %>"><%= @secondary_action[:label] %></a>
         <% end %>
         <% if @primary_action.present? %>

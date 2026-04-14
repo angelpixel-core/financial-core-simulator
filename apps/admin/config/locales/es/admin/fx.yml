@@ -50,13 +50,15 @@ es:
         events:
           title: "Eventos recientes"
           subtitle: "Ultimos eventos de ingestión FX."
+          panel_label: "Flujo de eventos"
+          panel_title: "Eventos recientes de FX"
           empty: "Aun no hay eventos."
         table:
           date: "Fecha"
           sort_asc: "Mas antiguas primero"
           sort_desc: "Mas recientes primero"
         upload:
-          title: "Subir tasas FX"
+          title: "Cargador FX"
           subtitle: "Importa tasas diarias desde una plantilla Excel."
           cta: "Subir"
           template_cta: "Descargar Fx"

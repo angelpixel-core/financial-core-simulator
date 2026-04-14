@@ -25,16 +25,16 @@ en:
         carry_forward_cta: "Carry forward prior day"
         carry_forward_unavailable: "No prior rate available to carry forward."
       history:
-        aria: "FX rate history"
+        aria: "History"
         sidebar_title: "History"
-        title: "FX rate history"
+        title: "History"
         subtitle: "Recent rates and missing placeholders."
         filter:
           label: "Source"
           all_sources: "All sources"
         empty: "No FX history available yet."
         sync:
-          title: "Sync FX rates"
+          title: "Sync"
           subtitle: "Fetch daily rates from a configured source."
           source_label: "Source"
           cta: "Sync now"
@@ -50,13 +50,15 @@ en:
         events:
           title: "Recent events"
           subtitle: "Latest FX ingestion events."
+          panel_label: "Event stream"
+          panel_title: "Recent FX events"
           empty: "No events yet."
         table:
           date: "Date"
           sort_asc: "Oldest first"
           sort_desc: "Newest first"
         upload:
-          title: "Upload FX rates"
+          title: "FX loader"
           subtitle: "Import daily rates from an Excel template."
           cta: "Upload"
           template_cta: "Download Fx"

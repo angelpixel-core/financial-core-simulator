@@ -22,7 +22,7 @@ module Admin
       ].freeze
 
       def initialize(sidebar_items:, breadcrumb:, environment:, primary_action:, secondary_action: nil,
-        topbar_links: [], presence_email: nil, sidebar_panels: nil)
+        topbar_links: [], presence_email: nil, sidebar_panels: nil, right_panel: nil)
         @sidebar_items = sidebar_items
         @breadcrumb = breadcrumb
         @environment = environment
@@ -31,6 +31,7 @@ module Admin
         @topbar_links = topbar_links
         @presence_email = presence_email.to_s.presence || "ops@example.com"
         @sidebar_panels = sidebar_panels
+        @right_panel = right_panel
       end
 
       def icon_svg_for(item_or_label)

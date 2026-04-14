@@ -1,6 +1,6 @@
 <% navigation_context = @navigation_context || {} %>
 <% shell_role = admin_shell_role %>
-<% secondary_action = shell_role == "operator" ? nil : { label: t("admin.nav.open_runs"), path: avo.resources_runs_path } %>
+<% secondary_action = nil %>
 <% sidebar_items = [
   { label: t("admin.nav.overview"), path: admin_overview_path(navigation_context), active: false, icon_key: "overview", external: false }
 ] %>
@@ -21,7 +21,11 @@
   environment: nil,
   presence_email: admin_shell_account_email,
   primary_action: nil,
-  secondary_action: secondary_action
+  secondary_action: secondary_action,
+  right_panel: {
+    label: t("admin.fx.history.events.panel_title"),
+    panel_id: "fx-events-panel"
+  }
 ) do %>
   <main class="workspace fx-history-page">
     <section class="workspace__hero fx-history-hero">
@@ -29,21 +33,6 @@
         <p class="workspace__eyebrow"><%= t("admin.nav.workspace") %></p>
         <h1><%= t("admin.fx.history.title") %></h1>
         <p class="workspace__subtitle"><%= t("admin.fx.history.subtitle") %></p>
-        <%= form_with url: admin_fx_history_index_path(navigation_context),
-                      method: :get,
-                      local: true,
-                      class: "fx-history-hero__filter",
-                      data: { controller: "auto-submit" } do |form| %>
-          <%= hidden_field_tag :sort, @sort_order if @sort_order.present? %>
-          <div class="fx-history-hero__filter-row">
-            <%= form.label :source_id, t("admin.fx.history.filter.label") %>
-            <%= form.select :source_id,
-              [[t("admin.fx.history.filter.all_sources"), ""]] + @fx_sources.map { |source| [source.name, source.id] },
-              { selected: @selected_source&.id },
-              class: "fx-history-hero__filter-select",
-              data: { action: "change->auto-submit#submit" } %>
-          </div>
-        <% end %>
       </div>
       <% if admin_shell_operator? || admin_shell_admin? %>
         <div class="fx-history-hero__upload">
@@ -53,7 +42,6 @@
           <section class="dashboard-card fx-history-upload">
             <header class="dashboard-card__header">
               <h2><%= t("admin.fx.history.upload.title") %></h2>
-              <p class="dashboard-card__meta"><%= t("admin.fx.history.upload.subtitle") %></p>
             </header>
             <%= form_with url: admin_fx_rate_uploads_path(locale: I18n.locale),
                           method: :post,
@@ -63,29 +51,39 @@
                           data: { controller: "auto-submit" } do |form| %>
               <%= hidden_field_tag :locale, I18n.locale %>
               <div class="fx-history-upload__row">
-                <%= form.file_field :file,
-                  accept: ".xlsx",
-                  class: "fx-history-upload__file",
-                  data: { action: "change->auto-submit#submit" } %>
+                <%= form.label :file, t("admin.fx.history.upload.subtitle"), class: "fx-history-upload__label" %>
+                <div class="fx-history-upload__file-line">
+                  <%= form.file_field :file,
+                    accept: ".xlsx",
+                    class: "fx-history-upload__file",
+                    data: { action: "change->auto-submit#submit" } %>
+                  <span class="fx-history-upload__file-placeholder"><%= t("admin.fx.history.upload.hint") %></span>
+                </div>
               </div>
-              <p class="fx-history-upload__hint"><%= t("admin.fx.history.upload.hint") %></p>
             <% end %>
             <%= render "admin/fx/history/upload_status", upload: @latest_upload %>
+            <div class="fx-history-upload__sync-row">
+              <%= form_with url: admin_fx_history_index_path(navigation_context),
+                            method: :get,
+                            local: true,
+                            class: "fx-history-upload__source-form",
+                            data: { controller: "auto-submit" } do |form| %>
+                <%= hidden_field_tag :sort, @sort_order if @sort_order.present? %>
+                <div class="fx-history-upload__source-row">
+                  <%= form.label :source_id, t("admin.fx.history.sync.select_source_hint"), class: "fx-history-sync__label" %>
+                  <%= form.select :source_id,
+                    [[t("admin.fx.history.filter.all_sources"), ""]] + @fx_sources.map { |source| [source.name, source.id] },
+                    { selected: @selected_source&.id },
+                    class: "fx-history-hero__filter-select",
+                    data: { action: "change->auto-submit#submit" } %>
+                </div>
+              <% end %>
+              <%= render "admin/fx/history/sync_panel",
+                selected_source: @selected_source %>
+            </div>
           </section>
         </div>
       <% end %>
-    </section>
-    <% if admin_shell_operator? || admin_shell_admin? %>
-      <section class="workspace__overview fx-history-sync">
-        <%= render "admin/fx/history/sync_panel",
-          fx_sources: @fx_sources,
-          latest_ingestions: @latest_ingestions,
-          selected_source: @selected_source,
-          navigation_context: navigation_context %>
-      </section>
-    <% end %>
-    <section class="workspace__overview fx-history-events">
-      <%= render "admin/fx/history/recent_events", events: @recent_events %>
     </section>
     <section class="workspace__overview">
       <%= render "admin/fx/history/history_table",
@@ -100,4 +98,24 @@
         rate_lineage: @rate_lineage %>
     </section>
   </main>
+  <aside id="fx-events-panel" class="fx-events-panel" data-fx--right-panel-target="panel" hidden>
+    <div class="fx-events-panel__overlay" data-action="click->fx--right-panel#close"></div>
+    <section class="fx-events-panel__drawer" role="dialog" aria-modal="true">
+      <header class="fx-events-panel__header">
+        <div>
+          <p class="fx-events-panel__eyebrow"><%= t("admin.fx.history.events.panel_label") %></p>
+          <h3 class="fx-events-panel__title"><%= t("admin.fx.history.events.panel_title") %></h3>
+        </div>
+        <button type="button" class="fx-events-panel__close" data-action="click->fx--right-panel#close">×</button>
+      </header>
+      <div class="fx-events-panel__body">
+        <%= render "admin/fx/history/recent_events", events: @recent_events, compact: true %>
+      </div>
+      <footer class="fx-events-panel__footer">
+        <% if shell_role != "operator" %>
+          <a class="fx-events-panel__link" href="<%= avo.resources_runs_path %>"><%= t("admin.nav.open_runs") %></a>
+        <% end %>
+      </footer>
+    </section>
+  </aside>
 <% end %>

@@ -1,8 +1,11 @@
-<section class="dashboard-card fx-history-events">
-  <header class="dashboard-card__header">
-    <h2><%= t("admin.fx.history.events.title") %></h2>
-    <p class="dashboard-card__meta"><%= t("admin.fx.history.events.subtitle") %></p>
-  </header>
+<% compact = local_assigns.fetch(:compact, false) %>
+<section class="<%= compact ? "fx-history-events fx-history-events--compact" : "dashboard-card fx-history-events" %>">
+  <% unless compact %>
+    <header class="dashboard-card__header">
+      <h2><%= t("admin.fx.history.events.title") %></h2>
+      <p class="dashboard-card__meta"><%= t("admin.fx.history.events.subtitle") %></p>
+    </header>
+  <% end %>
   <div id="fx-recent-events">
     <% if events.blank? %>
       <p class="fx-history-events__empty"><%= t("admin.fx.history.events.empty") %></p>
