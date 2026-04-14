@@ -1677,30 +1677,13 @@ body {
 }
 
 .demo-dataset-form__file {
-  flex: 0 0 auto;
-  width: 148px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  flex: 1;
+  min-width: 220px;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 4px 6px;
-  background: rgba(15, 23, 42, 0.9);
-  color: transparent;
-  font-size: 0;
-}
-
-.demo-dataset-form__file::file-selector-button {
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  border-radius: 8px;
-  padding: 4px 10px;
-  background: rgba(30, 41, 59, 0.9);
-  color: #e2e8f0;
-  font-size: 12px;
-  font-weight: 600;
-  margin-right: 0;
-  cursor: pointer;
-}
-
-.demo-dataset-form__file::file-selector-button:hover {
-  background: rgba(51, 65, 85, 0.9);
+  padding: 6px 10px;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .demo-dataset-form__file-hint {
