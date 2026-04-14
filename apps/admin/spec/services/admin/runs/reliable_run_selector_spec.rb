@@ -26,6 +26,19 @@ RSpec.describe Admin::Runs::ReliableRunSelector do
       expect(result.diagnostic[:next_action]).to be_present
     end
 
+    it "returns non reliable degraded state when latest successful run is marked unreliable" do
+      reliable = Run.create!(status: :succeeded, verification_status: :verified, reliable: true)
+      latest_non_reliable = Run.create!(status: :succeeded, verification_status: :verified, reliable: false)
+
+      result = described_class.new.call
+
+      expect(result.reliable_run).to be_nil
+      expect(result.state).to eq(:degraded)
+      expect(result.candidate_run).to eq(latest_non_reliable)
+      expect(result.candidate_run).not_to eq(reliable)
+      expect(result.diagnostic[:what_happened]).to include("run")
+    end
+
     it "returns empty degraded state when no runs exist" do
       result = described_class.new.call
 

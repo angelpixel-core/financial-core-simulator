@@ -14,6 +14,10 @@ es:
           what_happened: "El ultimo run exitoso no tiene verificacion confiable."
           impact: "La inspeccion se muestra en modo degradado porque la validacion aun no confirma confiabilidad."
           next_action: "Revisa el run #%{run_id} (estado %{status}, verificacion %{verification}) y ejecuta verificacion de hash."
+        non_reliable:
+          what_happened: "El ultimo run exitoso termino con filas de trades invalidas."
+          impact: "Hay resultados disponibles, pero estan marcados como no confiables para decisiones."
+          next_action: "Revisa los errores de validacion del run #%{run_id} y reconcilia las filas fallidas con el proveedor del archivo."
         degraded:
           what_happened: "No se encontro un run confiable vigente."
           impact: "La seleccion automatica esta degradada."

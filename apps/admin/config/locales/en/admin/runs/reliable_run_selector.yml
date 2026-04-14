@@ -14,6 +14,10 @@ en:
           what_happened: "The latest successful run does not have reliable verification."
           impact: "Inspection is degraded because validation has not confirmed reliability yet."
           next_action: "Review run #%{run_id} (status %{status}, verification %{verification}) and run hash verification."
+        non_reliable:
+          what_happened: "The latest successful run completed with invalid trade rows."
+          impact: "Results are available, but they are marked as not reliable for decisions."
+          next_action: "Review run #%{run_id} validation errors and reconcile the failed trade rows with the file provider."
         degraded:
           what_happened: "No reliable run found."
           impact: "Automatic selection is degraded."

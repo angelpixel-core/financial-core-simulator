@@ -4,7 +4,7 @@ en:
       reliability_banner:
         states:
           reliable: "Reliable"
-          degraded: "Degraded"
+          degraded: "Not reliable"
           loading: "Loading"
           info: "Info"
         aria: "Reliability status: %{state}"

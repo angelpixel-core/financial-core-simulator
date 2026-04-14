@@ -4,6 +4,9 @@ module Admin
       Result = Struct.new(:reliable_run, :candidate_run, :state, :diagnostic, keyword_init: true)
 
       def call
+        latest = latest_successful_run || latest_run
+        return degraded_result(latest) if non_reliable_candidate?(latest)
+
         reliable = latest_verified_run
         return reliable_result(reliable) if reliable.present?
 
@@ -37,8 +40,8 @@ module Admin
         )
       end
 
-      def degraded_result
-        candidate = latest_successful_run || latest_run
+      def degraded_result(candidate = nil)
+        candidate ||= latest_successful_run || latest_run
 
         Result.new(
           reliable_run: nil,
@@ -50,12 +53,27 @@ module Admin
 
       def degraded_diagnostic(candidate)
         return no_run_diagnostic if candidate.nil?
+        return non_reliable_diagnostic(candidate) if non_reliable_candidate?(candidate)
 
         if candidate.verification_status == "verified"
           default_degraded_diagnostic
         else
           unverified_diagnostic(candidate)
         end
+      end
+
+      def non_reliable_candidate?(candidate)
+        return false if candidate.nil?
+
+        candidate.status == "succeeded" && candidate.reliable == false
+      end
+
+      def non_reliable_diagnostic(candidate)
+        {
+          what_happened: I18n.t("admin.runs.reliable_run_selector.non_reliable.what_happened"),
+          impact: I18n.t("admin.runs.reliable_run_selector.non_reliable.impact"),
+          next_action: I18n.t("admin.runs.reliable_run_selector.non_reliable.next_action", run_id: candidate.id)
+        }
       end
 
       def no_run_diagnostic
