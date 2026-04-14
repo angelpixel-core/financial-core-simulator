@@ -16,4 +16,14 @@ es:
       form:
         email_label: "Email"
         password_label: "Contrasena"
-        submit: "Ingresar a admin"
+        submit: "Ingresar"
+      footer:
+        aria: "Pie de autenticacion"
+        sitemap:
+          title: "Mapa del sitio"
+          home: "Inicio"
+        tests:
+          title: "Pruebas"
+          trades: "Trades"
+          clean_sample: "Muestra limpia"
+          wrong_sample: "Muestra con errores"

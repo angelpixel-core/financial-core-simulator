@@ -24,18 +24,17 @@
           <p><%= t("admin.auth.hero.subtitle") %></p>
         </div>
       </section>
-      <section class="auth-card">
-        <header class="auth-card__header">
-          <p class="auth-card__eyebrow"><%= t("admin.auth.card.eyebrow") %></p>
-          <h2><%= t("admin.auth.card.title") %></h2>
-          <nav class="auth-card__nav" aria-label="<%= t("admin.auth.card.nav_aria") %>">
-            <%= link_to t("admin.auth.card.back_to_home"), root_path, class: "auth-card__nav-link" %>
-          </nav>
-        </header>
-        <div class="auth-card__content">
-          <%= yield %>
-        </div>
-      </section>
+      <div class="auth-panel">
+        <section class="auth-card">
+          <header class="auth-card__header">
+            <p class="auth-card__eyebrow"><%= t("admin.auth.card.eyebrow") %></p>
+          </header>
+          <div class="auth-card__content">
+            <%= yield %>
+          </div>
+        </section>
+      </div>
     </main>
+    <%= yield :auth_footer if content_for?(:auth_footer) %>
   </body>
 </html>

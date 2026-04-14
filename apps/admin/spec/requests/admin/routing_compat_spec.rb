@@ -42,7 +42,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
     get "/admin/login"
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include(I18n.t("admin.auth.card.title", locale: :en))
+    expect(response.body).to include(I18n.t("admin.auth.card.eyebrow", locale: :en))
   end
 
   it "renders admin login page with authentication layout shell" do
@@ -50,7 +50,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("auth-shell")
-    expect(response.body).to include(I18n.t("admin.auth.card.title", locale: :en))
+    expect(response.body).to include(I18n.t("admin.auth.card.eyebrow", locale: :en))
     expect(response.body).to include(I18n.t("admin.auth.form.submit", locale: :en))
   end
 

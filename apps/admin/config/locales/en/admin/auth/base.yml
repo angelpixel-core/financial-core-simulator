@@ -16,4 +16,14 @@ en:
       form:
         email_label: "Email"
         password_label: "Password"
-        submit: "Sign in to admin"
+        submit: "Sign in"
+      footer:
+        aria: "Authentication footer"
+        sitemap:
+          title: "SiteMap"
+          home: "Home"
+        tests:
+          title: "Test"
+          trades: "Trades"
+          clean_sample: "Clean sample"
+          wrong_sample: "Wrong sample"

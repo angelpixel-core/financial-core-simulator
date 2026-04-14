@@ -1,0 +1,53 @@
+<% show_tests = local_assigns.fetch(:show_tests, false) %>
+<% same_page_sections = local_assigns.fetch(:same_page_sections, false) %>
+<% source_url = local_assigns[:source_url] %>
+<% home_href = root_path(locale: I18n.locale) %>
+<% why_href = same_page_sections ? "#why" : "#{home_href}#why" %>
+<% how_href = same_page_sections ? "#how" : "#{home_href}#how" %>
+<% features_href = same_page_sections ? "#features" : "#{home_href}#features" %>
+<% faq_href = same_page_sections ? "#faq" : "#{home_href}#faq" %>
+<% architecture_href = same_page_sections ? "#architecture" : "#{home_href}#architecture" %>
+<footer class="landing__footer" aria-label="<%= t("admin.auth.footer.aria") %>">
+  <div class="landing__footer-inner">
+    <div>
+      <p class="landing__footer-title">Deterministic Financial Engine</p>
+      <p>
+        Built to validate, execute, and audit financial event streams with reproducible outcomes across operational workflows.
+      </p>
+    </div>
+    <div>
+      <p class="landing__footer-title">Sections</p>
+      <div class="landing__footer-links">
+        <a href="<%= why_href %>">Why it exists</a>
+        <a href="<%= how_href %>">How it works</a>
+        <a href="<%= features_href %>">Features</a>
+        <a href="<%= faq_href %>">FAQ</a>
+      </div>
+    </div>
+    <div>
+      <p class="landing__footer-title">Project</p>
+      <div class="landing__footer-links">
+        <a href="<%= architecture_href %>">Architecture</a>
+        <% if source_url.present? %>
+          <a href="<%= source_url %>">View source</a>
+        <% end %>
+      </div>
+    </div>
+    <div>
+      <p class="landing__footer-title"><%= t("admin.auth.footer.sitemap.title") %></p>
+      <div class="landing__footer-links">
+        <a href="<%= home_href %>"><%= t("admin.auth.footer.sitemap.home") %></a>
+      </div>
+    </div>
+    <% if show_tests %>
+      <div>
+        <p class="landing__footer-title"><%= t("admin.auth.footer.tests.title") %></p>
+        <div class="landing__footer-links">
+          <span><%= t("admin.auth.footer.tests.trades") %></span>
+          <a href="<%= demo_dataset_valid_path(locale: I18n.locale) %>"><%= t("admin.auth.footer.tests.clean_sample") %></a>
+          <a href="<%= demo_dataset_invalid_path(locale: I18n.locale) %>"><%= t("admin.auth.footer.tests.wrong_sample") %></a>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</footer>

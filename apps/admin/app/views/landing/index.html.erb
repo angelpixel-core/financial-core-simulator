@@ -274,30 +274,5 @@
       </div>
     </section>
   </main>
-  <footer class="landing__footer">
-    <div class="landing__footer-inner">
-      <div>
-        <p class="landing__footer-title">Deterministic Financial Engine</p>
-        <p>
-          Built to validate, execute, and audit financial event streams with reproducible outcomes across operational workflows.
-        </p>
-      </div>
-      <div>
-        <p class="landing__footer-title">Sections</p>
-        <div class="landing__footer-links">
-          <a href="#why">Why it exists</a>
-          <a href="#how">How it works</a>
-          <a href="#features">Features</a>
-          <a href="#faq">FAQ</a>
-        </div>
-      </div>
-      <div>
-        <p class="landing__footer-title">Project</p>
-        <div class="landing__footer-links">
-          <a href="#architecture">Architecture</a>
-          <a href="<%= @source_url %>">View source</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+  <%= render "shared/site_footer", source_url: @source_url, same_page_sections: true %>
 </div>
