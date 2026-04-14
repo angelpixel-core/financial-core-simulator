@@ -51,13 +51,16 @@ RSpec.describe Admin::Fx::ObservabilitySnapshot do
 
   it "aggregates per-source counts and totals" do
     travel_to(Time.zone.parse("2026-04-10 09:00:00")) do
-      FxRateIngestion.create!(source: source, status: "success", created_at: Time.zone.parse("2026-04-09 10:00:00"))
+      FxRateIngestion.create!(source: source, status: "success", correlation_id: "c1",
+        created_at: Time.zone.parse("2026-04-09 10:00:00"))
       FxRateIngestion.create!(source: source, status: "failed", error_code: "http_error",
+        correlation_id: "c2",
         created_at: Time.zone.parse("2026-04-09 11:00:00"))
-      FxRateIngestion.create!(source: source, status: "success", created_at: Time.zone.parse("2026-04-08 10:00:00"))
-      FxRateIngestion.create!(source: source_two, status: "running",
+      FxRateIngestion.create!(source: source, status: "success", correlation_id: "c3",
+        created_at: Time.zone.parse("2026-04-08 10:00:00"))
+      FxRateIngestion.create!(source: source_two, status: "running", correlation_id: "c4",
         created_at: Time.zone.parse("2026-04-09 12:00:00"))
-      FxRateIngestion.create!(source: source_two, status: "pending",
+      FxRateIngestion.create!(source: source_two, status: "pending", correlation_id: "c5",
         created_at: Time.zone.parse("2026-04-08 12:00:00"))
 
       snapshot = described_class.call(days: 7)
@@ -73,10 +76,13 @@ RSpec.describe Admin::Fx::ObservabilitySnapshot do
   it "aggregates failures by code with totals" do
     travel_to(Time.zone.parse("2026-04-10 09:00:00")) do
       FxRateIngestion.create!(source: source, status: "failed", error_code: "http_error",
+        correlation_id: "c10",
         created_at: Time.zone.parse("2026-04-09 10:00:00"))
       FxRateIngestion.create!(source: source, status: "failed", error_code: "http_error",
+        correlation_id: "c11",
         created_at: Time.zone.parse("2026-04-08 10:00:00"))
       FxRateIngestion.create!(source: source, status: "failed", error_code: "mapping_failed",
+        correlation_id: "c12",
         created_at: Time.zone.parse("2026-04-09 12:00:00"))
 
       snapshot = described_class.call(days: 7)
