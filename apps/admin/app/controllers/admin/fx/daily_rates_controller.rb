@@ -6,7 +6,7 @@ class Admin::Fx::DailyRatesController < ApplicationController
   before_action :authorize_admin_session_operator!
 
   def create
-    Admin::Fx::RateUpserter.call(
+    Admin::Fx::Api.upsert_rate(
       operational_date: operational_date,
       base_currency: base_currency,
       quote_currency: quote_currency,
@@ -24,11 +24,10 @@ class Admin::Fx::DailyRatesController < ApplicationController
   end
 
   def carry_forward
-    Admin::Fx::CarryForwardRate.call(
+    Admin::Fx::Api.carry_forward_rate(
       operational_date: operational_date,
       base_currency: base_currency,
       quote_currency: quote_currency,
-      source: 'carry_forward',
       created_by_id: current_admin_account&.id,
       created_by_role: admin_shell_role,
       created_context: request_context
@@ -42,7 +41,7 @@ class Admin::Fx::DailyRatesController < ApplicationController
   end
 
   def update
-    Admin::Fx::UpdateDailyRate.new.call(
+    Admin::Fx::Api.update_rate(
       rate_id: params[:id],
       rate: rate_value,
       created_by_id: current_admin_account&.id,
@@ -58,7 +57,7 @@ class Admin::Fx::DailyRatesController < ApplicationController
   end
 
   def destroy
-    Admin::Fx::DeleteDailyRate.new.call(rate_id: params[:id])
+    Admin::Fx::Api.delete_rate(rate_id: params[:id])
     redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
                   notice: t('admin.fx.flash.rate_deleted')
   rescue ActiveRecord::RecordInvalid => e
@@ -67,7 +66,7 @@ class Admin::Fx::DailyRatesController < ApplicationController
   end
 
   def current
-    Admin::Fx::RateUpserter.call(
+    Admin::Fx::Api.upsert_rate(
       operational_date: operational_date,
       base_currency: base_currency,
       quote_currency: quote_currency,
@@ -88,15 +87,11 @@ class Admin::Fx::DailyRatesController < ApplicationController
 
   def operational_date
     value = params[:operational_date].presence || fx_daily_rate_params[:operational_date].presence
-    return Admin::Fx::OperationalDate.call if value.blank?
-
-    Date.iso8601(value)
-  rescue ArgumentError
-    Admin::Fx::OperationalDate.call
+    Admin::Fx::Api.operational_date(value: value)
   end
 
   def base_currency
-    params[:base_currency].presence || fx_daily_rate_params[:base_currency].presence || Admin::Fx::RateResolver::BASE_CURRENCY
+    params[:base_currency].presence || fx_daily_rate_params[:base_currency].presence || Admin::Fx::Api.base_currency
   end
 
   def quote_currency

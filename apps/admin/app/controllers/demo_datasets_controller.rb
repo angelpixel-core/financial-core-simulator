@@ -12,12 +12,12 @@ class DemoDatasetsController < ApplicationController
   private
 
   def send_dataset(kind)
-    generator = Admin::DemoDataset::ExcelGenerator.new(output_dir: output_dir)
-    path = (kind == :invalid) ? generator.generate_invalid : generator.generate_valid
-    send_file path, filename: File.basename(path), type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    path = Admin::DemoDataset::Api.generate_excel(output_dir: output_dir, kind: kind)
+    send_file path, filename: File.basename(path),
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   end
 
   def output_dir
-    Rails.root.join("tmp", "excels").to_s
+    Rails.root.join('tmp', 'excels').to_s
   end
 end

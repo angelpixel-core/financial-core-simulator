@@ -7,7 +7,7 @@ class Admin::Fx::HistoryController < ApplicationController
   before_action :load_navigation_context
 
   def index
-    snapshot = Admin::Fx::HistorySnapshot.call(sort_order: params[:sort])
+    snapshot = Admin::Fx::Api.history_snapshot(sort_order: params[:sort])
     @supported_pairs = snapshot.fetch(:supported_pairs)
     @sort_order = snapshot.fetch(:sort_order)
     @rates_by_pair = snapshot.fetch(:rates_by_pair)
@@ -16,11 +16,11 @@ class Admin::Fx::HistoryController < ApplicationController
     session_upload_id = session[:fx_rate_upload_id]
     upload_active = session[:fx_rate_upload_active] == true
     @latest_upload = if upload_active && session_upload_id.present?
-      FxRateUpload.visible_for_upload(
-        upload_id: session_upload_id,
-        account_id: current_admin_account&.id
-      )
-    end
+                       Admin::Fx::Api.visible_rate_upload(
+                         upload_id: session_upload_id,
+                         account_id: current_admin_account&.id
+                       )
+                     end
     if @latest_upload.blank?
       session.delete(:fx_rate_upload_id)
       session.delete(:fx_rate_upload_active)
@@ -29,13 +29,13 @@ class Admin::Fx::HistoryController < ApplicationController
       session.delete(:fx_rate_upload_active)
     end
     @upload_status_stream = if admin_shell_operator? || admin_shell_admin?
-      FxRateUpload.status_stream_for(account_id: current_admin_account&.id)
-    end
+                              Admin::Fx::Api.rate_upload_status_stream(account_id: current_admin_account&.id)
+                            end
   end
 
   private
 
   def load_navigation_context
-    @navigation_context = Admin::Runs::NavigationContext.new(params: params, session: session).resolve
+    @navigation_context = Runs::Api.navigation_context(params: params, session: session)
   end
 end

@@ -13,7 +13,7 @@ class Admin::DemoDatasetsController < ApplicationController
       return
     end
 
-    outcome = Admin::DemoDataset::ProcessUpload.new.call(
+    outcome = Admin::DemoDataset::Api.process_upload(
       file_path: file.path,
       timeline_enabled: timeline_enabled?
     )
@@ -28,7 +28,7 @@ class Admin::DemoDatasetsController < ApplicationController
   end
 
   def reset
-    Admin::DemoDataset::ResetData.new.call
+    Admin::DemoDataset::Api.reset_data
     redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
                   notice: t('admin.overview.dataset.flash.reset')
   end
@@ -40,7 +40,7 @@ class Admin::DemoDatasetsController < ApplicationController
       return
     end
 
-    preview = Admin::DemoDataset::PreviewUpload.new.call(
+    preview = Admin::DemoDataset::Api.preview_upload(
       file_path: file.path,
       timeline_enabled: timeline_enabled?
     )

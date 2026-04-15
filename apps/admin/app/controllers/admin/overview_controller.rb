@@ -18,7 +18,7 @@ class Admin::OverviewController < ApplicationController
     ingestion_validation_errors
   ]
   before_action :load_navigation_context, only: %i[show top_accounts ingestion_validation_errors_panel]
-  rescue_from Admin::Dashboard::ReadMetrics::ReadPathUnavailableError, with: :render_dashboard_unavailable
+  rescue_from Admin::Dashboard::Api.read_path_unavailable_error, with: :render_dashboard_unavailable
 
   def show
     @metrics = dashboard_metrics
@@ -28,8 +28,8 @@ class Admin::OverviewController < ApplicationController
     ingestion_errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
     @ingestion_errors_pagination = ingestion_errors_pagination(errors: ingestion_errors, page: params[:errors_page])
     @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
-    @reliable_selection = Admin::Runs::ReliableRunSelector.new.call
-    @demo_dataset_upload = dashboard_upload_repository.latest
+    @reliable_selection = Runs::Api.reliable_selection
+    @demo_dataset_upload = Admin::Dashboard::Api.latest_demo_dataset_upload
     load_fx_context
   end
 
@@ -68,7 +68,7 @@ class Admin::OverviewController < ApplicationController
   end
 
   def dashboard_financial_overview
-    run = dashboard_run_repository.find_by_id(params[:run_id])
+    run = Admin::Dashboard::Api.find_run_by_id(params[:run_id])
     return render json: { 'error' => 'run_not_found' }, status: :not_found if run.nil?
 
     account_id = normalize_filter_value(params[:account_id])
@@ -144,42 +144,42 @@ class Admin::OverviewController < ApplicationController
   end
 
   def dashboard_metrics
-    Admin::Dashboard::ReadMetrics.new.call
+    Admin::Dashboard::Api.read_metrics
   end
 
   def dashboard_compatibility_guard
-    @dashboard_compatibility_guard ||= Admin::Dashboard::CompatibilityGuard.new
+    @dashboard_compatibility_guard ||= Admin::Dashboard::Api.compatibility_guard
   end
 
   def overview_response_serializer
-    @overview_response_serializer ||= Admin::Dashboard::OverviewResponseSerializer.new(
+    @overview_response_serializer ||= Admin::Dashboard::Api.overview_response_serializer(
       compatibility_guard: dashboard_compatibility_guard
     )
   end
 
   def widget_response_serializer
-    @widget_response_serializer ||= Admin::Dashboard::WidgetResponseSerializer.new(
+    @widget_response_serializer ||= Admin::Dashboard::Api.widget_response_serializer(
       compatibility_guard: dashboard_compatibility_guard
     )
   end
 
   def financial_overview_response_serializer
-    @financial_overview_response_serializer ||= Admin::Dashboard::FinancialOverviewResponseSerializer.new
+    @financial_overview_response_serializer ||= Admin::Dashboard::Api.financial_overview_response_serializer
   end
 
   def ingestion_validation_errors_response_serializer
-    @ingestion_validation_errors_response_serializer ||= Admin::Dashboard::IngestionValidationErrorsResponseSerializer.new
+    @ingestion_validation_errors_response_serializer ||= Admin::Dashboard::Api.ingestion_validation_errors_response_serializer
   end
 
   def financial_overview_metrics(run:, account_id: nil, market_id: nil)
-    Admin::Dashboard::FinancialOverviewMetrics.new(run: run, account_id: account_id, market_id: market_id)
+    Admin::Dashboard::Api.financial_overview_metrics(run: run, account_id: account_id, market_id: market_id)
   end
 
   def dashboard_ingestion_validation_errors(source: nil, field: nil)
     if dashboard_read_path_config.seed_enabled?
-      Admin::Dashboard::SeedMetrics.new.ingestion_validation_errors(source: source, field: field)
+      Admin::Dashboard::Api.seed_ingestion_validation_errors(source: source, field: field)
     else
-      Admin::DashboardMetrics.new.ingestion_validation_errors(source: source, field: field)
+      Admin::Dashboard::Api.dashboard_metrics_ingestion_errors(source: source, field: field)
     end
   end
 
@@ -190,7 +190,7 @@ class Admin::OverviewController < ApplicationController
 
   def render_dashboard_unavailable(_error)
     render json: {
-      'contractVersion' => Admin::Dashboard::CompatibilityGuard::CONTRACT_VERSION,
+      'contractVersion' => Admin::Dashboard::Api.compatibility_contract_version,
       'error' => 'dashboard_read_unavailable'
     }, status: :service_unavailable
   end
@@ -242,11 +242,11 @@ class Admin::OverviewController < ApplicationController
   end
 
   def dashboard_read_path_config
-    @dashboard_read_path_config ||= Admin::Dashboard::ReadPathConfig.new
+    @dashboard_read_path_config ||= Admin::Dashboard::Api.read_path_config
   end
 
   def load_fx_context
-    context = Admin::Dashboard::BuildFxContext.new.call
+    context = Admin::Dashboard::Api.build_fx_context
     @reporting_setting = context.fetch(:reporting_setting)
     @fx_operational_date = context.fetch(:operational_date)
     @fx_base_currency = context.fetch(:base_currency)
@@ -255,15 +255,7 @@ class Admin::OverviewController < ApplicationController
     @fx_carry_forward_available = context.fetch(:carry_forward_available)
   end
 
-  def dashboard_run_repository
-    @dashboard_run_repository ||= Admin::Dashboard::Repositories::ActiveRecord::RunRepository.new
-  end
-
-  def dashboard_upload_repository
-    @dashboard_upload_repository ||= Admin::Dashboard::Repositories::ActiveRecord::DemoDatasetUploadRepository.new
-  end
-
   def load_navigation_context
-    @navigation_context = Admin::Runs::NavigationContext.new(params: params, session: session).resolve
+    @navigation_context = Runs::Api.navigation_context(params: params, session: session)
   end
 end

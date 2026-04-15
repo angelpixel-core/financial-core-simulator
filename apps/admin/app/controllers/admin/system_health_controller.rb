@@ -5,7 +5,7 @@ class Admin::SystemHealthController < ApplicationController
   before_action :load_navigation_context
 
   def show
-    @metrics = Admin::Dashboard::ReadMetrics.new.call
+    @metrics = Admin::Dashboard::Api.read_metrics
     @pnl_trend_pagination = pnl_trend_pagination(metrics: @metrics, page: params[:pnl_page])
     @selected_source = normalize_filter_value(params[:source])
     @selected_field = normalize_filter_value(params[:field])
@@ -15,15 +15,15 @@ class Admin::SystemHealthController < ApplicationController
   end
 
   def pnl_trend
-    @metrics = Admin::Dashboard::ReadMetrics.new.call
+    @metrics = Admin::Dashboard::Api.read_metrics
     @pnl_trend_pagination = pnl_trend_pagination(metrics: @metrics, page: params[:page])
-    render partial: "admin/system_health/pnl_trend_frame", locals: {pagination: @pnl_trend_pagination}
+    render partial: 'admin/system_health/pnl_trend_frame', locals: { pagination: @pnl_trend_pagination }
   end
 
   private
 
   def load_navigation_context
-    @navigation_context = Admin::Runs::NavigationContext.new(params: params, session: session).resolve
+    @navigation_context = Runs::Api.navigation_context(params: params, session: session)
   end
 
   def pnl_trend_pagination(metrics:, page: nil)
@@ -48,9 +48,9 @@ class Admin::SystemHealthController < ApplicationController
 
   def dashboard_ingestion_validation_errors(source: nil, field: nil)
     if dashboard_read_path_config.seed_enabled?
-      Admin::Dashboard::SeedMetrics.new.ingestion_validation_errors(source: source, field: field)
+      Admin::Dashboard::Api.seed_ingestion_validation_errors(source: source, field: field)
     else
-      Admin::DashboardMetrics.new.ingestion_validation_errors(source: source, field: field)
+      Admin::Dashboard::Api.dashboard_metrics_ingestion_errors(source: source, field: field)
     end
   end
 
@@ -74,7 +74,7 @@ class Admin::SystemHealthController < ApplicationController
   end
 
   def dashboard_read_path_config
-    @dashboard_read_path_config ||= Admin::Dashboard::ReadPathConfig.new
+    @dashboard_read_path_config ||= Admin::Dashboard::Api.read_path_config
   end
 
   def normalize_filter_value(value)
