@@ -4,6 +4,7 @@ class Admin::Fx::IngestionsController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :authorize_admin_session_operator!
+  before_action :authorize_fx_ingestion_policy!
   before_action :load_navigation_context
 
   def sync
@@ -107,6 +108,10 @@ class Admin::Fx::IngestionsController < ApplicationController
   end
 
   private
+
+  def authorize_fx_ingestion_policy!
+    authorize_policy!(FxRatePolicy, :ingest?, record: :fx_rate)
+  end
 
   def latest_ingestions(sources)
     FxRateIngestion.where(source_id: sources.map(&:id))

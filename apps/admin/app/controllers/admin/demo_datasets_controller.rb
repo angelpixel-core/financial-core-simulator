@@ -6,6 +6,7 @@ class Admin::DemoDatasetsController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :authorize_admin_session_operator!
+  before_action :authorize_demo_dataset_policy!
 
   def create
     file = params[:file]
@@ -96,6 +97,10 @@ class Admin::DemoDatasetsController < ApplicationController
   end
 
   private
+
+  def authorize_demo_dataset_policy!
+    authorize_policy!(DemoDatasetPolicy, :"#{action_name}?", record: :demo_dataset)
+  end
 
   def render_preview(state:, summary: nil, sample_rows: [], errors: [], status: :ok, file_name: nil)
     @state = state

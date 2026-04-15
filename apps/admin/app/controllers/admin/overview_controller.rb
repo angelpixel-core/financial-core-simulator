@@ -8,6 +8,13 @@ class Admin::OverviewController < ApplicationController
     top_accounts
     ingestion_validation_errors_panel
   ]
+  before_action :authorize_overview_policy!, only: %i[
+    show
+    runs_trend
+    status_mix
+    top_accounts
+    ingestion_validation_errors_panel
+  ]
   before_action :authorize_dashboard_viewer!, only: %i[
     dashboard_overview
     dashboard_financial_overview
@@ -141,6 +148,10 @@ class Admin::OverviewController < ApplicationController
 
   def authorize_dashboard_viewer!
     authorize_machine_or_session_viewer!
+  end
+
+  def authorize_overview_policy!
+    authorize_policy!(OverviewPolicy, :"#{action_name}?", record: :overview)
   end
 
   def dashboard_metrics

@@ -4,6 +4,7 @@ class Admin::Fx::DailyRatesController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :authorize_admin_session_operator!
+  before_action :authorize_fx_rate_management_policy!
 
   def create
     Admin::Fx::RateUpserter.call(
@@ -105,6 +106,10 @@ class Admin::Fx::DailyRatesController < ApplicationController
   end
 
   private
+
+  def authorize_fx_rate_management_policy!
+    authorize_policy!(FxRatePolicy, :manage_rates?, record: :fx_rate)
+  end
 
   def operational_date
     value = params[:operational_date].presence || fx_daily_rate_params[:operational_date].presence

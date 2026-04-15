@@ -4,6 +4,7 @@ class Admin::Fx::ReportingSettingsController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :authorize_admin_session_operator!
+  before_action :authorize_fx_reporting_policy!
 
   def update
     Admin::Fx::ReportingSettingsUpdater.call(
@@ -21,6 +22,10 @@ class Admin::Fx::ReportingSettingsController < ApplicationController
   end
 
   private
+
+  def authorize_fx_reporting_policy!
+    authorize_policy!(FxRatePolicy, :update_reporting?, record: :fx_rate)
+  end
 
   def reporting_currency
     params[:reporting_currency]

@@ -4,6 +4,7 @@ class Admin::Fx::HistoryController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :authorize_admin_session_viewer!
+  before_action :authorize_fx_history_policy!
   before_action :load_navigation_context
 
   def index
@@ -52,6 +53,10 @@ class Admin::Fx::HistoryController < ApplicationController
   end
 
   private
+
+  def authorize_fx_history_policy!
+    authorize_policy!(FxRatePolicy, :history?, record: :fx_rate)
+  end
 
   def latest_ingestions(sources, selected_source: nil)
     scope = FxRateIngestion.where(source_id: sources.map(&:id))

@@ -4,6 +4,7 @@ class Admin::Fx::ObservabilitiesController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :authorize_admin_session_viewer!
+  before_action :authorize_fx_observability_policy!
   before_action :load_navigation_context
 
   def show
@@ -28,6 +29,10 @@ class Admin::Fx::ObservabilitiesController < ApplicationController
   end
 
   private
+
+  def authorize_fx_observability_policy!
+    authorize_policy!(FxRatePolicy, :observability?, record: :fx_rate)
+  end
 
   def resolve_source(source_id)
     return nil if source_id.blank?

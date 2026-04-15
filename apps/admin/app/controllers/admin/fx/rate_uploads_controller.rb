@@ -5,6 +5,7 @@ class Admin::Fx::RateUploadsController < ApplicationController
 
   before_action :authorize_admin_session_operator!
   skip_before_action :authorize_admin_session_operator!, only: :template
+  before_action :authorize_fx_upload_policy!
 
   def create
     upload = nil
@@ -50,6 +51,11 @@ class Admin::Fx::RateUploadsController < ApplicationController
   end
 
   private
+
+  def authorize_fx_upload_policy!
+    query = (action_name == "template") ? :template? : :upload?
+    authorize_policy!(FxRatePolicy, query, record: :fx_rate)
+  end
 
   def request_context
     {

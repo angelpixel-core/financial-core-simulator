@@ -2,6 +2,7 @@ class Admin::SystemHealthController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :authorize_admin_session_viewer!
+  before_action :authorize_system_health_policy!
   before_action :load_navigation_context
 
   def show
@@ -30,6 +31,10 @@ class Admin::SystemHealthController < ApplicationController
   end
 
   private
+
+  def authorize_system_health_policy!
+    authorize_policy!(SystemHealthPolicy, :"#{action_name}?", record: :system_health)
+  end
 
   def load_navigation_context
     @navigation_context = Admin::Runs::NavigationContext.new(params: params, session: session).resolve
