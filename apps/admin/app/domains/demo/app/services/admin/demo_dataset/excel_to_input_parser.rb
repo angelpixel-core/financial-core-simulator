@@ -62,7 +62,7 @@ module Admin
       end
 
       def parse_row(row, line)
-        trade = {
+        trade_attributes = {
           tradeId: row['trade_id']&.to_s,
           accountId: row['account_id']&.to_s,
           marketId: row['market_id']&.to_s,
@@ -74,6 +74,11 @@ module Admin
           line: line
         }
 
+        trade = trade_attributes
+        trade = FCS::Contracts::TradeInput.from_hash!(trade_attributes)
+      rescue ArgumentError
+        register_error(line, 'MISSING_FIELDS')
+      ensure
         validate_row(trade)
         @rows << trade
       end
@@ -191,7 +196,6 @@ module Admin
       def normalize_timestamp(value)
         return nil if value.nil?
 
-        return value.to_time.to_i if value.respond_to?(:to_time)
         return value.to_i if value.is_a?(Numeric)
 
         string_value = value.to_s.strip
@@ -199,7 +203,11 @@ module Admin
 
         Integer(string_value)
       rescue ArgumentError
-        Time.parse(string_value).to_i
+        begin
+          Time.parse(string_value).to_i
+        rescue ArgumentError, TypeError
+          nil
+        end
       rescue TypeError
         nil
       end
