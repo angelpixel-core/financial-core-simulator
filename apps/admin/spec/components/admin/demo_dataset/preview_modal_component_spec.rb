@@ -1,7 +1,7 @@
 require "rails_helper"
 require "view_component/test_helpers"
 
-RSpec.describe Admin::DemoDataset::PreviewModalComponent, type: :component do
+RSpec.describe Admin::Demo::Datasets::PreviewModalComponent, type: :component do
   include ViewComponent::TestHelpers
 
   it "renders all sample rows and summary" do

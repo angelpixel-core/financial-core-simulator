@@ -37,6 +37,9 @@
         <% end %>
         <section class="demo-dataset-preview__section">
           <h3 class="demo-dataset-preview__section-title"><%= t("admin.overview.dataset.preview.sample_title") %></h3>
+          <% if sample_rows_truncated? %>
+            <p class="demo-dataset-preview__empty-body"><%= t("admin.overview.dataset.preview.sample_truncated") %></p>
+          <% end %>
           <% if empty? %>
             <div class="demo-dataset-preview__empty">
               <p class="demo-dataset-preview__empty-title"><%= t("admin.overview.dataset.preview.empty_title") %></p>
@@ -82,6 +85,9 @@
         </div>
         <section class="demo-dataset-preview__section">
           <h3 class="demo-dataset-preview__section-title"><%= t("admin.overview.dataset.preview.errors_title") %></h3>
+          <% if errors_truncated? %>
+            <p class="demo-dataset-preview__empty-body"><%= t("admin.overview.dataset.preview.errors_truncated") %></p>
+          <% end %>
           <% if error_items.any? %>
             <ul class="demo-dataset-preview-errors">
               <% error_items.each do |error| %>
@@ -107,6 +113,9 @@
         <% if error_items.any? %>
           <section class="demo-dataset-preview__section">
             <h3 class="demo-dataset-preview__section-title"><%= t("admin.overview.dataset.preview.errors_title") %></h3>
+            <% if errors_truncated? %>
+              <p class="demo-dataset-preview__empty-body"><%= t("admin.overview.dataset.preview.errors_truncated") %></p>
+            <% end %>
             <ul class="demo-dataset-preview-errors">
               <% error_items.each do |error| %>
                 <li>

@@ -23,7 +23,7 @@ RSpec.describe "Admin demo dataset preview modal", type: :system, js: true do
     }
   end
   let(:preview_result) do
-    Admin::DemoDataset::ExcelToInputParser::Result.new(
+    Admin::Demo::Datasets::ExcelToInputParser::Result.new(
       valid?: true,
       input: preview_input,
       errors: []
@@ -38,7 +38,7 @@ RSpec.describe "Admin demo dataset preview modal", type: :system, js: true do
       password_hash: BCrypt::Password.create("secret-pass")
     )
 
-    allow(Admin::DemoDataset::ExcelToInputParser).to receive(:call) do
+    allow(Admin::Demo::Datasets::ExcelToInputParser).to receive(:call) do
       sleep 0.2
       preview_result
     end

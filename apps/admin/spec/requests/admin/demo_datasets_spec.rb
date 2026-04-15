@@ -26,13 +26,13 @@ RSpec.describe "Admin demo dataset uploads", type: :request do
       ]
     }
 
-    result = Admin::DemoDataset::ExcelToInputParser::Result.new(
+    result = Admin::Demo::Datasets::ExcelToInputParser::Result.new(
       valid?: true,
       input: input,
       errors: []
     )
 
-    allow(Admin::DemoDataset::ExcelToInputParser).to receive(:call).and_return(result)
+    allow(Admin::Demo::Datasets::ExcelToInputParser).to receive(:call).and_return(result)
     allow(Runs::Execute).to receive_message_chain(:new, :call)
     allow(Runs::VerifyInputHash).to receive_message_chain(:new, :call)
 
@@ -75,7 +75,7 @@ RSpec.describe "Admin demo dataset uploads", type: :request do
       feeModel: {enabled: false}
     }
 
-    result = Admin::DemoDataset::ExcelToInputParser::Result.new(
+    result = Admin::Demo::Datasets::ExcelToInputParser::Result.new(
       valid?: false,
       input: input,
       errors: [
@@ -91,7 +91,7 @@ RSpec.describe "Admin demo dataset uploads", type: :request do
       ]
     )
 
-    allow(Admin::DemoDataset::ExcelToInputParser).to receive(:call).and_return(result)
+    allow(Admin::Demo::Datasets::ExcelToInputParser).to receive(:call).and_return(result)
     allow(Runs::Execute).to receive_message_chain(:new, :call)
     allow(Runs::VerifyInputHash).to receive_message_chain(:new, :call)
 

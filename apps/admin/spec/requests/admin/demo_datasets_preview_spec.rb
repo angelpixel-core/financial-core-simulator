@@ -43,13 +43,13 @@ RSpec.describe "Admin demo dataset preview", type: :request do
       feeModel: {enabled: false}
     }
 
-    result = Admin::DemoDataset::ExcelToInputParser::Result.new(
+    result = Admin::Demo::Datasets::ExcelToInputParser::Result.new(
       valid?: true,
       input: input,
       errors: []
     )
 
-    allow(Admin::DemoDataset::ExcelToInputParser).to receive(:call).and_return(result)
+    allow(Admin::Demo::Datasets::ExcelToInputParser).to receive(:call).and_return(result)
 
     post "/admin/demo-datasets/preview", params: {file: upload}, headers: admin_session_headers
 
@@ -59,14 +59,61 @@ RSpec.describe "Admin demo dataset preview", type: :request do
     expect(response.body).to include("trade-1")
   end
 
+  it "caps preview sample rows" do
+    trades = (1..205).map do |index|
+      {
+        tradeId: "trade-#{index}",
+        accountId: "acc-#{index}",
+        marketId: "ETH-USD",
+        timestamp: 1_700_000_000 + index,
+        side: "BUY",
+        quantityBase: "1",
+        priceQuotePerBase: "100"
+      }
+    end
+    result = Admin::Demo::Datasets::ExcelToInputParser::Result.new(
+      valid?: true,
+      input: {trades: trades},
+      errors: []
+    )
+
+    allow(Admin::Demo::Datasets::ExcelToInputParser).to receive(:call).and_return(result)
+
+    post "/admin/demo-datasets/preview", params: {file: upload}, headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include(I18n.t("admin.overview.dataset.preview.sample_truncated"))
+    expect(response.body).to include("trade-200")
+    expect(response.body).not_to include("trade-201")
+  end
+
+  it "caps preview errors" do
+    errors = (1..105).map { |index| {line: index, code: "ERR_#{index}"} }
+
+    result = Admin::Demo::Datasets::ExcelToInputParser::Result.new(
+      valid?: false,
+      input: {trades: []},
+      errors: errors
+    )
+
+    allow(Admin::Demo::Datasets::ExcelToInputParser).to receive(:call).and_return(result)
+
+    post "/admin/demo-datasets/preview", params: {file: upload}, headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include(I18n.t("admin.overview.dataset.preview.errors_truncated"))
+    expect(response.body).to include("ERR_100")
+    expect(response.body).not_to include("ERR_101")
+  end
+
   it "returns validation errors for invalid upload" do
-    result = Admin::DemoDataset::ExcelToInputParser::Result.new(
+    result = Admin::Demo::Datasets::ExcelToInputParser::Result.new(
       valid?: false,
       input: {trades: []},
       errors: [{line: 2, code: "INVALID_HEADERS"}]
     )
 
-    allow(Admin::DemoDataset::ExcelToInputParser).to receive(:call).and_return(result)
+    allow(Admin::Demo::Datasets::ExcelToInputParser).to receive(:call).and_return(result)
 
     post "/admin/demo-datasets/preview", params: {file: upload}, headers: admin_session_headers
 

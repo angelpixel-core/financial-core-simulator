@@ -16,7 +16,7 @@ class Admin::DemoDatasetsController < ApplicationController
       return
     end
 
-    result = Admin::DemoDataset::ExcelToInputParser.call(
+    result = Admin::Demo::Datasets::ExcelToInputParser.call(
       file_path: file.path,
       timeline_enabled: true
     )
@@ -68,7 +68,7 @@ class Admin::DemoDatasetsController < ApplicationController
       return
     end
 
-    result = Admin::DemoDataset::ExcelToInputParser.call(
+    result = Admin::Demo::Datasets::ExcelToInputParser.call(
       file_path: file.path,
       timeline_enabled: true
     )
@@ -79,12 +79,18 @@ class Admin::DemoDatasetsController < ApplicationController
     else
       []
     end
+    sample_rows = sample_rows.first(Admin::Demo::Datasets::ExcelToInputParser::MAX_PREVIEW_ROWS)
+    preview_errors = Array(result.errors).first(Admin::Demo::Datasets::ExcelToInputParser::MAX_PREVIEW_ERRORS)
+    sample_rows_truncated = Array(fetch_input_value(input, :trades)).size > sample_rows.size
+    errors_truncated = Array(result.errors).size > preview_errors.size
 
     render_preview(
       state: result.valid? ? :success : :invalid,
       summary: summary,
       sample_rows: sample_rows,
-      errors: result.errors,
+      errors: preview_errors,
+      sample_rows_truncated: sample_rows_truncated,
+      errors_truncated: errors_truncated,
       file_name: file.original_filename
     )
   rescue => e
@@ -102,12 +108,15 @@ class Admin::DemoDatasetsController < ApplicationController
     authorize_policy!(DemoDatasetPolicy, :"#{action_name}?", record: :demo_dataset)
   end
 
-  def render_preview(state:, summary: nil, sample_rows: [], errors: [], status: :ok, file_name: nil)
+  def render_preview(state:, summary: nil, sample_rows: [], errors: [], status: :ok, file_name: nil, sample_rows_truncated: false,
+    errors_truncated: false)
     @state = state
     @summary = summary
     @sample_rows = sample_rows
     @errors = errors
     @file_name = file_name
+    @sample_rows_truncated = sample_rows_truncated
+    @errors_truncated = errors_truncated
 
     render "admin/demo_datasets/preview", status: status
   end
@@ -169,7 +178,9 @@ class Admin::DemoDatasetsController < ApplicationController
       }
     end
 
-    RunValidationError.insert_all(entries)
+    entries.each_slice(1_000) do |batch|
+      RunValidationError.insert_all(batch)
+    end
   end
 
   def with_timeline_env

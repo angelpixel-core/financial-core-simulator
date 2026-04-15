@@ -1,9 +1,11 @@
 <%= turbo_frame_tag "demo-dataset-preview" do %>
-  <%= render Admin::DemoDataset::PreviewModalComponent.new(
+  <%= render Admin::Demo::Datasets::PreviewModalComponent.new(
     state: @state,
     summary: @summary,
     sample_rows: @sample_rows,
     errors: @errors,
-    file_name: @file_name
+    file_name: @file_name,
+    sample_rows_truncated: @sample_rows_truncated,
+    errors_truncated: @errors_truncated
   ) %>
 <% end %>
