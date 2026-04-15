@@ -1,8 +1,8 @@
 require "rails_helper"
-require "json"
 
 RSpec.describe Runs::Execute do
-  let(:service) { described_class.new }
+  let(:run_executor) { instance_double(FCS::Application::ExecuteRun) }
+  let(:service) { described_class.new(run_executor: run_executor) }
 
   let(:input_json) do
     {
@@ -21,39 +21,37 @@ RSpec.describe Runs::Execute do
   describe "#call" do
     it "marks run as succeeded and persists metadata + artifact paths" do
       run = Run.create!(input_json: input_json)
+      output_dir = Rails.root.join("storage", "runs", "out_run").to_s
 
       expect(Admin::Fx::RunRateGapProcessor).to receive(:call).with(run: run)
-
-      runner = instance_double(FCS::Application::Runner)
-      allow(FCS::Application::Runner).to receive(:new).and_return(runner)
-      allow(runner).to receive(:run!) do |input_path:, output_dir:, **_kwargs|
-        File.write(
-          File.join(output_dir, "result.json"),
-          JSON.pretty_generate(
-            {
-              "engineVersion" => "test-engine",
-              "schemaVersion" => "1.0",
-              "runId" => "run-123",
-              "inputHash" => "abc123",
-              "valuationTimestamp" => "2026-02-25T03:00:00Z",
-              "global" => {"totalPnLQuote" => "0.0"}
+      allow(service).to receive(:ensure_output_dir).and_return(output_dir)
+      allow(run_executor).to receive(:call).and_return(
+        {
+          execution_result: FCS::Contracts::RunExecutionResult.from_hash!(
+            json_path: File.join(output_dir, "result.json"),
+            input_hash: "abc123",
+            run_id: "run-123",
+            schema_version: "1.0",
+            valuation_timestamp: "2026-02-25T03:00:00Z",
+            artifacts: {
+              positions_csv_path: File.join(output_dir, "positions.csv"),
+              pnl_csv_path: File.join(output_dir, "pnl.csv")
             }
-          ) + "\n"
-        )
-        expect(File.exist?(input_path)).to be(true)
-        File.join(output_dir, "result.json")
-      end
+          ),
+          duration_ms: 42
+        }
+      )
 
       service.call(run)
       run.reload
 
       expect(run).to be_succeeded
-      expect(run.engine_version).to eq("test-engine")
+      expect(run.engine_version).to eq(FCS::VERSION)
       expect(run.schema_version).to eq("1.0")
       expect(run.run_uuid).to eq("run-123")
       expect(run.input_hash).to eq("abc123")
       expect(run.valuation_timestamp).to eq(Time.zone.parse("2026-02-25T03:00:00Z"))
-      expect(run.duration_ms).to be >= 0
+      expect(run.duration_ms).to eq(42)
       expect(run.result_json_path).to end_with("result.json")
       expect(run.positions_csv_path).to end_with("positions.csv")
       expect(run.pnl_csv_path).to end_with("pnl.csv")
@@ -64,9 +62,7 @@ RSpec.describe Runs::Execute do
 
       expect(Admin::Fx::RunRateGapProcessor).not_to receive(:call)
 
-      runner = instance_double(FCS::Application::Runner)
-      allow(FCS::Application::Runner).to receive(:new).and_return(runner)
-      allow(runner).to receive(:run!).and_raise(StandardError, "boom")
+      allow(run_executor).to receive(:call).and_raise(StandardError, "boom")
 
       expect { service.call(run) }.to raise_error(StandardError, "boom")
 
@@ -80,9 +76,7 @@ RSpec.describe Runs::Execute do
     it "maps FCS::Error code when runner raises domain error" do
       run = Run.create!(input_json: input_json)
 
-      runner = instance_double(FCS::Application::Runner)
-      allow(FCS::Application::Runner).to receive(:new).and_return(runner)
-      allow(runner).to receive(:run!).and_raise(FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "invalid input"))
+      allow(run_executor).to receive(:call).and_raise(FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "invalid input"))
 
       expect { service.call(run) }.to raise_error(FCS::Error)
 
