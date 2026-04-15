@@ -16,7 +16,7 @@ module FCS
 
       def to_h
         missing = REQUIRED_FIELDS.select { |field| blank?(@attributes[field]) }
-        raise ArgumentError, "Missing required fields: #{missing.join(', ')}" unless missing.empty?
+        raise ArgumentError, "Missing required fields: #{missing.join(", ")}" unless missing.empty?
 
         {
           json_path: @attributes.fetch(:json_path).to_s,

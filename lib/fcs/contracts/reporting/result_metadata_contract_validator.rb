@@ -15,15 +15,15 @@ module FCS
             next if value && (!value.is_a?(String) || !value.strip.empty?)
 
             raise_contract_error!(
-              message: t('fcs.reporting.result_metadata.missing_required_field'),
+              message: t("fcs.reporting.result_metadata.missing_required_field"),
               field: field,
               invalid_value: value
             )
           end
 
-          validate_format!(payload.fetch('inputHash'), field: 'inputHash', regex: INPUT_HASH_REGEX)
-          validate_format!(payload.fetch('runId'), field: 'runId', regex: RUN_ID_REGEX)
-          validate_format!(payload.fetch('valuationTimestamp'), field: 'valuationTimestamp', regex: ISO_UTC_REGEX)
+          validate_format!(payload.fetch("inputHash"), field: "inputHash", regex: INPUT_HASH_REGEX)
+          validate_format!(payload.fetch("runId"), field: "runId", regex: RUN_ID_REGEX)
+          validate_format!(payload.fetch("valuationTimestamp"), field: "valuationTimestamp", regex: ISO_UTC_REGEX)
         end
 
         private
@@ -32,7 +32,7 @@ module FCS
           return if value.is_a?(String) && value.match?(regex)
 
           raise_contract_error!(
-            message: t('fcs.reporting.result_metadata.invalid_format'),
+            message: t("fcs.reporting.result_metadata.invalid_format"),
             field: field,
             invalid_value: value
           )
@@ -40,11 +40,11 @@ module FCS
 
         def raise_contract_error!(message:, field:, invalid_value: nil)
           details = {
-            'field' => field,
-            'impact' => t('fcs.reporting.result_metadata.impact'),
-            'next_action' => t('fcs.reporting.result_metadata.next_action')
+            "field" => field,
+            "impact" => t("fcs.reporting.result_metadata.impact"),
+            "next_action" => t("fcs.reporting.result_metadata.next_action")
           }
-          details['invalid_value'] = invalid_value unless invalid_value.nil?
+          details["invalid_value"] = invalid_value unless invalid_value.nil?
 
           raise FCS::Error.new(
             FCS::Errors::ERR_VALIDATION,

@@ -1,31 +1,31 @@
 module SystemHelpers
   def wait_for_app_shell
-    find('body', wait: 10)
-    find('.app-shell', wait: 10)
+    find("body", wait: 10)
+    find(".app-shell", wait: 10)
 
-    has_nav = page.has_css?('.app-shell__nav--desktop', wait: 10)
-    has_topbar = page.has_css?('.app-shell__topbar', wait: 10)
+    has_nav = page.has_css?(".app-shell__nav--desktop", wait: 10)
+    has_topbar = page.has_css?(".app-shell__topbar", wait: 10)
     return if has_nav || has_topbar
 
-    raise Capybara::ElementNotFound, 'Unable to find app shell navigation or topbar'
+    raise Capybara::ElementNotFound, "Unable to find app shell navigation or topbar"
   end
 
   def expand_sidebar
     wait_for_app_shell
 
-    if page.has_css?('.app-shell.app-shell--sidebar-collapsed', wait: 2)
+    if page.has_css?(".app-shell.app-shell--sidebar-collapsed", wait: 2)
       find('button[data-action="sidebar#expand"]', visible: :all, wait: 10).click
     end
 
-    expect(page).to have_no_css('.app-shell.app-shell--sidebar-collapsed', wait: 10)
+    expect(page).to have_no_css(".app-shell.app-shell--sidebar-collapsed", wait: 10)
   end
 
   def sidebar_nav_link(label_key)
     expand_sidebar
-    find('.app-shell__nav--desktop', wait: 10)
+    find(".app-shell__nav--desktop", wait: 10)
 
-    within('.app-shell__nav--desktop') do
-      find('a.app-shell__nav-link', text: I18n.t(label_key), match: :first, wait: 10)
+    within(".app-shell__nav--desktop") do
+      find("a.app-shell__nav-link", text: I18n.t(label_key), match: :first, wait: 10)
     end
   end
 

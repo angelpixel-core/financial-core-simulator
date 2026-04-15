@@ -11,9 +11,9 @@ module Admin
 
       def entries
         rates = FxDailyRate.where(base_currency: base_currency, quote_currency: quote_currency)
-                           .order(operational_date: :desc)
-                           .limit(10)
-                           .to_a
+          .order(operational_date: :desc)
+          .limit(10)
+          .to_a
         preload_gap_associations!(rates)
         rates
       end
@@ -34,7 +34,7 @@ module Admin
       end
 
       def display_rate(rate)
-        return t('admin.fx.history.placeholder_value') if rate.rate.nil?
+        return t("admin.fx.history.placeholder_value") if rate.rate.nil?
 
         rate.rate.to_s
       end

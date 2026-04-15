@@ -25,7 +25,7 @@ module FCS
 
       def to_h
         missing = REQUIRED_FIELDS.select { |field| @attributes[field].nil? }
-        raise ArgumentError, "Missing required fields: #{missing.join(', ')}" unless missing.empty?
+        raise ArgumentError, "Missing required fields: #{missing.join(", ")}" unless missing.empty?
 
         normalized = REQUIRED_FIELDS.each_with_object({}) do |field, out|
           out[field] = @attributes[field]
