@@ -7,7 +7,7 @@
 <% features_href = same_page_sections ? "#features" : "#{home_href}#features" %>
 <% faq_href = same_page_sections ? "#faq" : "#{home_href}#faq" %>
 <% architecture_href = same_page_sections ? "#architecture" : "#{home_href}#architecture" %>
-<footer class="landing__footer" aria-label="<%= t("admin.auth.footer.aria") %>">
+<footer class="landing__footer<%= " landing__footer--with-tests" if show_tests %>" aria-label="<%= t("admin.auth.footer.aria") %>">
   <div class="landing__footer-inner">
     <div>
       <p class="landing__footer-title">Deterministic Financial Engine</p>

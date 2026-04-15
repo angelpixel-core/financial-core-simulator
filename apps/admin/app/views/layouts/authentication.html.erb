@@ -16,6 +16,23 @@
     <%= javascript_importmap_tags %>
   </head>
   <body class="<%= content_for?(:body_class) ? content_for(:body_class) : "auth-page" %>">
+    <header class="landing__header">
+      <div class="landing__header-inner">
+        <a class="landing__brand" href="<%= root_path(locale: I18n.locale) %>">
+          <span class="landing__brand-mark">DFE</span>
+          <span class="landing__brand-copy">
+            <span class="landing__brand-title">Deterministic Financial Engine</span>
+            <span class="landing__brand-subtitle">Audit-ready financial processing</span>
+          </span>
+        </a>
+        <nav class="landing__nav" aria-label="Landing sections">
+          <a href="<%= root_path(locale: I18n.locale, anchor: "why") %>">Why it exists</a>
+          <a href="<%= root_path(locale: I18n.locale, anchor: "how") %>">How it works</a>
+          <a href="<%= root_path(locale: I18n.locale, anchor: "features") %>">Features</a>
+          <a href="<%= root_path(locale: I18n.locale, anchor: "faq") %>">FAQ</a>
+        </nav>
+      </div>
+    </header>
     <main class="auth-shell" aria-label="<%= t("admin.auth.aria") %>">
       <section class="auth-hero" aria-hidden="true">
         <div class="auth-hero__copy">
