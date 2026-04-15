@@ -19,6 +19,40 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def policy_user
+    account = current_admin_account
+    if account.present?
+      return {
+        id: account.id.to_s,
+        role: admin_shell_role
+      }
+    end
+
+    role = request.headers["X-Admin-Role"].to_s.strip.downcase
+    user = request.headers["X-Admin-User"].to_s.strip
+    return nil unless Admin::Authorization::ROLE_ORDER.key?(role)
+
+    {
+      id: user.presence || "header-user",
+      role: role
+    }
+  end
+
+  def authorize_policy!(policy_class, query, record: nil)
+    policy = policy_class.new(policy_user, record)
+    return if policy.public_send(query)
+
+    handle_policy_unauthorized!
+  end
+
+  def handle_policy_unauthorized!
+    if request.get? && request.format.html?
+      redirect_to root_path
+    else
+      render plain: "Forbidden", status: :forbidden
+    end
+  end
+
   def set_locale
     selected = params[:locale].presence || session[:locale]
     locale = normalize_locale(selected)
