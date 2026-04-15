@@ -8,7 +8,7 @@ module Admin
         base_currency:,
         quote_currency:,
         rate:,
-        source: "manual",
+        source: 'manual',
         source_run_id: nil,
         source_upload_id: nil,
         enforce_operational_date: true,
@@ -36,7 +36,7 @@ module Admin
         base_currency:,
         quote_currency:,
         rate:,
-        source: "manual",
+        source: 'manual',
         source_run_id: nil,
         source_upload_id: nil,
         enforce_operational_date: true,
@@ -44,19 +44,20 @@ module Admin
         created_by_role: nil,
         created_context: {}
       )
+        repository = Admin::Fx::Repositories::ActiveRecord::DailyRateRepository.new
         expected = OperationalDate.call
-        rate_record = FxDailyRate.find_or_initialize_by(
+        rate_record = repository.find_or_initialize(
           operational_date: operational_date,
           base_currency: base_currency,
           quote_currency: quote_currency
         )
 
         if enforce_operational_date && operational_date != expected
-          rate_record.errors.add(:operational_date, "must match operational timezone date")
+          rate_record.errors.add(:operational_date, 'must match operational timezone date')
           raise ActiveRecord::RecordInvalid, rate_record
         end
 
-        if source.to_s == "placeholder"
+        if source.to_s == 'placeholder'
           return rate_record if rate_record.persisted? && rate_record.rate.present?
           return rate_record if rate_record.persisted? && rate_record.placeholder?
         end
@@ -73,7 +74,7 @@ module Admin
           created_context: context.merge(created_context)
         )
 
-        rate_record.save!
+        repository.save!(rate_record)
         Admin::Fx::GapResolver.call(rate: rate_record) unless rate_record.placeholder?
         rate_record
       end
