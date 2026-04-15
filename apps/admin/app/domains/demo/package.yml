@@ -3,3 +3,5 @@ enforce_privacy: true
 public_path: app
 dependencies:
   - "app/domains/core"
+  - "app/domains/fx"
+  - "app/domains/runs"
