@@ -29,7 +29,7 @@ class Admin::OverviewController < ApplicationController
     @ingestion_errors_pagination = ingestion_errors_pagination(errors: ingestion_errors, page: params[:errors_page])
     @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
     @reliable_selection = Admin::Runs::ReliableRunSelector.new.call
-    @demo_dataset_upload = DemoDatasetUpload.latest
+    @demo_dataset_upload = dashboard_upload_repository.latest
     load_fx_context
   end
 
@@ -37,9 +37,9 @@ class Admin::OverviewController < ApplicationController
     @metrics = dashboard_metrics
     @top_accounts_pagination = top_accounts_pagination(metrics: @metrics, page: params[:page])
     if turbo_frame_request? || request.xhr?
-      render partial: "admin/overview/top_accounts_frame",
-        locals: {metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: true,
-                 navigation_context: @navigation_context}
+      render partial: 'admin/overview/top_accounts_frame',
+             locals: { metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: true,
+                       navigation_context: @navigation_context }
     else
       render :top_accounts
     end
@@ -68,15 +68,15 @@ class Admin::OverviewController < ApplicationController
   end
 
   def dashboard_financial_overview
-    run = Run.find_by(id: params[:run_id])
-    return render json: {"error" => "run_not_found"}, status: :not_found if run.nil?
+    run = dashboard_run_repository.find_by_id(params[:run_id])
+    return render json: { 'error' => 'run_not_found' }, status: :not_found if run.nil?
 
     account_id = normalize_filter_value(params[:account_id])
     market_id = normalize_filter_value(params[:market_id])
     metrics = financial_overview_metrics(run: run, account_id: account_id, market_id: market_id).call
     render json: financial_overview_response_serializer.serialize(metrics: metrics), status: :ok
-  rescue
-    fallback_metrics = {trade_activity: [], trade_volume: [], pnl_daily: []}
+  rescue StandardError
+    fallback_metrics = { trade_activity: [], trade_volume: [], pnl_daily: [] }
     render json: financial_overview_response_serializer.serialize(metrics: fallback_metrics), status: :ok
   end
 
@@ -111,7 +111,7 @@ class Admin::OverviewController < ApplicationController
     @errors_pagination = ingestion_errors_pagination(errors: errors, page: params[:errors_page])
     @errors = @errors_pagination[:entries]
     if turbo_frame_request?
-      render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
+      render partial: 'admin/overview/ingestion_validation_errors_frame', locals: {
         errors: @errors,
         pagination: @errors_pagination,
         selected_source: @selected_source,
@@ -120,7 +120,7 @@ class Admin::OverviewController < ApplicationController
         navigation_context: @navigation_context
       }
     elsif request.xhr?
-      render partial: "admin/overview/ingestion_validation_errors", locals: {
+      render partial: 'admin/overview/ingestion_validation_errors', locals: {
         errors: @errors,
         pagination: @errors_pagination,
         selected_source: @selected_source,
@@ -190,8 +190,8 @@ class Admin::OverviewController < ApplicationController
 
   def render_dashboard_unavailable(_error)
     render json: {
-      "contractVersion" => Admin::Dashboard::CompatibilityGuard::CONTRACT_VERSION,
-      "error" => "dashboard_read_unavailable"
+      'contractVersion' => Admin::Dashboard::CompatibilityGuard::CONTRACT_VERSION,
+      'error' => 'dashboard_read_unavailable'
     }, status: :service_unavailable
   end
 
@@ -246,34 +246,21 @@ class Admin::OverviewController < ApplicationController
   end
 
   def load_fx_context
-    @reporting_setting = ReportingSetting.current
-    @fx_operational_date = Admin::Fx::OperationalDate.call
-    @fx_base_currency = Admin::Fx::RateResolver::BASE_CURRENCY
-    @fx_quote_currency = @reporting_setting.reporting_currency
+    context = Admin::Dashboard::BuildFxContext.new.call
+    @reporting_setting = context.fetch(:reporting_setting)
+    @fx_operational_date = context.fetch(:operational_date)
+    @fx_base_currency = context.fetch(:base_currency)
+    @fx_quote_currency = context.fetch(:quote_currency)
+    @fx_rate_state = context.fetch(:rate_state)
+    @fx_carry_forward_available = context.fetch(:carry_forward_available)
+  end
 
-    if @fx_quote_currency == @fx_base_currency
-      @fx_rate_state = Admin::Fx::RateResolver::Result.new(
-        rate: "1.0",
-        rate_date: @fx_operational_date,
-        rate_source: Admin::Fx::RateResolver::IDENTITY_SOURCE,
-        rate_missing: false,
-        source_rate_id: nil
-      )
-      @fx_carry_forward_available = false
-      return
-    end
+  def dashboard_run_repository
+    @dashboard_run_repository ||= Admin::Dashboard::Repositories::ActiveRecord::RunRepository.new
+  end
 
-    @fx_rate_state = Admin::Fx::RateResolver.call(
-      base_currency: @fx_base_currency,
-      quote_currency: @fx_quote_currency,
-      operational_date: @fx_operational_date
-    )
-
-    @fx_carry_forward_available = FxDailyRate.exists?(
-      operational_date: @fx_operational_date - 1.day,
-      base_currency: @fx_base_currency.to_s.upcase,
-      quote_currency: @fx_quote_currency.to_s.upcase
-    )
+  def dashboard_upload_repository
+    @dashboard_upload_repository ||= Admin::Dashboard::Repositories::ActiveRecord::DemoDatasetUploadRepository.new
   end
 
   def load_navigation_context
