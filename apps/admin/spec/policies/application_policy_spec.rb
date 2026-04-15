@@ -24,10 +24,10 @@ RSpec.describe "Admin policies" do
   end
 
   it "applies demo dataset policy permissions" do
-    expect(DemoDatasetPolicy.new(operator, :demo_dataset).create?).to eq(true)
-    expect(DemoDatasetPolicy.new(operator, :demo_dataset).preview?).to eq(true)
-    expect(DemoDatasetPolicy.new(viewer, :demo_dataset).create?).to eq(false)
-    expect(DemoDatasetPolicy.new(viewer, :demo_dataset).reset?).to eq(false)
+    expect(Admin::Demo::DatasetPolicy.new(operator, :demo_dataset).create?).to eq(true)
+    expect(Admin::Demo::DatasetPolicy.new(operator, :demo_dataset).preview?).to eq(true)
+    expect(Admin::Demo::DatasetPolicy.new(viewer, :demo_dataset).create?).to eq(false)
+    expect(Admin::Demo::DatasetPolicy.new(viewer, :demo_dataset).reset?).to eq(false)
   end
 
   it "applies fx rate policy permissions" do

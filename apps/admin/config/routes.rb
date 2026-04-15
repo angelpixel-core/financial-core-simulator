@@ -9,8 +9,8 @@ Rails.application.routes.draw do
   mount Rswag::Ui::Engine => "/api-docs"
   mount Rswag::Api::Engine => "/api-docs"
   root to: "landing#index"
-  get "/demo-datasets/valid", to: "demo_datasets#valid", as: :demo_dataset_valid
-  get "/demo-datasets/invalid", to: "demo_datasets#invalid", as: :demo_dataset_invalid
+  get "/demo-datasets/valid", to: "demo/datasets#valid", as: :demo_dataset_valid
+  get "/demo-datasets/invalid", to: "demo/datasets#invalid", as: :demo_dataset_invalid
 
   extend AdminRoutes
   extend DashboardRoutes
