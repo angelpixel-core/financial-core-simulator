@@ -3,7 +3,18 @@ require 'rails_helper'
 RSpec.describe Runs::Execute do
   let(:run_engine) { instance_double(Admin::Runs::Execution::EngineAdapter) }
   let(:artifact_store) { instance_double(Admin::Runs::Artifacts::FileStoreAdapter) }
-  let(:service) { described_class.new(run_engine: run_engine, artifact_store: artifact_store) }
+  let(:event_bus) { instance_double(Admin::Events::BusAdapter, publish: nil) }
+  let(:metrics) { instance_double(Admin::Observability::PrometheusMetricsAdapter, increment: nil, observe: nil) }
+  let(:logger) { instance_double(Admin::Observability::StructuredLoggerAdapter, info: nil, error: nil) }
+  let(:service) do
+    described_class.new(
+      run_engine: run_engine,
+      artifact_store: artifact_store,
+      event_bus: event_bus,
+      metrics: metrics,
+      logger: logger
+    )
+  end
 
   let(:input_json) do
     {
@@ -63,6 +74,15 @@ RSpec.describe Runs::Execute do
       expect(run.result_json_path).to eq(File.join(output_dir, 'result.json'))
       expect(run.positions_csv_path).to eq(File.join(output_dir, 'positions.csv'))
       expect(run.pnl_csv_path).to eq(File.join(output_dir, 'pnl.csv'))
+      expect(event_bus).to have_received(:publish).with('runs.execution.completed', hash_including(runId: run.id))
+      expect(metrics).to have_received(:increment).with('runs.execution.completed', tags: { status: 'succeeded' })
+      expect(metrics).to have_received(:observe).with('runs.execution.duration_ms', value: 42,
+                                                                                    tags: { status: 'succeeded' })
+      expect(logger).to have_received(:info).with(
+        event: 'runs.execution.completed',
+        payload: hash_including(runId: run.id, durationMs: 42),
+        tags: { status: 'succeeded' }
+      )
     end
 
     it 'keeps succeeded state when artifact persistence is partial (non-reliable until verification)' do
@@ -103,6 +123,7 @@ RSpec.describe Runs::Execute do
       expect(run.result_json_path).to eq(File.join(output_dir, 'result.json'))
       expect(run.positions_csv_path).to eq(File.join(output_dir, 'positions.csv'))
       expect(run.pnl_csv_path).to be_nil
+      expect(event_bus).to have_received(:publish).with('runs.execution.completed', hash_including(runId: run.id))
     end
 
     it 'marks run as failed with error metadata when runner raises' do
@@ -121,6 +142,14 @@ RSpec.describe Runs::Execute do
       expect(run.error_code).to eq('ERR_EXECUTION_FAILURE')
       expect(run.error_message).to eq('boom')
       expect(run.duration_ms).not_to be_nil
+      expect(event_bus).to have_received(:publish).with('runs.execution.failed', hash_including(runId: run.id,
+                                                                                                errorMessage: 'boom'))
+      expect(metrics).to have_received(:increment).with('runs.execution.failed', tags: { status: 'failed' })
+      expect(logger).to have_received(:error).with(
+        event: 'runs.execution.failed',
+        payload: hash_including(runId: run.id, errorMessage: 'boom'),
+        tags: hash_including(status: 'failed')
+      )
     end
 
     it 'maps FCS::Error code when runner raises domain error' do
@@ -137,6 +166,8 @@ RSpec.describe Runs::Execute do
       expect(run).to be_failed
       expect(run.error_code).to eq(FCS::Errors::ERR_INVALID_INPUT)
       expect(run.error_message).to eq('invalid input')
+      expect(event_bus).to have_received(:publish).with('runs.execution.failed', hash_including(runId: run.id,
+                                                                                                errorCode: FCS::Errors::ERR_INVALID_INPUT))
     end
   end
 end

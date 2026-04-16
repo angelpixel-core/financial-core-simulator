@@ -5,11 +5,17 @@ module Runs
     def initialize(
       run_repository: Runs::Repositories::ActiveRecord::RunRepository.new,
       run_engine: Admin::Runs::Execution::EngineAdapter.new,
-      artifact_store: Admin::Runs::Artifacts::FileStoreAdapter.new
+      artifact_store: Admin::Runs::Artifacts::FileStoreAdapter.new,
+      event_bus: Admin::Events::BusAdapter.new,
+      metrics: Admin::Observability::PrometheusMetricsAdapter.new,
+      logger: Admin::Observability::StructuredLoggerAdapter.new
     )
       @run_repository = run_repository
       @run_engine = run_engine
       @artifact_store = artifact_store
+      @event_bus = event_bus
+      @metrics = metrics
+      @logger = logger
     end
 
     def call(run, fee_enabled: true, explain: true, verbose: false)
@@ -51,6 +57,8 @@ module Runs
         }
       )
 
+      publish_success_observability(run: run, duration_ms: duration_ms, artifact_paths: artifact_paths)
+
       run = @run_repository.find_run(run_id: run.id)
 
       Runs::PersistDailyArtifacts.call(run: run)
@@ -72,7 +80,65 @@ module Runs
           error_message: e.message
         }
       )
+      publish_failure_observability(run: run, duration_ms: duration_ms, error: e)
       raise
+    end
+
+    private
+
+    def publish_success_observability(run:, duration_ms:, artifact_paths:)
+      safe_observe do
+        @event_bus.publish('runs.execution.completed', {
+                             runId: run.id,
+                             status: 'succeeded',
+                             durationMs: duration_ms,
+                             artifacts: artifact_paths
+                           })
+      end
+      safe_observe do
+        @metrics.increment('runs.execution.completed', tags: { status: 'succeeded' })
+      end
+      safe_observe do
+        @metrics.observe('runs.execution.duration_ms', value: duration_ms, tags: { status: 'succeeded' })
+      end
+      safe_observe do
+        @logger.info(
+          event: 'runs.execution.completed',
+          payload: { runId: run.id, durationMs: duration_ms, artifacts: artifact_paths },
+          tags: { status: 'succeeded' }
+        )
+      end
+    end
+
+    def publish_failure_observability(run:, duration_ms:, error:)
+      safe_observe do
+        @event_bus.publish('runs.execution.failed', {
+                             runId: run.id,
+                             status: 'failed',
+                             durationMs: duration_ms,
+                             errorCode: Runs::ErrorCodeMapper.call(error),
+                             errorMessage: error.message
+                           })
+      end
+      safe_observe do
+        @metrics.increment('runs.execution.failed', tags: { status: 'failed' })
+      end
+      safe_observe do
+        @metrics.observe('runs.execution.duration_ms', value: duration_ms, tags: { status: 'failed' })
+      end
+      safe_observe do
+        @logger.error(
+          event: 'runs.execution.failed',
+          payload: { runId: run.id, durationMs: duration_ms, errorMessage: error.message },
+          tags: { status: 'failed', errorCode: Runs::ErrorCodeMapper.call(error) }
+        )
+      end
+    end
+
+    def safe_observe
+      yield
+    rescue StandardError
+      nil
     end
   end
 end

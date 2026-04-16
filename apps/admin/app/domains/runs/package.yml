@@ -5,5 +5,7 @@ dependencies:
   - "app/domains/core"
   - "app/domains/artifacts"
   - "app/domains/dashboard"
+  - "app/domains/events"
   - "app/domains/fx"
+  - "app/domains/observability"
   - "app/domains/validation"
