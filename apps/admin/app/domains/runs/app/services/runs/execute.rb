@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require 'fileutils'
-
 module Runs
   class Execute
     def initialize(
       run_repository: Runs::Repositories::ActiveRecord::RunRepository.new,
-      run_executor: FCS::Application::ExecuteRun.new
+      run_engine: Admin::Runs::Execution::EngineAdapter.new,
+      artifact_store: Admin::Runs::Artifacts::FileStoreAdapter.new
     )
       @run_repository = run_repository
-      @run_executor = run_executor
+      @run_engine = run_engine
+      @artifact_store = artifact_store
     end
 
     def call(run, fee_enabled: true, explain: true, verbose: false)
@@ -23,8 +23,8 @@ module Runs
       Runs::ApplyFxContext.call(run: run)
       run = @run_repository.find_run(run_id: run.id)
 
-      output_dir = ensure_output_dir(run)
-      execution = @run_executor.call(
+      output_dir = @artifact_store.build_output_dir(run_id: run.id)
+      execution = @run_engine.execute(
         input: run.input_json,
         output_dir: output_dir,
         fee_enabled: fee_enabled,
@@ -33,8 +33,8 @@ module Runs
       )
 
       execution_result = execution.fetch(:execution_result)
-      artifacts = execution_result.fetch(:artifacts)
       duration_ms = execution.fetch(:duration_ms)
+      artifact_paths = @artifact_store.artifact_paths(output_dir: output_dir, execution_result: execution_result)
 
       @run_repository.save_run!(
         run_id: run.id,
@@ -46,11 +46,7 @@ module Runs
           input_hash: execution_result.fetch(:input_hash),
           valuation_timestamp: execution_result[:valuation_timestamp],
           output_dir: output_dir,
-          artifacts: {
-            'result_json_path' => execution_result.fetch(:json_path),
-            'positions_csv_path' => artifacts.fetch(:positions_csv_path),
-            'pnl_csv_path' => artifacts.fetch(:pnl_csv_path)
-          },
+          artifacts: artifact_paths,
           duration_ms: duration_ms
         }
       )
@@ -77,17 +73,6 @@ module Runs
         }
       )
       raise
-    end
-
-    private
-
-    def ensure_output_dir(run)
-      base = Rails.root.join('storage', 'runs')
-      FileUtils.mkdir_p(base)
-
-      dir = base.join("run_#{run.id}_#{Time.now.utc.strftime('%Y%m%dT%H%M%S')}")
-      FileUtils.mkdir_p(dir)
-      dir.to_s
     end
   end
 end
