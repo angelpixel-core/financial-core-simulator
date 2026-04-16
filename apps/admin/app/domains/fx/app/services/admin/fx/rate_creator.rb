@@ -3,6 +3,10 @@
 module Admin
   module Fx
     class RateCreator
+      def initialize(rate_repository: Admin::Fx::Rates::Repository.new)
+        @rate_repository = rate_repository
+      end
+
       def self.call(
         operational_date:,
         base_currency:,
@@ -32,7 +36,7 @@ module Admin
         created_by_role: nil,
         created_context: {}
       )
-        rate_record = FxDailyRate.new(
+        rate_record = @rate_repository.new_rate(
           operational_date: operational_date,
           base_currency: base_currency,
           quote_currency: quote_currency,
@@ -49,7 +53,7 @@ module Admin
           raise ActiveRecord::RecordInvalid, rate_record
         end
 
-        rate_record.save!
+        @rate_repository.save!(rate_record)
         Admin::Fx::GapResolver.call(rate: rate_record)
         rate_record
       end

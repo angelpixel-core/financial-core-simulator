@@ -1,8 +1,8 @@
 class AddRunValidationErrors < ActiveRecord::Migration[8.1]
   def change
-    add_column :runs, :reliable, :boolean, null: false, default: true
+    add_column :runs, :reliable, :boolean, null: false, default: true unless column_exists?(:runs, :reliable)
 
-    create_table :run_validation_errors do |t|
+    create_table :run_validation_errors, if_not_exists: true do |t|
       t.bigint :run_id, null: false
       t.string :source
       t.string :field
@@ -20,7 +20,7 @@ class AddRunValidationErrors < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :run_validation_errors, :run_id
-    add_index :run_validation_errors, :created_at
+    add_index :run_validation_errors, :run_id, if_not_exists: true
+    add_index :run_validation_errors, :created_at, if_not_exists: true
   end
 end

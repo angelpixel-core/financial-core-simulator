@@ -2,4 +2,5 @@ enforce_dependencies: true
 enforce_privacy: true
 public_path: app
 dependencies:
+  - "app/domains/access_control"
   - "app/domains/core"

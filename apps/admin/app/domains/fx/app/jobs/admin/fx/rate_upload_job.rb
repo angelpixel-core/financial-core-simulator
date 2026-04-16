@@ -35,6 +35,7 @@ class Admin::Fx::RateUploadJob < ApplicationJob
       error_message: e.message,
       processed_at: Time.current
     )
+    upload = Admin::Fx::ProcessRateUpload.new.call(upload_id: upload_id)
   ensure
     cleanup_file(upload&.file_path)
     broadcast_status(upload) if upload
@@ -50,7 +51,7 @@ class Admin::Fx::RateUploadJob < ApplicationJob
   end
 
   def broadcast_status(upload)
-    upload = FxRateUpload.find_by(id: upload.id)
+    upload = Admin::Fx::Repositories::ActiveRecord::RateUploadRepository.new.find_by_id(upload.id)
     return if upload.blank?
 
     I18n.with_locale(locale_for(upload)) do
@@ -64,11 +65,11 @@ class Admin::Fx::RateUploadJob < ApplicationJob
   end
 
   def broadcast_table(upload)
-    upload = FxRateUpload.find_by(id: upload.id)
+    upload = Admin::Fx::Repositories::ActiveRecord::RateUploadRepository.new.find_by_id(upload.id)
     return if upload.blank?
 
     I18n.with_locale(locale_for(upload)) do
-      snapshot = FxDailyRate.uncached { Admin::Fx::HistorySnapshot.call(sort_order: "desc") }
+      snapshot = Admin::Fx::Rates::Repository.new.uncached_history_snapshot(sort_order: "desc")
       Turbo::StreamsChannel.broadcast_replace_to(
         FxRateUpload.status_stream_for(account_id: upload.created_by_id),
         target: FxRateUpload.table_dom_id,

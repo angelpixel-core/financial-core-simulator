@@ -7,7 +7,7 @@ class Admin::Fx::ReportingSettingsController < ApplicationController
   before_action :authorize_fx_reporting_policy!
 
   def update
-    Admin::Fx::ReportingSettingsUpdater.call(
+    Admin::Fx::Api.reporting_settings_update(
       reporting_currency: reporting_currency,
       updated_by_id: current_admin_account&.id,
       updated_by_role: admin_shell_role,

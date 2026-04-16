@@ -12,9 +12,7 @@ RSpec.describe "Run executions", type: :request do
   it "executes run synchronously by default" do
     run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
-    service = instance_double(Runs::Execute)
-    allow(Runs::Execute).to receive(:new).and_return(service)
-    expect(service).to receive(:call).with(run, fee_enabled: true, explain: true, verbose: false)
+    expect(Runs::Api).to receive(:execute).with(run: run, fee_enabled: true, explain: true, verbose: false)
 
     post "/runs/#{run.id}/execute", as: :json
 
@@ -55,9 +53,7 @@ RSpec.describe "Run executions", type: :request do
 
     run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
-    service = instance_double(Runs::Execute)
-    allow(Runs::Execute).to receive(:new).and_return(service)
-    expect(service).to receive(:call).with(run, fee_enabled: true, explain: true, verbose: false)
+    expect(Runs::Api).to receive(:execute).with(run: run, fee_enabled: true, explain: true, verbose: false)
 
     post "/runs/#{run.id}/execute", headers: {"X-Admin-Token" => "ui-secret"}, as: :json
 
@@ -70,9 +66,7 @@ RSpec.describe "Run executions", type: :request do
 
     run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
-    service = instance_double(Runs::Execute)
-    allow(Runs::Execute).to receive(:new).and_return(service)
-    expect(service).to receive(:call).with(run, fee_enabled: true, explain: true, verbose: false)
+    expect(Runs::Api).to receive(:execute).with(run: run, fee_enabled: true, explain: true, verbose: false)
 
     post "/runs/#{run.id}/execute", headers: {"Authorization" => "Bearer ui-secret"}, as: :json
 
@@ -85,9 +79,7 @@ RSpec.describe "Run executions", type: :request do
 
     run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
 
-    service = instance_double(Runs::Execute)
-    allow(Runs::Execute).to receive(:new).and_return(service)
-    expect(service).to receive(:call).with(run, fee_enabled: true, explain: true, verbose: false)
+    expect(Runs::Api).to receive(:execute).with(run: run, fee_enabled: true, explain: true, verbose: false)
 
     post "/runs/#{run.id}/execute", headers: {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}, as: :json
 

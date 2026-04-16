@@ -148,7 +148,7 @@ module FCS
 
         @logger.info("fcs.run.done run_id=#{run_id} output=#{json_path}")
 
-        {
+        FCS::Contracts::RunExecutionResult.from_hash!(
           json_path: json_path,
           input_hash: input_hash,
           run_id: run_id,
@@ -158,7 +158,7 @@ module FCS
           validation_errors: validation_errors,
           reliable: reliable,
           annotated_input: annotated_input
-        }
+        )
       end
 
       private

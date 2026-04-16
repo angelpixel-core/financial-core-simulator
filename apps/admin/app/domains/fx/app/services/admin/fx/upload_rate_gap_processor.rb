@@ -3,6 +3,14 @@
 module Admin
   module Fx
     class UploadRateGapProcessor
+      def initialize(
+        rate_repository: Admin::Fx::Rates::Repository.new,
+        gap_repository: Admin::Fx::Gaps::Repository.new
+      )
+        @rate_repository = rate_repository
+        @gap_repository = gap_repository
+      end
+
       def self.call(input:, run:, reporting_currency:, upload: nil)
         new.call(input: input, run: run, upload: upload, reporting_currency: reporting_currency)
       end
@@ -18,7 +26,7 @@ module Admin
         return if dates.empty?
 
         dates.each do |operational_date|
-          rate = FxDailyRate.find_by(
+          rate = @rate_repository.find_by(
             operational_date: operational_date,
             base_currency: base_currency,
             quote_currency: quote_currency
@@ -26,7 +34,7 @@ module Admin
 
           next if rate&.rate.present?
 
-          gap = FxRateGap.open_for(
+          gap = @gap_repository.open_for(
             operational_date: operational_date,
             base_currency: base_currency,
             quote_currency: quote_currency
@@ -34,12 +42,10 @@ module Admin
 
           placeholder = rate
           if placeholder.nil?
-            placeholder = FxDailyRate.create!(
+            placeholder = @rate_repository.create_placeholder!(
               operational_date: operational_date,
               base_currency: base_currency,
               quote_currency: quote_currency,
-              rate: nil,
-              source: "placeholder",
               source_run_id: run&.id,
               source_upload_id: upload&.id,
               created_context: {source: "upload"}
@@ -48,11 +54,10 @@ module Admin
 
           next if gap.present?
 
-          FxRateGap.create!(
+          @gap_repository.create_open!(
             operational_date: operational_date,
             base_currency: base_currency,
             quote_currency: quote_currency,
-            status: "open",
             placeholder_rate_id: placeholder.id,
             source_run_id: run&.id,
             source_upload_id: upload&.id,

@@ -3,13 +3,13 @@
 module Admin
   module Fx
     class HistorySnapshot
-      def self.call(sort_order: "desc", supported_pairs: Admin::Fx::RunRateGapProcessor::SUPPORTED_PAIRS,
-        source_id: nil)
+      def self.call(sort_order: 'desc', supported_pairs: Admin::Fx::RunRateGapProcessor::SUPPORTED_PAIRS,
+                    source_id: nil)
         new(sort_order: sort_order, supported_pairs: supported_pairs, source_id: source_id).call
       end
 
       def initialize(sort_order:, supported_pairs:, source_id: nil)
-        @sort_order = (sort_order.to_s == "asc") ? "asc" : "desc"
+        @sort_order = sort_order.to_s == 'asc' ? 'asc' : 'desc'
         @supported_pairs = supported_pairs
         @source_id = source_id
       end
@@ -27,7 +27,7 @@ module Admin
 
         dates = rates.map(&:operational_date).uniq
         dates.sort!
-        dates.reverse! if sort_order == "desc"
+        dates.reverse! if sort_order == 'desc'
 
         rates.each do |rate|
           rates_by_pair["#{rate.base_currency}/#{rate.quote_currency}"][rate.operational_date] = rate
@@ -48,7 +48,7 @@ module Admin
       attr_reader :sort_order, :supported_pairs, :source_id
 
       def supported_pair_conditions
-        statement = supported_pairs.map { "(base_currency = ? AND quote_currency = ?)" }.join(" OR ")
+        statement = supported_pairs.map { '(base_currency = ? AND quote_currency = ?)' }.join(' OR ')
         [statement, *supported_pairs.flatten]
       end
 

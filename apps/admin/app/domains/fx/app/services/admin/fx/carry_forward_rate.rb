@@ -3,6 +3,10 @@
 module Admin
   module Fx
     class CarryForwardRate
+      def initialize(rate_repository: Admin::Fx::Rates::Repository.new)
+        @rate_repository = rate_repository
+      end
+
       def self.call(
         operational_date:,
         base_currency:,
@@ -36,25 +40,25 @@ module Admin
         source_value = "carry_forward" unless source_value == "carry_forward"
         expected = OperationalDate.call
         if operational_date != expected
-          rate_record = FxDailyRate.new(operational_date: operational_date)
+          rate_record = @rate_repository.new_rate(operational_date: operational_date)
           rate_record.errors.add(:operational_date, "must match operational timezone date")
           raise ActiveRecord::RecordInvalid, rate_record
         end
 
         prior_date = operational_date - 1.day
-        prior_rate = FxDailyRate.find_by(
+        prior_rate = @rate_repository.find_by(
           operational_date: prior_date,
           base_currency: base_currency,
           quote_currency: quote_currency
         )
 
         unless prior_rate
-          rate_record = FxDailyRate.new(operational_date: operational_date)
+          rate_record = @rate_repository.new_rate(operational_date: operational_date)
           rate_record.errors.add(:base, "no prior rate available to carry forward")
           raise ActiveRecord::RecordInvalid, rate_record
         end
 
-        rate_record = FxDailyRate.find_or_initialize_by(
+        rate_record = @rate_repository.find_or_initialize(
           operational_date: operational_date,
           base_currency: base_currency,
           quote_currency: quote_currency
@@ -74,7 +78,7 @@ module Admin
           created_context: context.merge(created_context)
         )
 
-        rate_record.save!
+        @rate_repository.save!(rate_record)
 
         Admin::Fx::GapResolver.call(rate: rate_record)
         rate_record

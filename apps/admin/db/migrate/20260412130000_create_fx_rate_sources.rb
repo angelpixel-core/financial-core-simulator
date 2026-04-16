@@ -2,7 +2,7 @@
 
 class CreateFxRateSources < ActiveRecord::Migration[8.1]
   def change
-    create_table :fx_rate_sources do |t|
+    create_table :fx_rate_sources, if_not_exists: true do |t|
       t.string :name, null: false
       t.string :code, null: false
       t.string :source_type, null: false
@@ -13,6 +13,6 @@ class CreateFxRateSources < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :fx_rate_sources, %i[code source_type version], unique: true
+    add_index :fx_rate_sources, %i[code source_type version], unique: true, if_not_exists: true
   end
 end

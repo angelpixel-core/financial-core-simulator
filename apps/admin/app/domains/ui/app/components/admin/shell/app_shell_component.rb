@@ -13,6 +13,8 @@ module Admin
         "heart-pulse" => "heart-pulse.svg",
         "support" => "wrench.svg",
         "wrench" => "wrench.svg",
+        "docs" => "folder-open-dot.svg",
+        "folder-open-dot" => "folder-open-dot.svg",
         "default" => "layout-dashboard.svg"
       }.freeze
 
@@ -63,8 +65,10 @@ module Admin
         if normalized.include?("history") || normalized.include?("fx") || normalized.include?("dollar")
           return "dollar-sign"
         end
+
         return "heart-pulse" if normalized.include?("run") || normalized.include?("health")
         return "wrench" if normalized.include?("support")
+        return "folder-open-dot" if normalized.include?("docs")
 
         "default"
       end

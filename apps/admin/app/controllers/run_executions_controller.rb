@@ -9,7 +9,7 @@ class RunExecutionsController < ApplicationController
       RunExecutionJob.perform_later(@run.id, fee_enabled: fee_enabled?, explain: explain?, verbose: verbose?)
       payload = execution_payload(status: "enqueued")
     else
-      Runs::Execute.new.call(@run, fee_enabled: fee_enabled?, explain: explain?, verbose: verbose?)
+      Runs::Api.execute(run: @run, fee_enabled: fee_enabled?, explain: explain?, verbose: verbose?)
       payload = execution_payload(status: "executed")
     end
 
@@ -17,13 +17,13 @@ class RunExecutionsController < ApplicationController
       format.json { render json: payload, status: :ok }
       format.html { redirect_back fallback_location: "/admin/resources/runs/#{@run.id}" }
     end
-  rescue => error
-    payload = execution_payload(status: "failed").merge("error" => error.message)
+  rescue => e
+    payload = execution_payload(status: "failed").merge("error" => e.message)
 
     respond_to do |format|
       format.json { render json: payload, status: :unprocessable_content }
       format.html do
-        redirect_back fallback_location: "/admin/resources/runs/#{@run.id}", alert: error.message
+        redirect_back fallback_location: "/admin/resources/runs/#{@run.id}", alert: e.message
       end
     end
   end

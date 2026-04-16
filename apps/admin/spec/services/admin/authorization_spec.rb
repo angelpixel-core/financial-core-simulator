@@ -167,4 +167,29 @@ RSpec.describe Admin::Authorization do
       expect(auth.allow_machine_or_session?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")).to be(false)
     end
   end
+
+  describe "audit trail for authorization decisions" do
+    it "records allow audit log for valid machine token" do
+      allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+      request.headers["X-Admin-Token"] = "ui-secret"
+
+      auth = described_class.new(request: request)
+
+      expect { auth.allow_machine_or_session?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN") }
+        .to change(AccessControlAuditLog, :count).by(2)
+
+      expect(AccessControlAuditLog.order(:id).last.outcome).to eq("allow")
+    end
+
+    it "records deny audit log for failed machine token" do
+      allow(ENV).to receive(:[]).with("ADMIN_UI_TOKEN").and_return("ui-secret")
+
+      auth = described_class.new(request: request)
+
+      expect { auth.allow_machine_or_session?(required_role: "viewer", token_key: "ADMIN_UI_TOKEN") }
+        .to change(AccessControlAuditLog, :count).by(2)
+
+      expect(AccessControlAuditLog.order(:id).last.outcome).to eq("deny")
+    end
+  end
 end

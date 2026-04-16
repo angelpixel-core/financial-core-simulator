@@ -16,6 +16,10 @@ module Admin
         new.call(run: run)
       end
 
+      def initialize(gap_repository: Admin::Fx::Gaps::Repository.new)
+        @gap_repository = gap_repository
+      end
+
       def call(run:)
         return if run.nil?
 
@@ -41,20 +45,20 @@ module Admin
 
             next unless rate.placeholder?
 
-            gap = FxRateGap.open_for(
+            gap = @gap_repository.open_for(
               operational_date: operational_date,
               base_currency: base_currency,
               quote_currency: quote_currency
             )
             next if gap.present?
 
-            FxRateGap.create!(
+            @gap_repository.create_open!(
               operational_date: operational_date,
               base_currency: base_currency,
               quote_currency: quote_currency,
-              status: "open",
               placeholder_rate_id: rate.id,
               source_run_id: run.id,
+              source_upload_id: nil,
               created_context: {source: "run"}
             )
           end

@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 class RunArtifactsController < ApplicationController
-  RISK_STATUSES = ["HEALTHY", "MARGIN_CALL", "LIQUIDATABLE"].freeze
+  RISK_STATUSES = %w[HEALTHY MARGIN_CALL LIQUIDATABLE].freeze
 
   require "csv"
   require "cgi"
   require "json"
   require "rack/utils"
 
-  before_action :load_latest_run, only: [:latest, :latest_positions, :latest_pnl, :latest_risk]
-  before_action :load_run, except: [:latest, :latest_positions, :latest_pnl, :latest_risk]
+  before_action :load_latest_run, only: %i[latest latest_positions latest_pnl latest_risk]
+  before_action :load_run, except: %i[latest latest_positions latest_pnl latest_risk]
   before_action :authorize_artifact_access!
 
   def result
@@ -82,9 +82,7 @@ class RunArtifactsController < ApplicationController
 
   def authorize_artifact_access!
     if @run.nil?
-      if request.format.html?
-        return redirect_to avo.resources_runs_path
-      end
+      return redirect_to avo.resources_runs_path if request.format.html?
 
       return render plain: "Artifact not found", status: :not_found
     end
@@ -172,7 +170,7 @@ class RunArtifactsController < ApplicationController
     end.join
 
     if body_rows.empty?
-      body_rows = "<tr><td colspan=\"4\" style=\"padding: 10px; color: #4a5568;\">" \
+      body_rows = '<tr><td colspan="4" style="padding: 10px; color: #4a5568;">' \
                   "No accounts for selected filter.</td></tr>"
     end
 
@@ -232,7 +230,10 @@ class RunArtifactsController < ApplicationController
         "<strong>#{h(event.fetch("reasonCode", "-"))}</strong>" \
         " - type: #{h(event.fetch("type",
           "-"))}, market: #{h(event.fetch("marketId",
-            "-"))}, seq: #{h(event.fetch("seq", "-"))}, severity: #{h(event.fetch("severity", "-"))}" \
+            "-"))}, seq: #{h(event.fetch("seq",
+              "-"))}, severity: #{h(event.fetch(
+                "severity", "-"
+              ))}" \
       "</li>"
     end.join
 
@@ -293,7 +294,7 @@ class RunArtifactsController < ApplicationController
 
   def risk_pie_chart_html(counters)
     total = counters.fetch("ALL", 0)
-    return "<section style=\"margin-bottom: 12px; color: #4a5568;\">Risk distribution: no data</section>" if total.zero?
+    return '<section style="margin-bottom: 12px; color: #4a5568;">Risk distribution: no data</section>' if total.zero?
 
     healthy = counters.fetch("HEALTHY", 0)
     margin_call = counters.fetch("MARGIN_CALL", 0)
@@ -330,7 +331,7 @@ class RunArtifactsController < ApplicationController
   end
 
   def navigation_context_params
-    @navigation_context_params ||= Admin::Runs::NavigationContext.capture(params: params, run: @run)
+    @navigation_context_params ||= Runs::Api.capture_navigation_context(params: params, run: @run)
   end
 
   def navigation_context_hidden_inputs_html

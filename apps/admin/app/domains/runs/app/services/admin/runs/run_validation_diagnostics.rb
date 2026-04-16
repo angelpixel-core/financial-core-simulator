@@ -1,19 +1,8 @@
 module Admin
   module Runs
     class RunValidationDiagnostics
-      VALIDATION_ERROR_CODES = [
-        ::Runs::ErrorCodeMapper::VALIDATION_GENERAL,
-        ::Runs::ErrorCodeMapper::VALIDATION_ACCOUNTING,
-        ::Runs::ErrorCodeMapper::VALIDATION_RISK,
-        ::Runs::ErrorCodeMapper::VALIDATION_COLLATERAL,
-        ::Runs::ErrorCodeMapper::VALIDATION_TRADE_DECIMAL,
-        ::Runs::ErrorCodeMapper::VALIDATION_UNKNOWN_REFERENCE,
-        ::Runs::ErrorCodeMapper::VALIDATION_DUPLICATE_SEQ,
-        ::Runs::ErrorCodeMapper::VALIDATION_INVALID_NUMBER
-      ].freeze
-
-      def initialize(error_mapper: Admin::Validation::IngestionValidationErrorMapper.new)
-        @error_mapper = error_mapper
+      def initialize(validation_error_repository: Admin::Runs::ValidationErrors::Repository.new)
+        @validation_error_repository = validation_error_repository
       end
 
       def call(run:)
@@ -66,20 +55,14 @@ module Admin
         end
       end
 
-      def issues_for(run)
-        return [] if run.nil?
-        return [] unless validation_error?(run)
-
-        entry = @error_mapper.map(run: run)
-        [
-          entry.merge(severity: "error")
-        ]
+      def validation_error?(run)
+        @validation_error_repository.validation_error?(run: run)
       end
 
-      def validation_error?(run)
-        return false if run.nil?
+      def issues_for(run)
+        return [] if run.nil?
 
-        VALIDATION_ERROR_CODES.include?(run.error_code)
+        @validation_error_repository.issues_for(run: run)
       end
     end
   end

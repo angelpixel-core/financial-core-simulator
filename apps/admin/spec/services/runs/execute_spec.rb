@@ -1,8 +1,20 @@
 require "rails_helper"
-require "json"
 
 RSpec.describe Runs::Execute do
-  let(:service) { described_class.new }
+  let(:run_engine) { instance_double(Admin::Runs::Execution::EngineAdapter) }
+  let(:artifact_store) { instance_double(Admin::Runs::Artifacts::FileStoreAdapter) }
+  let(:event_bus) { instance_double(Admin::Events::BusAdapter, publish: nil) }
+  let(:metrics) { instance_double(Admin::Observability::PrometheusMetricsAdapter, increment: nil, observe: nil) }
+  let(:logger) { instance_double(Admin::Observability::StructuredLoggerAdapter, info: nil, error: nil) }
+  let(:service) do
+    described_class.new(
+      run_engine: run_engine,
+      artifact_store: artifact_store,
+      event_bus: event_bus,
+      metrics: metrics,
+      logger: logger
+    )
+  end
 
   let(:input_json) do
     {
@@ -21,95 +33,153 @@ RSpec.describe Runs::Execute do
   describe "#call" do
     it "marks run as succeeded and persists metadata + artifact paths" do
       run = Run.create!(input_json: input_json)
+      output_dir = Rails.root.join("storage", "runs", "out_run").to_s
+      execution_result = FCS::Contracts::RunExecutionResult.from_hash!(
+        json_path: File.join(output_dir, "result.json"),
+        input_hash: "abc123",
+        run_id: "run-123",
+        schema_version: "1.0",
+        valuation_timestamp: "2026-02-25T03:00:00Z",
+        artifacts: {
+          positions_csv_path: File.join(output_dir, "positions.csv"),
+          pnl_csv_path: File.join(output_dir, "pnl.csv")
+        },
+        validation_errors: [],
+        reliable: true,
+        annotated_input: input_json
+      )
+      artifact_paths = {
+        "result_json_path" => File.join(output_dir, "result.json"),
+        "positions_csv_path" => File.join(output_dir, "positions.csv"),
+        "pnl_csv_path" => File.join(output_dir, "pnl.csv")
+      }
 
       expect(Admin::Fx::RunRateGapProcessor).to receive(:call).with(run: run)
-
-      runner = instance_double(FCS::Application::Runner)
-      allow(FCS::Application::Runner).to receive(:new).and_return(runner)
-      expect(runner).to receive(:run_from_input!)
-        .with(input: hash_including(input_json), output_dir: kind_of(String), fee_enabled: true, explain: true, verbose: false) do |input:, output_dir:, **_kwargs|
-        json_path = File.join(output_dir, "result.json")
-        File.write(
-          json_path,
-          JSON.pretty_generate(
-            {
-              "engineVersion" => "test-engine",
-              "schemaVersion" => "1.0",
-              "runId" => "run-123",
-              "inputHash" => "abc123",
-              "valuationTimestamp" => "2026-02-25T03:00:00Z",
-              "global" => {"totalPnLQuote" => "0.0"}
-            }
-          ) + "\n"
-        )
+      allow(artifact_store).to receive(:build_output_dir).and_return(output_dir)
+      allow(run_engine).to receive(:execute).and_return(
         {
-          json_path: json_path,
-          annotated_input: input,
-          validation_errors: [],
-          reliable: true
+          execution_result: execution_result,
+          duration_ms: 42
         }
-      end
+      )
+      allow(artifact_store).to receive(:artifact_paths).and_return(artifact_paths)
 
       service.call(run)
       run.reload
 
       expect(run).to be_succeeded
-      expect(run.engine_version).to eq("test-engine")
+      expect(run.engine_version).to eq(FCS::VERSION)
       expect(run.schema_version).to eq("1.0")
       expect(run.run_uuid).to eq("run-123")
       expect(run.input_hash).to eq("abc123")
       expect(run.valuation_timestamp).to eq(Time.zone.parse("2026-02-25T03:00:00Z"))
-      expect(run.duration_ms).to be >= 0
-      expect(run.result_json_path).to end_with("result.json")
-      expect(run.positions_csv_path).to end_with("positions.csv")
-      expect(run.pnl_csv_path).to end_with("pnl.csv")
+      expect(run.duration_ms).to eq(42)
+      expect(run.result_json_path).to eq(File.join(output_dir, "result.json"))
+      expect(run.positions_csv_path).to eq(File.join(output_dir, "positions.csv"))
+      expect(run.pnl_csv_path).to eq(File.join(output_dir, "pnl.csv"))
+      expect(event_bus).to have_received(:publish).with("runs.execution.completed", hash_including(runId: run.id))
+      expect(metrics).to have_received(:increment).with("runs.execution.completed", tags: {status: "succeeded"})
+      expect(metrics).to have_received(:observe).with("runs.execution.duration_ms", value: 42,
+        tags: {status: "succeeded"})
+      expect(logger).to have_received(:info).with(
+        event: "runs.execution.completed",
+        payload: hash_including(runId: run.id, durationMs: 42),
+        tags: {status: "succeeded"}
+      )
     end
 
     it "marks run as unreliable when validation errors are present" do
       run = Run.create!(input_json: input_json)
+      output_dir = Rails.root.join("storage", "runs", "out_unreliable").to_s
+      execution_result = FCS::Contracts::RunExecutionResult.from_hash!(
+        json_path: File.join(output_dir, "result.json"),
+        input_hash: "bad123",
+        run_id: "run-bad",
+        schema_version: "1.0",
+        valuation_timestamp: "2026-02-25T03:00:00Z",
+        artifacts: {
+          positions_csv_path: File.join(output_dir, "positions.csv"),
+          pnl_csv_path: File.join(output_dir, "pnl.csv")
+        },
+        validation_errors: [{message: "invalid trade", code: "INVALID_TRADE", trade_id: "trade-1"}],
+        reliable: true,
+        annotated_input: input_json
+      )
 
-      runner = instance_double(FCS::Application::Runner)
-      allow(FCS::Application::Runner).to receive(:new).and_return(runner)
-      expect(runner).to receive(:run_from_input!)
-        .with(input: hash_including(input_json), output_dir: kind_of(String), fee_enabled: true, explain: true,
-          verbose: false) do |input:, output_dir:, **_kwargs|
-        json_path = File.join(output_dir, "result.json")
-        File.write(
-          json_path,
-          JSON.pretty_generate(
-            {
-              "engineVersion" => "test-engine",
-              "schemaVersion" => "1.0",
-              "runId" => "run-123",
-              "inputHash" => "abc123",
-              "valuationTimestamp" => "2026-02-25T03:00:00Z",
-              "global" => {"totalPnLQuote" => "0.0"}
-            }
-          ) + "\n"
-        )
+      allow(artifact_store).to receive(:build_output_dir).and_return(output_dir)
+      allow(run_engine).to receive(:execute).and_return(
         {
-          json_path: json_path,
-          annotated_input: input,
-          validation_errors: [{message: "invalid trade"}],
-          reliable: true
+          execution_result: execution_result,
+          duration_ms: 17
         }
-      end
+      )
+      allow(artifact_store).to receive(:artifact_paths).and_return(
+        {
+          "result_json_path" => File.join(output_dir, "result.json"),
+          "positions_csv_path" => File.join(output_dir, "positions.csv"),
+          "pnl_csv_path" => File.join(output_dir, "pnl.csv")
+        }
+      )
 
       service.call(run)
       run.reload
 
       expect(run).to be_succeeded
       expect(run.reliable).to eq(false)
+      expect(run.run_validation_errors.where(code: "INVALID_TRADE", trade_id: "trade-1")).to exist
+    end
+
+    it "keeps succeeded state when artifact persistence is partial (non-reliable until verification)" do
+      run = Run.create!(input_json: input_json)
+      output_dir = Rails.root.join("storage", "runs", "out_partial").to_s
+      execution_result = FCS::Contracts::RunExecutionResult.from_hash!(
+        json_path: File.join(output_dir, "result.json"),
+        input_hash: "partial123",
+        run_id: "run-partial",
+        schema_version: "1.0",
+        valuation_timestamp: "2026-02-25T03:00:00Z",
+        artifacts: {
+          positions_csv_path: File.join(output_dir, "positions.csv"),
+          pnl_csv_path: File.join(output_dir, "pnl.csv")
+        },
+        validation_errors: [],
+        reliable: true,
+        annotated_input: input_json
+      )
+
+      allow(artifact_store).to receive(:build_output_dir).and_return(output_dir)
+      allow(run_engine).to receive(:execute).and_return(
+        {
+          execution_result: execution_result,
+          duration_ms: 25
+        }
+      )
+      allow(artifact_store).to receive(:artifact_paths).and_return(
+        {
+          "result_json_path" => File.join(output_dir, "result.json"),
+          "positions_csv_path" => File.join(output_dir, "positions.csv"),
+          "pnl_csv_path" => nil
+        }
+      )
+
+      service.call(run)
+      run.reload
+
+      expect(run).to be_succeeded
+      expect(run.verification_status).to eq("unverified")
+      expect(run.result_json_path).to eq(File.join(output_dir, "result.json"))
+      expect(run.positions_csv_path).to eq(File.join(output_dir, "positions.csv"))
+      expect(run.pnl_csv_path).to be_nil
+      expect(event_bus).to have_received(:publish).with("runs.execution.completed", hash_including(runId: run.id))
     end
 
     it "marks run as failed with error metadata when runner raises" do
       run = Run.create!(input_json: input_json)
+      allow(artifact_store).to receive(:build_output_dir).and_return(Rails.root.join("storage", "runs",
+        "out_error").to_s)
 
       expect(Admin::Fx::RunRateGapProcessor).not_to receive(:call)
-
-      runner = instance_double(FCS::Application::Runner)
-      allow(FCS::Application::Runner).to receive(:new).and_return(runner)
-      allow(runner).to receive(:run_from_input!).and_raise(StandardError, "boom")
+      allow(run_engine).to receive(:execute).and_raise(StandardError, "boom")
 
       expect { service.call(run) }.to raise_error(StandardError, "boom")
 
@@ -118,15 +188,23 @@ RSpec.describe Runs::Execute do
       expect(run.error_code).to eq("ERR_EXECUTION_FAILURE")
       expect(run.error_message).to eq("boom")
       expect(run.duration_ms).not_to be_nil
+      expect(event_bus).to have_received(:publish).with("runs.execution.failed", hash_including(runId: run.id,
+        errorMessage: "boom"))
+      expect(metrics).to have_received(:increment).with("runs.execution.failed", tags: {status: "failed"})
+      expect(logger).to have_received(:error).with(
+        event: "runs.execution.failed",
+        payload: hash_including(runId: run.id, errorMessage: "boom"),
+        tags: hash_including(status: "failed")
+      )
     end
 
     it "maps FCS::Error code when runner raises domain error" do
       run = Run.create!(input_json: input_json)
+      allow(artifact_store).to receive(:build_output_dir).and_return(Rails.root.join("storage", "runs",
+        "out_domain_error").to_s)
 
-      runner = instance_double(FCS::Application::Runner)
-      allow(FCS::Application::Runner).to receive(:new).and_return(runner)
-      allow(runner).to receive(:run_from_input!).and_raise(FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT,
-        "invalid input"))
+      allow(run_engine).to receive(:execute)
+        .and_raise(FCS::Error.new(FCS::Errors::ERR_INVALID_INPUT, "invalid input"))
 
       expect { service.call(run) }.to raise_error(FCS::Error)
 
@@ -134,6 +212,8 @@ RSpec.describe Runs::Execute do
       expect(run).to be_failed
       expect(run.error_code).to eq(FCS::Errors::ERR_INVALID_INPUT)
       expect(run.error_message).to eq("invalid input")
+      expect(event_bus).to have_received(:publish).with("runs.execution.failed", hash_including(runId: run.id,
+        errorCode: FCS::Errors::ERR_INVALID_INPUT))
     end
   end
 end

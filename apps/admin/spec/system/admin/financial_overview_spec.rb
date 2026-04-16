@@ -255,11 +255,11 @@ RSpec.describe "Admin financial overview", type: :system, js: true do
 
     warning_text = I18n.t("admin.overview.financial_overview.missing_rate_tooltip")
     within('[data-financial-overview-target="volumeChart"]') do
-      find(".trend-chart__dot--missing", match: :first, visible: :all, wait: 10).hover
+      find(".trend-chart__dot--missing", match: :first, visible: :all).hover
       expect(page).to have_content(warning_text)
     end
     within('[data-financial-overview-target="pnlChart"]') do
-      find(".recharts-line-curve", match: :first, wait: 10).hover
+      find(".recharts-line-curve", match: :first).hover
       expect(page).not_to have_content(warning_text)
     end
   ensure

@@ -25,6 +25,10 @@ module Admin
         )
       end
 
+      def initialize(rate_repository: Admin::Fx::Rates::Repository.new)
+        @rate_repository = rate_repository
+      end
+
       def call(base_currency:, quote_currency:, operational_date:)
         base = base_currency.to_s.upcase
         quote = quote_currency.to_s.upcase
@@ -39,7 +43,7 @@ module Admin
           )
         end
 
-        rate = FxDailyRate.find_by(
+        rate = @rate_repository.find_by(
           operational_date: operational_date,
           base_currency: base,
           quote_currency: quote

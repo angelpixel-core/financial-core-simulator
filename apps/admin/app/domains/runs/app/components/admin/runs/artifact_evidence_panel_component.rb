@@ -95,7 +95,7 @@ module Admin
 
       def resolved_path_for(attribute)
         @resolved_paths ||= {}
-        @resolved_paths[attribute] ||= Artifacts::PathResolver.new(run: @run, attribute: attribute).call
+        @resolved_paths[attribute] ||= ::Artifacts::PathResolver.new(run: @run, attribute: attribute).call
       end
 
       def route_path(helper_name, params)

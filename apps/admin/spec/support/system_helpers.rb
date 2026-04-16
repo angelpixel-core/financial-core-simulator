@@ -1,8 +1,11 @@
 module SystemHelpers
   def wait_for_app_shell
     find("body", wait: 10)
+    find(".app-shell", wait: 10)
 
-    visit(current_path) unless page.has_css?(".app-shell", wait: 2)
+    has_nav = page.has_css?(".app-shell__nav--desktop", wait: 10)
+    has_topbar = page.has_css?(".app-shell__topbar", wait: 10)
+    return if has_nav || has_topbar
 
     find(".app-shell", match: :first, wait: 10)
     find(".app-shell__nav--desktop, .app-shell__topbar", match: :first, wait: 10)
@@ -42,6 +45,7 @@ module SystemHelpers
   end
 
   def wait_for_financial_overview
+    wait_for_app_shell
     find('[data-controller="financial-overview"]', wait: 10)
   end
 end

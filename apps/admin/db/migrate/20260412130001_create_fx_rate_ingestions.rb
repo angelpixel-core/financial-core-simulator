@@ -2,7 +2,7 @@
 
 class CreateFxRateIngestions < ActiveRecord::Migration[8.1]
   def change
-    create_table :fx_rate_ingestions do |t|
+    create_table :fx_rate_ingestions, if_not_exists: true do |t|
       t.references :source, null: false, foreign_key: {to_table: :fx_rate_sources}
       t.string :status, null: false
       t.string :error_code
@@ -16,7 +16,7 @@ class CreateFxRateIngestions < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :fx_rate_ingestions, :correlation_id
-    add_index :fx_rate_ingestions, :status
+    add_index :fx_rate_ingestions, :correlation_id, if_not_exists: true
+    add_index :fx_rate_ingestions, :status, if_not_exists: true
   end
 end

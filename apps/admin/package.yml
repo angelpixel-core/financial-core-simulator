@@ -2,11 +2,14 @@ enforce_dependencies: true
 enforce_privacy: true
 public_path: app
 dependencies:
+  - "app/domains/access_control"
   - "app/domains/auth"
   - "app/domains/runs"
   - "app/domains/artifacts"
   - "app/domains/dashboard"
+  - "app/domains/events"
   - "app/domains/fx"
+  - "app/domains/observability"
   - "app/domains/ui"
   - "app/domains/validation"
   - "app/domains/release"

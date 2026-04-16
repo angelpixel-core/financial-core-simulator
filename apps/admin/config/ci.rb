@@ -3,6 +3,14 @@
 CI.run do
   step "Setup", "bin/setup --skip-server"
 
+  step "Gate: Contract boundaries (ports + auth)",
+    "bundle exec rspec -Ispec spec/contracts/ports spec/contracts/access_control"
+  step "Gate: Cross-context smoke (request/system)",
+    "bundle exec rspec -Ispec spec/requests/admin/cross_context_smoke_spec.rb spec/system/admin/cross_context_smoke_spec.rb"
+  step "Gate: Boundary matrix (architecture)",
+    "bundle exec rspec -Ispec spec/architecture/controller_domain_api_enforcement_spec.rb spec/architecture/packwerk_boundary_matrix_spec.rb"
+  step "Gate: Packwerk boundaries", "bundle exec packwerk check"
+
   # Mandatory release-gate baseline (clear fail-fast semantics)
   step "Gate: Admin test regression", "bundle exec rspec -Ispec spec"
   step "Gate: Style (StandardRB)", "bundle exec standardrb"

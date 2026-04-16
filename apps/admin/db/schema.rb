@@ -10,11 +10,55 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_12_130004) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_16_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
+
+  create_table "access_control_account_roles", force: :cascade do |t|
+    t.bigint "access_control_role_id", null: false
+    t.bigint "account_id", null: false
+    t.string "assigned_by_id"
+    t.jsonb "assigned_context", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["access_control_role_id"], name: "index_access_control_account_roles_on_access_control_role_id"
+    t.index ["account_id", "access_control_role_id"], name: "idx_access_control_account_roles_unique", unique: true
+    t.index ["account_id"], name: "index_access_control_account_roles_on_account_id"
+  end
+
+  create_table "access_control_audit_logs", force: :cascade do |t|
+    t.bigint "account_id"
+    t.string "action", null: false
+    t.jsonb "context", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.string "outcome", null: false
+    t.string "required_role"
+    t.string "role"
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_access_control_audit_logs_on_account_id"
+    t.index ["action", "outcome"], name: "index_access_control_audit_logs_on_action_and_outcome"
+    t.index ["created_at"], name: "index_access_control_audit_logs_on_created_at"
+  end
+
+  create_table "access_control_permissions", force: :cascade do |t|
+    t.bigint "access_control_role_id", null: false
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.string "resource", null: false
+    t.datetime "updated_at", null: false
+    t.index ["access_control_role_id", "resource", "action"], name: "idx_access_control_permissions_unique", unique: true
+    t.index ["access_control_role_id"], name: "index_access_control_permissions_on_access_control_role_id"
+  end
+
+  create_table "access_control_roles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "key", null: false
+    t.integer "level", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_access_control_roles_on_key", unique: true
+  end
 
   create_table "account_login_change_keys", force: :cascade do |t|
     t.datetime "deadline", null: false
@@ -277,6 +321,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_12_130004) do
     t.index ["verification_status"], name: "index_runs_on_verification_status"
   end
 
+  add_foreign_key "access_control_account_roles", "access_control_roles"
+  add_foreign_key "access_control_account_roles", "accounts"
+  add_foreign_key "access_control_audit_logs", "accounts"
+  add_foreign_key "access_control_permissions", "access_control_roles"
   add_foreign_key "account_login_change_keys", "accounts", column: "id"
   add_foreign_key "account_password_reset_keys", "accounts", column: "id"
   add_foreign_key "account_remember_keys", "accounts", column: "id"

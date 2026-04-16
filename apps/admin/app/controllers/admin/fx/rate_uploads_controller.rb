@@ -16,26 +16,27 @@ class Admin::Fx::RateUploadsController < ApplicationController
       return
     end
 
-    upload = FxRateUpload.create!(
+    upload = Admin::Fx::Api.start_rate_upload(
       status: "processing",
+      file: file,
       created_by_id: current_admin_account&.id,
       created_by_role: admin_shell_role,
-      created_context: request_context,
-      original_filename: file.original_filename
+      created_context: request_context
     )
+
     session[:fx_rate_upload_id] = upload.id
     session[:fx_rate_upload_active] = true
 
-    upload.update!(file_path: persist_file(file, upload.id))
     broadcast_status(upload)
 
-    Admin::Fx::RateUploadJob.perform_later(upload.id)
+    Admin::Fx::Api.enqueue_rate_upload(upload.id)
 
     redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale),
       notice: t("admin.fx.history.upload.processing")
   rescue => e
     if upload
       upload.update!(status: "error", error_message: e.message)
+      Admin::Fx::Api.mark_upload_exception(upload: upload, message: e.message)
       broadcast_status(upload)
     end
     redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale),
@@ -43,7 +44,7 @@ class Admin::Fx::RateUploadsController < ApplicationController
   end
 
   def template
-    template = Admin::Fx::RateUploadTemplate.generate
+    template = Admin::Fx::Api.generate_rate_upload_template
     send_data template.data,
       filename: template.filename,
       type: template.content_type,

@@ -1,0 +1,7 @@
+enforce_dependencies: true
+enforce_privacy: true
+public_path: app
+dependencies:
+  - "app/domains/auth"
+  - "app/domains/core"
+  - "app/domains/events"

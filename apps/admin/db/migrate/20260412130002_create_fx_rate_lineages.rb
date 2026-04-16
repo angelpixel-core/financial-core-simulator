@@ -2,7 +2,7 @@
 
 class CreateFxRateLineages < ActiveRecord::Migration[8.1]
   def change
-    create_table :fx_rate_lineages do |t|
+    create_table :fx_rate_lineages, if_not_exists: true do |t|
       t.references :ingestion, null: false, foreign_key: {to_table: :fx_rate_ingestions}
       t.references :source, null: false, foreign_key: {to_table: :fx_rate_sources}
       t.date :operational_date, null: false
@@ -19,8 +19,8 @@ class CreateFxRateLineages < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :fx_rate_lineages, %i[ingestion_id operational_date]
-    add_index :fx_rate_lineages, %i[base_currency quote_currency]
-    add_index :fx_rate_lineages, :correlation_id
+    add_index :fx_rate_lineages, %i[ingestion_id operational_date], if_not_exists: true
+    add_index :fx_rate_lineages, %i[base_currency quote_currency], if_not_exists: true
+    add_index :fx_rate_lineages, :correlation_id, if_not_exists: true
   end
 end

@@ -7,7 +7,7 @@ class Admin::Fx::DailyRatesController < ApplicationController
   before_action :authorize_fx_rate_management_policy!
 
   def create
-    Admin::Fx::RateUpserter.call(
+    Admin::Fx::Api.upsert_rate(
       operational_date: operational_date,
       base_currency: base_currency,
       quote_currency: quote_currency,
@@ -25,11 +25,10 @@ class Admin::Fx::DailyRatesController < ApplicationController
   end
 
   def carry_forward
-    Admin::Fx::CarryForwardRate.call(
+    Admin::Fx::Api.carry_forward_rate(
       operational_date: operational_date,
       base_currency: base_currency,
       quote_currency: quote_currency,
-      source: "carry_forward",
       created_by_id: current_admin_account&.id,
       created_by_role: admin_shell_role,
       created_context: request_context
@@ -43,28 +42,13 @@ class Admin::Fx::DailyRatesController < ApplicationController
   end
 
   def update
-    rate = FxDailyRate.find(params[:id])
-
-    unless rate.manual? || rate.placeholder?
-      redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-        alert: t("admin.fx.flash.rate_edit_blocked")
-      return
-    end
-
-    context = rate.created_context || {}
-    rate.assign_attributes(
+    Admin::Fx::Api.update_rate(
+      rate_id: params[:id],
       rate: rate_value,
-      source: "manual",
-      source_rate_id: nil,
-      source_run_id: nil,
-      source_upload_id: nil,
       created_by_id: current_admin_account&.id,
       created_by_role: admin_shell_role,
-      created_context: context.merge(request_context)
+      created_context: request_context
     )
-
-    rate.save!
-    Admin::Fx::GapResolver.call(rate: rate)
 
     redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
       notice: t("admin.fx.flash.rate_saved")
@@ -74,21 +58,16 @@ class Admin::Fx::DailyRatesController < ApplicationController
   end
 
   def destroy
-    rate = FxDailyRate.find(params[:id])
-
-    if !rate.manual? || rate.linked_to_system?
-      redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-        alert: t("admin.fx.flash.rate_delete_blocked")
-      return
-    end
-
-    rate.destroy!
+    Admin::Fx::Api.delete_rate(rate_id: params[:id])
     redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
       notice: t("admin.fx.flash.rate_deleted")
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
+      alert: e.record.errors.full_messages.to_sentence
   end
 
   def current
-    Admin::Fx::RateUpserter.call(
+    Admin::Fx::Api.upsert_rate(
       operational_date: operational_date,
       base_currency: base_currency,
       quote_currency: quote_currency,
@@ -113,15 +92,11 @@ class Admin::Fx::DailyRatesController < ApplicationController
 
   def operational_date
     value = params[:operational_date].presence || fx_daily_rate_params[:operational_date].presence
-    return Admin::Fx::OperationalDate.call if value.blank?
-
-    Date.iso8601(value)
-  rescue ArgumentError
-    Admin::Fx::OperationalDate.call
+    Admin::Fx::Api.operational_date(value: value)
   end
 
   def base_currency
-    params[:base_currency].presence || fx_daily_rate_params[:base_currency].presence || Admin::Fx::RateResolver::BASE_CURRENCY
+    params[:base_currency].presence || fx_daily_rate_params[:base_currency].presence || Admin::Fx::Api.base_currency
   end
 
   def quote_currency
