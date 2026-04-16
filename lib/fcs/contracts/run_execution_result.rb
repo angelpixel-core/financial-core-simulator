@@ -4,7 +4,7 @@ module FCS
   module Contracts
     class RunExecutionResult
       # TODO: migrate this PORO contract to dry-struct.
-      REQUIRED_FIELDS = %i[json_path input_hash run_id schema_version artifacts].freeze
+      REQUIRED_FIELDS = %i[input_hash run_id schema_version].freeze
 
       def self.from_hash!(attributes)
         new(attributes).to_h
@@ -16,15 +16,15 @@ module FCS
 
       def to_h
         missing = REQUIRED_FIELDS.select { |field| blank?(@attributes[field]) }
-        raise ArgumentError, "Missing required fields: #{missing.join(", ")}" unless missing.empty?
+        raise ArgumentError, "Missing required fields: #{missing.join(', ')}" unless missing.empty?
 
         {
-          json_path: @attributes.fetch(:json_path).to_s,
           input_hash: @attributes.fetch(:input_hash).to_s,
           run_id: @attributes.fetch(:run_id).to_s,
           schema_version: @attributes.fetch(:schema_version).to_s,
           valuation_timestamp: @attributes[:valuation_timestamp],
-          artifacts: @attributes.fetch(:artifacts),
+          payload: @attributes[:payload],
+          artifacts: @attributes.fetch(:artifacts, {}),
           validation_errors: Array(@attributes[:validation_errors]),
           reliable: @attributes.key?(:reliable) ? @attributes[:reliable] : true,
           annotated_input: @attributes[:annotated_input]
