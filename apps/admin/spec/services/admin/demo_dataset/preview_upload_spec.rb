@@ -1,10 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe Admin::DemoDataset::PreviewUpload do
-  let(:parser_result_class) { Struct.new(:valid?, :input, :errors, keyword_init: true) }
+  let(:parse_result_class) { Struct.new(:valid?, :input, :errors, keyword_init: true) }
 
   it 'returns summary and sample rows' do
-    parser = class_double(Admin::DemoDataset::ExcelToInputParser)
+    file_adapter = instance_double(Admin::Demo::Datasets::FileAdapter)
     input = {
       schemaVersion: '1.0',
       accounts: [{ accountId: 'acc-1' }],
@@ -12,9 +12,9 @@ RSpec.describe Admin::DemoDataset::PreviewUpload do
       trades: [{ tradeId: 'trade-1' }],
       feeModel: { enabled: false }
     }
-    allow(parser).to receive(:call).and_return(parser_result_class.new(valid?: true, input: input, errors: []))
+    allow(file_adapter).to receive(:parse).and_return(parse_result_class.new(valid?: true, input: input, errors: []))
 
-    preview = described_class.new(parser: parser).call(file_path: '/tmp/demo.xlsx', timeline_enabled: true)
+    preview = described_class.new(file_adapter: file_adapter).call(file_path: '/tmp/demo.xlsx', timeline_enabled: true)
 
     expect(preview[:state]).to eq(:success)
     expect(preview[:summary]).to include(trades_count: 1, accounts_count: 1, markets_count: 1, schema_version: '1.0')
