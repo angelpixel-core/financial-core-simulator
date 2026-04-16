@@ -1,26 +1,17 @@
 # frozen_string_literal: true
 
-require "date"
+require 'date'
 
 module Admin
   module Fx
     module Adapters
       class RateResolverProvider < FCS::Ports::FxProvider
+        def initialize(provider: Admin::Fx::Providers::ProviderChain.new)
+          @provider = provider
+        end
+
         def fetch_rate(base_currency:, quote_currency:, at: nil)
-          operational_date = at.is_a?(Date) ? at : Date.parse(at.to_s)
-
-          rate = Admin::Fx::RateResolver.call(
-            base_currency: base_currency,
-            quote_currency: quote_currency,
-            operational_date: operational_date
-          )
-
-          {
-            rate: rate.rate,
-            rate_source: rate.rate_source,
-            rate_missing: rate.rate_missing,
-            operational_date: operational_date
-          }
+          @provider.fetch_rate(base_currency: base_currency, quote_currency: quote_currency, at: at)
         end
       end
     end
