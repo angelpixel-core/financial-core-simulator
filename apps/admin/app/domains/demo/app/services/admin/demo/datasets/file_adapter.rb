@@ -3,7 +3,7 @@
 module Admin
   module Demo
     module Datasets
-      class FileAdapter
+      class FileAdapter < FCS::Ports::FileLoader
         ParseResult = Struct.new(:valid?, :input, :errors, keyword_init: true)
 
         def initialize(parser: Admin::DemoDataset::ExcelToInputParser)
@@ -18,6 +18,10 @@ module Admin
             input: result.input,
             errors: normalize_errors(result.errors)
           )
+        end
+
+        def load(file_path:, timeline_enabled: false, **_options)
+          parse(file_path: file_path, timeline_enabled: timeline_enabled)
         end
 
         private

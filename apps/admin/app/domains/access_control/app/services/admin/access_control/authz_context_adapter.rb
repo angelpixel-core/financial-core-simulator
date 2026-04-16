@@ -2,7 +2,7 @@
 
 module Admin
   module AccessControl
-    class AuthzContextAdapter
+    class AuthzContextAdapter < FCS::Ports::AuthzContext
       def initialize(request:)
         @request = request
       end

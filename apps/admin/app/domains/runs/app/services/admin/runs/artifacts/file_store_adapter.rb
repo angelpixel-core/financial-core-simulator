@@ -5,7 +5,7 @@ require 'fileutils'
 module Admin
   module Runs
     module Artifacts
-      class FileStoreAdapter
+      class FileStoreAdapter < FCS::Ports::ArtifactStore
         def build_output_dir(run_id:)
           base = Rails.root.join('storage', 'runs')
           FileUtils.mkdir_p(base)
