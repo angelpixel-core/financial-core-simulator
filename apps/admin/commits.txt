@@ -1,0 +1,206 @@
+DEVELOPMENT ============
+
+813bc2f1 test(demo): assert partial runs stay succeeded
+2c72d6ba chore(test): remove legacy demo_dataset spec paths
+8663ef3e refactor(demo): nest datasets module and harden uploads
+ef86ac81 test(fx): align sync system spec with loader flow
+96e966ab feat(demo): harden dataset uploads and split demo namespace
+e0e828f6 test(auth): cover policy roles and sync flow
+ce8f12a5 refactor(auth): enforce policies in admin controllers
+912e042a feat(auth): add policy objects for admin roles
+3754e0f4 style(auth): align login header and single-row footer
+fec61092 refactor(auth): reuse landing footer on login and simplify header
+a4aa2ca3 fix(runs): show not-reliable when latest run is unreliable
+44bcd4fd fix(demo): restore native trades file input behavior
+abe6b294 feat(demo): keep timeline on and process valid trade rows
+0f551fba style(fx): hide open-gap badge in history table
+5f7e97ea style(fx): polish history cell hints and control styling
+5cec4376 feat(fx): add history events drawer and loader flow
+bbac1671 feat(fx): replace lineage inline with side panel
+66fc51aa style(fx): align history controls
+fb871f47 fix(fx): accept numeric rates in BCRA validation
+89bba28c fix(fx): normalize BCRA payload wrapper
+c23a1e32 fix(fx): align observability view path
+4917fc2a test(fx): add observability request/system specs
+67efb05a fix(test): add missing correlation ids
+6d9c548e test(fx): expand observability snapshot coverage
+cc277a42 feat(fx): standardize ingestion logs
+4601a0b0 feat(fx): add time-bucketed observability
+fb49e603 feat(fx): add observability charts
+2ece7c9e fix(fx): route observability to plural controller
+2a2e1e3c docs(fx): document observability endpoint
+36b616f2 feat(fx): add observability dashboard UI
+f8c033fb feat(fx): add observability exporter
+d89eaca5 feat(fx): add observability snapshot
+bdb87927 fix(docs): update rswag config
+3ce05595 docs: add rswag generation note
+624f2ab0 feat(fx): add admin OpenAPI docs
+9dd68ae8 feat(fx): add rate lineage details
+0bdc56a3 feat(fx): add multi-source selector
+42482483 docs: refresh fx vertical slice
+bc003283 docs: note bundler sorbet install
+7bb79e94 chore: ignore bundler config
+c16d8322 feat(fx): add sorbet typing
+4cef88a8 feat(fx): standardize ingestion events
+cc4f73ea feat(fx): add strict payload adapter
+41aca025 fix(fx): log mapping failures json
+5cb53f64 feat(fx): add ingestion error catalog
+10ee3647 fix(fx): log mapping failures
+2d4ae0b2 feat(fx): add value objects and mapper
+93c104d2 fix(runs): filter invalid trades in artifacts
+2dd75e70 fix(fx): correct sync route helper
+86f2b44b test(fx): add sync specs
+5edbc968 feat(fx): add sync ui and events list
+9fe34aff docs(fx): update phase 7 scope
+6e2dd23a feat(avo): add event and job resources
+b2eed7d0 feat(fx): add ingestion job
+d7dc4736 feat(core): add publisher and metrics interfaces
+d815de0c docs(fx): refine phase 6 plan
+dd83f3b5 docs(fx): note vcr structure
+4508e71b test(fx): reorganize vcr cassettes
+a79099b7 fix(fx): rely on event id default
+660e60da feat(fx): add event emitter
+9f1b0516 fix(fx): stabilize adapter specs
+13922088 docs(fx): note vcr usage
+d9c84afc test(fx): add vcr coverage
+d5b3a511 feat(fx): add bcra adapter
+9534ffbb fix(fx): make bcra validation strict
+362cb69d feat(fx): add bcra validation contract
+3200785a test(system): isolate admin ui token
+3b837c60 test(system): assert login success
+8b4f68d0 Revert "test(admin): stabilize js specs with truncation"
+1711dff0 test(admin): stabilize js specs with truncation
+539c240b refactor(core): relocate application result
+574d8d65 refactor(core): centralize operation result
+34458ee5 feat(fx): add ingestion result
+19a05581 docs(fx): add ingestion plan
+972777b2 test(admin): adjust fx source specs
+08d2e842 feat(avo): add fx ingestion resources
+25ab545b feat(fx): seed sources from config
+53ac73ae feat(fx): add ingestion models
+29cf37d3 docs(landing): refresh proposal notes
+8917ff3d docs(fx): refine normalization notes
+472b9067 docs(admin): update navigation guide
+0f40a554 style(admin): standardrb cleanup
+e72fe119 chore(demo): generate 30-day history
+0a118648 style(auth): align login with app theme
+399d0130 feat(ui): truncate fiat display
+e723e2a3 feat(currency): move lists to config
+42dc68ae fix(landing): update footer links
+ca86811e style(fx): remove upload labels from rates table
+f9eb1aa9 feat(admin): remove Docs from navigation
+1d7e996b chore(db): update schema formatting
+a99dbf96 style(test): standardrb cleanup (runs specs)
+27964dcd style(engine): standardrb cleanup
+c155cd8f test(runner): align specs with validate_with_errors
+466070f6 fix(demo): map required headers only
+e60bf814 style(landing): refine FAQ layout and remove pricing
+dc709e22 test(runs): allow fxContext in runner input
+78f042e4 fix(demo): treat invalid timestamps as missing
+22ac4315 test(runs): update execute and artifacts specs
+c0f6da67 style(admin): standardrb cleanup (runs/dashboard)
+1b15caee fix(demo): ignore extra trade columns
+
+
+ MAIN ============
+
+caa327d3 undo this commits
+053454f5 feat(events): add canonical catalog and versioned envelopes
+9797a9d8 chore(git): remove refactor doc from code commit
+858e893c refactor(ports): add authz, artifact, and file-loader ports
+61cd0232 test(architecture): enforce cross-context acceptance gates
+a3883e62 feat(access_control): add RBAC repositories and auth audit trail
+61cd4617 refactor(runs): close lote3 with validation-errors repository
+6069e69e refactor(fx): route rate and gap persistence through canonical repos
+14526dde docs(refactor): update lot progress and pending backlog
+d9b50ca1 refactor(demo): close lote1 adapters with canonical dataset layer
+445210ed feat(observability): add events bus and telemetry adapters
+de4cd2f0 refactor(runs): introduce engine and file-store adapters
+9684ab9f fix(runs): resolve artifact path resolver from top-level
+89fbb1b4 feat(fx): close provider adapters lot with contracts
+6d22e48e test(architecture): enforce controller boundary contracts
+ea75cca2 refactor(admin): route controllers through domain API facades
+fdaece8d chore(packwerk): declare explicit domain dependencies
+4f9d11eb fix(system): stabilize overview and fx reporting waits
+44db3764 test(fx): avoid importer result constant collisions
+d8b665d2 refactor(dashboard): add fx context use case and repositories
+7aa9a09b refactor(demo): extract upload use cases and repositories
+fe040b1e refactor(fx): move AR persistence into context repositories
+cb9ba4d7 refactor(runs): add explicit active-record repository seam
+0da67481 style: normalize ruby formatting in apps lib and spec
+4a695907 test(reporting): assert validator alias compatibility
+abbce822 refactor(core): extract fx and demo ingest use cases
+f0919eee refactor(runs): wire persistence port and typed execution seam
+f51bf4bc fix(admin): stabilize app shell waits in system specs
+5bc1127d refactor(fcs): introduce phase-a ports and contracts
+dc70d53c docs(admin): add ERD diagram
+d9e3d117 chore(admin): add ERD and annotate tooling
+55554a91 fix(admin): render layout-dashboard icon
+5dc2eb95 style(admin): use shadcn icons in nav and sort
+6971f46b assets: add shadcn sidebar icons
+d53ef95a style(admin): use dollar icon for FX Rates
+d89e133d style(admin): use arrows for FX history sort
+a88b451d fix(fx): preload gap associations in history components
+b0cb9123 feat(admin): live update FX upload status and table
+04431691 style(admin): adjust FX rates hero layout
+6735ab39 fix(demo): tolerate mismatched excel rows
+866150b8 test(admin): harden app shell wait
+9252de02 test(admin): stabilize system specs with helpers
+59f2ae11 style: standardrb on admin app financial overview
+9ca1bd19 test(admin): stabilize financial overview readiness
+f41f1c6b test(admin): stabilize sidebar selectors
+00f52f9e docs: add architecture diagram images
+61cddcb1 chore(packwerk): add fx package dependencies
+183288a2 style: standardrb on admin app
+ea140928 docs: add architecture diagrams
+a9ccfec0 docs: note FX chart refresh limitation
+1afab3f3 feat(admin): reorder nav and move validation to health
+ebfd0507 feat(admin): render FX rates table with inline edits
+6ebc01da feat(fx): update rate upload template and parser
+87dd1d76 feat(admin): apply per-day FX conversion in charts
+5dc04b3c chore(db): update schema
+c4b2585b fix(admin): stabilize overview and FX reporting specs
+d51c5567 feat(runs): persist daily artifacts and metrics
+1ddb1aa3 feat(fx): add placeholder gaps and upserted rates
+f5eca513 feat(admin): add fx history page and uploads
+4e8fd46c docs: note FX metadata in outputs
+efebcd31 docs: add fxContext to input data
+74d5979a docs: update admin interface for FX
+167f0dfa docs: add FX normalization manual checklist
+cfda79b0 test(engine): ignore timeline in checkpoint replay
+ad6e9c97 test(admin): add FX normalization coverage
+fa0b5662 feat(admin): add FX reporting UI and popup
+5c7fb68b feat(admin): add FX data models and run context
+a7a91cda docs: explain trade activity and volume
+6013eec2 feat(admin): reorganize overview and system health
+29d07c55 feat(admin): add PnL daily timeline and filters
+e02a19b3 feat(engine): emit timeline points in result
+ddb61249 test(admin): cover system health navigation
+af52cc88 feat(admin): add system health page
+a34d67ee feat(admin): bucket financial overview by day
+b3b21d16 docs: update manuals and simulator flow
+0962ef77 docs: refresh admin and architecture overview
+4dd344f3 test(admin): add financial overview system spec
+232b3f37 feat(admin): add financial overview endpoint
+10d44465 fix(admin): adjust header contrast and landing locale
+007203f5 feat(admin): show full preview rows and sort errors
+a62f54ce fix(admin): keep demo dataset inventory non-negative
+fd5e82ab docs(admin): document preview and verification
+b4a0ed66 feat(admin): add demo dataset preview modal
+29f901de feat(admin): add demo dataset backend pipeline
+a86b9ddd fix(admin): align locale menu right
+db2bc711 fix(admin): qualify latest result routes
+ce28b2e1 feat(admin): add flag locale dropdown
+49570bc4 style(spec): use double quotes in core inspection specs
+341e85a4 feat(admin): add locale switcher
+d1d92f07 chore(admin): deepen locales structure (es)
+d920e7c9 chore(admin): deepen locales structure (en)
+9f5533a3 test(admin): allow en in avo artifacts
+78f48208 chore(packwerk): allow i18n dependencies
+8d52e344 test(admin): localize shell and flow specs
+d4f9a48e test(admin): localize runs component specs
+027eb247 style(spec): use double quotes in risk engine specs
+45a6ab16 style(lib): use double quotes
+507608e6 chore(pages): deploy only from main
+3a9128b4 test(engine): cover i18n options in risk engine
+7feb5e7d chore(ci): expand branch triggers
