@@ -44,7 +44,7 @@ module Admin
         created_by_role: nil,
         created_context: {}
       )
-        repository = Admin::Fx::Repositories::ActiveRecord::DailyRateRepository.new
+        repository = Admin::Fx::Rates::Repository.new
         expected = OperationalDate.call
         rate_record = repository.find_or_initialize(
           operational_date: operational_date,

@@ -3,6 +3,10 @@
 module Admin
   module Fx
     class GapResolver
+      def initialize(gap_repository: Admin::Fx::Gaps::Repository.new)
+        @gap_repository = gap_repository
+      end
+
       def self.call(rate: nil, operational_date: nil, base_currency: nil, quote_currency: nil, action: :resolve)
         new.call(
           rate: rate,
@@ -22,7 +26,7 @@ module Admin
           quote_currency ||= rate.quote_currency
         end
 
-        gap = FxRateGap.open_for(
+        gap = @gap_repository.open_for(
           operational_date: operational_date,
           base_currency: base_currency,
           quote_currency: quote_currency

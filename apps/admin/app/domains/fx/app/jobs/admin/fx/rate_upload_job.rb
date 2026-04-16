@@ -40,8 +40,7 @@ class Admin::Fx::RateUploadJob < ApplicationJob
     return if upload.blank?
 
     I18n.with_locale(locale_for(upload)) do
-      snapshot = Admin::Fx::Repositories::ActiveRecord::DailyRateRepository.new
-                                                                           .uncached_history_snapshot(sort_order: 'desc')
+      snapshot = Admin::Fx::Rates::Repository.new.uncached_history_snapshot(sort_order: 'desc')
       Turbo::StreamsChannel.broadcast_replace_to(
         FxRateUpload.status_stream_for(account_id: upload.created_by_id),
         target: FxRateUpload.table_dom_id,

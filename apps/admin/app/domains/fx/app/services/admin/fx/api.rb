@@ -6,7 +6,7 @@ module Admin
       module_function
 
       def history_snapshot(sort_order:)
-        Admin::Fx::HistorySnapshot.call(sort_order: sort_order)
+        Admin::Fx::Rates::Repository.new.uncached_history_snapshot(sort_order: sort_order)
       end
 
       def reporting_settings_update(reporting_currency:, updated_by_id:, updated_by_role:, updated_context:)

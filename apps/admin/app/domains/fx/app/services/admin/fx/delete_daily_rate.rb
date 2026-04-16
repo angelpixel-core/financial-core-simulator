@@ -3,7 +3,7 @@
 module Admin
   module Fx
     class DeleteDailyRate
-      def initialize(repository: Admin::Fx::Repositories::ActiveRecord::DailyRateRepository.new)
+      def initialize(repository: Admin::Fx::Rates::Repository.new)
         @repository = repository
       end
 

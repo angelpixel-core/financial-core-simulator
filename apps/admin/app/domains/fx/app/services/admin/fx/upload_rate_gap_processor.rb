@@ -3,6 +3,14 @@
 module Admin
   module Fx
     class UploadRateGapProcessor
+      def initialize(
+        rate_repository: Admin::Fx::Rates::Repository.new,
+        gap_repository: Admin::Fx::Gaps::Repository.new
+      )
+        @rate_repository = rate_repository
+        @gap_repository = gap_repository
+      end
+
       def self.call(input:, run:, reporting_currency:, upload: nil)
         new.call(input: input, run: run, upload: upload, reporting_currency: reporting_currency)
       end
@@ -18,7 +26,7 @@ module Admin
         return if dates.empty?
 
         dates.each do |operational_date|
-          rate = FxDailyRate.find_by(
+          rate = @rate_repository.find_by(
             operational_date: operational_date,
             base_currency: base_currency,
             quote_currency: quote_currency
@@ -26,7 +34,7 @@ module Admin
 
           next if rate&.rate.present?
 
-          gap = FxRateGap.open_for(
+          gap = @gap_repository.open_for(
             operational_date: operational_date,
             base_currency: base_currency,
             quote_currency: quote_currency
@@ -34,29 +42,26 @@ module Admin
 
           placeholder = rate
           if placeholder.nil?
-            placeholder = FxDailyRate.create!(
+            placeholder = @rate_repository.create_placeholder!(
               operational_date: operational_date,
               base_currency: base_currency,
               quote_currency: quote_currency,
-              rate: nil,
-              source: "placeholder",
               source_run_id: run&.id,
               source_upload_id: upload&.id,
-              created_context: {source: "upload"}
+              created_context: { source: 'upload' }
             )
           end
 
           next if gap.present?
 
-          FxRateGap.create!(
+          @gap_repository.create_open!(
             operational_date: operational_date,
             base_currency: base_currency,
             quote_currency: quote_currency,
-            status: "open",
             placeholder_rate_id: placeholder.id,
             source_run_id: run&.id,
             source_upload_id: upload&.id,
-            created_context: {source: "upload"}
+            created_context: { source: 'upload' }
           )
         end
       end
@@ -65,21 +70,21 @@ module Admin
 
       def operational_dates_from(input)
         dates = []
-        trades = Array(input["trades"] || input[:trades])
+        trades = Array(input['trades'] || input[:trades])
         trades.each do |trade|
           next unless trade.is_a?(Hash)
 
-          timestamp = trade["timestamp"] || trade[:timestamp]
+          timestamp = trade['timestamp'] || trade[:timestamp]
           date = operational_date_for(timestamp)
           dates << date if date
         end
 
-        timeline = input["timeline"] || input[:timeline]
-        events = timeline.is_a?(Hash) ? Array(timeline["events"] || timeline[:events]) : []
+        timeline = input['timeline'] || input[:timeline]
+        events = timeline.is_a?(Hash) ? Array(timeline['events'] || timeline[:events]) : []
         events.each do |event|
           next unless event.is_a?(Hash)
 
-          timestamp = event["timestamp"] || event[:timestamp]
+          timestamp = event['timestamp'] || event[:timestamp]
           date = operational_date_for(timestamp)
           dates << date if date
         end
