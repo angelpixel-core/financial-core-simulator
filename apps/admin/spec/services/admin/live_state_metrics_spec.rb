@@ -164,5 +164,87 @@ RSpec.describe Admin::LiveStateMetrics do
       run.destroy! if defined?(run) && run.persisted?
       FileUtils.rm_rf(base_dir) if defined?(base_dir)
     end
+
+    it 'derives realized net from persisted trade events when totals are absent' do
+      base_dir = Rails.root.join('storage', 'runs', 'spec_live_state_metrics', 'realized_from_events')
+      FileUtils.mkdir_p(base_dir)
+
+      run = Run.create!(
+        status: :succeeded,
+        input_json: {
+          'schemaVersion' => '1.0',
+          'priceSnapshot' => {
+            'prices' => [
+              { 'marketId' => 'BTC-USD', 'priceQuotePerBase' => '95' }
+            ]
+          }
+        },
+        output_dir: base_dir.to_s
+      )
+
+      snapshot = RunSnapshot.create!(run: run, operational_date: Date.new(2026, 4, 17), reporting_currency: 'USD')
+      RunDailyEvent.create!(
+        run_snapshot: snapshot,
+        event_seq: 1,
+        event_type: 'TRADE_APPLIED',
+        payload: {
+          'eventType' => 'TRADE_APPLIED',
+          'trade' => {
+            'accountId' => 'acc-1',
+            'marketId' => 'BTC-USD',
+            'side' => 'BUY',
+            'quantityBase' => '2',
+            'priceQuotePerBase' => '100'
+          }
+        }
+      )
+      RunDailyEvent.create!(
+        run_snapshot: snapshot,
+        event_seq: 2,
+        event_type: 'TRADE_APPLIED',
+        payload: {
+          'eventType' => 'TRADE_APPLIED',
+          'trade' => {
+            'accountId' => 'acc-1',
+            'marketId' => 'BTC-USD',
+            'side' => 'SELL',
+            'quantityBase' => '1',
+            'priceQuotePerBase' => '110'
+          }
+        }
+      )
+
+      File.write(
+        File.join(base_dir, 'checkpoint_9.json'),
+        JSON.pretty_generate(
+          {
+            'timelineSeq' => 9,
+            'state' => {
+              'accounts' => [
+                {
+                  'accountId' => 'acc-1',
+                  'markets' => [
+                    { 'marketId' => 'BTC-USD', 'quantity' => '1', 'avgCost' => '100' }
+                  ]
+                }
+              ]
+            }
+          }
+        )
+      )
+
+      metrics = described_class.new.call
+
+      expect(metrics[:checkpoint_timeline_seq]).to eq(9)
+      expect(metrics[:top_accounts]).to be_present
+      top = metrics[:top_accounts].first
+      expect(top[:account_id]).to eq('acc-1')
+      expect(top[:realized_net_pnl_quote]).to eq(BigDecimal(10))
+      expect(top[:unrealized_pnl_quote]).to eq(BigDecimal('-5'))
+      expect(top[:total_pnl_quote]).to eq(BigDecimal(5))
+    ensure
+      run.destroy! if defined?(run) && run.persisted?
+      FileUtils.rm_rf(base_dir) if defined?(base_dir)
+    end
   end
 end

@@ -45,15 +45,16 @@ class Admin::OverviewController < ApplicationController
   end
 
   def top_accounts
+    unless turbo_frame_request? || request.xhr?
+      redirect_to admin_overview_path(locale: I18n.locale)
+      return
+    end
+
     @metrics = dashboard_metrics
     @top_accounts_pagination = top_accounts_pagination(metrics: @metrics, page: params[:page])
-    if turbo_frame_request? || request.xhr?
-      render partial: 'admin/overview/top_accounts_frame',
-             locals: { metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: true,
-                       navigation_context: @navigation_context }
-    else
-      render :top_accounts
-    end
+    render partial: 'admin/overview/top_accounts_frame',
+           locals: { metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: false,
+                     navigation_context: @navigation_context }
   end
 
   def runs_trend

@@ -189,7 +189,7 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response.body).not_to include('/admin/logout')
   end
 
-  it 'renders drilldown links for activity, latest run, top accounts, and ingestion errors' do
+  it 'renders drilldown links for activity, latest run, and ingestion errors' do
     run = Run.create!(
       status: :succeeded,
       input_hash: 'abc123',
@@ -200,10 +200,6 @@ RSpec.describe 'Admin overview', type: :request do
     get '/admin/overview', headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include(admin_t('overview.top_accounts.cta_label', locale: :en))
-
-    expect(response.body).to include(%(href="#{admin_overview_top_accounts_path}"))
-
     get admin_system_health_path, headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
@@ -362,9 +358,8 @@ RSpec.describe 'Admin overview', type: :request do
   it 'renders top accounts partial endpoint' do
     get '/admin/overview/top-accounts', headers: admin_session_headers
 
-    expect(response).to have_http_status(:ok)
-    expect(response.body).to include(admin_t('overview.top_accounts.widget_title', locale: :en))
-    expect(response.body).to include(admin_t('overview.top_accounts.back_to_overview', locale: :en))
+    expect(response).to have_http_status(:found)
+    expect(response.headers['Location']).to include('/admin/overview')
   end
 
   it 'preserves selected run and critical filters across drilldown navigation' do
@@ -383,14 +378,10 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response.body).to include('date_range=last_24h')
     expect(response.body).to include('correlation_id=corr-42')
 
-    get '/admin/overview/top-accounts', headers: admin_session_headers
+    get '/admin/overview/top-accounts', headers: admin_session_headers.merge('X-Requested-With' => 'XMLHttpRequest')
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include('selected_run=run-ops-42')
-    expect(response.body).to include('run_status=succeeded')
-    expect(response.body).to include('validation_status=verified')
-    expect(response.body).to include('date_range=last_24h')
-    expect(response.body).to include('correlation_id=corr-42')
+    expect(response.body).to include(admin_t('overview.top_accounts.widget_title', locale: :en))
   end
 
   it 'renders top accounts fragment for xhr polling' do
@@ -398,7 +389,7 @@ RSpec.describe 'Admin overview', type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t('overview.top_accounts.widget_title', locale: :en))
-    expect(response.body).not_to include(admin_t('overview.top_accounts.back_to_overview', locale: :en))
+    expect(response.body).not_to include(admin_t('overview.top_accounts.cta_label', locale: :en))
   end
 
   it 'redirects unauthenticated html overview to root when ADMIN_UI_TOKEN is set' do

@@ -68,17 +68,27 @@ module Admin
       prices_by_market = snapshot_prices_by_market(run)
       return nil if prices_by_market.empty?
 
-      derived = accounts.filter_map { |account| derived_account_metrics(account, prices_by_market: prices_by_market) }
+      realized_by_account = realized_by_account_from_events(run)
+
+      derived = accounts.filter_map do |account|
+        derived_account_metrics(
+          account,
+          prices_by_market: prices_by_market,
+          realized_by_account: realized_by_account
+        )
+      end
       return nil if derived.empty?
 
       derived.sort_by { |entry| -entry[:total_pnl_quote] }.first(TOP_ACCOUNTS_LIMIT)
     end
 
-    def derived_account_metrics(account, prices_by_market:)
+    def derived_account_metrics(account, prices_by_market:, realized_by_account:)
       return nil unless account.is_a?(Hash)
 
       account_id = account['accountId'].to_s.strip
       return nil if account_id.empty?
+
+      realized = realized_by_account.fetch(account_id, BigDecimal(0))
 
       unrealized = Array(account['markets']).sum do |market|
         next BigDecimal(0) unless market.is_a?(Hash)
@@ -94,12 +104,85 @@ module Admin
         (mark_price - avg_cost) * quantity
       end
 
+      total = realized + unrealized
+
       {
         account_id: account_id,
-        total_pnl_quote: unrealized,
-        realized_net_pnl_quote: BigDecimal(0),
+        total_pnl_quote: total,
+        realized_net_pnl_quote: realized,
         unrealized_pnl_quote: unrealized
       }
+    end
+
+    def realized_by_account_from_events(run)
+      positions = Hash.new do |accounts, account_id|
+        accounts[account_id] = Hash.new do |markets, market_id|
+          markets[market_id] = {
+            quantity: BigDecimal(0),
+            avg_cost: BigDecimal(0)
+          }
+        end
+      end
+      realized = Hash.new { |hash, account_id| hash[account_id] = BigDecimal(0) }
+
+      persisted_trade_events_for(run).each do |trade|
+        account_id = (trade['accountId'] || trade[:accountId] || trade['account_id'] || trade[:account_id]).to_s.strip
+        market_id = (trade['marketId'] || trade[:marketId] || trade['market_id'] || trade[:market_id]).to_s.strip
+        side = (trade['side'] || trade[:side]).to_s.upcase
+
+        quantity = decimal_or_nil(trade['quantityBase'] || trade[:quantityBase] || trade['quantity'] || trade[:quantity])
+        price = decimal_or_nil(trade['priceQuotePerBase'] || trade[:priceQuotePerBase] || trade['price'] || trade[:price])
+
+        next if account_id.empty? || market_id.empty?
+        next if quantity.nil? || price.nil?
+        next if quantity <= 0
+        next unless %w[BUY SELL].include?(side)
+
+        position = positions[account_id][market_id]
+
+        if side == 'BUY'
+          current_qty = position[:quantity]
+          next_qty = current_qty + quantity
+
+          if next_qty.positive?
+            position[:avg_cost] = ((position[:avg_cost] * current_qty) + (price * quantity)) / next_qty
+          end
+          position[:quantity] = next_qty
+        else
+          closable_qty = [position[:quantity], quantity].min
+          if closable_qty.positive?
+            realized[account_id] += (price - position[:avg_cost]) * closable_qty
+            position[:quantity] -= closable_qty
+          end
+
+          excess_qty = quantity - closable_qty
+          if excess_qty.positive?
+            position[:avg_cost] = price
+            position[:quantity] -= excess_qty
+          end
+        end
+      end
+
+      realized
+    end
+
+    def persisted_trade_events_for(run)
+      RunDailyEvent
+        .joins(:run_snapshot)
+        .where(run_snapshots: { run_id: run.id })
+        .order('run_snapshots.operational_date ASC', 'run_daily_events.event_seq ASC', 'run_daily_events.id ASC')
+        .filter_map do |event|
+          payload = event.payload
+          next unless payload.is_a?(Hash)
+
+          event_type = payload['eventType'] || payload[:eventType] || payload['event_type'] || payload[:event_type]
+          next unless event_type.to_s.upcase == 'TRADE_APPLIED'
+
+          trade = payload['trade'] || payload[:trade]
+          trade if trade.is_a?(Hash)
+        end
+    rescue StandardError
+      []
     end
 
     def snapshot_prices_by_market(run)

@@ -1,6 +1,6 @@
 <% show_drilldown = local_assigns.fetch(:show_drilldown, false) %>
 <% navigation_context = local_assigns.fetch(:navigation_context, {}) %>
-<% drilldown_path = show_drilldown ? admin_overview_top_accounts_path(navigation_context) : nil %>
+<% drilldown_path = nil %>
 <% pagination = local_assigns[:pagination] %>
 <% reporting_currency = ReportingSetting.current.reporting_currency %>
 <% accounts = if pagination
