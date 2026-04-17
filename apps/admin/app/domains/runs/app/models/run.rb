@@ -17,6 +17,9 @@ class Run < ApplicationRecord
 
   has_many :run_snapshots, dependent: :destroy
   has_many :run_validation_errors, dependent: :destroy
+  has_many :run_daily_events, through: :run_snapshots
+  has_many :run_daily_volumes, through: :run_snapshots
+  has_many :run_daily_pnls, through: :run_snapshots
 
   scope :with_persisted_operations, -> { joins(:run_snapshots).distinct }
   scope :failed_with_validation_trace, -> { failed.joins(:run_validation_errors).distinct }
