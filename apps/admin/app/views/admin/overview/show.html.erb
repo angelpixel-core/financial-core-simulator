@@ -83,7 +83,7 @@
                   </select>
                 <% end %>
                 <%= form_with url: admin_demo_datasets_path(locale: I18n.locale), method: :post, multipart: true, local: true, class: "overview__dataset-actions", data: {
-              action: "turbo:submit-start->demo-dataset-preview#start turbo:submit-end->demo-dataset-preview#finish dataset:clear-file@window->overview--dataset-actions#clearFile",
+              action: "turbo:submit-start->demo-dataset-preview#start turbo:submit-end->demo-dataset-preview#finish turbo:submit-end->overview--dataset-actions#onSubmitEnd dataset:clear-file@window->overview--dataset-actions#clearFile",
               controller: "overview--dataset-actions",
               "overview--dataset-actions-default-icon-value": asset_path("icons/xls.svg"),
               "overview--dataset-actions-ready-icon-value": asset_path("icons/review.svg")

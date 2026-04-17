@@ -171,8 +171,8 @@ RSpec.describe 'Admin demo dataset uploads', type: :request do
 
     allow(Runs::Execute).to receive(:new).and_return(execute_service)
     allow(execute_service).to receive(:call) do |run, **_opts|
-      run.update!(status: :succeeded)
-      { 'status' => 'succeeded', 'validation_errors' => [] }
+      run.update!(status: :succeeded, input_hash: 'abc123', run_uuid: 'run-1')
+      run
     end
 
     allow(Runs::VerifyInputHash).to receive(:new).and_return(verify_service)

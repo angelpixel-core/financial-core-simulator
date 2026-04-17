@@ -38,8 +38,8 @@ module Admin
           fee_model = fetch_input_value(input, :feeModel)
           fee_enabled = fee_model.is_a?(Hash) ? (fee_model[:enabled] || fee_model['enabled']) : false
           with_timeline_env do
-            ::Runs::Execute.new.call(run, fee_enabled: fee_enabled)
-            ::Runs::VerifyInputHash.new.call(run)
+            run = ::Runs::Execute.new.call(run, fee_enabled: fee_enabled)
+            ::Runs::VerifyInputHash.new.call(run.reload)
           end
           parser_errors = normalize_parser_errors(result.errors)
           persist_parser_validation_errors(run, parser_errors)

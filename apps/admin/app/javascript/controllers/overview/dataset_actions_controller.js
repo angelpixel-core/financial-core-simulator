@@ -15,6 +15,13 @@ export default class extends Controller {
     this.refreshState()
   }
 
+  onSubmitEnd(event) {
+    if (this.isPreviewSubmission(event)) return
+
+    const success = Boolean(event?.detail?.success)
+    if (success) this.clearFile()
+  }
+
   handleReviewClick(event) {
     event.preventDefault()
 
@@ -37,6 +44,15 @@ export default class extends Controller {
 
     this.fileInputTarget.value = ""
     this.refreshState()
+  }
+
+  isPreviewSubmission(event) {
+    const submitter =
+      event?.detail?.formSubmission?.submitter ||
+      event?.detail?.submitter ||
+      event?.submitter
+
+    return submitter?.dataset?.demoDatasetPreviewSubmit === "true"
   }
 
   refreshState() {
