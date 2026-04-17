@@ -13,16 +13,16 @@ module Admin
       def create
         file = params[:file]
         if file.blank?
-          redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                        alert: t('admin.overview.dataset.flash.missing_file')
+          redirect_to admin_overview_path(locale: I18n.locale),
+                      alert: t('admin.overview.dataset.flash.missing_file')
           return
         end
 
         original_filename = normalize_upload_filename(file.original_filename)
         if duplicate_filename?(original_filename)
-          redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                        alert: t('admin.overview.dataset.flash.duplicate_file',
-                                 file_name: original_filename)
+          redirect_to admin_overview_path(locale: I18n.locale),
+                      alert: t('admin.overview.dataset.flash.duplicate_file',
+                               file_name: original_filename)
           return
         end
 
@@ -66,25 +66,28 @@ module Admin
             reporting_currency: ::ReportingSetting.current.reporting_currency
           )
           message_key = parser_errors.present? ? 'admin.overview.dataset.flash.partial' : 'admin.overview.dataset.flash.valid'
-          redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                        notice: t(message_key)
+          redirect_to admin_overview_path(locale: I18n.locale), notice: t(message_key)
         else
           ::DemoDatasetUpload.create!(
             status: :invalid,
             validation_errors: result.errors,
             original_filename: original_filename
           )
-          redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                        alert: t('admin.overview.dataset.flash.invalid')
+          redirect_to admin_overview_path(locale: I18n.locale), alert: t('admin.overview.dataset.flash.invalid')
         end
       end
 
       def reset
         ::Run.delete_all
         ::DemoDatasetUpload.delete_all
+        ::FxRateGap.delete_all
+        ::FxDailyRate.delete_all
+        ::FxRateEvent.delete_all
+        ::FxRateLineage.delete_all
+        ::FxRateIngestion.delete_all
+        ::FxRateUpload.delete_all
         FileUtils.rm_rf(Rails.root.join('storage', 'runs'))
-        redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
-                      notice: t('admin.overview.dataset.flash.reset')
+        redirect_to admin_overview_path(locale: I18n.locale), notice: t('admin.overview.dataset.flash.reset')
       end
 
       def preview

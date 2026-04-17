@@ -13,6 +13,7 @@ en:
           account_all: "All accounts"
           market: "Market"
           market_all: "All markets"
+          reporting_currency: "Reporting currency"
           run_files: "Run files"
           run_files_hint: "No selection means all processed files."
         trade_activity:

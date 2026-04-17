@@ -25,8 +25,6 @@ export default class extends Controller {
     "pnlFallback",
     "accountSelect",
     "marketSelect",
-    "runFilesSelect",
-    "runLegend",
     "activityJsonDownload",
     "activityPdfDownload",
     "volumeJsonDownload",
@@ -55,7 +53,6 @@ export default class extends Controller {
     }
 
     this.syncFiltersFromUrl()
-    this.renderRunLegend()
     this.syncExportLinks()
     this.fetchOverview()
   }
@@ -124,7 +121,6 @@ export default class extends Controller {
   applyFilters() {
     this.showLoading()
     this.syncUrlParams()
-    this.renderRunLegend()
     this.syncExportLinks()
     this.fetchOverview()
   }
@@ -158,47 +154,10 @@ export default class extends Controller {
 
     const accountId = this.hasAccountSelectTarget ? this.accountSelectTarget.value : ""
     const marketId = this.hasMarketSelectTarget ? this.marketSelectTarget.value : ""
-    const runFilenames = this.selectedRunFilenames()
     if (accountId) url.searchParams.set("account_id", accountId)
     if (marketId) url.searchParams.set("market_id", marketId)
-    runFilenames.forEach((fileName) => url.searchParams.append("run_filenames[]", fileName))
 
     return `${url.pathname}${url.search}`
-  }
-
-  selectedRunFilenames() {
-    if (!this.hasRunFilesSelectTarget) return []
-
-    return Array.from(this.runFilesSelectTarget.selectedOptions)
-      .map((option) => option.value.trim())
-      .filter((value) => value.length > 0)
-  }
-
-  renderRunLegend() {
-    if (!this.hasRunLegendTarget) return
-
-    const selected = this.selectedRunFilenames()
-    this.runLegendTarget.innerHTML = ""
-
-    if (selected.length === 0) {
-      this.runLegendTarget.hidden = true
-      return
-    }
-
-    selected.forEach((fileName, index) => {
-      const chip = document.createElement("span")
-      chip.className = "financial-overview-run-legend__chip"
-      chip.style.setProperty("--run-chip-color", this.colorForIndex(index))
-      chip.textContent = fileName
-      this.runLegendTarget.appendChild(chip)
-    })
-
-    this.runLegendTarget.hidden = false
-  }
-
-  colorForIndex(index) {
-    const palette = ["#22c55e", "#38bdf8", "#f59e0b", "#f43f5e", "#a78bfa", "#14b8a6", "#eab308", "#fb7185"]
-    return palette[index % palette.length]
   }
 
   renderActivityChart(points) {
@@ -546,7 +505,6 @@ export default class extends Controller {
     const params = new URLSearchParams(window.location.search)
     const accountId = params.get("account_id") || ""
     const marketId = params.get("market_id") || ""
-    const runFilenames = params.getAll("run_filenames[]")
 
     if (this.hasAccountSelectTarget) {
       this.accountSelectTarget.value = accountId
@@ -555,20 +513,12 @@ export default class extends Controller {
     if (this.hasMarketSelectTarget) {
       this.marketSelectTarget.value = marketId
     }
-
-    if (this.hasRunFilesSelectTarget) {
-      const selectedSet = new Set(runFilenames)
-      Array.from(this.runFilesSelectTarget.options).forEach((option) => {
-        option.selected = selectedSet.has(option.value)
-      })
-    }
   }
 
   syncUrlParams() {
     const params = new URLSearchParams(window.location.search)
     const accountId = this.hasAccountSelectTarget ? this.accountSelectTarget.value : ""
     const marketId = this.hasMarketSelectTarget ? this.marketSelectTarget.value : ""
-    const runFilenames = this.selectedRunFilenames()
 
     if (accountId) {
       params.set("account_id", accountId)
@@ -582,9 +532,6 @@ export default class extends Controller {
       params.delete("market_id")
     }
 
-    params.delete("run_filenames[]")
-    runFilenames.forEach((fileName) => params.append("run_filenames[]", fileName))
-
     const query = params.toString()
     const nextUrl = query.length ? `${window.location.pathname}?${query}` : window.location.pathname
     window.history.replaceState({}, "", nextUrl)
@@ -594,7 +541,6 @@ export default class extends Controller {
     const url = new URL(this.urlValue, window.location.origin)
     const accountId = this.hasAccountSelectTarget ? this.accountSelectTarget.value : ""
     const marketId = this.hasMarketSelectTarget ? this.marketSelectTarget.value : ""
-    const runFilenames = this.selectedRunFilenames()
 
     if (accountId) {
       url.searchParams.set("account_id", accountId)
@@ -603,8 +549,6 @@ export default class extends Controller {
     if (marketId) {
       url.searchParams.set("market_id", marketId)
     }
-
-    runFilenames.forEach((fileName) => url.searchParams.append("run_filenames[]", fileName))
 
     return url.toString()
   }

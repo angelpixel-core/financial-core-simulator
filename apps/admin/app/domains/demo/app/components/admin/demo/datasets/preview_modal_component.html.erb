@@ -15,6 +15,9 @@
       <button class="demo-dataset-modal__close" type="button" data-action="click->demo-dataset-preview#close">
         <%= t("admin.overview.dataset.preview.close") %>
       </button>
+      <button class="demo-dataset-modal__close" type="button" data-action="click->demo-dataset-preview#clearAttachment">
+        <%= t("admin.overview.dataset.preview.clear_attachment") %>
+      </button>
     </header>
     <% if loading? %>
       <div class="demo-dataset-modal__body">

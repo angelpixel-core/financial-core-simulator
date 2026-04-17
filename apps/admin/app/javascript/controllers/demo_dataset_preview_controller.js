@@ -31,6 +31,13 @@ export default class extends Controller {
     this.markBusy(false)
   }
 
+  clearAttachment(event) {
+    if (event) event.preventDefault()
+
+    window.dispatchEvent(new CustomEvent("dataset:clear-file"))
+    this.close()
+  }
+
   isPreviewSubmission(event) {
     const submitter =
       event?.detail?.formSubmission?.submitter ||

@@ -12,11 +12,13 @@ es:
           file_hint: "Al seleccionar un archivo se mantiene habilitado el timeline de PnL."
         reset:
           cta: "Resetear base de datos"
+          confirm: "Esto eliminara todos los runs, uploads demo, tasas FX, gaps FX, eventos FX, ingestas FX y uploads FX. Deseas continuar?"
         preview:
           cta: "Previsualizar Excel"
           title: "Vista previa del dataset"
           loading: "Preparando vista previa"
           close: "Cerrar vista previa"
+          clear_attachment: "Limpiar archivo"
           summary_title: "Resumen"
           sample_title: "Filas de muestra"
           sample_truncated: "Mostrando solo las primeras 200 filas de muestra."

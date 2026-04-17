@@ -12,11 +12,13 @@ en:
           file_hint: "Selecting a file keeps timeline generation enabled."
         reset:
           cta: "Reset database"
+          confirm: "This will delete all runs, demo uploads, FX rates, FX gaps, FX events, FX ingestions, and FX uploads. Continue?"
         preview:
           cta: "Preview Excel"
           title: "Dataset preview"
           loading: "Preparing preview"
           close: "Close preview"
+          clear_attachment: "Clear file"
           summary_title: "Summary"
           sample_title: "Sample rows"
           sample_truncated: "Showing first 200 sample rows."

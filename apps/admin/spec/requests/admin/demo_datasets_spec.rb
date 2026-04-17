@@ -123,6 +123,44 @@ RSpec.describe 'Admin demo dataset uploads', type: :request do
     expect(flash[:alert]).to include('already processed')
   end
 
+  it 'resets runs and FX history data' do
+    Run.create!(status: :succeeded, input_json: { 'schemaVersion' => '1.0', 'trades' => [] })
+    DemoDatasetUpload.create!(status: :valid, original_filename: 'demo.xlsx')
+    FxDailyRate.create!(operational_date: Date.new(2026, 3, 30), base_currency: 'USD', quote_currency: 'ARS', rate: '100',
+                        source: 'manual')
+    FxRateGap.create!(operational_date: Date.new(2026, 3, 30), base_currency: 'USD', quote_currency: 'ARS',
+                      status: 'open')
+    FxRateUpload.create!(status: 'success', original_filename: 'fx.xlsx')
+    source = FxRateSource.find_or_create_by!(code: 'ext', source_type: 'api', version: '1') do |record|
+      record.name = 'Ext API'
+      record.active = true
+      record.config = { endpoint: 'https://example.test/rates' }
+    end
+    ingestion = FxRateIngestion.create!(source: source, correlation_id: 'corr-1', status: 'success')
+    FxRateEvent.create!(event_type: 'fx.rate.ingestion.completed', metadata: { correlation_id: 'corr-1' }, data: {})
+    FxRateLineage.create!(
+      ingestion: ingestion,
+      source: source,
+      correlation_id: 'corr-1',
+      operational_date: Date.new(2026, 3, 30),
+      base_currency: 'USD',
+      quote_currency: 'ARS',
+      status: 'valid'
+    )
+
+    post '/admin/demo-datasets/reset', headers: admin_session_headers
+
+    expect(response).to have_http_status(:found)
+    expect(Run.count).to eq(0)
+    expect(DemoDatasetUpload.count).to eq(0)
+    expect(FxDailyRate.count).to eq(0)
+    expect(FxRateGap.count).to eq(0)
+    expect(FxRateUpload.count).to eq(0)
+    expect(FxRateIngestion.count).to eq(0)
+    expect(FxRateEvent.count).to eq(0)
+    expect(FxRateLineage.count).to eq(0)
+  end
+
   def admin_session_headers
     { 'X-Admin-User' => 'ops', 'X-Admin-Role' => 'operator' }
   end

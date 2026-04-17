@@ -165,7 +165,7 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
   end
 
   it 'syncs filters to the URL' do
-    run = Run.create!(
+    Run.create!(
       status: :succeeded,
       input_json: {
         'schemaVersion' => '1.0',
@@ -174,7 +174,6 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
         'trades' => []
       }
     )
-    DemoDatasetUpload.create!(status: :valid, run_id: run.id, original_filename: 'portfolio_20260416.xlsx')
 
     login_as_admin
     visit '/admin/overview'
@@ -184,11 +183,9 @@ RSpec.describe 'Admin financial overview', type: :system, js: true do
 
     select 'acc-1', from: 'financial-account-filter'
     select 'BTC-USD', from: 'financial-market-filter'
-    select 'portfolio_20260416.xlsx', from: 'financial-run-filters'
 
     expect(page).to have_current_path(/account_id=acc-1/, url: true)
     expect(page).to have_current_path(/market_id=BTC-USD/, url: true)
-    expect(page).to have_current_path(/run_filenames%5B%5D=portfolio_20260416.xlsx/, url: true)
   end
 
   it 'highlights missing FX points and shows the tooltip warning' do

@@ -15,27 +15,16 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t('overview.hero.title', locale: :en))
     expect(response.body).to include(admin_t('overview.hero.eyebrow', locale: :en))
-    expect(response.body).to include(admin_t('overview.dataset.title', locale: :en))
-    expect(response.body).to include(admin_t('overview.system_state.title', locale: :en))
-    expect(response.body).to include(admin_t('overview.simulation_context.title', locale: :en))
     expect(response.body).to include(admin_t('overview.system_metrics.title', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_overview.title', locale: :en))
     expect(response.body).to include(admin_t('overview.financial_results.title', locale: :en))
-    expect(response.body).to include(admin_t('overview.simulation_context.empty', locale: :en))
-    expect(response.body).to include(admin_t('overview.financial_results.input_traceability.empty', locale: :en))
     expect(response.body).to include('data-controller="poll"')
     control_index = response.body.index(admin_t('overview.hero.eyebrow', locale: :en))
-    dataset_index = response.body.index(admin_t('overview.dataset.title', locale: :en))
-    state_index = response.body.index(admin_t('overview.system_state.title', locale: :en))
-    simulation_context_index = response.body.index(admin_t('overview.simulation_context.title', locale: :en))
     metrics_index = response.body.index(admin_t('overview.system_metrics.title', locale: :en))
     financial_overview_index = response.body.index(admin_t('overview.financial_overview.title', locale: :en))
     financial_index = response.body.index(admin_t('overview.financial_results.title', locale: :en))
 
-    expect(control_index).to be < dataset_index
-    expect(dataset_index).to be < state_index
-    expect(state_index).to be < simulation_context_index
-    expect(simulation_context_index).to be < metrics_index
+    expect(control_index).to be < metrics_index
     expect(metrics_index).to be < financial_overview_index
     expect(financial_overview_index).to be < financial_index
 
@@ -90,7 +79,6 @@ RSpec.describe 'Admin overview', type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t('overview.hero.title', locale: :es))
     expect(response.body).to include(admin_t('overview.hero.eyebrow', locale: :es))
-    expect(response.body).to include(admin_t('overview.dataset.title', locale: :es))
     expect(response.body).to include(admin_t('overview.financial_overview.title', locale: :es))
 
     nav_labels = Nokogiri::HTML(response.body)
@@ -114,7 +102,6 @@ RSpec.describe 'Admin overview', type: :request do
     get '/admin/overview', headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include(admin_t('overview.hero.open_latest_reliable', locale: :en))
     expect(response.body).to include(%(href="#{admin_system_health_path}"))
 
     overview_index = response.body.index(admin_t('nav.overview', locale: :en))
@@ -336,12 +323,9 @@ RSpec.describe 'Admin overview', type: :request do
       get '/admin/overview', headers: admin_session_headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include(admin_t('overview.simulation_context.title', locale: :en))
-      expect(response.body).to include('demo_input.json')
-      expect(response.body).to include(admin_t('overview.financial_results.input_traceability.title', locale: :en))
-      expect(response.body).to include(Pathname(latest_path).relative_path_from(Rails.root).to_s)
-      expect(response.body).to include(Pathname(positions_path).relative_path_from(Rails.root).to_s)
-      expect(response.body).to include(Pathname(pnl_path).relative_path_from(Rails.root).to_s)
+      expect(response.body).to include(admin_t('overview.financial_results.title', locale: :en))
+      expect(response.body).not_to include(admin_t('overview.simulation_context.title', locale: :en))
+      expect(response.body).not_to include(admin_t('overview.financial_results.input_traceability.title', locale: :en))
     end
   end
 

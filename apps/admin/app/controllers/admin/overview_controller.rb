@@ -39,10 +39,8 @@ class Admin::OverviewController < ApplicationController
     ingestion_errors = dashboard_ingestion_validation_errors(source: @selected_source, field: @selected_field)
     @ingestion_errors_pagination = ingestion_errors_pagination(errors: ingestion_errors, page: params[:errors_page])
     @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
+    @overview_recent_events = dashboard_ingestion_validation_errors.first(15)
     @reliable_selection = Runs::Api.reliable_selection
-    @demo_dataset_upload = Admin::Dashboard::Api.latest_demo_dataset_upload
-    @financial_run_filename_options = financial_run_filename_options
-    @selected_run_filenames = normalized_filter_values(params[:run_filenames])
     load_fx_context
   end
 
@@ -269,15 +267,6 @@ class Admin::OverviewController < ApplicationController
       normalized = value.to_s.strip
       normalized.presence
     end.uniq
-  end
-
-  def financial_run_filename_options
-    DemoDatasetUpload
-      .with_processed_run
-      .latest_first
-      .pluck(:original_filename)
-      .compact
-      .uniq
   end
 
   def normalized_trades_window_param(value)

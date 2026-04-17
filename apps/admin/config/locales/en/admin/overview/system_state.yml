@@ -4,6 +4,9 @@ en:
       system_state:
         aria: "System state"
         title: "SYSTEM STATE"
+        panel_label: "Run reliability"
+        events_log: "Events log (latest 15)"
+        events_empty: "No recent events available."
         reliability_status: "Reliability status"
         latest_reliable: "Latest reliable run"
         open_latest_reliable: "Open Latest Reliable Run"
