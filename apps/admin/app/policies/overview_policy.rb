@@ -18,4 +18,8 @@ class OverviewPolicy < ApplicationPolicy
   def ingestion_validation_errors_panel?
     viewer?
   end
+
+  def export_financial_overview?
+    viewer?
+  end
 end

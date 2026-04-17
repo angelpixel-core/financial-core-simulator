@@ -5,12 +5,13 @@ module Admin
     module Repositories
       module ActiveRecord
         class UploadRepository
-          def create_valid!(run_id:)
-            DemoDatasetUpload.create!(status: :valid, run_id: run_id)
+          def create_valid!(run_id:, original_filename:)
+            DemoDatasetUpload.create!(status: :valid, run_id: run_id, original_filename: original_filename)
           end
 
-          def create_invalid!(validation_errors:)
-            DemoDatasetUpload.create!(status: :invalid, validation_errors: validation_errors)
+          def create_invalid!(validation_errors:, original_filename:)
+            DemoDatasetUpload.create!(status: :invalid, validation_errors: validation_errors,
+                                      original_filename: original_filename)
           end
 
           def latest

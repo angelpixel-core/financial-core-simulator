@@ -18,6 +18,7 @@ en:
       ms: "ms"
       copy: "Copy"
       copied: "Copied"
+      download: "Download"
       language: "Language"
       languages:
         en: "English"

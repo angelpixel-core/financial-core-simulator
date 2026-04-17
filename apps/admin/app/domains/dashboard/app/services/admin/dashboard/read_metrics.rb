@@ -14,29 +14,29 @@ module Admin
         @artifact_reader = artifact_reader
       end
 
-      def call
-        return read_from_seed if @read_path_config.seed_enabled?
-        return read_from_bff_with_optional_fallback if @read_path_config.bff_read_enabled?
+      def call(trades_window: 'all-time')
+        return read_from_seed(trades_window: trades_window) if @read_path_config.seed_enabled?
+        return read_from_bff_with_optional_fallback(trades_window: trades_window) if @read_path_config.bff_read_enabled?
 
-        read_from_artifact
+        read_from_artifact(trades_window: trades_window)
       end
 
       private
 
-      def read_from_bff_with_optional_fallback
+      def read_from_bff_with_optional_fallback(trades_window:)
         @bff_reader.call
-      rescue => error
-        return read_from_artifact if @read_path_config.fallback_enabled?
+      rescue StandardError => e
+        return read_from_artifact(trades_window: trades_window) if @read_path_config.fallback_enabled?
 
-        raise ReadPathUnavailableError, "BFF read failed and fallback is disabled: #{error.message}"
+        raise ReadPathUnavailableError, "BFF read failed and fallback is disabled: #{e.message}"
       end
 
-      def read_from_artifact
-        @artifact_reader.call
+      def read_from_artifact(trades_window:)
+        @artifact_reader.call(trades_window: trades_window)
       end
 
-      def read_from_seed
-        Admin::Dashboard::SeedMetrics.new.call
+      def read_from_seed(trades_window:)
+        Admin::Dashboard::SeedMetrics.new.call(trades_window: trades_window)
       end
     end
   end

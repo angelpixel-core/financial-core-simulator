@@ -18,6 +18,14 @@ module Admin
           return
         end
 
+        original_filename = normalize_upload_filename(file.original_filename)
+        if duplicate_filename?(original_filename)
+          redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
+                        alert: t('admin.overview.dataset.flash.duplicate_file',
+                                 file_name: original_filename)
+          return
+        end
+
         result = Admin::Demo::Datasets::ExcelToInputParser.call(
           file_path: file.path,
           timeline_enabled: true
@@ -45,7 +53,12 @@ module Admin
           end
 
           upload_status = parser_errors.present? ? :invalid : :valid
-          upload = ::DemoDatasetUpload.create!(status: upload_status, run_id: run.id, validation_errors: parser_errors)
+          upload = ::DemoDatasetUpload.create!(
+            status: upload_status,
+            run_id: run.id,
+            validation_errors: parser_errors,
+            original_filename: original_filename
+          )
           Admin::Fx::UploadRateGapProcessor.call(
             input: input,
             run: run,
@@ -56,7 +69,11 @@ module Admin
           redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
                         notice: t(message_key)
         else
-          ::DemoDatasetUpload.create!(status: :invalid, validation_errors: result.errors)
+          ::DemoDatasetUpload.create!(
+            status: :invalid,
+            validation_errors: result.errors,
+            original_filename: original_filename
+          )
           redirect_back fallback_location: admin_overview_path(locale: I18n.locale),
                         alert: t('admin.overview.dataset.flash.invalid')
         end
@@ -202,6 +219,20 @@ module Admin
         else
           ENV['FCS_TIMELINE_ENABLED'] = previous
         end
+      end
+
+      def normalize_upload_filename(value)
+        stripped = value.to_s.strip
+        return stripped if stripped.present?
+
+        "dataset_#{Time.current.utc.strftime('%Y%m%d%H%M%S')}.xlsx"
+      end
+
+      def duplicate_filename?(filename)
+        normalized = ::DemoDatasetUpload.normalize_filename(filename)
+        return false if normalized.blank?
+
+        ::DemoDatasetUpload.exists?(normalized_filename: normalized)
       end
     end
   end

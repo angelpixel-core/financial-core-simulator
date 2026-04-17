@@ -10,6 +10,15 @@ en:
         total_runs_30d:
           title: "Total runs (30d)"
           subtitle: "Monthly execution volume"
+        total_trades:
+          title: "Total Trades"
+          subtitle: "Successful trades across eligible runs (%{window})"
+        trades_window:
+          label: "Trade range"
+          all_time: "All-time"
+          days_30: "Last 30d"
+          days_60: "Last 60d"
+          days_90: "Last 90d"
         success_rate_last_50:
           title: "Success rate (last 50)"
           subtitle: "Succeeded vs total runs"

@@ -93,11 +93,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_16_120000) do
 
   create_table "demo_dataset_uploads", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "normalized_filename"
+    t.string "original_filename"
     t.bigint "run_id"
     t.string "status", null: false
     t.datetime "updated_at", null: false
     t.jsonb "validation_errors", default: [], null: false
     t.index ["created_at"], name: "index_demo_dataset_uploads_on_created_at"
+    t.index ["normalized_filename"], name: "idx_demo_dataset_uploads_normalized_filename_unique", unique: true, where: "(normalized_filename IS NOT NULL)"
     t.index ["run_id"], name: "index_demo_dataset_uploads_on_run_id"
   end
 

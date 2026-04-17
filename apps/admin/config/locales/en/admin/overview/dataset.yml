@@ -51,6 +51,8 @@ en:
           line: "Line"
         flash:
           missing_file: "File is required"
+          invalid_filename_format: "File name must include a YYYYMMDD timestamp."
+          duplicate_file: "File %{file_name} was already processed."
           valid: "Dataset processed successfully"
           invalid: "Dataset contains validation errors"
           partial: "Dataset processed with row errors; invalid trades were skipped"

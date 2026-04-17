@@ -5,8 +5,8 @@ module Admin
     module Api
       module_function
 
-      def read_metrics
-        Admin::Dashboard::ReadMetrics.new.call
+      def read_metrics(trades_window: 'all-time')
+        Admin::Dashboard::ReadMetrics.new.call(trades_window: trades_window)
       end
 
       def read_path_unavailable_error
@@ -37,8 +37,13 @@ module Admin
         Admin::Dashboard::IngestionValidationErrorsResponseSerializer.new
       end
 
-      def financial_overview_metrics(run:, account_id: nil, market_id: nil)
-        Admin::Dashboard::FinancialOverviewMetrics.new(run: run, account_id: account_id, market_id: market_id)
+      def financial_overview_metrics(run:, account_id: nil, market_id: nil, run_filenames: [])
+        Admin::Dashboard::FinancialOverviewMetrics.new(
+          run: run,
+          account_id: account_id,
+          market_id: market_id,
+          run_filenames: run_filenames
+        )
       end
 
       def seed_ingestion_validation_errors(source:, field:)

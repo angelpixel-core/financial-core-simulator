@@ -12,14 +12,14 @@ module Admin
           @upload_repository = upload_repository
         end
 
-        def create_valid_trace!(input_json:)
+        def create_valid_trace!(input_json:, original_filename:)
           run = @run_repository.create_with_input!(input_json: input_json)
-          upload = @upload_repository.create_valid!(run_id: run.id)
+          upload = @upload_repository.create_valid!(run_id: run.id, original_filename: original_filename)
           [run, upload]
         end
 
-        def create_invalid_trace!(errors:)
-          @upload_repository.create_invalid!(validation_errors: errors)
+        def create_invalid_trace!(errors:, original_filename:)
+          @upload_repository.create_invalid!(validation_errors: errors, original_filename: original_filename)
         end
 
         def latest_upload

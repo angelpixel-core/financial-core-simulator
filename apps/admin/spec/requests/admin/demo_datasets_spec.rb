@@ -111,6 +111,18 @@ RSpec.describe 'Admin demo dataset uploads', type: :request do
     expect(run.run_validation_errors.where(code: 'INVALID_SIDE', trade_id: 'trade-bad')).to exist
   end
 
+  it 'rejects duplicate uploads by full filename' do
+    DemoDatasetUpload.create!(
+      status: :valid,
+      original_filename: 'demo.xlsx'
+    )
+
+    post '/admin/demo-datasets', params: { file: upload }, headers: admin_session_headers
+
+    expect(response).to have_http_status(:found)
+    expect(flash[:alert]).to include('already processed')
+  end
+
   def admin_session_headers
     { 'X-Admin-User' => 'ops', 'X-Admin-Role' => 'operator' }
   end

@@ -13,6 +13,8 @@ en:
           account_all: "All accounts"
           market: "Market"
           market_all: "All markets"
+          run_files: "Run files"
+          run_files_hint: "No selection means all processed files."
         trade_activity:
           title: "Trade activity"
           measure: "Measures trades executed per timestamp."

@@ -7,10 +7,11 @@ module Admin
       REQUIRED_FIELDS = %w[timestamp quantity price].freeze
       SYMBOL_DELIMITERS = ['/', '-', '_'].freeze
 
-      def initialize(run:, account_id: nil, market_id: nil)
+      def initialize(run:, account_id: nil, market_id: nil, run_filenames: [])
         @run = run
         @account_id = normalize_filter_value(account_id)
         @market_id = normalize_filter_value(market_id)
+        @run_filenames = normalize_filter_values(run_filenames)
       end
 
       def call
@@ -50,11 +51,11 @@ module Admin
 
       def persisted_metrics
         return nil unless @account_id.nil? && @market_id.nil?
-        return nil if @run.nil?
+        return nil if selected_run_ids.empty?
 
         snapshots = RunSnapshot.for_timeline_eligible_runs(
-          up_to_run_id: @run.id,
-          reporting_currency: reporting_currency_value
+          reporting_currency: reporting_currency_value,
+          run_ids: selected_run_ids
         )
         return nil if snapshots.empty?
 
@@ -589,6 +590,30 @@ module Admin
         return nil if normalized.empty?
 
         normalized
+      end
+
+      def normalize_filter_values(values)
+        Array(values).filter_map do |value|
+          normalized = value.to_s.strip
+          normalized.presence
+        end.uniq
+      end
+
+      def selected_run_ids
+        @selected_run_ids ||= begin
+          scope = Run.timeline_eligible
+          if @run_filenames.any?
+            normalized_names = @run_filenames.map { |name| DemoDatasetUpload.normalize_filename(name) }.compact
+            return [] if normalized_names.empty?
+
+            run_ids = DemoDatasetUpload.where(normalized_filename: normalized_names).where.not(run_id: nil).pluck(:run_id)
+            return [] if run_ids.empty?
+
+            scope = scope.where(id: run_ids)
+          end
+
+          scope.pluck(:id)
+        end
       end
     end
   end
