@@ -337,7 +337,17 @@
                             <time class="overview-events-panel__event-time"><%= event[:occurred_at].presence || t("admin.common.na") %></time>
                           </div>
                           <p class="overview-events-panel__event-message"><%= event[:message].presence || t("admin.common.na") %></p>
-                          <p class="overview-events-panel__event-meta"><%= event[:field].presence || t("admin.common.na") %> · <%= event[:correlation_id].presence || t("admin.common.na") %></p>
+                          <div class="overview-events-panel__event-meta-row">
+                            <p class="overview-events-panel__event-meta"><%= event[:field].presence || t("admin.common.na") %> · <%= event[:correlation_id].presence || t("admin.common.na") %></p>
+                            <div class="overview-events-panel__event-links">
+                              <% if event[:run_id].present? %>
+                                <%= link_to t("admin.overview.system_state.avo_run"), "/admin/resources/runs/#{event[:run_id]}", class: "overview-events-panel__event-link", rel: "noopener" %>
+                              <% end %>
+                              <% if event[:validation_error_id].present? %>
+                                <%= link_to t("admin.overview.system_state.avo_validation_error"), "/admin/resources/run_validation_errors/#{event[:validation_error_id]}", class: "overview-events-panel__event-link", rel: "noopener" %>
+                              <% end %>
+                            </div>
+                          </div>
                         </li>
                       <% end %>
                     </ol>

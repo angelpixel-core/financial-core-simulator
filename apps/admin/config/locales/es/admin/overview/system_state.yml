@@ -7,6 +7,8 @@ es:
         panel_label: "Confiabilidad del run"
         events_log: "Log de eventos (ultimos 15)"
         events_empty: "No hay eventos recientes disponibles."
+        avo_run: "Avo run"
+        avo_validation_error: "Avo error"
         reliability_status: "Estado de confiabilidad"
         latest_reliable: "Ultimo run confiable"
         open_latest_reliable: "Abrir ultimo run confiable"
