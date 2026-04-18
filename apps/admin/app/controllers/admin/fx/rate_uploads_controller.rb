@@ -17,7 +17,6 @@ class Admin::Fx::RateUploadsController < ApplicationController
     end
 
     upload = Admin::Fx::Api.start_rate_upload(
-      status: "processing",
       file: file,
       created_by_id: current_admin_account&.id,
       created_by_role: admin_shell_role,
@@ -34,6 +33,10 @@ class Admin::Fx::RateUploadsController < ApplicationController
     redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale),
       notice: t("admin.fx.history.upload.processing")
   rescue => e
+    Rails.logger.error(
+      "[fx-rate-upload] create failed #{e.class}: #{e.message}\n#{Array(e.backtrace).first(8).join("\n")}"
+    )
+
     if upload
       upload.update!(status: "error", error_message: e.message)
       Admin::Fx::Api.mark_upload_exception(upload: upload, message: e.message)
