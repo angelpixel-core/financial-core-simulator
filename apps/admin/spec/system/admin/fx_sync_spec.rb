@@ -35,14 +35,14 @@ RSpec.describe 'Admin FX sync', type: :system, js: true do
     login_as_admin
     visit '/admin/fx/history'
 
-    select 'Banco Central', from: 'source_id'
-    expect(page).to have_select('source_id', selected: 'Banco Central')
+    select 'Banco Central', from: 'sync_source_id'
+    expect(page).to have_select('sync_source_id', selected: 'Banco Central')
     select 'USDARS', from: 'market'
 
     find("button[aria-label='#{I18n.t('admin.fx.history.sync.tooltip.run')}']").click
 
     expect(page).to have_current_path(%r{/admin/fx/history}, wait: 5)
-    expect(page).to have_select('source_id', selected: 'Banco Central')
+    expect(page).to have_select('sync_source_id', selected: 'Banco Central')
     expect(page).to have_select('market', selected: 'USDARS')
   end
 

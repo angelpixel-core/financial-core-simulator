@@ -8,10 +8,12 @@ class Admin::Fx::HistoryController < ApplicationController
   before_action :load_navigation_context
 
   def index
-    @selected_source = resolve_source(params[:source_id])
-    if request.format.json? && params[:source_id].present? && @selected_source.nil?
+    @source_filter = resolve_source(params[:source_id])
+    if request.format.json? && params[:source_id].present? && @source_filter.nil?
       return render json: { error: 'invalid_source_id' }, status: :unprocessable_content
     end
+
+    @selected_source = resolve_source(params[:sync_source_id])
 
     @available_markets = available_markets_for(@selected_source)
     @selected_market = resolve_market(params[:market], source: @selected_source)
@@ -19,7 +21,7 @@ class Admin::Fx::HistoryController < ApplicationController
       return render json: { error: 'invalid_market' }, status: :unprocessable_content
     end
 
-    snapshot = Admin::Fx::Api.history_snapshot(sort_order: params[:sort], source_id: @selected_source&.id)
+    snapshot = Admin::Fx::Api.history_snapshot(sort_order: params[:sort], source_id: @source_filter&.id)
     @supported_pairs = snapshot.fetch(:supported_pairs)
     @sort_order = snapshot.fetch(:sort_order)
     @rates_by_pair = snapshot.fetch(:rates_by_pair)
@@ -27,8 +29,8 @@ class Admin::Fx::HistoryController < ApplicationController
     @empty_history = snapshot.fetch(:empty_history)
     @rate_lineage = build_rate_lineage(snapshot.fetch(:rates))
     @fx_sources = FxRateSource.order(:name)
-    @latest_ingestions = latest_ingestions(@fx_sources, selected_source: @selected_source)
-    @recent_events = recent_events(selected_source: @selected_source)
+    @latest_ingestions = latest_ingestions(@fx_sources)
+    @recent_events = recent_events
     session_upload_id = session[:fx_rate_upload_id]
     upload_active = session[:fx_rate_upload_active] == true
     @latest_upload = if upload_active && session_upload_id.present?
@@ -146,8 +148,8 @@ class Admin::Fx::HistoryController < ApplicationController
 
   def history_json
     {
-      source_id: @selected_source&.id,
-      source_name: @selected_source&.name,
+      source_id: @source_filter&.id,
+      source_name: @source_filter&.name,
       market: @selected_market,
       available_markets: @available_markets,
       sort_order: @sort_order,
