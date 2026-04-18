@@ -16,7 +16,7 @@ module FCS
 
       def to_h
         missing = REQUIRED_FIELDS.select { |field| blank?(@attributes[field]) }
-        raise ArgumentError, "Missing required fields: #{missing.join(', ')}" unless missing.empty?
+        raise ArgumentError, "Missing required fields: #{missing.join(", ")}" unless missing.empty?
 
         {
           input_hash: @attributes.fetch(:input_hash).to_s,
