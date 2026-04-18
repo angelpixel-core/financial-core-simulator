@@ -11,6 +11,8 @@ module Admin
           end
           resources :rate_uploads, only: :create do
             get :template, on: :collection
+            post :preview, on: :collection
+            post :clear, on: :collection
           end
           resources :ingestions, only: :index do
             post :sync, on: :collection

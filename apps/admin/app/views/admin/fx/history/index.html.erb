@@ -43,24 +43,52 @@
             <header class="dashboard-card__header">
               <h2><%= t("admin.fx.history.upload.title") %></h2>
             </header>
-            <%= form_with url: admin_fx_rate_uploads_path(locale: I18n.locale),
+            <div class="demo-dataset-preview" data-controller="fx--upload-preview">
+              <%= form_with url: admin_fx_rate_uploads_path(locale: I18n.locale),
                           method: :post,
                           multipart: true,
                           local: true,
                           class: "fx-history-upload__form",
-                          data: { controller: "auto-submit" } do |form| %>
-              <%= hidden_field_tag :locale, I18n.locale %>
-              <div class="fx-history-upload__row">
-                <%= form.label :file, t("admin.fx.history.upload.subtitle"), class: "fx-history-upload__label" %>
-                <div class="fx-history-upload__file-line">
-                  <%= form.file_field :file,
+                          data: {
+                            action: "turbo:submit-start->fx--upload-preview#start turbo:submit-end->fx--upload-preview#finish turbo:submit-end->fx--upload-actions#onSubmitEnd fx-rate-upload:clear-file@window->fx--upload-actions#clearFile",
+                            controller: "fx--upload-actions",
+                            "fx--upload-actions-default-icon-value": asset_path("icons/xls.svg"),
+                            "fx--upload-actions-ready-icon-value": asset_path("icons/review.svg")
+                          } do |form| %>
+                <%= hidden_field_tag :locale, I18n.locale %>
+                <div class="fx-history-upload__row">
+                  <%= form.label :file, t("admin.fx.history.upload.subtitle"), class: "fx-history-upload__label" %>
+                  <div class="fx-history-upload__actions">
+                    <%= form.file_field :file,
                     accept: ".xlsx",
-                    class: "fx-history-upload__file",
-                    data: { action: "change->auto-submit#submit" } %>
-                  <span class="fx-history-upload__file-placeholder"><%= t("admin.fx.history.upload.hint") %></span>
+                    class: "overview__dataset-file-input",
+                    id: "fx-history-upload-file",
+                    data: {
+                      "fx--upload-actions-target": "fileInput",
+                      action: "change->fx--upload-actions#onFileChange"
+                    } %>
+                    <button type="button" class="overview__icon-button" title="<%= t("admin.fx.history.upload.subtitle") %>" aria-label="<%= t("admin.fx.history.upload.subtitle") %>" data-action="click->fx--upload-actions#handleReviewClick">
+                      <%= image_tag("icons/xls.svg", class: "overview__icon", alt: "", data: { "fx--upload-actions-target": "fileIcon" }) %>
+                    </button>
+                    <button class="overview__icon-button overview__icon-button--primary" type="submit" title="<%= t("admin.fx.history.upload.cta") %>" aria-label="<%= t("admin.fx.history.upload.cta") %>" disabled data-fx--upload-actions-target="submitButton">
+                      <%= image_tag("icons/play.svg", class: "overview__icon", alt: "") %>
+                    </button>
+                    <button type="submit" hidden data-fx--upload-actions-target="previewSubmit" data-fx-rate-upload-preview-submit="true" formaction="<%= preview_admin_fx_rate_uploads_path(locale: I18n.locale) %>" formmethod="post" data-turbo-frame="fx-rate-upload-preview"></button>
+                  </div>
+                  <p class="fx-history-upload__hint"><%= t("admin.fx.history.upload.hint") %></p>
                 </div>
-              </div>
-            <% end %>
+              <% end %>
+              <%= button_to clear_admin_fx_rate_uploads_path(locale: I18n.locale), method: :post, class: "overview__icon-button overview__icon-button--danger", title: t("admin.fx.history.upload.clear_cta"), form: { class: "overview__dataset-reset", data: { turbo_confirm: t("admin.fx.history.upload.clear_confirm") } }, aria: { label: t("admin.fx.history.upload.clear_cta") } do %>
+                <%= image_tag("icons/trash.svg", class: "overview__icon", alt: "") %>
+              <% end %>
+              <%= turbo_frame_tag "fx-rate-upload-preview",
+              class: "demo-dataset-preview__frame",
+              data: {
+                action: "turbo:frame-load->fx--upload-preview#open",
+                "fx--upload-preview-target": "frame",
+                loading_label: t("admin.fx.history.upload.preview.loading")
+              } %>
+            </div>
             <%= render "admin/fx/history/upload_status", upload: @latest_upload %>
             <div class="fx-history-upload__sync-row">
               <%= form_with url: admin_fx_history_index_path(navigation_context),

@@ -19,7 +19,7 @@ module Admin
       end
 
       def upsert_rate(operational_date:, base_currency:, quote_currency:, rate:, created_by_id:, created_by_role:,
-        created_context:)
+                      created_context:)
         Admin::Fx::RateUpserter.call(
           operational_date: operational_date,
           base_currency: base_currency,
@@ -32,12 +32,12 @@ module Admin
       end
 
       def carry_forward_rate(operational_date:, base_currency:, quote_currency:, created_by_id:, created_by_role:,
-        created_context:)
+                             created_context:)
         Admin::Fx::CarryForwardRate.call(
           operational_date: operational_date,
           base_currency: base_currency,
           quote_currency: quote_currency,
-          source: "carry_forward",
+          source: 'carry_forward',
           created_by_id: created_by_id,
           created_by_role: created_by_role,
           created_context: created_context
@@ -81,6 +81,14 @@ module Admin
 
       def enqueue_rate_upload(upload_id)
         Admin::Fx::RateUploadJob.perform_later(upload_id)
+      end
+
+      def preview_rate_upload(file_path:)
+        Admin::Fx::RateUploadPreview.call(file_path: file_path)
+      end
+
+      def clear_daily_rates
+        FxDailyRate.delete_all
       end
 
       def mark_upload_exception(upload:, message:)

@@ -1,0 +1,108 @@
+<%= turbo_frame_tag "fx-rate-upload-preview" do %>
+  <div class="demo-dataset-modal" role="dialog" aria-modal="true" aria-labelledby="fx-rate-upload-preview-title">
+    <div class="demo-dataset-modal__overlay" data-action="click->fx--upload-preview#close"></div>
+    <div class="demo-dataset-modal__panel">
+      <header class="demo-dataset-modal__header">
+        <div>
+          <p class="demo-dataset-modal__eyebrow"><%= t("admin.fx.history.upload.preview.title") %></p>
+          <h2 id="fx-rate-upload-preview-title" class="demo-dataset-modal__title"><%= t("admin.fx.history.upload.preview.title") %></h2>
+          <% if @file_name.present? %>
+            <p class="demo-dataset-modal__meta">
+              <span><%= t("admin.fx.history.upload.preview.file_label") %>:</span>
+              <strong><%= @file_name %></strong>
+            </p>
+          <% end %>
+        </div>
+        <button class="demo-dataset-modal__close" type="button" data-action="click->fx--upload-preview#close">
+          <%= t("admin.fx.history.upload.preview.close") %>
+        </button>
+        <button class="demo-dataset-modal__close" type="button" data-action="click->fx--upload-preview#clearAttachment">
+          <%= t("admin.fx.history.upload.preview.clear_attachment") %>
+        </button>
+      </header>
+      <% if @state.to_sym == :success %>
+        <div class="demo-dataset-modal__body">
+          <section class="demo-dataset-preview__section">
+            <h3 class="demo-dataset-preview__section-title"><%= t("admin.fx.history.upload.preview.summary_title") %></h3>
+            <dl class="demo-dataset-preview-summary">
+              <div>
+                <dt><%= t("admin.fx.history.upload.preview.rows_label") %></dt>
+                <dd><%= @summary&.dig(:rows_count) || 0 %></dd>
+              </div>
+              <div>
+                <dt><%= t("admin.fx.history.upload.preview.sample_rows_label") %></dt>
+                <dd><%= @summary&.dig(:sample_rows_count) || 0 %></dd>
+              </div>
+            </dl>
+          </section>
+          <section class="demo-dataset-preview__section">
+            <h3 class="demo-dataset-preview__section-title"><%= t("admin.fx.history.upload.preview.sample_title") %></h3>
+            <% if @sample_rows_truncated %>
+              <p class="demo-dataset-preview__empty-body"><%= t("admin.fx.history.upload.preview.sample_truncated") %></p>
+            <% end %>
+            <% if Array(@sample_rows).empty? %>
+              <div class="demo-dataset-preview__empty">
+                <p class="demo-dataset-preview__empty-title"><%= t("admin.fx.history.upload.preview.empty_title") %></p>
+                <p class="demo-dataset-preview__empty-body"><%= t("admin.fx.history.upload.preview.empty_body") %></p>
+              </div>
+            <% else %>
+              <div class="demo-dataset-preview__table-wrap">
+                <table class="demo-dataset-preview-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Base</th>
+                      <th>Quote</th>
+                      <th>Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% Array(@sample_rows).each do |row| %>
+                      <tr>
+                        <td><%= row[:operational_date] || row["operational_date"] %></td>
+                        <td><%= row[:base_currency] || row["base_currency"] %></td>
+                        <td><%= row[:quote_currency] || row["quote_currency"] %></td>
+                        <td><%= row[:rate] || row["rate"] %></td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% end %>
+          </section>
+        </div>
+      <% elsif @state.to_sym == :invalid %>
+        <div class="demo-dataset-modal__body">
+          <div class="demo-dataset-preview__state">
+            <h3><%= t("admin.fx.history.upload.preview.invalid_title") %></h3>
+            <p><%= t("admin.fx.history.upload.preview.invalid_body") %></p>
+          </div>
+          <section class="demo-dataset-preview__section">
+            <h3 class="demo-dataset-preview__section-title"><%= t("admin.fx.history.upload.preview.errors_title") %></h3>
+            <% if Array(@errors).any? %>
+              <ul class="demo-dataset-preview-errors">
+                <% Array(@errors).each do |error| %>
+                  <li>
+                    <% if error[:line].present? || error["line"].present? %>
+                      <strong><%= error[:line] || error["line"] %>:</strong>
+                    <% end %>
+                    <span><%= error[:message] || error["message"] || error[:code] || error["code"] %></span>
+                  </li>
+                <% end %>
+              </ul>
+            <% else %>
+              <p class="demo-dataset-preview__empty-body"><%= t("admin.fx.history.upload.preview.errors_empty") %></p>
+            <% end %>
+          </section>
+        </div>
+      <% else %>
+        <div class="demo-dataset-modal__body">
+          <div class="demo-dataset-preview__state">
+            <h3><%= t("admin.fx.history.upload.preview.error_title") %></h3>
+            <p><%= t("admin.fx.history.upload.preview.error_body") %></p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

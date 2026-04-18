@@ -1,0 +1,36 @@
+require 'rails_helper'
+
+RSpec.describe 'Admin FX rate uploads', type: :request do
+  it 'returns preview error when file is missing' do
+    post '/admin/fx/rate_uploads/preview', headers: operator_headers
+
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(response.body).to include('fx-rate-upload-preview')
+  end
+
+  it 'clears only fx daily rates' do
+    FxDailyRate.create!(
+      operational_date: Date.new(2026, 3, 30),
+      base_currency: 'USD',
+      quote_currency: 'ARS',
+      rate: '1000',
+      source: 'manual'
+    )
+    FxRateGap.create!(
+      operational_date: Date.new(2026, 3, 30),
+      base_currency: 'USD',
+      quote_currency: 'ARS',
+      status: 'open'
+    )
+
+    post '/admin/fx/rate_uploads/clear', headers: operator_headers
+
+    expect(response).to have_http_status(:found)
+    expect(FxDailyRate.count).to eq(0)
+    expect(FxRateGap.count).to eq(1)
+  end
+
+  def operator_headers
+    { 'X-Admin-User' => 'ops', 'X-Admin-Role' => 'operator' }
+  end
+end
