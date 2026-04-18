@@ -37,8 +37,15 @@ RSpec.describe 'Admin cross-context smoke', type: :request do
       errors: []
     )
     allow(Admin::Demo::Datasets::ExcelToInputParser).to receive(:call).and_return(parser_result)
-    allow(Runs::Execute).to receive_message_chain(:new, :call)
-    allow(Runs::VerifyInputHash).to receive_message_chain(:new, :call)
+    execute_service = instance_double(Runs::Execute)
+    verify_service = instance_double(Runs::VerifyInputHash)
+    allow(Runs::Execute).to receive(:new).and_return(execute_service)
+    allow(execute_service).to receive(:call) do |executed_run, **_opts|
+      executed_run.update!(status: :succeeded, input_hash: 'abc123', run_uuid: 'run-smoke')
+      executed_run
+    end
+    allow(Runs::VerifyInputHash).to receive(:new).and_return(verify_service)
+    allow(verify_service).to receive(:call)
 
     post '/admin/demo-datasets', params: { file: upload }, headers: operator_headers
     expect(response).to have_http_status(:found)
