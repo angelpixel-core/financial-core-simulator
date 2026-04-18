@@ -28,6 +28,7 @@ module FCS
         validator: FCS::Ingestion::Validator.new,
         sorter: FCS::Engine::TradeSorter.new,
         simulate: FCS::Application::Simulate.new,
+        artifacts_writer: FCS::Application::ReportArtifactsWriter.new,
         account_market_contract_validator: FCS::Reporting::AccountMarketContractValidator.new,
         result_metadata_contract_validator: FCS::Reporting::ResultMetadataContractValidator.new,
         cli: FCS::Reporting::CliSummary.new,
@@ -37,6 +38,7 @@ module FCS
         @validator = validator
         @sorter = sorter
         @simulate = simulate
+        @artifacts_writer = artifacts_writer
         @account_market_contract_validator = account_market_contract_validator
         @result_metadata_contract_validator = result_metadata_contract_validator
         @cli = cli
@@ -60,7 +62,7 @@ module FCS
       def run!(input_path:, output_dir:, fee_enabled:, explain: false, verbose: false)
         raw_input = @parser.parse_file(input_path)
 
-        run_from_input!(
+        execution_result = run_from_input!(
           input: raw_input,
           output_dir: output_dir,
           fee_enabled: fee_enabled,
@@ -68,6 +70,8 @@ module FCS
           verbose: verbose,
           input_source: input_path
         )
+
+        execution_result.fetch(:artifacts).fetch(:json_path)
       end
 
       # Runs a simulation from a Ruby Hash input and writes artifacts.
@@ -140,17 +144,20 @@ module FCS
         @result_metadata_contract_validator.validate!(payload: payload)
         @account_market_contract_validator.validate!(accounts: payload.fetch('accounts'))
 
-        @cli.print(payload, artifacts: {}, status: 'success') if verbose
+        artifacts = @artifacts_writer.write_all!(output_dir: output_dir, payload: payload)
 
-        @logger.info("fcs.run.done run_id=#{run_id} output=database")
+        @cli.print(payload, artifacts: artifacts, status: 'success') if verbose
+
+        @logger.info("fcs.run.done run_id=#{run_id} output=#{artifacts.fetch(:json_path)}")
 
         FCS::Contracts::RunExecutionResult.from_hash!(
           input_hash: input_hash,
           run_id: run_id,
           schema_version: schema_version,
           valuation_timestamp: valuation_ts,
+          json_path: artifacts[:json_path],
           payload: payload,
-          artifacts: {},
+          artifacts: artifacts,
           validation_errors: validation_errors,
           reliable: reliable,
           annotated_input: annotated_input

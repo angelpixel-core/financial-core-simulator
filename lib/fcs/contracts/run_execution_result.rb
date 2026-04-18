@@ -23,6 +23,7 @@ module FCS
           run_id: @attributes.fetch(:run_id).to_s,
           schema_version: @attributes.fetch(:schema_version).to_s,
           valuation_timestamp: @attributes[:valuation_timestamp],
+          json_path: @attributes[:json_path],
           payload: @attributes[:payload],
           artifacts: @attributes.fetch(:artifacts, {}),
           validation_errors: Array(@attributes[:validation_errors]),
