@@ -39,7 +39,12 @@ en:
           source_label: "Source"
           cta: "Sync now"
           select_source_hint: "Select a source to sync."
+          select_market_hint: "Select market"
           started: "Sync queued"
+          tooltip:
+            source: "Select source"
+            market: "Select market"
+            run: "Run source sync"
           status_title: "Latest sync status"
           status:
             none: "Not run yet"
@@ -72,6 +77,10 @@ en:
           clear_cta: "Clear rates"
           clear_confirm: "Delete all FX daily rates?"
           clear_success: "%{count} FX daily rate(s) deleted."
+          tooltip:
+            review: "Choose file and preview"
+            run: "Run file upload"
+            clear_all: "Delete all FX rates"
           preview:
             title: "FX upload preview"
             close: "Close"
@@ -95,6 +104,8 @@ en:
             processing: "Processing upload..."
             success: "Upload complete."
             error: "Upload failed. %{count} issue(s) found."
+        loader:
+          label: "Load"
         placeholder_value: "Missing"
         edit_cta: "Edit"
         delete_cta: "Delete"

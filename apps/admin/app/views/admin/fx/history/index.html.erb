@@ -34,84 +34,7 @@
         <h1><%= t("admin.fx.history.title") %></h1>
         <p class="workspace__subtitle"><%= t("admin.fx.history.subtitle") %></p>
       </div>
-      <% if admin_shell_operator? || admin_shell_admin? %>
-        <div class="fx-history-hero__upload">
-          <% if @upload_status_stream.present? %>
-            <%= turbo_stream_from @upload_status_stream %>
-          <% end %>
-          <section class="dashboard-card fx-history-upload">
-            <header class="dashboard-card__header">
-              <h2><%= t("admin.fx.history.upload.title") %></h2>
-            </header>
-            <div class="demo-dataset-preview" data-controller="fx--upload-preview">
-              <%= form_with url: admin_fx_rate_uploads_path(locale: I18n.locale),
-                          method: :post,
-                          multipart: true,
-                          local: true,
-                          class: "fx-history-upload__form",
-                          data: {
-                            action: "turbo:submit-start->fx--upload-preview#start turbo:submit-end->fx--upload-preview#finish turbo:submit-end->fx--upload-actions#onSubmitEnd fx-rate-upload:clear-file@window->fx--upload-actions#clearFile",
-                            controller: "fx--upload-actions",
-                            "fx--upload-actions-default-icon-value": asset_path("icons/xls.svg"),
-                            "fx--upload-actions-ready-icon-value": asset_path("icons/review.svg")
-                          } do |form| %>
-                <%= hidden_field_tag :locale, I18n.locale %>
-                <div class="fx-history-upload__row">
-                  <%= form.label :file, t("admin.fx.history.upload.subtitle"), class: "fx-history-upload__label" %>
-                  <div class="fx-history-upload__actions">
-                    <%= form.file_field :file,
-                    accept: ".xlsx",
-                    class: "overview__dataset-file-input",
-                    id: "fx-history-upload-file",
-                    data: {
-                      "fx--upload-actions-target": "fileInput",
-                      action: "change->fx--upload-actions#onFileChange"
-                    } %>
-                    <button type="button" class="overview__icon-button" title="<%= t("admin.fx.history.upload.subtitle") %>" aria-label="<%= t("admin.fx.history.upload.subtitle") %>" data-action="click->fx--upload-actions#handleReviewClick">
-                      <%= image_tag("icons/xls.svg", class: "overview__icon", alt: "", data: { "fx--upload-actions-target": "fileIcon" }) %>
-                    </button>
-                    <button class="overview__icon-button overview__icon-button--primary" type="submit" title="<%= t("admin.fx.history.upload.cta") %>" aria-label="<%= t("admin.fx.history.upload.cta") %>" disabled data-fx--upload-actions-target="submitButton">
-                      <%= image_tag("icons/play.svg", class: "overview__icon", alt: "") %>
-                    </button>
-                    <button type="submit" hidden data-fx--upload-actions-target="previewSubmit" data-fx-rate-upload-preview-submit="true" formaction="<%= preview_admin_fx_rate_uploads_path(locale: I18n.locale) %>" formmethod="post" data-turbo-frame="fx-rate-upload-preview"></button>
-                  </div>
-                  <p class="fx-history-upload__hint"><%= t("admin.fx.history.upload.hint") %></p>
-                </div>
-              <% end %>
-              <%= button_to clear_admin_fx_rate_uploads_path(locale: I18n.locale), method: :post, class: "overview__icon-button overview__icon-button--danger", title: t("admin.fx.history.upload.clear_cta"), form: { class: "overview__dataset-reset", data: { turbo_confirm: t("admin.fx.history.upload.clear_confirm") } }, aria: { label: t("admin.fx.history.upload.clear_cta") } do %>
-                <%= image_tag("icons/trash.svg", class: "overview__icon", alt: "") %>
-              <% end %>
-              <%= turbo_frame_tag "fx-rate-upload-preview",
-              class: "demo-dataset-preview__frame",
-              data: {
-                action: "turbo:frame-load->fx--upload-preview#open",
-                "fx--upload-preview-target": "frame",
-                loading_label: t("admin.fx.history.upload.preview.loading")
-              } %>
-            </div>
-            <%= render "admin/fx/history/upload_status", upload: @latest_upload %>
-            <div class="fx-history-upload__sync-row">
-              <%= form_with url: admin_fx_history_index_path(navigation_context),
-                            method: :get,
-                            local: true,
-                            class: "fx-history-upload__source-form",
-                            data: { controller: "auto-submit" } do |form| %>
-                <%= hidden_field_tag :sort, @sort_order if @sort_order.present? %>
-                <div class="fx-history-upload__source-row">
-                  <%= form.label :source_id, t("admin.fx.history.sync.select_source_hint"), class: "fx-history-sync__label" %>
-                  <%= form.select :source_id,
-                    [[t("admin.fx.history.filter.all_sources"), ""]] + @fx_sources.map { |source| [source.name, source.id] },
-                    { selected: @selected_source&.id },
-                    class: "fx-history-hero__filter-select",
-                    data: { action: "change->auto-submit#submit" } %>
-                </div>
-              <% end %>
-              <%= render "admin/fx/history/sync_panel",
-                selected_source: @selected_source %>
-            </div>
-          </section>
-        </div>
-      <% end %>
+      <%# Controls moved to table top bar (double-header layout) %>
     </section>
     <section class="workspace__overview">
       <%= render "admin/fx/history/history_table",
@@ -123,6 +46,11 @@
         navigation_context: navigation_context,
         empty_history: @empty_history,
         selected_source: @selected_source,
+        selected_market: @selected_market,
+        available_markets: @available_markets,
+        fx_sources: @fx_sources,
+        latest_upload: @latest_upload,
+        upload_status_stream: @upload_status_stream,
         rate_lineage: @rate_lineage %>
     </section>
   </main>

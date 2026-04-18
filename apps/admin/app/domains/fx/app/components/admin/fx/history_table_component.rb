@@ -4,7 +4,8 @@ module Admin
   module Fx
     class HistoryTableComponent < ViewComponent::Base
       def initialize(dates:, supported_pairs:, rates_by_pair:, role:, sort_order:, navigation_context:, source_id: nil,
-        rate_lineage: {})
+                     selected_source: nil, fx_sources: [], selected_market: nil, available_markets: [], latest_upload: nil,
+                     upload_status_stream: nil, rate_lineage: {})
         @dates = dates
         @supported_pairs = supported_pairs
         @rates_by_pair = rates_by_pair
@@ -12,6 +13,12 @@ module Admin
         @sort_order = sort_order
         @navigation_context = navigation_context
         @source_id = source_id
+        @selected_source = selected_source
+        @fx_sources = fx_sources
+        @selected_market = selected_market
+        @available_markets = available_markets
+        @latest_upload = latest_upload
+        @upload_status_stream = upload_status_stream
         @rate_lineage = rate_lineage
       end
 
@@ -47,7 +54,7 @@ module Admin
       end
 
       def display_rate(rate)
-        return t("admin.fx.history.placeholder_value") if rate.nil? || rate.rate.nil?
+        return t('admin.fx.history.placeholder_value') if rate.nil? || rate.rate.nil?
 
         helpers.truncate_fiat(rate.rate, rate.quote_currency)
       end
@@ -57,11 +64,36 @@ module Admin
       end
 
       def toggle_sort_order
-        (sort_order == "asc") ? "desc" : "asc"
+        sort_order == 'asc' ? 'desc' : 'asc'
+      end
+
+      def can_operate?
+        %w[operator admin].include?(role)
+      end
+
+      def selected_source_id
+        selected_source&.id
+      end
+
+      def selected_source_name
+        selected_source&.name
+      end
+
+      def sync_ready?
+        selected_source_id.present? && selected_market.present?
+      end
+
+      def market_select_options
+        available_markets.map { |market| [market, market] }
+      end
+
+      def source_select_options
+        [[I18n.t('admin.fx.history.filter.all_sources'), '']] + fx_sources.map { |source| [source.name, source.id] }
       end
 
       attr_reader :dates, :supported_pairs, :rates_by_pair, :role, :sort_order, :navigation_context, :source_id,
-        :rate_lineage
+                  :selected_source, :fx_sources, :selected_market, :available_markets, :latest_upload, :upload_status_stream,
+                  :rate_lineage
     end
   end
 end

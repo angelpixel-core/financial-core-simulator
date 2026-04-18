@@ -1,18 +1,23 @@
 <div id="<%= FxRateUpload.table_dom_id %>">
+  <%= render Admin::Fx::HistoryTableComponent.new(
+    dates: dates,
+    supported_pairs: supported_pairs,
+    rates_by_pair: rates_by_pair,
+    role: role,
+    sort_order: sort_order,
+    navigation_context: navigation_context,
+    source_id: selected_source&.id,
+    selected_source: selected_source,
+    fx_sources: fx_sources,
+    selected_market: selected_market,
+    available_markets: available_markets,
+    latest_upload: latest_upload,
+    upload_status_stream: upload_status_stream,
+    rate_lineage: rate_lineage
+  ) %>
   <% if empty_history %>
     <section class="dashboard-card">
       <p class="empty-state"><%= t("admin.fx.history.empty") %></p>
     </section>
-  <% else %>
-    <%= render Admin::Fx::HistoryTableComponent.new(
-      dates: dates,
-      supported_pairs: supported_pairs,
-      rates_by_pair: rates_by_pair,
-      role: role,
-      sort_order: sort_order,
-      navigation_context: navigation_context,
-      source_id: selected_source&.id,
-      rate_lineage: rate_lineage
-    ) %>
   <% end %>
 </div>

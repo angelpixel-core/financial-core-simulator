@@ -3230,6 +3230,86 @@ body {
   gap: 12px;
 }
 
+.fx-history-table__controls-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.55);
+  padding: 10px;
+}
+
+.fx-history-table__controls-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.fx-history-table__controls-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ecfeff;
+  background: rgba(14, 165, 233, 0.85);
+  white-space: nowrap;
+}
+
+.fx-history-table__icon-form,
+.fx-history-table__filters-form,
+.fx-history-table__sync-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fx-history-table__controls-block--loader .demo-dataset-preview__frame {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.fx-history-table__controls-block--loader.demo-dataset-preview--open .demo-dataset-preview__frame {
+  pointer-events: auto;
+}
+
+.fx-history-table__controls-block--source {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.fx-history-table__controls-block--source .fx-history-hero__filter-select {
+  min-width: 170px;
+}
+
+@media (min-width: 960px) {
+  .fx-history-table__controls-row {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+
+  .fx-history-table__controls-block--loader {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 959px) {
+  .fx-history-table__controls-block {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .fx-history-table__controls-block--source {
+    justify-content: flex-start;
+  }
+}
+
 .fx-history-table__header {
   display: flex;
   align-items: center;

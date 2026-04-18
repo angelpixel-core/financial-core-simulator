@@ -1,68 +1,146 @@
 <section class="fx-history-table" aria-label="<%= t("admin.fx.history.aria") %>" data-controller="fx--lineage-panel">
-  <div class="shad-table-wrap">
-    <table class="shad-table fx-history-table__table">
-      <thead>
-        <tr class="shad-table__row shad-table__row--head">
-          <th class="shad-table__th fx-history-table__th fx-history-table__th--date">
-            <div class="fx-history-table__header">
-              <span><%= t("admin.fx.history.table.date") %></span>
-              <%= link_to admin_fx_history_index_path(navigation_context.merge(sort: toggle_sort_order, source_id: source_id)),
+  <% if can_operate? %>
+    <% if upload_status_stream.present? %>
+      <%= helpers.turbo_stream_from upload_status_stream %>
+    <% end %>
+    <div class="fx-history-table__controls-row">
+      <div class="fx-history-table__controls-block fx-history-table__controls-block--loader demo-dataset-preview" data-controller="fx--upload-preview">
+        <span class="fx-history-table__controls-pill"><%= t("admin.fx.history.loader.label") %></span>
+        <%= form_with url: admin_fx_rate_uploads_path(locale: I18n.locale),
+                      method: :post,
+                      multipart: true,
+                      local: true,
+                      class: "fx-history-table__icon-form",
+                      data: {
+                        action: "turbo:submit-start->fx--upload-preview#start turbo:submit-end->fx--upload-preview#finish turbo:submit-end->fx--upload-actions#onSubmitEnd fx-rate-upload:clear-file@window->fx--upload-actions#clearFile",
+                        controller: "fx--upload-actions",
+                        "fx--upload-actions-default-icon-value": asset_path("icons/xls.svg"),
+                        "fx--upload-actions-ready-icon-value": asset_path("icons/review.svg")
+                      } do |form| %>
+          <%= hidden_field_tag :locale, I18n.locale %>
+          <%= form.file_field :file,
+            accept: ".xlsx",
+            class: "overview__dataset-file-input",
+            id: "fx-history-upload-file",
+            data: {
+              "fx--upload-actions-target": "fileInput",
+              action: "change->fx--upload-actions#onFileChange"
+            } %>
+          <button type="button" class="overview__icon-button" title="<%= t("admin.fx.history.upload.tooltip.review") %>" aria-label="<%= t("admin.fx.history.upload.tooltip.review") %>" data-action="click->fx--upload-actions#handleReviewClick">
+            <%= image_tag("icons/xls.svg", class: "overview__icon", alt: "", data: { "fx--upload-actions-target": "fileIcon" }) %>
+          </button>
+          <button class="overview__icon-button overview__icon-button--primary" type="submit" title="<%= t("admin.fx.history.upload.tooltip.run") %>" aria-label="<%= t("admin.fx.history.upload.tooltip.run") %>" disabled data-fx--upload-actions-target="submitButton">
+            <%= image_tag("icons/play.svg", class: "overview__icon", alt: "") %>
+          </button>
+          <button type="submit" hidden data-fx--upload-actions-target="previewSubmit" data-fx-rate-upload-preview-submit="true" formaction="<%= preview_admin_fx_rate_uploads_path(locale: I18n.locale) %>" formmethod="post" data-turbo-frame="fx-rate-upload-preview"></button>
+        <% end %>
+        <%= button_to clear_admin_fx_rate_uploads_path(locale: I18n.locale), method: :post, class: "overview__icon-button overview__icon-button--danger", title: t("admin.fx.history.upload.tooltip.clear_all"), form: { class: "overview__dataset-reset", data: { turbo_confirm: t("admin.fx.history.upload.clear_confirm") } }, aria: { label: t("admin.fx.history.upload.tooltip.clear_all") } do %>
+          <%= image_tag("icons/trash.svg", class: "overview__icon", alt: "") %>
+        <% end %>
+        <%= helpers.turbo_frame_tag "fx-rate-upload-preview",
+          class: "demo-dataset-preview__frame",
+          data: {
+            action: "turbo:frame-load->fx--upload-preview#open",
+            "fx--upload-preview-target": "frame",
+            loading_label: t("admin.fx.history.upload.preview.loading")
+          } %>
+      </div>
+      <div class="fx-history-table__controls-block fx-history-table__controls-block--source">
+        <span class="fx-history-table__controls-pill"><%= t("admin.fx.history.sync.source_label") %></span>
+        <%= form_with url: admin_fx_history_index_path(navigation_context), method: :get, local: true, class: "fx-history-table__filters-form", data: { controller: "auto-submit" } do |form| %>
+          <%= hidden_field_tag :sort, sort_order if sort_order.present? %>
+          <%= form.select :source_id,
+            options_for_select(source_select_options, selected_source_id),
+            {},
+            class: "fx-history-hero__filter-select",
+            title: t("admin.fx.history.sync.tooltip.source"),
+            aria: { label: t("admin.fx.history.sync.tooltip.source") },
+            data: { action: "change->auto-submit#submit" } %>
+          <%= form.select :market,
+            options_for_select(market_select_options, selected_market),
+            { include_blank: t("admin.fx.history.sync.select_market_hint") },
+            class: "fx-history-hero__filter-select",
+            title: t("admin.fx.history.sync.tooltip.market"),
+            aria: { label: t("admin.fx.history.sync.tooltip.market") },
+            disabled: selected_source_id.blank?,
+            data: { action: "change->auto-submit#submit" } %>
+        <% end %>
+        <%= form_with url: sync_admin_fx_ingestions_path(locale: I18n.locale), method: :post, local: true, class: "fx-history-table__sync-form" do |form| %>
+          <%= hidden_field_tag :locale, I18n.locale %>
+          <%= hidden_field_tag :source_id, selected_source_id %>
+          <%= hidden_field_tag :market, selected_market %>
+          <button class="overview__icon-button overview__icon-button--primary" type="submit" title="<%= t("admin.fx.history.sync.tooltip.run") %>" aria-label="<%= t("admin.fx.history.sync.tooltip.run") %>" <%= "disabled" unless sync_ready? %>>
+            <%= image_tag("icons/play.svg", class: "overview__icon", alt: "") %>
+          </button>
+          <% end %>
+        </div>
+      </div>
+      <%= render "admin/fx/history/upload_status", upload: latest_upload %>
+    <% end %>
+    <div class="shad-table-wrap">
+      <table class="shad-table fx-history-table__table">
+        <thead>
+          <tr class="shad-table__row shad-table__row--head">
+            <th class="shad-table__th fx-history-table__th fx-history-table__th--date">
+              <div class="fx-history-table__header">
+                <span><%= t("admin.fx.history.table.date") %></span>
+                <%= link_to admin_fx_history_index_path(navigation_context.merge(sort: toggle_sort_order, source_id: source_id, market: selected_market)),
                           class: "fx-history-table__sort",
                           aria: { label: sort_label },
                           title: sort_label,
                           data: { turbo: true } do %>
-                <span class="visually-hidden"><%= sort_label %></span>
-                <span class="fx-history-table__sort-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m21 16-4 4-4-4" />
-                    <path d="M17 20V4" />
-                    <path d="m3 8 4-4 4 4" />
-                    <path d="M7 4v16" />
-                  </svg>
-                </span>
-              <% end %>
-            </div>
-          </th>
-          <% pair_labels.each do |label, _base_currency, _quote_currency| %>
-            <th class="shad-table__th fx-history-table__th"><%= label %></th>
-          <% end %>
-        </tr>
-      </thead>
-      <tbody class="shad-table__body">
-        <% dates.each do |date| %>
-          <tr class="shad-table__row">
-            <td class="shad-table__td fx-history-table__date"><%= l(date) %></td>
-            <% pair_labels.each do |label, base_currency, quote_currency| %>
-              <% rate = rate_for(date, label) %>
-              <% status = gap_status(rate) %>
-              <% missing_rate = rate.nil? || rate.rate.nil? %>
-              <% editable = editable_rate?(rate) %>
-              <td class="shad-table__td">
-                <div class="fx-history-cell<%= " fx-history-cell--editable" if editable %>"
-                     <% if editable %>data-controller="inline-edit" data-action="click->inline-edit#activate"<% end %>>
-                <div class="fx-history-cell__display" data-inline-edit-target="display">
-                  <span class="fx-history-cell__value<%= " fx-history-cell__value--missing" if missing_rate %>">
-                    <% if missing_rate %>
-                      <span class="visually-hidden"><%= t("admin.fx.history.placeholder_value") %></span>
-                      <span class="fx-history-cell__missing-icon" aria-hidden="true" title="<%= t("admin.fx.history.edit_cta") %>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M12 20h9" />
-                          <path d="m16.5 3.5 4 4L8 20l-4 1 1-4Z" />
-                        </svg>
-                      </span>
-                    <% else %>
-                      <%= display_rate(rate) %>
-                    <% end %>
+                  <span class="visually-hidden"><%= sort_label %></span>
+                  <span class="fx-history-table__sort-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m21 16-4 4-4-4" />
+                      <path d="M17 20V4" />
+                      <path d="m3 8 4-4 4 4" />
+                      <path d="M7 4v16" />
+                    </svg>
                   </span>
-                  <% if status.present? && status != "open" %>
-                    <span class="fx-history-cell__status fx-history-cell__status--<%= status %>">
-                      <%= t("admin.fx.history.gap_status.#{status}") %>
+                <% end %>
+              </div>
+            </th>
+            <% pair_labels.each do |label, _base_currency, _quote_currency| %>
+              <th class="shad-table__th fx-history-table__th"><%= label %></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody class="shad-table__body">
+          <% dates.each do |date| %>
+            <tr class="shad-table__row">
+              <td class="shad-table__td fx-history-table__date"><%= l(date) %></td>
+              <% pair_labels.each do |label, base_currency, quote_currency| %>
+                <% rate = rate_for(date, label) %>
+                <% status = gap_status(rate) %>
+                <% missing_rate = rate.nil? || rate.rate.nil? %>
+                <% editable = editable_rate?(rate) %>
+                <td class="shad-table__td">
+                  <div class="fx-history-cell<%= " fx-history-cell--editable" if editable %>"
+                     <% if editable %>data-controller="inline-edit" data-action="click->inline-edit#activate"<% end %>>
+                  <div class="fx-history-cell__display" data-inline-edit-target="display">
+                    <span class="fx-history-cell__value<%= " fx-history-cell__value--missing" if missing_rate %>">
+                      <% if missing_rate %>
+                        <span class="visually-hidden"><%= t("admin.fx.history.placeholder_value") %></span>
+                        <span class="fx-history-cell__missing-icon" aria-hidden="true" title="<%= t("admin.fx.history.edit_cta") %>">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9" />
+                            <path d="m16.5 3.5 4 4L8 20l-4 1 1-4Z" />
+                          </svg>
+                        </span>
+                      <% else %>
+                        <%= display_rate(rate) %>
+                      <% end %>
                     </span>
-                  <% end %>
-                  <% if rate.present? %>
-                    <% lineage = lineage_for(rate) %>
-                    <% if lineage.present? %>
-                      <% lineage_payload = {
+                    <% if status.present? && status != "open" %>
+                      <span class="fx-history-cell__status fx-history-cell__status--<%= status %>">
+                        <%= t("admin.fx.history.gap_status.#{status}") %>
+                      </span>
+                    <% end %>
+                    <% if rate.present? %>
+                      <% lineage = lineage_for(rate) %>
+                      <% if lineage.present? %>
+                        <% lineage_payload = {
                           pair: label,
                           date: l(date),
                           source_label: lineage[:source_label],
@@ -90,32 +168,32 @@
                             ingestion: lineage[:ingestion_id].present? ? "/avo/resources/fx_rate_ingestions/#{lineage[:ingestion_id]}" : nil
                           }
                         } %>
-                      <span class="fx-history-cell__hover-hint">
-                        <button
+                        <span class="fx-history-cell__hover-hint">
+                          <button
                             type="button"
                             class="fx-history-lineage__cta"
                             aria-label="<%= t("admin.fx.history.lineage.cta") %>"
                             title="<%= t("admin.fx.history.lineage.cta") %>"
                             data-action="click->fx--lineage-panel#open"
-                          data-lineage-payload="<%= lineage_payload.to_json %>">
-                          <span aria-hidden="true">i</span>
-                        </button>
-                      </span>
-                    <% elsif status == "open" %>
-                      <span class="fx-history-cell__hover-hint" title="<%= t("admin.fx.history.gap_status.open") %>">
-                        <span class="fx-history-lineage__cta" aria-hidden="true">i</span>
-                      </span>
+                            data-lineage-payload="<%= lineage_payload.to_json %>">
+                            <span aria-hidden="true">i</span>
+                          </button>
+                        </span>
+                      <% elsif status == "open" %>
+                        <span class="fx-history-cell__hover-hint" title="<%= t("admin.fx.history.gap_status.open") %>">
+                          <span class="fx-history-lineage__cta" aria-hidden="true">i</span>
+                        </span>
+                      <% end %>
                     <% end %>
-                  <% end %>
-                </div>
-                <% if editable %>
-                  <% if rate.present? %>
-                    <%= form_with url: admin_fx_daily_rate_path(rate, locale: I18n.locale),
+                  </div>
+                  <% if editable %>
+                    <% if rate.present? %>
+                      <%= form_with url: admin_fx_daily_rate_path(rate, locale: I18n.locale),
                                     method: :patch,
                                     local: true,
                                     scope: nil,
                                     class: "fx-history-cell__form" do |form| %>
-                      <%= form.number_field :rate,
+                        <%= form.number_field :rate,
                           value: rate.rate,
                           step: "0.000001",
                           min: "0",
@@ -125,17 +203,17 @@
                             inline_edit_initial_value: rate.rate.to_s,
                             action: "blur->inline-edit#commit keydown->inline-edit#handleKey click->inline-edit#stop"
                           } %>
-                    <% end %>
-                  <% else %>
-                    <%= form_with url: admin_fx_daily_rates_path(locale: I18n.locale),
+                      <% end %>
+                    <% else %>
+                      <%= form_with url: admin_fx_daily_rates_path(locale: I18n.locale),
                                     method: :post,
                                     local: true,
                                     scope: nil,
                                     class: "fx-history-cell__form" do |form| %>
-                      <%= hidden_field_tag :operational_date, date.iso8601 %>
-                      <%= hidden_field_tag :base_currency, base_currency %>
-                      <%= hidden_field_tag :quote_currency, quote_currency %>
-                      <%= form.number_field :rate,
+                        <%= hidden_field_tag :operational_date, date.iso8601 %>
+                        <%= hidden_field_tag :base_currency, base_currency %>
+                        <%= hidden_field_tag :quote_currency, quote_currency %>
+                        <%= form.number_field :rate,
                           value: nil,
                           step: "0.000001",
                           min: "0",
@@ -145,80 +223,80 @@
                             inline_edit_initial_value: "",
                             action: "blur->inline-edit#commit keydown->inline-edit#handleKey click->inline-edit#stop"
                           } %>
+                      <% end %>
                     <% end %>
                   <% end %>
-                <% end %>
-              </div>
-            </td>
-          <% end %>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
-<div class="fx-lineage-panel" data-fx--lineage-panel-target="panel" hidden>
-  <div class="fx-lineage-panel__overlay" data-action="click->fx--lineage-panel#close"></div>
-  <section class="fx-lineage-panel__drawer" role="dialog" aria-modal="true">
-    <header class="fx-lineage-panel__header">
-      <div>
-        <p class="fx-lineage-panel__eyebrow"><%= t("admin.fx.history.lineage.title") %></p>
-        <h3 class="fx-lineage-panel__title" data-fx--lineage-panel-target="title"></h3>
+                </div>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="fx-lineage-panel" data-fx--lineage-panel-target="panel" hidden>
+    <div class="fx-lineage-panel__overlay" data-action="click->fx--lineage-panel#close"></div>
+    <section class="fx-lineage-panel__drawer" role="dialog" aria-modal="true">
+      <header class="fx-lineage-panel__header">
+        <div>
+          <p class="fx-lineage-panel__eyebrow"><%= t("admin.fx.history.lineage.title") %></p>
+          <h3 class="fx-lineage-panel__title" data-fx--lineage-panel-target="title"></h3>
+        </div>
+        <button type="button" class="fx-lineage-panel__close" data-action="click->fx--lineage-panel#close">×</button>
+      </header>
+      <div class="fx-lineage-panel__body">
+        <dl class="fx-lineage-panel__meta">
+          <div>
+            <dt><%= t("admin.fx.history.lineage.source_label") %></dt>
+            <dd data-fx--lineage-panel-target="source"></dd>
+          </div>
+          <div>
+            <dt><%= t("admin.fx.history.lineage.source_id") %></dt>
+            <dd data-fx--lineage-panel-target="sourceId"></dd>
+          </div>
+          <div>
+            <dt><%= t("admin.fx.history.lineage.ingestion_id") %></dt>
+            <dd data-fx--lineage-panel-target="ingestionId"></dd>
+          </div>
+          <div>
+            <dt><%= t("admin.fx.history.lineage.ingestion_status") %></dt>
+            <dd data-fx--lineage-panel-target="ingestionStatus"></dd>
+          </div>
+          <div>
+            <dt><%= t("admin.fx.history.lineage.upload_id") %></dt>
+            <dd data-fx--lineage-panel-target="uploadId"></dd>
+          </div>
+          <div>
+            <dt><%= t("admin.fx.history.lineage.upload_status") %></dt>
+            <dd data-fx--lineage-panel-target="uploadStatus"></dd>
+          </div>
+          <div>
+            <dt><%= t("admin.fx.history.lineage.created_by") %></dt>
+            <dd data-fx--lineage-panel-target="createdBy"></dd>
+          </div>
+          <div>
+            <dt><%= t("admin.fx.history.lineage.created_at") %></dt>
+            <dd data-fx--lineage-panel-target="createdAt"></dd>
+          </div>
+          <div>
+            <dt><%= t("admin.fx.history.lineage.updated_at") %></dt>
+            <dd data-fx--lineage-panel-target="updatedAt"></dd>
+          </div>
+          <div>
+            <dt><%= t("admin.fx.history.lineage.gap_status") %></dt>
+            <dd data-fx--lineage-panel-target="gapStatus"></dd>
+          </div>
+        </dl>
+        <div class="fx-lineage-panel__events">
+          <h4><%= t("admin.fx.history.lineage.events_title") %></h4>
+          <ul data-fx--lineage-panel-target="events"></ul>
+        </div>
       </div>
-      <button type="button" class="fx-lineage-panel__close" data-action="click->fx--lineage-panel#close">×</button>
-    </header>
-    <div class="fx-lineage-panel__body">
-      <dl class="fx-lineage-panel__meta">
-        <div>
-          <dt><%= t("admin.fx.history.lineage.source_label") %></dt>
-          <dd data-fx--lineage-panel-target="source"></dd>
-        </div>
-        <div>
-          <dt><%= t("admin.fx.history.lineage.source_id") %></dt>
-          <dd data-fx--lineage-panel-target="sourceId"></dd>
-        </div>
-        <div>
-          <dt><%= t("admin.fx.history.lineage.ingestion_id") %></dt>
-          <dd data-fx--lineage-panel-target="ingestionId"></dd>
-        </div>
-        <div>
-          <dt><%= t("admin.fx.history.lineage.ingestion_status") %></dt>
-          <dd data-fx--lineage-panel-target="ingestionStatus"></dd>
-        </div>
-        <div>
-          <dt><%= t("admin.fx.history.lineage.upload_id") %></dt>
-          <dd data-fx--lineage-panel-target="uploadId"></dd>
-        </div>
-        <div>
-          <dt><%= t("admin.fx.history.lineage.upload_status") %></dt>
-          <dd data-fx--lineage-panel-target="uploadStatus"></dd>
-        </div>
-        <div>
-          <dt><%= t("admin.fx.history.lineage.created_by") %></dt>
-          <dd data-fx--lineage-panel-target="createdBy"></dd>
-        </div>
-        <div>
-          <dt><%= t("admin.fx.history.lineage.created_at") %></dt>
-          <dd data-fx--lineage-panel-target="createdAt"></dd>
-        </div>
-        <div>
-          <dt><%= t("admin.fx.history.lineage.updated_at") %></dt>
-          <dd data-fx--lineage-panel-target="updatedAt"></dd>
-        </div>
-        <div>
-          <dt><%= t("admin.fx.history.lineage.gap_status") %></dt>
-          <dd data-fx--lineage-panel-target="gapStatus"></dd>
-        </div>
-      </dl>
-      <div class="fx-lineage-panel__events">
-        <h4><%= t("admin.fx.history.lineage.events_title") %></h4>
-        <ul data-fx--lineage-panel-target="events"></ul>
-      </div>
-    </div>
-    <footer class="fx-lineage-panel__footer">
-      <a class="fx-lineage-panel__link" data-fx--lineage-panel-target="sourceLink" target="_blank" rel="noopener"><%= t("admin.fx.history.lineage.detail_source") %></a>
-      <a class="fx-lineage-panel__link" data-fx--lineage-panel-target="ingestionLink" target="_blank" rel="noopener"><%= t("admin.fx.history.lineage.detail_ingestion") %></a>
-      <a class="fx-lineage-panel__link" data-fx--lineage-panel-target="eventLink" target="_blank" rel="noopener"><%= t("admin.fx.history.lineage.detail_event") %></a>
-    </footer>
-  </section>
-</div>
+      <footer class="fx-lineage-panel__footer">
+        <a class="fx-lineage-panel__link" data-fx--lineage-panel-target="sourceLink" target="_blank" rel="noopener"><%= t("admin.fx.history.lineage.detail_source") %></a>
+        <a class="fx-lineage-panel__link" data-fx--lineage-panel-target="ingestionLink" target="_blank" rel="noopener"><%= t("admin.fx.history.lineage.detail_ingestion") %></a>
+        <a class="fx-lineage-panel__link" data-fx--lineage-panel-target="eventLink" target="_blank" rel="noopener"><%= t("admin.fx.history.lineage.detail_event") %></a>
+      </footer>
+    </section>
+  </div>
 </section>

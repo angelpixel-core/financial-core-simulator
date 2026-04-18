@@ -39,7 +39,12 @@ es:
           source_label: "Fuente"
           cta: "Sincronizar"
           select_source_hint: "Selecciona una fuente para sincronizar."
+          select_market_hint: "Selecciona mercado"
           started: "Sincronizacion en cola"
+          tooltip:
+            source: "Seleccionar fuente"
+            market: "Seleccionar mercado"
+            run: "Ejecutar sincronizacion"
           status_title: "Estado de la ultima sincronizacion"
           status:
             none: "Sin ejecuciones"
@@ -72,6 +77,10 @@ es:
           clear_cta: "Limpiar tasas"
           clear_confirm: "Eliminar todas las tasas diarias de FX?"
           clear_success: "Se eliminaron %{count} tasa(s) diaria(s) de FX."
+          tooltip:
+            review: "Elegir archivo y preview"
+            run: "Ejecutar carga de archivo"
+            clear_all: "Eliminar todas las tasas FX"
           preview:
             title: "Vista previa de carga FX"
             close: "Cerrar"
@@ -95,6 +104,8 @@ es:
             processing: "Procesando carga..."
             success: "Carga completada."
             error: "La carga fallo. %{count} error(es) encontrados."
+        loader:
+          label: "Load"
         placeholder_value: "Faltante"
         edit_cta: "Editar"
         delete_cta: "Eliminar"

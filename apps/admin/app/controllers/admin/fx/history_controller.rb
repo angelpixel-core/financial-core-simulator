@@ -10,7 +10,13 @@ class Admin::Fx::HistoryController < ApplicationController
   def index
     @selected_source = resolve_source(params[:source_id])
     if request.format.json? && params[:source_id].present? && @selected_source.nil?
-      return render json: {error: "invalid_source_id"}, status: :unprocessable_content
+      return render json: { error: 'invalid_source_id' }, status: :unprocessable_content
+    end
+
+    @available_markets = available_markets_for(@selected_source)
+    @selected_market = resolve_market(params[:market], source: @selected_source)
+    if request.format.json? && params[:market].present? && @selected_market.nil?
+      return render json: { error: 'invalid_market' }, status: :unprocessable_content
     end
 
     snapshot = Admin::Fx::Api.history_snapshot(sort_order: params[:sort], source_id: @selected_source&.id)
@@ -26,11 +32,11 @@ class Admin::Fx::HistoryController < ApplicationController
     session_upload_id = session[:fx_rate_upload_id]
     upload_active = session[:fx_rate_upload_active] == true
     @latest_upload = if upload_active && session_upload_id.present?
-      Admin::Fx::Api.visible_rate_upload(
-        upload_id: session_upload_id,
-        account_id: current_admin_account&.id
-      )
-    end
+                       Admin::Fx::Api.visible_rate_upload(
+                         upload_id: session_upload_id,
+                         account_id: current_admin_account&.id
+                       )
+                     end
     if @latest_upload.blank?
       session.delete(:fx_rate_upload_id)
       session.delete(:fx_rate_upload_active)
@@ -39,17 +45,17 @@ class Admin::Fx::HistoryController < ApplicationController
       session.delete(:fx_rate_upload_active)
     end
     @upload_status_stream = if admin_shell_operator? || admin_shell_admin?
-      Admin::Fx::Api.rate_upload_status_stream(account_id: current_admin_account&.id)
-    end
+                              Admin::Fx::Api.rate_upload_status_stream(account_id: current_admin_account&.id)
+                            end
 
     respond_to do |format|
       format.html
       format.json { render json: history_json }
     end
-  rescue => e
+  rescue StandardError => e
     raise unless request.format.json?
 
-    render json: {error: "internal_error", message: e.message}, status: :internal_server_error
+    render json: { error: 'internal_error', message: e.message }, status: :internal_server_error
   end
 
   private
@@ -82,10 +88,30 @@ class Admin::Fx::HistoryController < ApplicationController
     FxRateSource.find_by(id: source_id)
   end
 
+  def available_markets_for(source)
+    return [] if source.nil?
+
+    case source.code
+    when 'BCRA'
+      ['USDARS']
+    else
+      []
+    end
+  end
+
+  def resolve_market(market, source:)
+    return nil if market.blank? || source.nil?
+
+    normalized_market = market.to_s.upcase
+    return normalized_market if available_markets_for(source).include?(normalized_market)
+
+    nil
+  end
+
   def build_rate_lineage(rates)
     rates = rates.compact
     ingestion_ids = rates.map do |rate|
-      rate.created_context&.dig("ingestion_id") || rate.created_context&.dig(:ingestion_id)
+      rate.created_context&.dig('ingestion_id') || rate.created_context&.dig(:ingestion_id)
     end
       .compact
     upload_ids = rates.map(&:source_upload_id).compact
@@ -94,7 +120,7 @@ class Admin::Fx::HistoryController < ApplicationController
     events_by_ingestion = fx_events_by_ingestion(ingestion_ids)
 
     rates.each_with_object({}) do |rate, acc|
-      ingestion_id = rate.created_context&.dig("ingestion_id") || rate.created_context&.dig(:ingestion_id)
+      ingestion_id = rate.created_context&.dig('ingestion_id') || rate.created_context&.dig(:ingestion_id)
       ingestion = ingestion_id.present? ? ingestions[ingestion_id.to_i] : nil
       upload = rate.source_upload_id.present? ? uploads[rate.source_upload_id] : nil
       events = ingestion_id.present? ? events_by_ingestion[ingestion_id.to_s] || [] : []
@@ -122,9 +148,11 @@ class Admin::Fx::HistoryController < ApplicationController
     {
       source_id: @selected_source&.id,
       source_name: @selected_source&.name,
+      market: @selected_market,
+      available_markets: @available_markets,
       sort_order: @sort_order,
       dates: @dates.map(&:iso8601),
-      pairs: @supported_pairs.map { |base, quote| {base_currency: base, quote_currency: quote} },
+      pairs: @supported_pairs.map { |base, quote| { base_currency: base, quote_currency: quote } },
       rates_by_pair: serialized_rates_by_pair,
       lineage: serialized_lineage
     }
@@ -140,7 +168,7 @@ class Admin::Fx::HistoryController < ApplicationController
           operational_date: rate.operational_date.iso8601,
           base_currency: rate.base_currency,
           quote_currency: rate.quote_currency,
-          rate: rate.rate&.to_s("F"),
+          rate: rate.rate&.to_s('F'),
           source: rate.source,
           source_id: rate.source_id
         }
@@ -168,8 +196,8 @@ class Admin::Fx::HistoryController < ApplicationController
           {
             event_type: event.event_type,
             created_at: event.created_at.iso8601,
-            error_code: event.data["error_code"],
-            severity: event.data["severity"]
+            error_code: event.data['error_code'],
+            severity: event.data['severity']
           }
         end
       }
@@ -181,9 +209,9 @@ class Admin::Fx::HistoryController < ApplicationController
 
     ids = ingestion_ids.map(&:to_s)
     FxRateEvent.where("metadata ->> 'ingestion_id' IN (?)", ids)
-      .order(created_at: :desc)
-      .group_by { |event| event.metadata["ingestion_id"].to_s }
-      .transform_values { |events| events.first(3) }
+               .order(created_at: :desc)
+               .group_by { |event| event.metadata['ingestion_id'].to_s }
+               .transform_values { |events| events.first(3) }
   end
 
   def load_navigation_context
