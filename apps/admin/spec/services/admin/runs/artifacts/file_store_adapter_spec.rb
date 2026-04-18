@@ -36,6 +36,36 @@ RSpec.describe Admin::Runs::Artifacts::FileStoreAdapter do
     paths = adapter.artifact_paths(output_dir: output_dir, execution_result: execution_result)
 
     expect(paths).to eq(
+      'result_json_path' => result_path,
+      'positions_csv_path' => positions_path,
+      'pnl_csv_path' => nil
+    )
+  ensure
+    FileUtils.rm_rf(output_dir) if output_dir
+  end
+
+  it 'returns nil when result artifact file is missing' do
+    output_dir = Dir.mktmpdir('run-artifacts')
+    missing_result_path = File.join(output_dir, 'result.json')
+    positions_path = File.join(output_dir, 'positions.csv')
+
+    File.write(positions_path, "id,qty\n")
+
+    execution_result = FCS::Contracts::RunExecutionResult.from_hash!(
+      json_path: missing_result_path,
+      input_hash: 'b' * 64,
+      run_id: '123e4567-e89b-5d3a-a456-426614174001',
+      schema_version: '1.0',
+      valuation_timestamp: '2026-04-15T12:00:00Z',
+      artifacts: {
+        positions_csv_path: positions_path,
+        pnl_csv_path: nil
+      }
+    )
+
+    paths = adapter.artifact_paths(output_dir: output_dir, execution_result: execution_result)
+
+    expect(paths).to eq(
       'result_json_path' => nil,
       'positions_csv_path' => positions_path,
       'pnl_csv_path' => nil
