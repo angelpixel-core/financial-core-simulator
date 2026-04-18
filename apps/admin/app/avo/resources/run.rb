@@ -23,55 +23,55 @@ class Avo::Resources::Run < Avo::BaseResource
     field :error_code, as: :text
     field :error_message, as: :textarea
 
-    panel 'Execution' do
-      field :execute_run, as: :text, as_html: true, only_on: :show, name: 'execute run' do
+    panel "Execution" do
+      field :execute_run, as: :text, as_html: true, only_on: :show, name: "execute run" do
         view_context.link_to(
-          'Execute now',
+          "Execute now",
           view_context.main_app.run_execute_path(id: record.id),
-          data: { turbo_method: :post },
-          rel: 'noopener'
+          data: {turbo_method: :post},
+          rel: "noopener"
         )
       end
 
-      field :enqueue_run, as: :text, as_html: true, only_on: :show, name: 'enqueue run' do
+      field :enqueue_run, as: :text, as_html: true, only_on: :show, name: "enqueue run" do
         view_context.link_to(
-          'Enqueue execution',
+          "Enqueue execution",
           view_context.main_app.run_execute_path(id: record.id, async: 1),
-          data: { turbo_method: :post },
-          rel: 'noopener'
+          data: {turbo_method: :post},
+          rel: "noopener"
         )
       end
     end
 
-    panel 'Verification' do
+    panel "Verification" do
       field :verification_status, as: :badge,
-                                  options: {
-                                    unverified: :warning,
-                                    verified: :success,
-                                    mismatch: :danger,
-                                    verification_error: :danger
-                                  }
+        options: {
+          unverified: :warning,
+          verified: :success,
+          mismatch: :danger,
+          verification_error: :danger
+        }
       field :verified_at, as: :date_time
       field :verification_input_hash, as: :text
       field :verification_error, as: :textarea
-      field :verify_input_hash, as: :text, as_html: true, only_on: :show, name: 'verify input hash' do
+      field :verify_input_hash, as: :text, as_html: true, only_on: :show, name: "verify input hash" do
         view_context.link_to(
-          'Verify now',
+          "Verify now",
           view_context.main_app.run_verify_path(id: record.id),
-          data: { turbo_method: :post },
-          rel: 'noopener'
+          data: {turbo_method: :post},
+          rel: "noopener"
         )
       end
     end
 
-    panel 'Reliability & Validation' do
-      field :run_diagnostics, as: :text, as_html: true, only_on: :show, name: 'diagnostics' do
+    panel "Reliability & Validation" do
+      field :run_diagnostics, as: :text, as_html: true, only_on: :show, name: "diagnostics" do
         view_context.render(Admin::Runs::RunDiagnosticsPanelComponent.new(run: record))
       end
     end
 
-    panel 'Persisted operations' do
-      field :persisted_operations_counts, as: :text, as_html: true, only_on: :show, name: 'counts' do
+    panel "Persisted operations" do
+      field :persisted_operations_counts, as: :text, as_html: true, only_on: :show, name: "counts" do
         snapshots_count = record.run_snapshots.count
         events_count = record.run_daily_events.count
         volumes_count = record.run_daily_volumes.count
@@ -93,35 +93,35 @@ class Avo::Resources::Run < Avo::BaseResource
       field :run_daily_pnls, as: :has_many
     end
 
-    panel 'Triage drilldown' do
-      field :overview_drilldown, as: :text, as_html: true, only_on: :show, name: 'overview' do
+    panel "Triage drilldown" do
+      field :overview_drilldown, as: :text, as_html: true, only_on: :show, name: "overview" do
         context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters,
-                                                                run: record)
-        view_context.link_to('Open admin overview', view_context.main_app.admin_overview_path(context_params),
-                             rel: 'noopener')
+          run: record)
+        view_context.link_to("Open admin overview", view_context.main_app.admin_overview_path(context_params),
+          rel: "noopener")
       end
 
-      field :top_accounts_drilldown, as: :text, as_html: true, only_on: :show, name: 'top accounts' do
+      field :top_accounts_drilldown, as: :text, as_html: true, only_on: :show, name: "top accounts" do
         context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters,
-                                                                run: record)
-        view_context.link_to('Open top accounts',
-                             view_context.main_app.admin_overview_top_accounts_path(context_params), rel: 'noopener')
+          run: record)
+        view_context.link_to("Open top accounts",
+          view_context.main_app.admin_overview_top_accounts_path(context_params), rel: "noopener")
       end
 
-      field :ingestion_errors_drilldown, as: :text, as_html: true, only_on: :show, name: 'ingestion errors' do
+      field :ingestion_errors_drilldown, as: :text, as_html: true, only_on: :show, name: "ingestion errors" do
         context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters,
-                                                                run: record)
-        view_context.link_to('Open ingestion validation errors',
-                             view_context.main_app.admin_overview_ingestion_validation_errors_path(context_params), rel: 'noopener')
+          run: record)
+        view_context.link_to("Open ingestion validation errors",
+          view_context.main_app.admin_overview_ingestion_validation_errors_path(context_params), rel: "noopener")
       end
     end
 
-    panel 'Artifacts viewer' do
-      field :artifact_evidence, as: :text, as_html: true, only_on: :show, name: 'artifact evidence' do
+    panel "Artifacts viewer" do
+      field :artifact_evidence, as: :text, as_html: true, only_on: :show, name: "artifact evidence" do
         context_params = Admin::Runs::NavigationContext.capture(params: view_context.request.query_parameters,
-                                                                run: record)
+          run: record)
         view_context.render(Admin::Runs::ArtifactEvidencePanelComponent.new(run: record,
-                                                                            context_params: context_params))
+          context_params: context_params))
       end
     end
   end

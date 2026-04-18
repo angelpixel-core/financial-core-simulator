@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'roo'
+require "roo"
 
 module Admin
   module Fx
@@ -25,12 +25,12 @@ module Admin
         workbook = Roo::Spreadsheet.open(@file_path)
         sheet_names = workbook.sheets
         if sheet_names.empty?
-          register_error(1, 'EMPTY_FILE', 'No worksheets found')
+          register_error(1, "EMPTY_FILE", "No worksheets found")
           return result(false)
         end
 
         if sheet_names.size > 1
-          register_error(1, 'MULTIPLE_SHEETS', 'Template must include a single worksheet')
+          register_error(1, "MULTIPLE_SHEETS", "Template must include a single worksheet")
           return result(false)
         end
 
@@ -50,8 +50,8 @@ module Admin
         end
 
         result(@errors.empty?)
-      rescue StandardError => e
-        register_error(1, 'PREVIEW_FAILED', e.message)
+      rescue => e
+        register_error(1, "PREVIEW_FAILED", e.message)
         result(false)
       end
 
@@ -61,49 +61,49 @@ module Admin
         missing = REQUIRED_HEADERS - headers
         return if missing.empty?
 
-        register_error(1, 'INVALID_HEADERS', "Sheet #{sheet_name} missing columns: #{missing.join(', ')}")
+        register_error(1, "INVALID_HEADERS", "Sheet #{sheet_name} missing columns: #{missing.join(", ")}")
       end
 
       def normalize_header(value)
-        value.to_s.strip.downcase.gsub(/\s+/, '_')
+        value.to_s.strip.downcase.gsub(/\s+/, "_")
       end
 
       def parse_row(row, line, sheet_name:)
-        return if row['rate'].blank?
+        return if row["rate"].blank?
 
         line_label = "#{sheet_name}:#{line}"
-        operational_date = parse_date(row['operational_date'])
-        base_currency = row['base_currency'].to_s.strip.upcase
-        quote_currency = row['quote_currency'].to_s.strip.upcase
-        rate = parse_rate(row['rate'])
+        operational_date = parse_date(row["operational_date"])
+        base_currency = row["base_currency"].to_s.strip.upcase
+        quote_currency = row["quote_currency"].to_s.strip.upcase
+        rate = parse_rate(row["rate"])
 
         if operational_date.nil?
-          register_error(line_label, 'INVALID_DATE', 'Invalid operational date')
+          register_error(line_label, "INVALID_DATE", "Invalid operational date")
           return
         end
 
         if base_currency.empty? || quote_currency.empty?
-          register_error(line_label, 'MISSING_FIELDS', 'Missing required currency values')
+          register_error(line_label, "MISSING_FIELDS", "Missing required currency values")
           return
         end
 
         unless base_currency.match?(FxDailyRate::CURRENCY_CODE_FORMAT) && quote_currency.match?(FxDailyRate::CURRENCY_CODE_FORMAT)
-          register_error(line_label, 'INVALID_PAIR', 'Invalid currency code format')
+          register_error(line_label, "INVALID_PAIR", "Invalid currency code format")
           return
         end
 
         unless supported_pair?(base_currency, quote_currency)
-          register_error(line_label, 'UNSUPPORTED_PAIR', 'Unsupported FX pair')
+          register_error(line_label, "UNSUPPORTED_PAIR", "Unsupported FX pair")
           return
         end
 
         if rate.nil?
-          register_error(line_label, 'MISSING_FIELDS', 'Missing required values')
+          register_error(line_label, "MISSING_FIELDS", "Missing required values")
           return
         end
 
         if rate <= 0
-          register_error(line_label, 'INVALID_RATE', 'Rate must be greater than 0')
+          register_error(line_label, "INVALID_RATE", "Rate must be greater than 0")
           return
         end
 
@@ -114,7 +114,7 @@ module Admin
           operational_date: operational_date.iso8601,
           base_currency: base_currency,
           quote_currency: quote_currency,
-          rate: rate.to_s('F')
+          rate: rate.to_s("F")
         }
       end
 
@@ -142,13 +142,13 @@ module Admin
         string_value = value.to_s.strip
         return nil if string_value.empty?
 
-        normalized = if string_value.include?(',') && string_value.include?('.')
-                       string_value.delete(',')
-                     elsif string_value.include?(',')
-                       string_value.tr(',', '.')
-                     else
-                       string_value
-                     end
+        normalized = if string_value.include?(",") && string_value.include?(".")
+          string_value.delete(",")
+        elsif string_value.include?(",")
+          string_value.tr(",", ".")
+        else
+          string_value
+        end
 
         BigDecimal(normalized)
       rescue ArgumentError
@@ -164,7 +164,7 @@ module Admin
       end
 
       def register_error(line, code, message)
-        @errors << { line: line, code: code, message: message }
+        @errors << {line: line, code: code, message: message}
       end
 
       def result(valid)

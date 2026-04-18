@@ -3,10 +3,10 @@
 class RunArtifactsController < ApplicationController
   RISK_STATUSES = %w[HEALTHY MARGIN_CALL LIQUIDATABLE].freeze
 
-  require 'csv'
-  require 'cgi'
-  require 'json'
-  require 'rack/utils'
+  require "csv"
+  require "cgi"
+  require "json"
+  require "rack/utils"
 
   before_action :load_latest_run, only: %i[latest latest_positions latest_pnl latest_risk]
   before_action :load_run, except: %i[latest latest_positions latest_pnl latest_risk]
@@ -14,35 +14,35 @@ class RunArtifactsController < ApplicationController
 
   def result
     path = artifact_path_for(:result_json_path)
-    return render plain: 'Artifact not found', status: :not_found if path.nil?
+    return render plain: "Artifact not found", status: :not_found if path.nil?
 
     json = File.read(path)
     render json: JSON.parse(json)
   rescue JSON::ParserError
-    send_file path, type: 'application/json', disposition: 'inline'
+    send_file path, type: "application/json", disposition: "inline"
   end
 
   def positions
     path = artifact_path_for(:positions_csv_path)
-    return render plain: 'Artifact not found', status: :not_found if path.nil?
+    return render plain: "Artifact not found", status: :not_found if path.nil?
 
     return render_csv_preview(path) if preview_requested?
 
-    send_file path, type: 'text/csv', disposition: 'attachment', filename: 'positions.csv'
+    send_file path, type: "text/csv", disposition: "attachment", filename: "positions.csv"
   end
 
   def pnl
     path = artifact_path_for(:pnl_csv_path)
-    return render plain: 'Artifact not found', status: :not_found if path.nil?
+    return render plain: "Artifact not found", status: :not_found if path.nil?
 
     return render_csv_preview(path) if preview_requested?
 
-    send_file path, type: 'text/csv', disposition: 'attachment', filename: 'pnl.csv'
+    send_file path, type: "text/csv", disposition: "attachment", filename: "pnl.csv"
   end
 
   def risk
     path = artifact_path_for(:result_json_path)
-    return render plain: 'Artifact not found', status: :not_found if path.nil?
+    return render plain: "Artifact not found", status: :not_found if path.nil?
 
     payload = JSON.parse(File.read(path))
     status_filter = normalize_status_filter(params[:status])
@@ -51,7 +51,7 @@ class RunArtifactsController < ApplicationController
     counters = risk_status_counters(all_rows)
     render html: risk_table_html(rows, status_filter: status_filter, counters: counters).html_safe
   rescue JSON::ParserError
-    render plain: 'Invalid result.json artifact', status: :unprocessable_content
+    render plain: "Invalid result.json artifact", status: :unprocessable_content
   end
 
   def latest
@@ -84,14 +84,14 @@ class RunArtifactsController < ApplicationController
     if @run.nil?
       return redirect_to avo.resources_runs_path if request.format.html?
 
-      return render plain: 'Artifact not found', status: :not_found
+      return render plain: "Artifact not found", status: :not_found
     end
     return if artifact_access_policy.allowed?
 
     if request.format.html?
       redirect_to root_path
     else
-      render plain: 'Forbidden', status: :forbidden
+      render plain: "Forbidden", status: :forbidden
     end
   end
 
@@ -104,7 +104,7 @@ class RunArtifactsController < ApplicationController
   end
 
   def preview_requested?
-    params[:preview].to_s == '1'
+    params[:preview].to_s == "1"
   end
 
   def render_csv_preview(path)
@@ -140,17 +140,17 @@ class RunArtifactsController < ApplicationController
   end
 
   def extract_risk_rows(payload)
-    accounts = payload.is_a?(Hash) ? payload.fetch('accounts', []) : []
+    accounts = payload.is_a?(Hash) ? payload.fetch("accounts", []) : []
     return [] unless accounts.is_a?(Array)
 
     accounts.map do |account|
-      risk = account.fetch('risk', {})
-      events = account.fetch('riskEvents', [])
+      risk = account.fetch("risk", {})
+      events = account.fetch("riskEvents", [])
 
       {
-        account_id: account.fetch('accountId', '-'),
-        status: risk.fetch('status', '-'),
-        margin_ratio: risk.fetch('marginRatio', '-'),
+        account_id: account.fetch("accountId", "-"),
+        status: risk.fetch("status", "-"),
+        margin_ratio: risk.fetch("marginRatio", "-"),
         events: events.is_a?(Array) ? events : []
       }
     end
@@ -161,36 +161,36 @@ class RunArtifactsController < ApplicationController
       events_html = risk_events_html(row.fetch(:events))
       status_badge = risk_status_badge_html(row.fetch(:status))
 
-      '<tr>' \
+      "<tr>" \
         "<td>#{h(row.fetch(:account_id))}</td>" \
         "<td>#{status_badge}</td>" \
         "<td>#{h(row.fetch(:margin_ratio))}</td>" \
         "<td>#{events_html}</td>" \
-      '</tr>'
+      "</tr>"
     end.join
 
     if body_rows.empty?
       body_rows = '<tr><td colspan="4" style="padding: 10px; color: #4a5568;">' \
-                  'No accounts for selected filter.</td></tr>'
+                  "No accounts for selected filter.</td></tr>"
     end
 
-    options = ['ALL'] + RISK_STATUSES
+    options = ["ALL"] + RISK_STATUSES
     option_html = options.map do |status|
-      selected = status == status_filter ? ' selected' : ''
+      selected = (status == status_filter) ? " selected" : ""
       "<option value=\"#{h(status)}\"#{selected}>#{h(status)}</option>"
     end.join
 
-    chip_style = 'display:inline-block;' \
-                 'padding:4px 10px;' \
-                 'border-radius:999px;' \
-                 'background:#edf2f7;' \
-                 'color:#1a202c;' \
-                 'font-weight:600;'
+    chip_style = "display:inline-block;" \
+                 "padding:4px 10px;" \
+                 "border-radius:999px;" \
+                 "background:#edf2f7;" \
+                 "color:#1a202c;" \
+                 "font-weight:600;"
     summary_chips = options.map do |status|
-      key = status == 'ALL' ? 'ALL' : status
+      key = (status == "ALL") ? "ALL" : status
       value = counters.fetch(key, 0)
       "<span style=\"#{chip_style}\">#{h(status)}: #{value}</span>"
-    end.join(' ')
+    end.join(" ")
 
     pie_chart = risk_pie_chart_html(counters)
 
@@ -223,18 +223,18 @@ class RunArtifactsController < ApplicationController
   end
 
   def risk_events_html(events)
-    return '-' if events.empty?
+    return "-" if events.empty?
 
     items = events.map do |event|
-      '<li>' \
-        "<strong>#{h(event.fetch('reasonCode', '-'))}</strong>" \
-        " - type: #{h(event.fetch('type',
-                                  '-'))}, market: #{h(event.fetch('marketId',
-                                                                  '-'))}, seq: #{h(event.fetch('seq',
-                                                                                               '-'))}, severity: #{h(event.fetch(
-                                                                                                                       'severity', '-'
-                                                                                                                     ))}" \
-      '</li>'
+      "<li>" \
+        "<strong>#{h(event.fetch("reasonCode", "-"))}</strong>" \
+        " - type: #{h(event.fetch("type",
+          "-"))}, market: #{h(event.fetch("marketId",
+            "-"))}, seq: #{h(event.fetch("seq",
+              "-"))}, severity: #{h(event.fetch(
+                "severity", "-"
+              ))}" \
+      "</li>"
     end.join
 
     "<ul style=\"margin: 0; padding-left: 16px;\">#{items}</ul>"
@@ -242,20 +242,20 @@ class RunArtifactsController < ApplicationController
 
   def risk_status_badge_html(status)
     css_class, bg, fg = case status
-                        when 'HEALTHY'
-                          ['badge--healthy', '#e6fffa', '#0f766e']
-                        when 'MARGIN_CALL'
-                          ['badge--margin-call', '#fff7ed', '#c2410c']
-                        when 'LIQUIDATABLE'
-                          ['badge--liquidatable', '#fee2e2', '#b91c1c']
-                        else
-                          ['badge--unknown', '#edf2f7', '#2d3748']
-                        end
+    when "HEALTHY"
+      ["badge--healthy", "#e6fffa", "#0f766e"]
+    when "MARGIN_CALL"
+      ["badge--margin-call", "#fff7ed", "#c2410c"]
+    when "LIQUIDATABLE"
+      ["badge--liquidatable", "#fee2e2", "#b91c1c"]
+    else
+      ["badge--unknown", "#edf2f7", "#2d3748"]
+    end
 
-    badge_style = 'display:inline-block;' \
-                  'padding:2px 8px;' \
-                  'border-radius:999px;' \
-                  'font-weight:600;' \
+    badge_style = "display:inline-block;" \
+                  "padding:2px 8px;" \
+                  "border-radius:999px;" \
+                  "font-weight:600;" \
                   "background:#{bg};" \
                   "color:#{fg};"
     "<span class=\"#{css_class}\" style=\"#{badge_style}\">#{h(status)}</span>"
@@ -263,25 +263,25 @@ class RunArtifactsController < ApplicationController
 
   def normalize_status_filter(value)
     candidate = value.to_s.upcase
-    return 'ALL' if candidate.empty?
-    return candidate if candidate == 'ALL'
+    return "ALL" if candidate.empty?
+    return candidate if candidate == "ALL"
     return candidate if RISK_STATUSES.include?(candidate)
 
-    'ALL'
+    "ALL"
   end
 
   def filter_risk_rows(rows, status_filter)
-    return rows if status_filter == 'ALL'
+    return rows if status_filter == "ALL"
 
     rows.select { |row| row.fetch(:status) == status_filter }
   end
 
   def risk_status_counters(rows)
     counts = {
-      'ALL' => rows.size,
-      'HEALTHY' => 0,
-      'MARGIN_CALL' => 0,
-      'LIQUIDATABLE' => 0
+      "ALL" => rows.size,
+      "HEALTHY" => 0,
+      "MARGIN_CALL" => 0,
+      "LIQUIDATABLE" => 0
     }
 
     rows.each do |row|
@@ -293,12 +293,12 @@ class RunArtifactsController < ApplicationController
   end
 
   def risk_pie_chart_html(counters)
-    total = counters.fetch('ALL', 0)
+    total = counters.fetch("ALL", 0)
     return '<section style="margin-bottom: 12px; color: #4a5568;">Risk distribution: no data</section>' if total.zero?
 
-    healthy = counters.fetch('HEALTHY', 0)
-    margin_call = counters.fetch('MARGIN_CALL', 0)
-    liquidatable = counters.fetch('LIQUIDATABLE', 0)
+    healthy = counters.fetch("HEALTHY", 0)
+    margin_call = counters.fetch("MARGIN_CALL", 0)
+    liquidatable = counters.fetch("LIQUIDATABLE", 0)
 
     healthy_pct = (healthy.to_f / total * 100).round(2)
     margin_call_pct = (margin_call.to_f / total * 100).round(2)
@@ -312,9 +312,9 @@ class RunArtifactsController < ApplicationController
         <div aria-label="risk-pie-chart" style="width: 120px; height: 120px; border-radius: 50%; border: 1px solid #cbd5e0; background: conic-gradient(#0f766e 0% #{stop_a}%, #c2410c #{stop_a}% #{stop_b}%, #b91c1c #{stop_b}% 100%);"></div>
         <div>
           <div style="font-weight: 700; margin-bottom: 4px;">Risk distribution</div>
-          <div style="color:#0f766e;">HEALTHY: #{healthy} (#{format('%.2f', healthy_pct)}%)</div>
-          <div style="color:#c2410c;">MARGIN_CALL: #{margin_call} (#{format('%.2f', margin_call_pct)}%)</div>
-          <div style="color:#b91c1c;">LIQUIDATABLE: #{liquidatable} (#{format('%.2f', liquidatable_pct)}%)</div>
+          <div style="color:#0f766e;">HEALTHY: #{healthy} (#{format("%.2f", healthy_pct)}%)</div>
+          <div style="color:#c2410c;">MARGIN_CALL: #{margin_call} (#{format("%.2f", margin_call_pct)}%)</div>
+          <div style="color:#b91c1c;">LIQUIDATABLE: #{liquidatable} (#{format("%.2f", liquidatable_pct)}%)</div>
         </div>
       </section>
     HTML

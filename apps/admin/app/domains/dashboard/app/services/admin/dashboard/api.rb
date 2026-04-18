@@ -5,7 +5,7 @@ module Admin
     module Api
       module_function
 
-      def read_metrics(trades_window: 'all-time')
+      def read_metrics(trades_window: "all-time")
         Admin::Dashboard::ReadMetrics.new.call(trades_window: trades_window)
       end
 

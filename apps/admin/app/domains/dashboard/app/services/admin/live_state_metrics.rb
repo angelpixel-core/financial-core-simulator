@@ -1,5 +1,5 @@
-require 'json'
-require 'bigdecimal'
+require "json"
+require "bigdecimal"
 
 module Admin
   class LiveStateMetrics
@@ -16,15 +16,15 @@ module Admin
       checkpoint = latest_checkpoint(output_dir: run.output_dir)
       return nil if checkpoint.nil?
 
-      state = checkpoint['state']
+      state = checkpoint["state"]
       return nil unless state.is_a?(Hash)
 
       {
-        checkpoint_timeline_seq: checkpoint['timelineSeq'],
-        latest_global: state['global'],
-        top_accounts: top_accounts_data(state['accounts'], run: run)
+        checkpoint_timeline_seq: checkpoint["timelineSeq"],
+        latest_global: state["global"],
+        top_accounts: top_accounts_data(state["accounts"], run: run)
       }
-    rescue StandardError
+    rescue
       nil
     end
 
@@ -33,7 +33,7 @@ module Admin
     def latest_checkpoint(output_dir:)
       return nil if output_dir.blank?
 
-      pattern = File.join(output_dir, 'checkpoint_*.json')
+      pattern = File.join(output_dir, "checkpoint_*.json")
       path = Dir.glob(pattern).max_by { |candidate| checkpoint_seq(candidate) }
       return nil if path.nil?
 
@@ -54,7 +54,7 @@ module Admin
       return nil if source.empty?
 
       with_totals = source.select do |account|
-        account.is_a?(Hash) && account['totals'].is_a?(Hash)
+        account.is_a?(Hash) && account["totals"].is_a?(Hash)
       end
       return fallback_top_accounts_data(source, run: run) if with_totals.empty?
 
@@ -85,20 +85,20 @@ module Admin
     def derived_account_metrics(account, prices_by_market:, realized_by_account:)
       return nil unless account.is_a?(Hash)
 
-      account_id = account['accountId'].to_s.strip
+      account_id = account["accountId"].to_s.strip
       return nil if account_id.empty?
 
       realized = realized_by_account.fetch(account_id, BigDecimal(0))
 
-      unrealized = Array(account['markets']).sum do |market|
+      unrealized = Array(account["markets"]).sum do |market|
         next BigDecimal(0) unless market.is_a?(Hash)
 
-        market_id = market['marketId'].to_s.strip
+        market_id = market["marketId"].to_s.strip
         next BigDecimal(0) if market_id.empty?
 
         mark_price = prices_by_market[market_id]
-        avg_cost = decimal_or_nil(market['avgCost'] || market['avg_cost'] || market['averageCost'])
-        quantity = decimal_or_nil(market['quantity'] || market['quantityBase'] || market['positionQty'])
+        avg_cost = decimal_or_nil(market["avgCost"] || market["avg_cost"] || market["averageCost"])
+        quantity = decimal_or_nil(market["quantity"] || market["quantityBase"] || market["positionQty"])
         next BigDecimal(0) if mark_price.nil? || avg_cost.nil? || quantity.nil?
 
         (mark_price - avg_cost) * quantity
@@ -126,12 +126,12 @@ module Admin
       realized = Hash.new { |hash, account_id| hash[account_id] = BigDecimal(0) }
 
       persisted_trade_events_for(run).each do |trade|
-        account_id = (trade['accountId'] || trade[:accountId] || trade['account_id'] || trade[:account_id]).to_s.strip
-        market_id = (trade['marketId'] || trade[:marketId] || trade['market_id'] || trade[:market_id]).to_s.strip
-        side = (trade['side'] || trade[:side]).to_s.upcase
+        account_id = (trade["accountId"] || trade[:accountId] || trade["account_id"] || trade[:account_id]).to_s.strip
+        market_id = (trade["marketId"] || trade[:marketId] || trade["market_id"] || trade[:market_id]).to_s.strip
+        side = (trade["side"] || trade[:side]).to_s.upcase
 
-        quantity = decimal_or_nil(trade['quantityBase'] || trade[:quantityBase] || trade['quantity'] || trade[:quantity])
-        price = decimal_or_nil(trade['priceQuotePerBase'] || trade[:priceQuotePerBase] || trade['price'] || trade[:price])
+        quantity = decimal_or_nil(trade["quantityBase"] || trade[:quantityBase] || trade["quantity"] || trade[:quantity])
+        price = decimal_or_nil(trade["priceQuotePerBase"] || trade[:priceQuotePerBase] || trade["price"] || trade[:price])
 
         next if account_id.empty? || market_id.empty?
         next if quantity.nil? || price.nil?
@@ -140,7 +140,7 @@ module Admin
 
         position = positions[account_id][market_id]
 
-        if side == 'BUY'
+        if side == "BUY"
           current_qty = position[:quantity]
           next_qty = current_qty + quantity
 
@@ -169,38 +169,38 @@ module Admin
     def persisted_trade_events_for(run)
       RunDailyEvent
         .joins(:run_snapshot)
-        .where(run_snapshots: { run_id: run.id })
-        .order('run_snapshots.operational_date ASC', 'run_daily_events.event_seq ASC', 'run_daily_events.id ASC')
+        .where(run_snapshots: {run_id: run.id})
+        .order("run_snapshots.operational_date ASC", "run_daily_events.event_seq ASC", "run_daily_events.id ASC")
         .filter_map do |event|
           payload = event.payload
           next unless payload.is_a?(Hash)
 
-          event_type = payload['eventType'] || payload[:eventType] || payload['event_type'] || payload[:event_type]
-          next unless event_type.to_s.upcase == 'TRADE_APPLIED'
+          event_type = payload["eventType"] || payload[:eventType] || payload["event_type"] || payload[:event_type]
+          next unless event_type.to_s.upcase == "TRADE_APPLIED"
 
-          trade = payload['trade'] || payload[:trade]
+          trade = payload["trade"] || payload[:trade]
           trade if trade.is_a?(Hash)
         end
-    rescue StandardError
+    rescue
       []
     end
 
     def snapshot_prices_by_market(run)
       input_json = run.input_json.is_a?(Hash) ? run.input_json : {}
-      prices = input_json.dig('priceSnapshot', 'prices')
+      prices = input_json.dig("priceSnapshot", "prices")
       return {} unless prices.is_a?(Array)
 
       prices.each_with_object({}) do |entry, map|
         next unless entry.is_a?(Hash)
 
-        market_id = entry['marketId'].to_s.strip
+        market_id = entry["marketId"].to_s.strip
         next if market_id.empty?
 
         price = decimal_or_nil(
-          entry['priceQuotePerBase'] ||
-          entry['markPriceQuotePerBase'] ||
-          entry['price'] ||
-          entry['markPrice']
+          entry["priceQuotePerBase"] ||
+          entry["markPriceQuotePerBase"] ||
+          entry["price"] ||
+          entry["markPrice"]
         )
         next if price.nil?
 
@@ -209,12 +209,12 @@ module Admin
     end
 
     def account_metrics(account)
-      totals = account.fetch('totals', {})
+      totals = account.fetch("totals", {})
       {
-        account_id: account['accountId'],
-        total_pnl_quote: decimal_value(totals['totalPnLQuote']),
-        realized_net_pnl_quote: decimal_value(totals['realizedNetPnLQuote']),
-        unrealized_pnl_quote: decimal_value(totals['unrealizedPnLQuote'])
+        account_id: account["accountId"],
+        total_pnl_quote: decimal_value(totals["totalPnLQuote"]),
+        realized_net_pnl_quote: decimal_value(totals["realizedNetPnLQuote"]),
+        unrealized_pnl_quote: decimal_value(totals["unrealizedPnLQuote"])
       }
     end
 

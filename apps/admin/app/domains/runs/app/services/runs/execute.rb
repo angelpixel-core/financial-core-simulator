@@ -23,7 +23,7 @@ module Runs
 
       @run_repository.save_run!(
         run_id: run.id,
-        attributes: { status: :running, error_code: nil, error_message: nil }
+        attributes: {status: :running, error_code: nil, error_message: nil}
       )
 
       Runs::ApplyFxContext.call(run: run)
@@ -46,7 +46,7 @@ module Runs
       reliable = false if validation_errors.present?
       validation_failed = validation_errors.present?
       failure_error_code = Runs::ErrorCodeMapper::VALIDATION_GENERAL
-      failure_message = 'Run completed with validation errors'
+      failure_message = "Run completed with validation errors"
       artifact_paths = @artifact_store.artifact_paths(output_dir: output_dir, execution_result: execution_result)
 
       @run_repository.save_run!(
@@ -87,10 +87,10 @@ module Runs
       Admin::Fx::RunRateGapProcessor.call(run: run)
 
       run
-    rescue StandardError => e
+    rescue => e
       duration_ms = begin
         ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).to_i
-      rescue StandardError
+      rescue
         nil
       end
       @run_repository.save_run!(
@@ -110,61 +110,61 @@ module Runs
 
     def publish_success_observability(run:, duration_ms:, artifact_paths:)
       safe_observe do
-        @event_bus.publish('runs.execution.completed', {
-                             runId: run.id,
-                             status: 'succeeded',
-                             durationMs: duration_ms,
-                             artifacts: artifact_paths
-                           })
+        @event_bus.publish("runs.execution.completed", {
+          runId: run.id,
+          status: "succeeded",
+          durationMs: duration_ms,
+          artifacts: artifact_paths
+        })
       end
       safe_observe do
-        @metrics.increment('runs.execution.completed', tags: { status: 'succeeded' })
+        @metrics.increment("runs.execution.completed", tags: {status: "succeeded"})
       end
       safe_observe do
-        @metrics.observe('runs.execution.duration_ms', value: duration_ms, tags: { status: 'succeeded' })
+        @metrics.observe("runs.execution.duration_ms", value: duration_ms, tags: {status: "succeeded"})
       end
       safe_observe do
         @logger.info(
-          event: 'runs.execution.completed',
-          payload: { runId: run.id, durationMs: duration_ms, artifacts: artifact_paths },
-          tags: { status: 'succeeded' }
+          event: "runs.execution.completed",
+          payload: {runId: run.id, durationMs: duration_ms, artifacts: artifact_paths},
+          tags: {status: "succeeded"}
         )
       end
     end
 
     def publish_failure_observability(run:, duration_ms:, error: nil, error_code: nil, error_message: nil,
-                                      partial: false)
+      partial: false)
       resolved_error_code = error_code || Runs::ErrorCodeMapper.call(error)
       resolved_error_message = error_message || error&.message
 
       safe_observe do
-        @event_bus.publish('runs.execution.failed', {
-                             runId: run.id,
-                             status: 'failed',
-                             durationMs: duration_ms,
-                             errorCode: resolved_error_code,
-                             errorMessage: resolved_error_message,
-                             partial: partial
-                           })
+        @event_bus.publish("runs.execution.failed", {
+          runId: run.id,
+          status: "failed",
+          durationMs: duration_ms,
+          errorCode: resolved_error_code,
+          errorMessage: resolved_error_message,
+          partial: partial
+        })
       end
       safe_observe do
-        @metrics.increment('runs.execution.failed', tags: { status: 'failed' })
+        @metrics.increment("runs.execution.failed", tags: {status: "failed"})
       end
       safe_observe do
-        @metrics.observe('runs.execution.duration_ms', value: duration_ms, tags: { status: 'failed' })
+        @metrics.observe("runs.execution.duration_ms", value: duration_ms, tags: {status: "failed"})
       end
       safe_observe do
         @logger.error(
-          event: 'runs.execution.failed',
-          payload: { runId: run.id, durationMs: duration_ms, errorMessage: resolved_error_message, partial: partial },
-          tags: { status: 'failed', errorCode: resolved_error_code }
+          event: "runs.execution.failed",
+          payload: {runId: run.id, durationMs: duration_ms, errorMessage: resolved_error_message, partial: partial},
+          tags: {status: "failed", errorCode: resolved_error_code}
         )
       end
     end
 
     def safe_observe
       yield
-    rescue StandardError
+    rescue
       nil
     end
 
@@ -172,7 +172,7 @@ module Runs
       run.run_validation_errors.delete_all
       return if validation_errors.blank?
 
-      correlation_id = input.is_a?(Hash) ? (input['correlationId'] || run.run_uuid) : run.run_uuid
+      correlation_id = input.is_a?(Hash) ? (input["correlationId"] || run.run_uuid) : run.run_uuid
       now = Time.current
 
       entries = validation_errors.map do |error|

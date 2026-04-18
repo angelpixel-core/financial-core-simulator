@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'fileutils'
+require "fileutils"
 
 module Admin
   module Demo
@@ -14,15 +14,15 @@ module Admin
         file = params[:file]
         if file.blank?
           redirect_to admin_overview_path(locale: I18n.locale),
-                      alert: t('admin.overview.dataset.flash.missing_file')
+            alert: t("admin.overview.dataset.flash.missing_file")
           return
         end
 
         original_filename = normalize_upload_filename(file.original_filename)
         if duplicate_filename?(original_filename)
           redirect_to admin_overview_path(locale: I18n.locale),
-                      alert: t('admin.overview.dataset.flash.duplicate_file',
-                               file_name: original_filename)
+            alert: t("admin.overview.dataset.flash.duplicate_file",
+              file_name: original_filename)
           return
         end
 
@@ -36,7 +36,7 @@ module Admin
         if trades.any?
           run = ::Run.create!(input_json: input)
           fee_model = fetch_input_value(input, :feeModel)
-          fee_enabled = fee_model.is_a?(Hash) ? (fee_model[:enabled] || fee_model['enabled']) : false
+          fee_enabled = fee_model.is_a?(Hash) ? (fee_model[:enabled] || fee_model["enabled"]) : false
           with_timeline_env do
             executed_run = ::Runs::Execute.new.call(run, fee_enabled: fee_enabled)
             run = executed_run if executed_run.is_a?(::Run)
@@ -49,7 +49,7 @@ module Admin
               status: :failed,
               reliable: false,
               error_code: ::Runs::ErrorCodeMapper::VALIDATION_GENERAL,
-              error_message: 'Run completed with parser validation errors'
+              error_message: "Run completed with parser validation errors"
             )
           end
 
@@ -66,7 +66,7 @@ module Admin
             upload: upload,
             reporting_currency: ::ReportingSetting.current.reporting_currency
           )
-          message_key = parser_errors.present? ? 'admin.overview.dataset.flash.partial' : 'admin.overview.dataset.flash.valid'
+          message_key = parser_errors.present? ? "admin.overview.dataset.flash.partial" : "admin.overview.dataset.flash.valid"
           redirect_to admin_overview_path(locale: I18n.locale), notice: t(message_key)
         else
           ::DemoDatasetUpload.create!(
@@ -74,7 +74,7 @@ module Admin
             validation_errors: result.errors,
             original_filename: original_filename
           )
-          redirect_to admin_overview_path(locale: I18n.locale), alert: t('admin.overview.dataset.flash.invalid')
+          redirect_to admin_overview_path(locale: I18n.locale), alert: t("admin.overview.dataset.flash.invalid")
         end
       end
 
@@ -87,14 +87,14 @@ module Admin
         ::FxRateLineage.delete_all
         ::FxRateIngestion.delete_all
         ::FxRateUpload.delete_all
-        FileUtils.rm_rf(Rails.root.join('storage', 'runs'))
-        redirect_to admin_overview_path(locale: I18n.locale), notice: t('admin.overview.dataset.flash.reset')
+        FileUtils.rm_rf(Rails.root.join("storage", "runs"))
+        redirect_to admin_overview_path(locale: I18n.locale), notice: t("admin.overview.dataset.flash.reset")
       end
 
       def preview
         file = params[:file]
         if file.blank?
-          render_preview(state: :error, errors: [{ code: 'MISSING_FILE' }], status: :unprocessable_content)
+          render_preview(state: :error, errors: [{code: "MISSING_FILE"}], status: :unprocessable_content)
           return
         end
 
@@ -105,10 +105,10 @@ module Admin
         input = result.input
         summary = build_preview_summary(input)
         sample_rows = if input.is_a?(Hash)
-                        Array(fetch_input_value(input, :trades))
-                      else
-                        []
-                      end
+          Array(fetch_input_value(input, :trades))
+        else
+          []
+        end
         sample_rows = sample_rows.first(Admin::Demo::Datasets::ExcelToInputParser::MAX_PREVIEW_ROWS)
         preview_errors = Array(result.errors).first(Admin::Demo::Datasets::ExcelToInputParser::MAX_PREVIEW_ERRORS)
         sample_rows_truncated = Array(fetch_input_value(input, :trades)).size > sample_rows.size
@@ -123,10 +123,10 @@ module Admin
           errors_truncated: errors_truncated,
           file_name: file.original_filename
         )
-      rescue StandardError => e
+      rescue => e
         render_preview(
           state: :error,
-          errors: [{ code: 'PARSE_FAILED', message: e.message }],
+          errors: [{code: "PARSE_FAILED", message: e.message}],
           status: :unprocessable_content,
           file_name: file&.respond_to?(:original_filename) ? file.original_filename : nil
         )
@@ -139,7 +139,7 @@ module Admin
       end
 
       def render_preview(state:, summary: nil, sample_rows: [], errors: [], status: :ok, file_name: nil, sample_rows_truncated: false,
-                         errors_truncated: false)
+        errors_truncated: false)
         @state = state
         @summary = summary
         @sample_rows = sample_rows
@@ -148,7 +148,7 @@ module Admin
         @sample_rows_truncated = sample_rows_truncated
         @errors_truncated = errors_truncated
 
-        render 'admin/demo/datasets/preview', status: status
+        render "admin/demo/datasets/preview", status: status
       end
 
       def build_preview_summary(input)
@@ -161,7 +161,7 @@ module Admin
           accounts_count: Array(fetch_input_value(input, :accounts)).size,
           markets_count: Array(fetch_input_value(input, :markets)).size,
           schema_version: fetch_input_value(input, :schemaVersion),
-          fee_enabled: fee_model.is_a?(Hash) ? (fee_model[:enabled] || fee_model['enabled']) : nil
+          fee_enabled: fee_model.is_a?(Hash) ? (fee_model[:enabled] || fee_model["enabled"]) : nil
         }
       end
 
@@ -177,7 +177,7 @@ module Admin
           {
             line: normalized[:line],
             code: normalized[:code],
-            source: normalized[:source].presence || 'dataset_upload',
+            source: normalized[:source].presence || "dataset_upload",
             row_index: normalized[:row_index],
             trade_id: normalized[:trade_id],
             account_id: normalized[:account_id],
@@ -195,7 +195,7 @@ module Admin
           {
             run_id: run.id,
             source: error[:source],
-            field: 'trades',
+            field: "trades",
             message: error[:code].to_s,
             code: error[:code],
             trade_id: error[:trade_id],
@@ -214,14 +214,14 @@ module Admin
       end
 
       def with_timeline_env
-        previous = ENV.fetch('FCS_TIMELINE_ENABLED', nil)
-        ENV['FCS_TIMELINE_ENABLED'] = '1'
+        previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
+        ENV["FCS_TIMELINE_ENABLED"] = "1"
         yield
       ensure
         if previous.nil?
-          ENV.delete('FCS_TIMELINE_ENABLED')
+          ENV.delete("FCS_TIMELINE_ENABLED")
         else
-          ENV['FCS_TIMELINE_ENABLED'] = previous
+          ENV["FCS_TIMELINE_ENABLED"] = previous
         end
       end
 
@@ -229,7 +229,7 @@ module Admin
         stripped = value.to_s.strip
         return stripped if stripped.present?
 
-        "dataset_#{Time.current.utc.strftime('%Y%m%d%H%M%S')}.xlsx"
+        "dataset_#{Time.current.utc.strftime("%Y%m%d%H%M%S")}.xlsx"
       end
 
       def duplicate_filename?(filename)

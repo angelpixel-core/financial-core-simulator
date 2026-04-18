@@ -1,108 +1,108 @@
-require 'rails_helper'
-require 'capybara/rspec'
-require 'bcrypt'
-require 'timeout'
-require_relative '../../support/system_helpers'
+require "rails_helper"
+require "capybara/rspec"
+require "bcrypt"
+require "timeout"
+require_relative "../../support/system_helpers"
 
-RSpec.describe 'Admin FX reporting', type: :system do
+RSpec.describe "Admin FX reporting", type: :system do
   around do |example|
-    previous_token = ENV['ADMIN_UI_TOKEN']
-    ENV['ADMIN_UI_TOKEN'] = nil
+    previous_token = ENV["ADMIN_UI_TOKEN"]
+    ENV["ADMIN_UI_TOKEN"] = nil
     example.run
   ensure
-    ENV['ADMIN_UI_TOKEN'] = previous_token
+    ENV["ADMIN_UI_TOKEN"] = previous_token
   end
 
   around do |example|
-    travel_to(Time.zone.parse('2026-03-30 10:00:00')) { example.run }
+    travel_to(Time.zone.parse("2026-03-30 10:00:00")) { example.run }
   end
 
   before do
     driven_by(:selenium, using: :headless_chrome, screen_size: [1400, 900])
-    Account.find_or_create_by!(email: 'ops@example.com') do |account|
+    Account.find_or_create_by!(email: "ops@example.com") do |account|
       account.status = :verified
-      account.password_hash = BCrypt::Password.create('secret-pass')
+      account.password_hash = BCrypt::Password.create("secret-pass")
     end
   end
 
-  it 'shows the default reporting currency' do
+  it "shows the default reporting currency" do
     login
-    visit '/admin/overview'
+    visit "/admin/overview"
     wait_for_financial_overview
 
     within('[data-controller="financial-overview"]') do
-      expect(page).to have_select('financial-reporting-currency-filter', selected: 'USD')
+      expect(page).to have_select("financial-reporting-currency-filter", selected: "USD")
     end
   end
 
-  it 'auto-saves the reporting currency on change' do
+  it "auto-saves the reporting currency on change" do
     login
-    visit '/admin/overview'
+    visit "/admin/overview"
     wait_for_financial_overview
 
     within('[data-controller="financial-overview"]') do
-      expect(page).to have_select('financial-reporting-currency-filter', selected: 'USD')
-      select 'ARS', from: 'financial-reporting-currency-filter'
+      expect(page).to have_select("financial-reporting-currency-filter", selected: "USD")
+      select "ARS", from: "financial-reporting-currency-filter"
     end
 
     wait_for_financial_overview
     within('[data-controller="financial-overview"]') do
-      expect(page).to have_select('financial-reporting-currency-filter', selected: 'ARS', wait: 10)
+      expect(page).to have_select("financial-reporting-currency-filter", selected: "ARS", wait: 10)
     end
 
-    wait_for_reporting_currency('ARS')
-    expect(ReportingSetting.current.reload.reporting_currency).to eq('ARS')
+    wait_for_reporting_currency("ARS")
+    expect(ReportingSetting.current.reload.reporting_currency).to eq("ARS")
   end
 
-  it 'does not render the legacy sidebar reporting controls' do
+  it "does not render the legacy sidebar reporting controls" do
     login
-    visit '/admin/overview'
+    visit "/admin/overview"
     wait_for_financial_overview
 
-    expect(page).to have_no_css("section[aria-label='#{I18n.t('admin.fx.reporting.aria')}']")
-    expect(page).to have_no_field('current-daily-rate')
+    expect(page).to have_no_css("section[aria-label='#{I18n.t("admin.fx.reporting.aria")}']")
+    expect(page).to have_no_field("current-daily-rate")
   end
 
-  it 'renders the missing rate popup and saves manual entry' do
-    ReportingSetting.current.update!(reporting_currency: 'ARS')
+  it "renders the missing rate popup and saves manual entry" do
+    ReportingSetting.current.update!(reporting_currency: "ARS")
 
     login
-    visit '/admin/overview'
+    visit "/admin/overview"
     wait_for_financial_overview
 
-    expect(page).to have_css('.fx-missing-rate')
-    fill_in I18n.t('admin.fx.popup.rate_label'), with: '1000.25'
-    click_button I18n.t('admin.fx.popup.save_cta')
+    expect(page).to have_css(".fx-missing-rate")
+    fill_in I18n.t("admin.fx.popup.rate_label"), with: "1000.25"
+    click_button I18n.t("admin.fx.popup.save_cta")
 
-    expect(page).to have_no_css('.fx-missing-rate', wait: 10)
-    wait_for_fx_daily_rate(date: Date.new(2026, 3, 30), base: 'USD', quote: 'ARS')
+    expect(page).to have_no_css(".fx-missing-rate", wait: 10)
+    wait_for_fx_daily_rate(date: Date.new(2026, 3, 30), base: "USD", quote: "ARS")
   end
 
-  it 'allows carry forward when a prior rate exists' do
-    ReportingSetting.current.update!(reporting_currency: 'ARS')
+  it "allows carry forward when a prior rate exists" do
+    ReportingSetting.current.update!(reporting_currency: "ARS")
     FxDailyRate.create!(
       operational_date: Date.new(2026, 3, 29),
-      base_currency: 'USD',
-      quote_currency: 'ARS',
-      rate: '900',
-      source: 'manual'
+      base_currency: "USD",
+      quote_currency: "ARS",
+      rate: "900",
+      source: "manual"
     )
 
     login
-    visit '/admin/overview'
+    visit "/admin/overview"
     wait_for_financial_overview
 
-    click_button I18n.t('admin.fx.popup.carry_forward_cta')
+    click_button I18n.t("admin.fx.popup.carry_forward_cta")
 
-    expect(page).to have_no_css('.fx-missing-rate', wait: 10)
-    wait_for_fx_daily_rate(date: Date.new(2026, 3, 30), base: 'USD', quote: 'ARS')
+    expect(page).to have_no_css(".fx-missing-rate", wait: 10)
+    wait_for_fx_daily_rate(date: Date.new(2026, 3, 30), base: "USD", quote: "ARS")
   end
 
   def login
-    visit '/admin/login'
-    fill_in 'admin-login-email', with: 'ops@example.com'
-    fill_in 'admin-login-password', with: 'secret-pass'
-    click_button I18n.t('admin.auth.form.submit')
+    visit "/admin/login"
+    fill_in "admin-login-email", with: "ops@example.com"
+    fill_in "admin-login-password", with: "secret-pass"
+    click_button I18n.t("admin.auth.form.submit")
     wait_for_app_shell
   end
 

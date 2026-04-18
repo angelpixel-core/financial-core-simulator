@@ -2,7 +2,7 @@
 # The values disaplayed here are the default ones. Uncomment and change them to fit your needs.
 Avo.configure do |config|
   ## == Routing ==
-  config.root_path = '/admin'
+  config.root_path = "/admin"
   # used only when you have custom `map` configuration in your config.ru
   # config.prefix_path = "/internal"
 
@@ -19,10 +19,10 @@ Avo.configure do |config|
 
   ## == Authentication ==
   config.current_user_method do
-    account_id = session['admin_account_id'] ||
-                 session[:admin_account_id] ||
-                 session['account_id'] ||
-                 session[:account_id]
+    account_id = session["admin_account_id"] ||
+      session[:admin_account_id] ||
+      session["account_id"] ||
+      session[:account_id]
 
     next if account_id.blank?
 
@@ -30,7 +30,7 @@ Avo.configure do |config|
   end
   config.authenticate_with do
     auth = Admin::Authorization.new(request: request)
-    allowed = auth.allow_admin_session?(required_role: 'admin')
+    allowed = auth.allow_admin_session?(required_role: "admin")
 
     next if allowed
 
@@ -178,20 +178,20 @@ Avo.configure do |config|
   # }
 
   config.main_menu = lambda {
-    section 'Overview', icon: 'heroicons/outline/chart-bar' do
-      link 'Financial overview', path: '/admin/overview'
+    section "Overview", icon: "heroicons/outline/chart-bar" do
+      link "Financial overview", path: "/admin/overview"
     end
 
-    section 'Resources', icon: 'avo/resources' do
-      link 'Runs', path: '/admin/resources/runs'
-      link 'Run snapshots', path: '/admin/resources/run_snapshots'
-      link 'Run daily events', path: '/admin/resources/run_daily_events'
-      link 'Run daily volumes', path: '/admin/resources/run_daily_volumes'
-      link 'Run daily pnls', path: '/admin/resources/run_daily_pnls'
-      link 'Fx rate events', path: '/admin/resources/fx_rate_events'
-      link 'Fx rate ingestions', path: '/admin/resources/fx_rate_ingestions'
-      link 'Fx rate sources', path: '/admin/resources/fx_rate_sources'
-      link 'Solid queue jobs', path: '/admin/resources/solid_queue_jobs' if SolidQueue::Job.table_exists?
+    section "Resources", icon: "avo/resources" do
+      link "Runs", path: "/admin/resources/runs"
+      link "Run snapshots", path: "/admin/resources/run_snapshots"
+      link "Run daily events", path: "/admin/resources/run_daily_events"
+      link "Run daily volumes", path: "/admin/resources/run_daily_volumes"
+      link "Run daily pnls", path: "/admin/resources/run_daily_pnls"
+      link "Fx rate events", path: "/admin/resources/fx_rate_events"
+      link "Fx rate ingestions", path: "/admin/resources/fx_rate_ingestions"
+      link "Fx rate sources", path: "/admin/resources/fx_rate_sources"
+      link "Solid queue jobs", path: "/admin/resources/solid_queue_jobs" if SolidQueue::Job.table_exists?
     end
   }
 end

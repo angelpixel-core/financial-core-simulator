@@ -1,11 +1,11 @@
-require 'bigdecimal'
-require 'json'
+require "bigdecimal"
+require "json"
 
 module Admin
   module Dashboard
     class FinancialOverviewMetrics
       REQUIRED_FIELDS = %w[timestamp quantity price].freeze
-      SYMBOL_DELIMITERS = ['/', '-', '_'].freeze
+      SYMBOL_DELIMITERS = ["/", "-", "_"].freeze
 
       def initialize(run:, account_id: nil, market_id: nil, run_filenames: [])
         @run = run
@@ -43,7 +43,7 @@ module Admin
         input_json = @run&.input_json
         return [] unless input_json.is_a?(Hash)
 
-        trades = input_json['trades']
+        trades = input_json["trades"]
         return [] unless trades.is_a?(Array)
 
         trades
@@ -72,7 +72,7 @@ module Admin
           next if volume.nil?
 
           entry[:trade_count] += volume.trade_count
-        end.map { |entry| { timestamp: entry[:timestamp], trade_count: entry[:trade_count] } }
+        end.map { |entry| {timestamp: entry[:timestamp], trade_count: entry[:trade_count]} }
       end
 
       def persisted_trade_volume(snapshots)
@@ -141,12 +141,12 @@ module Admin
           next unless trade.is_a?(Hash)
           next unless trade_valid?(trade)
 
-          timestamp = normalize_timestamp(trade_field(trade, 'timestamp'))
-          quantity = parse_decimal(trade_field(trade, 'quantityBase') || trade_field(trade, 'quantity'))
-          price = parse_decimal(trade_field(trade, 'priceQuotePerBase') || trade_field(trade, 'price'))
-          symbol = trade_field(trade, 'marketId') || trade_field(trade, 'symbol')
-          account_id = trade_field(trade, 'accountId')
-          market_id = trade_field(trade, 'marketId') || symbol
+          timestamp = normalize_timestamp(trade_field(trade, "timestamp"))
+          quantity = parse_decimal(trade_field(trade, "quantityBase") || trade_field(trade, "quantity"))
+          price = parse_decimal(trade_field(trade, "priceQuotePerBase") || trade_field(trade, "price"))
+          symbol = trade_field(trade, "marketId") || trade_field(trade, "symbol")
+          account_id = trade_field(trade, "accountId")
+          market_id = trade_field(trade, "marketId") || symbol
 
           next if timestamp.nil? || quantity.nil? || price.nil?
           next if quantity <= 0 || price <= 0
@@ -169,8 +169,8 @@ module Admin
         points.select do |point|
           next false unless point.is_a?(Hash)
 
-          account_id = point['account_id'] || point[:account_id] || point['accountId'] || point[:accountId]
-          market_id = point['market_id'] || point[:market_id] || point['marketId'] || point[:marketId]
+          account_id = point["account_id"] || point[:account_id] || point["accountId"] || point[:accountId]
+          market_id = point["market_id"] || point[:market_id] || point["marketId"] || point[:marketId]
 
           next false if @account_id && account_id.to_s != @account_id
           next false if @market_id && market_id.to_s != @market_id
@@ -183,7 +183,7 @@ module Admin
         payload = result_payload
         return [] if payload.nil?
 
-        timeline = payload.dig('timeline', 'points')
+        timeline = payload.dig("timeline", "points")
         timeline.is_a?(Array) ? timeline : []
       end
 
@@ -241,7 +241,7 @@ module Admin
         return nil unless quote_codes.length == 1
 
         {
-          unit_type: 'quote',
+          unit_type: "quote",
           unit_code: quote_codes.first
         }
       end
@@ -256,7 +256,7 @@ module Admin
         base, quote = symbol_string.split(delimiter, 2).map { |value| value.to_s.strip }
         return nil if base.empty? || quote.empty?
 
-        { unit_code: quote }
+        {unit_code: quote}
       end
 
       def normalize_timestamp(raw)
@@ -306,14 +306,14 @@ module Admin
         pnl_daily.map do |entry|
           next entry unless entry.is_a?(Hash)
 
-          realized = parse_decimal(entry[:realized_pnl] || entry['realized_pnl'])
-          unrealized = parse_decimal(entry[:unrealized_pnl] || entry['unrealized_pnl'])
-          total = parse_decimal(entry[:total_pnl] || entry['total_pnl'])
+          realized = parse_decimal(entry[:realized_pnl] || entry["realized_pnl"])
+          unrealized = parse_decimal(entry[:unrealized_pnl] || entry["unrealized_pnl"])
+          total = parse_decimal(entry[:total_pnl] || entry["total_pnl"])
 
           next entry if realized.nil? || unrealized.nil? || total.nil?
 
           {
-            timestamp: entry[:timestamp] || entry['timestamp'],
+            timestamp: entry[:timestamp] || entry["timestamp"],
             realized_pnl: (realized * rate).to_f,
             unrealized_pnl: (unrealized * rate).to_f,
             total_pnl: (total * rate).to_f
@@ -328,13 +328,13 @@ module Admin
         points.map do |point|
           next point unless point.is_a?(Hash)
 
-          timestamp = point[:timestamp] || point['timestamp']
+          timestamp = point[:timestamp] || point["timestamp"]
           operational_date = operational_date_for(timestamp)
           fx_entry = fx_entry_for(fx_map, operational_date)
 
-          volume = parse_decimal(point[:volume] || point['volume'])
+          volume = parse_decimal(point[:volume] || point["volume"])
           if fx_entry[:missing] || volume.nil?
-            converted_volume = volume.nil? ? point[:volume] || point['volume'] : volume.to_f
+            converted_volume = volume.nil? ? point[:volume] || point["volume"] : volume.to_f
             unit_code = base_currency
           else
             converted_volume = (volume * fx_entry[:rate]).to_f
@@ -344,7 +344,7 @@ module Admin
           {
             timestamp: timestamp,
             volume: converted_volume,
-            unit_type: point[:unit_type] || point['unit_type'],
+            unit_type: point[:unit_type] || point["unit_type"],
             unit_code: unit_code,
             fx_rate: fx_entry[:rate_payload],
             fx_rate_date: fx_entry[:rate_date]&.iso8601,
@@ -357,18 +357,18 @@ module Admin
         points.map do |entry|
           next entry unless entry.is_a?(Hash)
 
-          timestamp = entry[:timestamp] || entry['timestamp']
+          timestamp = entry[:timestamp] || entry["timestamp"]
           operational_date = operational_date_for(timestamp)
           fx_entry = fx_entry_for(fx_map, operational_date)
 
-          realized = parse_decimal(entry[:realized_pnl] || entry['realized_pnl'])
-          unrealized = parse_decimal(entry[:unrealized_pnl] || entry['unrealized_pnl'])
-          total = parse_decimal(entry[:total_pnl] || entry['total_pnl'])
+          realized = parse_decimal(entry[:realized_pnl] || entry["realized_pnl"])
+          unrealized = parse_decimal(entry[:unrealized_pnl] || entry["unrealized_pnl"])
+          total = parse_decimal(entry[:total_pnl] || entry["total_pnl"])
 
           if fx_entry[:missing] || realized.nil? || unrealized.nil? || total.nil?
-            realized_value = realized.nil? ? entry[:realized_pnl] || entry['realized_pnl'] : realized.to_f
-            unrealized_value = unrealized.nil? ? entry[:unrealized_pnl] || entry['unrealized_pnl'] : unrealized.to_f
-            total_value = total.nil? ? entry[:total_pnl] || entry['total_pnl'] : total.to_f
+            realized_value = realized.nil? ? entry[:realized_pnl] || entry["realized_pnl"] : realized.to_f
+            unrealized_value = unrealized.nil? ? entry[:unrealized_pnl] || entry["unrealized_pnl"] : unrealized.to_f
+            total_value = total.nil? ? entry[:total_pnl] || entry["total_pnl"] : total.to_f
           else
             realized_value = (realized * fx_entry[:rate]).to_f
             unrealized_value = (unrealized * fx_entry[:rate]).to_f
@@ -418,12 +418,12 @@ module Admin
         dates.each_with_object({}) do |date, acc|
           rate_record = rates_by_date[date]
           gap = gaps_by_date[date]
-          missing = gap.present? || rate_record.nil? || rate_record.rate.nil? || rate_record.source == 'placeholder'
-          rate_value = missing || rate_record.nil? ? nil : parse_decimal(rate_record.rate)
+          missing = gap.present? || rate_record.nil? || rate_record.rate.nil? || rate_record.source == "placeholder"
+          rate_value = (missing || rate_record.nil?) ? nil : parse_decimal(rate_record.rate)
 
           acc[date] = {
             rate: rate_value,
-            rate_payload: rate_value&.to_s('F'),
+            rate_payload: rate_value&.to_s("F"),
             missing: missing,
             rate_date: date
           }
@@ -434,7 +434,7 @@ module Admin
         Array(points).filter_map do |point|
           next unless point.is_a?(Hash)
 
-          timestamp = point[:timestamp] || point['timestamp']
+          timestamp = point[:timestamp] || point["timestamp"]
           operational_date_for(timestamp)
         end
       end
@@ -468,8 +468,8 @@ module Admin
         context = fx_context
         return nil unless context
 
-        rate_missing = cast_boolean(context_value(context, 'rateMissing', :rateMissing, 'rate_missing', :rate_missing))
-        rate_value = context_value(context, 'rate', :rate)
+        rate_missing = cast_boolean(context_value(context, "rateMissing", :rateMissing, "rate_missing", :rate_missing))
+        rate_value = context_value(context, "rate", :rate)
         return nil if rate_missing || rate_value.blank?
 
         rate = parse_decimal(rate_value)
@@ -482,8 +482,8 @@ module Admin
         context = fx_context
         return ReportingSetting.current.reporting_currency unless context
 
-        value = context_value(context, 'reportingCurrency', :reportingCurrency, 'reporting_currency',
-                              :reporting_currency)
+        value = context_value(context, "reportingCurrency", :reportingCurrency, "reporting_currency",
+          :reporting_currency)
         value = value.to_s.strip.presence
         return value if value.present?
 
@@ -495,7 +495,7 @@ module Admin
 
         run_context = normalize_fx_context(@run.fx_context)
         input_context = nil
-        input_context = normalize_fx_context(@run.input_json['fxContext']) if @run.input_json.is_a?(Hash)
+        input_context = normalize_fx_context(@run.input_json["fxContext"]) if @run.input_json.is_a?(Hash)
 
         return run_context if context_has_rate_data?(run_context)
 
@@ -527,8 +527,8 @@ module Admin
       def context_has_rate_data?(context)
         return false unless context.is_a?(Hash)
 
-        rate_value = context_value(context, 'rate', :rate)
-        rate_missing = context_value(context, 'rateMissing', :rateMissing, 'rate_missing', :rate_missing)
+        rate_value = context_value(context, "rate", :rate)
+        rate_missing = context_value(context, "rateMissing", :rateMissing, "rate_missing", :rate_missing)
 
         rate_value.present? || !rate_missing.nil?
       end
@@ -536,8 +536,8 @@ module Admin
       def context_has_reporting_currency?(context)
         return false unless context.is_a?(Hash)
 
-        reporting_currency = context_value(context, 'reportingCurrency', :reportingCurrency, 'reporting_currency',
-                                           :reporting_currency)
+        reporting_currency = context_value(context, "reportingCurrency", :reportingCurrency, "reporting_currency",
+          :reporting_currency)
 
         reporting_currency.to_s.strip.present?
       end
@@ -561,7 +561,7 @@ module Admin
       end
 
       def trade_valid?(trade)
-        valid = trade_field(trade, 'valid')
+        valid = trade_field(trade, "valid")
         return false if valid == false
 
         trade_id = trade_id_for(trade)
@@ -571,7 +571,7 @@ module Admin
       end
 
       def trade_id_for(trade)
-        raw = trade_field(trade, 'tradeId') || trade_field(trade, 'trade_id')
+        raw = trade_field(trade, "tradeId") || trade_field(trade, "trade_id")
         value = raw.to_s.strip
         value.empty? ? nil : value
       end
@@ -580,7 +580,7 @@ module Admin
         return Set.new if @run.nil?
 
         @invalid_trade_ids ||= begin
-          ids = @run.run_validation_errors.where.not(trade_id: [nil, '']).pluck(:trade_id)
+          ids = @run.run_validation_errors.where.not(trade_id: [nil, ""]).pluck(:trade_id)
           Set.new(ids.compact.map { |id| id.to_s })
         end
       end

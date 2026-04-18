@@ -2,7 +2,7 @@
 
 class Avo::Resources::RunDailyVolume < Avo::BaseResource
   self.title = :id
-  self.includes = [{ run_snapshot: :run }]
+  self.includes = [{run_snapshot: :run}]
 
   def fields
     field :id, as: :id

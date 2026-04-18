@@ -8,6 +8,6 @@ class Avo::SolidQueueJobsController < Avo::ResourcesController
   def ensure_solid_queue_table!
     return if SolidQueue::Job.table_exists?
 
-    redirect_to avo.resources_runs_path, alert: 'Solid Queue table is not available in this environment.'
+    redirect_to avo.resources_runs_path, alert: "Solid Queue table is not available in this environment."
   end
 end

@@ -2,8 +2,8 @@
 
 class DemoDatasetUpload < ApplicationRecord
   enum :status, {
-    valid: 'valid',
-    invalid: 'invalid'
+    valid: "valid",
+    invalid: "invalid"
   }, suffix: true, validate: true
 
   before_validation :normalize_filename_fields
@@ -12,7 +12,7 @@ class DemoDatasetUpload < ApplicationRecord
   validates :normalized_filename, presence: true, uniqueness: true
 
   scope :latest_first, -> { order(created_at: :desc) }
-  scope :with_processed_run, -> { where.not(run_id: nil).where.not(original_filename: [nil, '']) }
+  scope :with_processed_run, -> { where.not(run_id: nil).where.not(original_filename: [nil, ""]) }
 
   def self.latest
     latest_first.first

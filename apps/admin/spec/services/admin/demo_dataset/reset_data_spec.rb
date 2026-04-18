@@ -1,12 +1,12 @@
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe Admin::DemoDataset::ResetData do
-  it 'clears runs and uploads' do
-    Run.create!(input_json: { 'schemaVersion' => '1.0', 'trades' => [] })
+  it "clears runs and uploads" do
+    Run.create!(input_json: {"schemaVersion" => "1.0", "trades" => []})
     DemoDatasetUpload.create!(
       status: :invalid,
-      validation_errors: [{ code: 'x' }],
-      original_filename: 'reset_20260416.xlsx'
+      validation_errors: [{code: "x"}],
+      original_filename: "reset_20260416.xlsx"
     )
 
     described_class.new.call

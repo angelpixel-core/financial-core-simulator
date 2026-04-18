@@ -19,7 +19,7 @@ module Admin
       end
 
       def upsert_rate(operational_date:, base_currency:, quote_currency:, rate:, created_by_id:, created_by_role:,
-                      created_context:)
+        created_context:)
         Admin::Fx::RateUpserter.call(
           operational_date: operational_date,
           base_currency: base_currency,
@@ -32,12 +32,12 @@ module Admin
       end
 
       def carry_forward_rate(operational_date:, base_currency:, quote_currency:, created_by_id:, created_by_role:,
-                             created_context:)
+        created_context:)
         Admin::Fx::CarryForwardRate.call(
           operational_date: operational_date,
           base_currency: base_currency,
           quote_currency: quote_currency,
-          source: 'carry_forward',
+          source: "carry_forward",
           created_by_id: created_by_id,
           created_by_role: created_by_role,
           created_context: created_context

@@ -11,7 +11,7 @@ module Admin
 
           def create_invalid!(validation_errors:, original_filename:)
             DemoDatasetUpload.create!(status: :invalid, validation_errors: validation_errors,
-                                      original_filename: original_filename)
+              original_filename: original_filename)
           end
 
           def latest

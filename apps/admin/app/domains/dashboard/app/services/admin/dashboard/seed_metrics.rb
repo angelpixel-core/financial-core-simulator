@@ -1,26 +1,26 @@
-require 'json'
-require 'csv'
-require 'bigdecimal'
-require 'time'
+require "json"
+require "csv"
+require "bigdecimal"
+require "time"
 
 module Admin
   module Dashboard
     class SeedMetrics
-      SUCCESS_STATUS = 'success'
-      FAILED_STATUS = 'failed'
-      VALIDATION_STATUS = 'validation_error'
+      SUCCESS_STATUS = "success"
+      FAILED_STATUS = "failed"
+      VALIDATION_STATUS = "validation_error"
       TRADE_WINDOWS = {
-        '30d' => 30,
-        '60d' => 60,
-        '90d' => 90,
-        'all-time' => nil
+        "30d" => 30,
+        "60d" => 60,
+        "90d" => 90,
+        "all-time" => nil
       }.freeze
 
-      def initialize(seed_dir: Rails.root.join('storage', 'runs', 'dashboard_seed'))
+      def initialize(seed_dir: Rails.root.join("storage", "runs", "dashboard_seed"))
         @seed_dir = seed_dir
       end
 
-      def call(trades_window: 'all-time')
+      def call(trades_window: "all-time")
         runs = load_runs
         pnl_points = load_pnl_points
         positions = load_positions
@@ -48,8 +48,8 @@ module Admin
 
       def ingestion_validation_errors(limit: 50, source: nil, field: nil)
         entries = load_runs
-                  .select { |run| run.fetch('status') == VALIDATION_STATUS }
-                  .map { |run| validation_error_entry(run) }
+          .select { |run| run.fetch("status") == VALIDATION_STATUS }
+          .map { |run| validation_error_entry(run) }
 
         entries = filter_by_source(entries, source)
         entries = filter_by_field(entries, field)
@@ -59,7 +59,7 @@ module Admin
       private
 
       def load_runs
-        path = File.join(@seed_dir, 'runs.json')
+        path = File.join(@seed_dir, "runs.json")
         return [] unless File.exist?(path)
 
         JSON.parse(File.read(path))
@@ -68,18 +68,18 @@ module Admin
       end
 
       def load_pnl_points
-        path = File.join(@seed_dir, 'pnl.csv')
+        path = File.join(@seed_dir, "pnl.csv")
         return [] unless File.exist?(path)
 
         CSV.read(path, headers: true).map do |row|
-          date = Date.parse(row['date'])
+          date = Date.parse(row["date"])
           {
             date: date,
-            total: row['total_pnl'].to_f,
-            realized: row['realized_pnl'].to_f,
-            unrealized: row['unrealized_pnl'].to_f,
-            runs: row['runs'].to_i,
-            success_runs: row['success_runs'].to_i
+            total: row["total_pnl"].to_f,
+            realized: row["realized_pnl"].to_f,
+            unrealized: row["unrealized_pnl"].to_f,
+            runs: row["runs"].to_i,
+            success_runs: row["success_runs"].to_i
           }
         end
       rescue ArgumentError
@@ -87,15 +87,15 @@ module Admin
       end
 
       def load_positions
-        path = File.join(@seed_dir, 'positions.csv')
+        path = File.join(@seed_dir, "positions.csv")
         return [] unless File.exist?(path)
 
         CSV.read(path, headers: true).map do |row|
           {
-            account_id: row['account_id'],
-            market_id: row['market_id'],
-            quantity: row['quantity'].to_f,
-            avg_cost: row['avg_cost'].to_f
+            account_id: row["account_id"],
+            market_id: row["market_id"],
+            quantity: row["quantity"].to_f,
+            avg_cost: row["avg_cost"].to_f
           }
         end
       rescue ArgumentError
@@ -104,40 +104,40 @@ module Admin
 
       def runs_in_window(runs, days:)
         cutoff = Time.now.utc - (days * 86_400)
-        runs.select { |run| parse_time(run['created_at']) >= cutoff }
+        runs.select { |run| parse_time(run["created_at"]) >= cutoff }
       end
 
       def successful_trades(runs, window_key)
         days = TRADE_WINDOWS.fetch(window_key)
         scoped_runs = days.nil? ? runs : runs_in_window(runs, days: days)
-        scoped_runs.sum { |run| run.fetch('trade_count', 0).to_i }
+        scoped_runs.sum { |run| run.fetch("trade_count", 0).to_i }
       end
 
       def normalize_trades_window(value)
         normalized = value.to_s.strip.downcase
         return normalized if TRADE_WINDOWS.key?(normalized)
 
-        'all-time'
+        "all-time"
       end
 
       def success_rate_last_50(runs)
         sample = recent_runs(runs, limit: 50)
         return 0 if sample.empty?
 
-        success_count = sample.count { |run| run.fetch('status') == SUCCESS_STATUS }
+        success_count = sample.count { |run| run.fetch("status") == SUCCESS_STATUS }
         ((success_count.to_f / sample.length) * 100).round(0)
       end
 
       def avg_duration_ms_last_50(runs)
-        sample = recent_runs(runs, limit: 50).select { |run| run.fetch('status') == SUCCESS_STATUS }
+        sample = recent_runs(runs, limit: 50).select { |run| run.fetch("status") == SUCCESS_STATUS }
         return nil if sample.empty?
 
-        avg = sample.sum { |run| run.fetch('duration_ms').to_f } / sample.length
+        avg = sample.sum { |run| run.fetch("duration_ms").to_f } / sample.length
         avg.round(1)
       end
 
       def recent_runs(runs, limit:)
-        runs.sort_by { |run| parse_time(run['created_at']) }.last(limit)
+        runs.sort_by { |run| parse_time(run["created_at"]) }.last(limit)
       end
 
       def runs_trend_14d(runs)
@@ -145,12 +145,12 @@ module Admin
         counts = Hash.new(0)
 
         runs.each do |run|
-          date = parse_time(run['created_at']).to_date
+          date = parse_time(run["created_at"]).to_date
           counts[date] += 1
         end
 
         (start_date..Date.current).map do |day|
-          { day: day.strftime('%m-%d'), count: counts[day] }
+          {day: day.strftime("%m-%d"), count: counts[day]}
         end
       end
 
@@ -160,7 +160,7 @@ module Admin
           .map do |point|
             timestamp = Time.utc(point.fetch(:date).year, point.fetch(:date).month, point.fetch(:date).day)
             {
-              label: timestamp.strftime('%m-%d %H:%M UTC'),
+              label: timestamp.strftime("%m-%d %H:%M UTC"),
               timestamp: timestamp.iso8601,
               total_pnl_quote: format_decimal(point.fetch(:total))
             }
@@ -177,7 +177,7 @@ module Admin
         }
 
         window_runs.each do |run|
-          case run.fetch('status')
+          case run.fetch("status")
           when SUCCESS_STATUS
             counts[:succeeded] += 1
           when FAILED_STATUS, VALIDATION_STATUS
@@ -200,10 +200,10 @@ module Admin
           total_runs_7d: delta_metadata(recent_7.length, previous_7.length),
           total_runs_30d: delta_metadata(recent_30.length, previous_30.length),
           success_rate_last_50: delta_metadata(success_rate_last_50(recent_runs(runs, limit: 50)),
-                                               success_rate_last_50(recent_runs(runs, limit: 100))),
+            success_rate_last_50(recent_runs(runs, limit: 100))),
           avg_duration_ms_last_50: delta_metadata(avg_duration_ms_last_50(recent_runs(runs, limit: 50)),
-                                                  avg_duration_ms_last_50(recent_runs(runs, limit: 100)),
-                                                  inverse_good: true)
+            avg_duration_ms_last_50(recent_runs(runs, limit: 100)),
+            inverse_good: true)
         }
       end
 
@@ -211,24 +211,24 @@ module Admin
         older_cutoff = Time.now.utc - (older_days * 86_400)
         newer_cutoff = Time.now.utc - (newer_days * 86_400)
         runs.select do |run|
-          time = parse_time(run['created_at'])
+          time = parse_time(run["created_at"])
           time >= older_cutoff && time < newer_cutoff
         end
       end
 
       def delta_metadata(current_value, previous_value, inverse_good: false)
-        return { direction: 'unknown', delta_abs: nil, delta_pct: nil } if previous_value.nil?
-        return { direction: 'unknown', delta_abs: nil, delta_pct: nil } if previous_value.to_f.zero?
+        return {direction: "unknown", delta_abs: nil, delta_pct: nil} if previous_value.nil?
+        return {direction: "unknown", delta_abs: nil, delta_pct: nil} if previous_value.to_f.zero?
 
         difference = current_value.to_f - previous_value.to_f
         direction = if difference.zero?
-                      'flat'
-                    else
-                      difference.positive? ? 'up' : 'down'
-                    end
+          "flat"
+        else
+          difference.positive? ? "up" : "down"
+        end
 
-        if inverse_good && !(direction == 'flat')
-          direction = direction == 'up' ? 'down' : 'up'
+        if inverse_good && !(direction == "flat")
+          direction = (direction == "up") ? "down" : "up"
         end
 
         {
@@ -239,15 +239,15 @@ module Admin
       end
 
       def latest_run_data(runs)
-        run = runs.max_by { |entry| parse_time(entry['created_at']) }
+        run = runs.max_by { |entry| parse_time(entry["created_at"]) }
         return nil if run.nil?
 
         {
-          id: run.fetch('id'),
-          input_hash: "seed-#{run.fetch('id')}",
-          duration_ms: run.fetch('duration_ms'),
-          schema_version: '1.0',
-          engine_version: 'seed'
+          id: run.fetch("id"),
+          input_hash: "seed-#{run.fetch("id")}",
+          duration_ms: run.fetch("duration_ms"),
+          schema_version: "1.0",
+          engine_version: "seed"
         }
       end
 
@@ -259,30 +259,30 @@ module Admin
         markets = positions.map { |entry| entry.fetch(:market_id) }.uniq
 
         {
-          dataset: 'dashboard_seed',
+          dataset: "dashboard_seed",
           accounts_count: accounts.length,
           events_count: nil,
-          markets: markets.join(', '),
+          markets: markets.join(", "),
           input_hash: latest.fetch(:input_hash),
-          deterministic: 'YES'
+          deterministic: "YES"
         }
       end
 
       def run_comparison_data(runs)
-        success_runs = runs.select { |run| run.fetch('status') == SUCCESS_STATUS }
-                           .sort_by { |run| parse_time(run['created_at']) }
+        success_runs = runs.select { |run| run.fetch("status") == SUCCESS_STATUS }
+          .sort_by { |run| parse_time(run["created_at"]) }
         return nil if success_runs.length < 2
 
         current = success_runs[-1]
         previous = success_runs[-2]
 
-        total_delta = current.fetch('pnl_total').to_f - previous.fetch('pnl_total').to_f
-        realized_delta = current.fetch('pnl_realized').to_f - previous.fetch('pnl_realized').to_f
-        unrealized_delta = current.fetch('pnl_unrealized').to_f - previous.fetch('pnl_unrealized').to_f
+        total_delta = current.fetch("pnl_total").to_f - previous.fetch("pnl_total").to_f
+        realized_delta = current.fetch("pnl_realized").to_f - previous.fetch("pnl_realized").to_f
+        unrealized_delta = current.fetch("pnl_unrealized").to_f - previous.fetch("pnl_unrealized").to_f
 
         {
-          current_run_id: current.fetch('id'),
-          previous_run_id: previous.fetch('id'),
+          current_run_id: current.fetch("id"),
+          previous_run_id: previous.fetch("id"),
           total_pnl_delta: format_decimal(total_delta),
           realized_delta: format_decimal(realized_delta),
           unrealized_delta: format_decimal(unrealized_delta),
@@ -292,9 +292,9 @@ module Admin
 
       def deterministic_label(total_delta, realized_delta, unrealized_delta)
         all_zero = [total_delta, realized_delta, unrealized_delta].all? { |value| value.to_f.zero? }
-        return 'Identical output for matching input hash.' if all_zero
+        return "Identical output for matching input hash." if all_zero
 
-        'Differences detected between latest runs.'
+        "Differences detected between latest runs."
       end
 
       def input_traceability_data(runs)
@@ -302,12 +302,12 @@ module Admin
         return nil if latest.nil?
 
         {
-          dataset: 'dashboard_seed',
+          dataset: "dashboard_seed",
           input_hash: latest.fetch(:input_hash),
           artifacts: {
-            result_json_path: relative_path(File.join(@seed_dir, 'runs.json')),
-            positions_csv_path: relative_path(File.join(@seed_dir, 'positions.csv')),
-            pnl_csv_path: relative_path(File.join(@seed_dir, 'pnl.csv'))
+            result_json_path: relative_path(File.join(@seed_dir, "runs.json")),
+            positions_csv_path: relative_path(File.join(@seed_dir, "positions.csv")),
+            pnl_csv_path: relative_path(File.join(@seed_dir, "pnl.csv"))
           }
         }
       end
@@ -318,10 +318,10 @@ module Admin
 
         total = latest.fetch(:total)
         {
-          'totalPnLQuote' => format_decimal(total),
-          'realizedNetPnLQuote' => format_decimal(latest.fetch(:realized)),
-          'unrealizedPnLQuote' => format_decimal(latest.fetch(:unrealized)),
-          'totalPnLUsd' => format_decimal(total * 1.02)
+          "totalPnLQuote" => format_decimal(total),
+          "realizedNetPnLQuote" => format_decimal(latest.fetch(:realized)),
+          "unrealizedPnLQuote" => format_decimal(latest.fetch(:unrealized)),
+          "totalPnLUsd" => format_decimal(total * 1.02)
         }
       end
 
@@ -348,11 +348,11 @@ module Admin
 
       def validation_error_entry(run)
         {
-          source: 'seed.validator',
-          field: 'input',
-          message: 'validation error',
-          occurred_at: run.fetch('created_at'),
-          correlation_id: "seed-#{run.fetch('id')}"
+          source: "seed.validator",
+          field: "input",
+          message: "validation error",
+          occurred_at: run.fetch("created_at"),
+          correlation_id: "seed-#{run.fetch("id")}"
         }
       end
 
@@ -377,7 +377,7 @@ module Admin
       end
 
       def format_decimal(value)
-        format('%.2f', value.to_f)
+        format("%.2f", value.to_f)
       end
 
       def relative_path(path)

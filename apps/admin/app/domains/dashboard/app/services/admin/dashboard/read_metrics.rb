@@ -14,7 +14,7 @@ module Admin
         @artifact_reader = artifact_reader
       end
 
-      def call(trades_window: 'all-time')
+      def call(trades_window: "all-time")
         return read_from_seed(trades_window: trades_window) if @read_path_config.seed_enabled?
         return read_from_bff_with_optional_fallback(trades_window: trades_window) if @read_path_config.bff_read_enabled?
 
@@ -25,7 +25,7 @@ module Admin
 
       def read_from_bff_with_optional_fallback(trades_window:)
         @bff_reader.call
-      rescue StandardError => e
+      rescue => e
         return read_from_artifact(trades_window: trades_window) if @read_path_config.fallback_enabled?
 
         raise ReadPathUnavailableError, "BFF read failed and fallback is disabled: #{e.message}"

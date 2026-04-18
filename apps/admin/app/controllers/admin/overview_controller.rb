@@ -52,9 +52,9 @@ class Admin::OverviewController < ApplicationController
 
     @metrics = dashboard_metrics
     @top_accounts_pagination = top_accounts_pagination(metrics: @metrics, page: params[:page])
-    render partial: 'admin/overview/top_accounts_frame',
-           locals: { metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: false,
-                     navigation_context: @navigation_context }
+    render partial: "admin/overview/top_accounts_frame",
+      locals: {metrics: @metrics, pagination: @top_accounts_pagination, show_drilldown: false,
+               navigation_context: @navigation_context}
   end
 
   def runs_trend
@@ -81,7 +81,7 @@ class Admin::OverviewController < ApplicationController
 
   def dashboard_financial_overview
     run = Admin::Dashboard::Api.find_run_by_id(params[:run_id])
-    return render json: { 'error' => 'run_not_found' }, status: :not_found if run.nil?
+    return render json: {"error" => "run_not_found"}, status: :not_found if run.nil?
 
     account_id = normalize_filter_value(params[:account_id])
     market_id = normalize_filter_value(params[:market_id])
@@ -93,8 +93,8 @@ class Admin::OverviewController < ApplicationController
       run_filenames: run_filenames
     ).call
     render json: financial_overview_response_serializer.serialize(metrics: metrics), status: :ok
-  rescue StandardError
-    fallback_metrics = { trade_activity: [], trade_volume: [], pnl_daily: [] }
+  rescue
+    fallback_metrics = {trade_activity: [], trade_volume: [], pnl_daily: []}
     render json: financial_overview_response_serializer.serialize(metrics: fallback_metrics), status: :ok
   end
 
@@ -129,7 +129,7 @@ class Admin::OverviewController < ApplicationController
     @errors_pagination = ingestion_errors_pagination(errors: errors, page: params[:errors_page])
     @errors = @errors_pagination[:entries]
     if turbo_frame_request?
-      render partial: 'admin/overview/ingestion_validation_errors_frame', locals: {
+      render partial: "admin/overview/ingestion_validation_errors_frame", locals: {
         errors: @errors,
         pagination: @errors_pagination,
         selected_source: @selected_source,
@@ -138,7 +138,7 @@ class Admin::OverviewController < ApplicationController
         navigation_context: @navigation_context
       }
     elsif request.xhr?
-      render partial: 'admin/overview/ingestion_validation_errors', locals: {
+      render partial: "admin/overview/ingestion_validation_errors", locals: {
         errors: @errors,
         pagination: @errors_pagination,
         selected_source: @selected_source,
@@ -153,7 +153,7 @@ class Admin::OverviewController < ApplicationController
 
   def export_financial_overview
     run = Admin::Dashboard::Api.find_run_by_id(params[:run_id])
-    return render plain: 'run_not_found', status: :not_found if run.nil?
+    return render plain: "run_not_found", status: :not_found if run.nil?
 
     exporter = Admin::Dashboard::FinancialOverviewExporter.new(
       run: run,
@@ -168,21 +168,21 @@ class Admin::OverviewController < ApplicationController
         send_data(
           JSON.pretty_generate(exporter.export_json),
           filename: exporter.filename_for(:json),
-          type: 'application/json',
-          disposition: 'attachment'
+          type: "application/json",
+          disposition: "attachment"
         )
       end
       format.pdf do
         send_data(
           exporter.export_pdf,
           filename: exporter.filename_for(:pdf),
-          type: 'application/pdf',
-          disposition: 'attachment'
+          type: "application/pdf",
+          disposition: "attachment"
         )
       end
     end
   rescue Admin::Dashboard::FinancialOverviewExporter::UnsupportedCardTypeError
-    render plain: 'unsupported_card_type', status: :unprocessable_content
+    render plain: "unsupported_card_type", status: :unprocessable_content
   end
 
   private
@@ -251,8 +251,8 @@ class Admin::OverviewController < ApplicationController
 
   def render_dashboard_unavailable(_error)
     render json: {
-      'contractVersion' => Admin::Dashboard::Api.compatibility_contract_version,
-      'error' => 'dashboard_read_unavailable'
+      "contractVersion" => Admin::Dashboard::Api.compatibility_contract_version,
+      "error" => "dashboard_read_unavailable"
     }, status: :service_unavailable
   end
 
@@ -274,15 +274,15 @@ class Admin::OverviewController < ApplicationController
     normalized = value.to_s.strip.downcase
     return normalized if %w[30d 60d 90d all-time].include?(normalized)
 
-    'all-time'
+    "all-time"
   end
 
   def trades_window_label(window)
     case window
-    when '30d' then I18n.t('admin.overview.system_metrics.trades_window.days_30')
-    when '60d' then I18n.t('admin.overview.system_metrics.trades_window.days_60')
-    when '90d' then I18n.t('admin.overview.system_metrics.trades_window.days_90')
-    else I18n.t('admin.overview.system_metrics.trades_window.all_time')
+    when "30d" then I18n.t("admin.overview.system_metrics.trades_window.days_30")
+    when "60d" then I18n.t("admin.overview.system_metrics.trades_window.days_60")
+    when "90d" then I18n.t("admin.overview.system_metrics.trades_window.days_90")
+    else I18n.t("admin.overview.system_metrics.trades_window.all_time")
     end
   end
 

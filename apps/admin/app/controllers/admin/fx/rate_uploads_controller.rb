@@ -12,12 +12,12 @@ class Admin::Fx::RateUploadsController < ApplicationController
     file = params[:file]
     if file.blank?
       redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale),
-                    alert: t('admin.fx.history.upload.missing')
+        alert: t("admin.fx.history.upload.missing")
       return
     end
 
     upload = Admin::Fx::Api.start_rate_upload(
-      status: 'processing',
+      status: "processing",
       file: file,
       created_by_id: current_admin_account&.id,
       created_by_role: admin_shell_role,
@@ -32,21 +32,21 @@ class Admin::Fx::RateUploadsController < ApplicationController
     Admin::Fx::Api.enqueue_rate_upload(upload.id)
 
     redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale),
-                  notice: t('admin.fx.history.upload.processing')
-  rescue StandardError => e
+      notice: t("admin.fx.history.upload.processing")
+  rescue => e
     if upload
-      upload.update!(status: 'error', error_message: e.message)
+      upload.update!(status: "error", error_message: e.message)
       Admin::Fx::Api.mark_upload_exception(upload: upload, message: e.message)
       broadcast_status(upload)
     end
     redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale),
-                  alert: t('admin.fx.history.upload.error', message: e.message)
+      alert: t("admin.fx.history.upload.error", message: e.message)
   end
 
   def preview
     file = params[:file]
     if file.blank?
-      render_preview(state: :error, errors: [{ code: 'MISSING_FILE' }], status: :unprocessable_content)
+      render_preview(state: :error, errors: [{code: "MISSING_FILE"}], status: :unprocessable_content)
       return
     end
 
@@ -62,10 +62,10 @@ class Admin::Fx::RateUploadsController < ApplicationController
       file_name: file.original_filename,
       sample_rows_truncated: result.total_rows > result.sample_rows.size
     )
-  rescue StandardError => e
+  rescue => e
     render_preview(
       state: :error,
-      errors: [{ code: 'PREVIEW_FAILED', message: e.message }],
+      errors: [{code: "PREVIEW_FAILED", message: e.message}],
       status: :unprocessable_content,
       file_name: file&.respond_to?(:original_filename) ? file.original_filename : nil
     )
@@ -76,21 +76,21 @@ class Admin::Fx::RateUploadsController < ApplicationController
     session.delete(:fx_rate_upload_id)
     session.delete(:fx_rate_upload_active)
     redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale),
-                  notice: t('admin.fx.history.upload.clear_success', count: deleted_count)
+      notice: t("admin.fx.history.upload.clear_success", count: deleted_count)
   end
 
   def template
     template = Admin::Fx::Api.generate_rate_upload_template
     send_data template.data,
-              filename: template.filename,
-              type: template.content_type,
-              disposition: 'attachment'
+      filename: template.filename,
+      type: template.content_type,
+      disposition: "attachment"
   end
 
   private
 
   def render_preview(state:, summary: nil, sample_rows: [], errors: [], status: :ok, file_name: nil,
-                     sample_rows_truncated: false)
+    sample_rows_truncated: false)
     @state = state
     @summary = summary
     @sample_rows = sample_rows
@@ -98,24 +98,24 @@ class Admin::Fx::RateUploadsController < ApplicationController
     @file_name = file_name
     @sample_rows_truncated = sample_rows_truncated
 
-    render 'admin/fx/rate_uploads/preview', status: status
+    render "admin/fx/rate_uploads/preview", status: status
   end
 
   def authorize_fx_upload_policy!
-    query = action_name == 'template' ? :template? : :upload?
+    query = (action_name == "template") ? :template? : :upload?
     authorize_policy!(FxRatePolicy, query, record: :fx_rate)
   end
 
   def request_context
     {
-      source: 'fx_history_upload',
+      source: "fx_history_upload",
       ip: request.remote_ip,
       locale: I18n.locale
     }
   end
 
   def persist_file(file, upload_id)
-    directory = Rails.root.join('tmp', 'fx_rate_uploads')
+    directory = Rails.root.join("tmp", "fx_rate_uploads")
     FileUtils.mkdir_p(directory)
     file_path = directory.join("#{upload_id}-#{SecureRandom.hex(6)}.xlsx")
     File.binwrite(file_path, file.read)
@@ -126,8 +126,8 @@ class Admin::Fx::RateUploadsController < ApplicationController
     Turbo::StreamsChannel.broadcast_replace_to(
       FxRateUpload.status_stream_for(account_id: upload.created_by_id),
       target: FxRateUpload.status_dom_id,
-      partial: 'admin/fx/history/upload_status',
-      locals: { upload: upload }
+      partial: "admin/fx/history/upload_status",
+      locals: {upload: upload}
     )
   end
 end

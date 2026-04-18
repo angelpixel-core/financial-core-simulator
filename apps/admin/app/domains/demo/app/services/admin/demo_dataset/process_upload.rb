@@ -30,7 +30,7 @@ module Admin
         return handle_invalid(result, original_filename: original_filename) unless result.valid?
 
         run, upload = @repository.create_valid_trace!(input_json: result.input, original_filename: original_filename)
-        fee_enabled = result.input.dig('feeModel', 'enabled')
+        fee_enabled = result.input.dig("feeModel", "enabled")
 
         with_timeline_env(timeline_enabled) do
           @execute_run.call(run, fee_enabled: fee_enabled)
@@ -39,25 +39,25 @@ module Admin
 
         @process_upload_rate_gaps.call(result.input, run, upload, ReportingSetting.current.reporting_currency)
 
-        { valid: true, run: run, upload: upload, errors: [] }
+        {valid: true, run: run, upload: upload, errors: []}
       end
 
       private
 
       def handle_invalid(result, original_filename:)
         upload = @repository.create_invalid_trace!(errors: result.errors, original_filename: original_filename)
-        { valid: false, run: nil, upload: upload, errors: result.errors }
+        {valid: false, run: nil, upload: upload, errors: result.errors}
       end
 
       def with_timeline_env(enabled)
-        previous = ENV.fetch('FCS_TIMELINE_ENABLED', nil)
-        ENV['FCS_TIMELINE_ENABLED'] = enabled ? '1' : '0'
+        previous = ENV.fetch("FCS_TIMELINE_ENABLED", nil)
+        ENV["FCS_TIMELINE_ENABLED"] = enabled ? "1" : "0"
         yield
       ensure
         if previous.nil?
-          ENV.delete('FCS_TIMELINE_ENABLED')
+          ENV.delete("FCS_TIMELINE_ENABLED")
         else
-          ENV['FCS_TIMELINE_ENABLED'] = previous
+          ENV["FCS_TIMELINE_ENABLED"] = previous
         end
       end
     end
