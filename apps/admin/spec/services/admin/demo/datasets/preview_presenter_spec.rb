@@ -1,10 +1,10 @@
 require "rails_helper"
 
 RSpec.describe Admin::Demo::Datasets::PreviewPresenter do
-  Result = Struct.new(:valid?, :input, :errors, keyword_init: true)
+  let(:result_class) { Struct.new(:valid?, :input, :errors, keyword_init: true) }
 
   it "renders success payload with summary and sample rows" do
-    result = Result.new(
+    result = result_class.new(
       valid?: true,
       input: {
         schemaVersion: "1.0",

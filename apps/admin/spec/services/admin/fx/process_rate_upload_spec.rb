@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Admin::Fx::ProcessRateUpload do
-  ImportResult = Struct.new(:valid?, :errors, :message, keyword_init: true)
+  let(:import_result_class) { Struct.new(:valid?, :errors, :message, keyword_init: true) }
 
   it "marks upload as success when importer result is valid" do
     upload = FxRateUpload.create!(
@@ -13,7 +13,7 @@ RSpec.describe Admin::Fx::ProcessRateUpload do
       original_filename: "fake.xlsx"
     )
     importer = class_double(Admin::Fx::RateUploadImporter)
-    allow(importer).to receive(:call).and_return(ImportResult.new(valid?: true, errors: [], message: "ok"))
+    allow(importer).to receive(:call).and_return(import_result_class.new(valid?: true, errors: [], message: "ok"))
 
     described_class.new(importer: importer).call(upload_id: upload.id)
 
@@ -34,7 +34,7 @@ RSpec.describe Admin::Fx::ProcessRateUpload do
     )
     importer = class_double(Admin::Fx::RateUploadImporter)
     allow(importer).to receive(:call).and_return(
-      ImportResult.new(valid?: false, errors: [{message: "invalid rate"}], message: nil)
+      import_result_class.new(valid?: false, errors: [{message: "invalid rate"}], message: nil)
     )
 
     described_class.new(importer: importer).call(upload_id: upload.id)

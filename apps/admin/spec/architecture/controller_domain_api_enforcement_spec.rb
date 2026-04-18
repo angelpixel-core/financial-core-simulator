@@ -1,10 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "Controller domain API boundaries" do
-  ROOT = Rails.root
-
   def read_controller(relative_path)
-    File.read(ROOT.join(relative_path))
+    File.read(Rails.root.join(relative_path))
       .lines
       .reject { |line| line.lstrip.start_with?("class ") }
       .join
