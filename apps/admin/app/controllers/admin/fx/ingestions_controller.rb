@@ -9,34 +9,34 @@ class Admin::Fx::IngestionsController < ApplicationController
 
   def sync
     if params[:source_id].blank?
-      return render json: { error: 'missing_source_id' }, status: :unprocessable_content if request.format.json?
+      return render json: {error: "missing_source_id"}, status: :unprocessable_content if request.format.json?
 
       return redirect_to admin_fx_history_index_path(@navigation_context),
-                         alert: t('admin.fx.history.sync.select_source_hint')
+        alert: t("admin.fx.history.sync.select_source_hint")
     end
 
     source = FxRateSource.find_by(id: params[:source_id])
     if source.nil?
-      return render json: { error: 'invalid_source_id' }, status: :unprocessable_content if request.format.json?
+      return render json: {error: "invalid_source_id"}, status: :unprocessable_content if request.format.json?
 
       return redirect_to admin_fx_history_index_path(@navigation_context),
-                         alert: t('admin.fx.history.sync.select_source_hint')
+        alert: t("admin.fx.history.sync.select_source_hint")
     end
 
     market = params[:market].to_s.upcase
     unless available_markets_for(source).include?(market)
-      return render json: { error: 'invalid_market' }, status: :unprocessable_content if request.format.json?
+      return render json: {error: "invalid_market"}, status: :unprocessable_content if request.format.json?
 
       return redirect_to admin_fx_history_index_path(@navigation_context.merge(source_id: source.id)),
-                         alert: t('admin.fx.history.sync.select_market_hint')
+        alert: t("admin.fx.history.sync.select_market_hint")
     end
 
     correlation_id = SecureRandom.uuid
     ingestion = FxRateIngestion.create!(
       source: source,
-      status: 'pending',
+      status: "pending",
       correlation_id: correlation_id,
-      metadata: { 'market' => market }
+      metadata: {"market" => market}
     )
 
     Admin::Fx::FetchFxRatesJob.perform_later(
@@ -54,8 +54,8 @@ class Admin::Fx::IngestionsController < ApplicationController
       format.turbo_stream do
         render turbo_stream: [
           turbo_stream.replace(
-            'fx-ingestion-status',
-            partial: 'admin/fx/history/ingestion_status',
+            "fx-ingestion-status",
+            partial: "admin/fx/history/ingestion_status",
             locals: {
               fx_sources: @fx_sources,
               latest_ingestions: @latest_ingestions,
@@ -63,15 +63,15 @@ class Admin::Fx::IngestionsController < ApplicationController
             }
           ),
           turbo_stream.replace(
-            'fx-recent-events',
-            partial: 'admin/fx/history/recent_events',
-            locals: { events: @recent_events }
+            "fx-recent-events",
+            partial: "admin/fx/history/recent_events",
+            locals: {events: @recent_events}
           )
         ]
       end
       format.json do
         render json: {
-          status: 'queued',
+          status: "queued",
           ingestion_id: ingestion.id,
           source_id: source.id,
           market: market
@@ -79,19 +79,19 @@ class Admin::Fx::IngestionsController < ApplicationController
       end
       format.html do
         redirect_to admin_fx_history_index_path(@navigation_context.merge(source_id: source.id, market: market)),
-                    notice: t('admin.fx.history.sync.started')
+          notice: t("admin.fx.history.sync.started")
       end
     end
-  rescue StandardError => e
+  rescue => e
     raise unless request.format.json?
 
-    render json: { error: 'internal_error', message: e.message }, status: :internal_server_error
+    render json: {error: "internal_error", message: e.message}, status: :internal_server_error
   end
 
   def index
     if params[:source_id].present?
       source = FxRateSource.find_by(id: params[:source_id])
-      return render json: { error: 'invalid_source_id' }, status: :unprocessable_content if source.nil?
+      return render json: {error: "invalid_source_id"}, status: :unprocessable_content if source.nil?
     end
 
     sources = FxRateSource.order(:name)
@@ -112,10 +112,10 @@ class Admin::Fx::IngestionsController < ApplicationController
         }
       end
     }, status: :ok
-  rescue StandardError => e
+  rescue => e
     raise unless request.format.json?
 
-    render json: { error: 'internal_error', message: e.message }, status: :internal_server_error
+    render json: {error: "internal_error", message: e.message}, status: :internal_server_error
   end
 
   private
@@ -126,9 +126,9 @@ class Admin::Fx::IngestionsController < ApplicationController
 
   def latest_ingestions(sources)
     FxRateIngestion.where(source_id: sources.map(&:id))
-                   .order(created_at: :desc)
-                   .group_by(&:source_id)
-                   .transform_values(&:first)
+      .order(created_at: :desc)
+      .group_by(&:source_id)
+      .transform_values(&:first)
   end
 
   def load_navigation_context
@@ -139,8 +139,8 @@ class Admin::Fx::IngestionsController < ApplicationController
     return [] if source.nil?
 
     case source.code
-    when 'BCRA'
-      ['USDARS']
+    when "BCRA"
+      ["USDARS"]
     else
       []
     end
