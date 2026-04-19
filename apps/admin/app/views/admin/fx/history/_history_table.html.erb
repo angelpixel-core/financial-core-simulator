@@ -1,3 +1,10 @@
+<% selected_source = local_assigns.fetch(:selected_source, nil) %>
+<% fx_sources = local_assigns.fetch(:fx_sources, []) %>
+<% selected_market = local_assigns.fetch(:selected_market, nil) %>
+<% available_markets = local_assigns.fetch(:available_markets, []) %>
+<% latest_upload = local_assigns.fetch(:latest_upload, nil) %>
+<% upload_status_stream = local_assigns.fetch(:upload_status_stream, nil) %>
+<% rate_lineage = local_assigns.fetch(:rate_lineage, {}) %>
 <div id="<%= FxRateUpload.table_dom_id %>">
   <%= render Admin::Fx::HistoryTableComponent.new(
     dates: dates,

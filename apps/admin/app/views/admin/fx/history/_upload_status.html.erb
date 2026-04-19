@@ -1,4 +1,8 @@
-<div id="<%= FxRateUpload.status_dom_id %>" class="fx-history-upload__status <%= upload&.status ? "fx-history-upload__status--#{upload.status}" : "" %>">
+<div id="<%= FxRateUpload.status_dom_id %>"
+  class="fx-history-upload__status <%= upload&.status ? "fx-history-upload__status--#{upload.status}" : "" %>"
+  data-controller="fx--upload-status-poll"
+  data-fx--upload-status-poll-processing-value="<%= upload&.processing_status? ? "true" : "false" %>"
+  data-fx--upload-status-poll-upload-id-value="<%= upload&.id %>">
   <% if upload.present? %>
     <p class="fx-history-upload__status-text">
       <%= t("admin.fx.history.upload.status.#{upload.status}", count: upload.error_count.to_i) %>

@@ -70,8 +70,10 @@ class Admin::Fx::RateUploadJob < ApplicationJob
 
     I18n.with_locale(locale_for(upload)) do
       snapshot = Admin::Fx::Rates::Repository.new.uncached_history_snapshot(sort_order: "desc")
+      upload_status_stream = FxRateUpload.status_stream_for(account_id: upload.created_by_id)
+
       Turbo::StreamsChannel.broadcast_replace_to(
-        FxRateUpload.status_stream_for(account_id: upload.created_by_id),
+        upload_status_stream,
         target: FxRateUpload.table_dom_id,
         partial: "admin/fx/history/history_table",
         locals: {
@@ -81,7 +83,14 @@ class Admin::Fx::RateUploadJob < ApplicationJob
           role: upload.created_by_role,
           sort_order: snapshot.fetch(:sort_order),
           navigation_context: {},
-          empty_history: snapshot.fetch(:empty_history)
+          empty_history: snapshot.fetch(:empty_history),
+          selected_source: nil,
+          fx_sources: FxRateSource.order(:name),
+          selected_market: nil,
+          available_markets: [],
+          latest_upload: upload,
+          upload_status_stream: upload_status_stream,
+          rate_lineage: {}
         }
       )
     end
