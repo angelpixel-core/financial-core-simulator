@@ -8,6 +8,8 @@ class Admin::Fx::HistoryController < ApplicationController
   before_action :load_navigation_context
 
   def index
+    @fx_sources = Admin::Fx::Api.active_sources
+
     @source_filter = resolve_source(params[:source_id])
     if request.format.json? && params[:source_id].present? && @source_filter.nil?
       return render json: {error: "invalid_source_id"}, status: :unprocessable_content
@@ -28,7 +30,6 @@ class Admin::Fx::HistoryController < ApplicationController
     @dates = snapshot.fetch(:dates)
     @empty_history = snapshot.fetch(:empty_history)
     @rate_lineage = build_rate_lineage(snapshot.fetch(:rates))
-    @fx_sources = FxRateSource.order(:name)
     @latest_ingestions = latest_ingestions(@fx_sources)
     @recent_events = recent_events
     session_upload_id = session[:fx_rate_upload_id]
@@ -47,7 +48,7 @@ class Admin::Fx::HistoryController < ApplicationController
       session.delete(:fx_rate_upload_active)
     end
     @upload_status_stream = if admin_shell_operator? || admin_shell_admin?
-      Admin::Fx::Api.rate_upload_status_stream(account_id: current_admin_account&.id)
+      Admin::Fx::Api.history_stream(account_id: current_admin_account&.id)
     end
 
     respond_to do |format|
@@ -87,18 +88,11 @@ class Admin::Fx::HistoryController < ApplicationController
   def resolve_source(source_id)
     return nil if source_id.blank?
 
-    FxRateSource.find_by(id: source_id)
+    @fx_sources.find { |source| source.id == source_id.to_i }
   end
 
   def available_markets_for(source)
-    return [] if source.nil?
-
-    case source.code
-    when "BCRA"
-      ["USDARS"]
-    else
-      []
-    end
+    Admin::Fx::Api.available_markets_for(source: source)
   end
 
   def resolve_market(market, source:)

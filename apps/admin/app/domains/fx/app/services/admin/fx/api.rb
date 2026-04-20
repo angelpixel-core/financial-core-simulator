@@ -107,7 +107,19 @@ module Admin
       end
 
       def rate_upload_status_stream(account_id:)
+        history_stream(account_id: account_id)
+      end
+
+      def history_stream(account_id:)
         FxRateUpload.status_stream_for(account_id: account_id)
+      end
+
+      def active_sources
+        Admin::Fx::SourceCatalog.active_sources
+      end
+
+      def available_markets_for(source:)
+        Admin::Fx::SourceCatalog.available_markets_for(source)
       end
     end
   end
