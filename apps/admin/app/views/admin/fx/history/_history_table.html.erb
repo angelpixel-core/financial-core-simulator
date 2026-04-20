@@ -4,6 +4,7 @@
 <% available_markets = local_assigns.fetch(:available_markets, []) %>
 <% latest_upload = local_assigns.fetch(:latest_upload, nil) %>
 <% upload_status_stream = local_assigns.fetch(:upload_status_stream, nil) %>
+<% latest_ingestions = local_assigns.fetch(:latest_ingestions, {}) %>
 <% rate_lineage = local_assigns.fetch(:rate_lineage, {}) %>
 <div id="<%= FxRateUpload.table_dom_id %>">
   <%= render Admin::Fx::HistoryTableComponent.new(
@@ -20,6 +21,7 @@
     available_markets: available_markets,
     latest_upload: latest_upload,
     upload_status_stream: upload_status_stream,
+    latest_ingestions: latest_ingestions,
     rate_lineage: rate_lineage
   ) %>
   <% if empty_history %>

@@ -127,7 +127,7 @@ class Admin::Fx::RateUploadsController < ApplicationController
 
   def broadcast_status(upload)
     Turbo::StreamsChannel.broadcast_replace_to(
-      FxRateUpload.status_stream_for(account_id: upload.created_by_id),
+      Admin::Fx::Api.history_stream(account_id: upload.created_by_id),
       target: FxRateUpload.status_dom_id,
       partial: "admin/fx/history/upload_status",
       locals: {upload: upload}

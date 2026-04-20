@@ -99,6 +99,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
 
     ingestion.update!(status: "success", finished_at: Time.current)
     metrics.increment("fcs_fx_ingestion_success_total", tags: metrics_tags(source))
+    broadcast_history(ingestion: ingestion)
   rescue => e
     if ingestion.present?
       error_details = Admin::Fx::Ingestion::ErrorCatalog.details_for("job_error")
@@ -106,6 +107,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
       ingestion.update!(status: "failed", error_code: "job_error", context: context,
         finished_at: Time.current)
       log_ingestion_failure(ingestion: ingestion, source: source, context: context)
+      broadcast_history(ingestion: ingestion)
     end
     if source.present?
       metrics.increment("fcs_fx_ingestion_failed_total", tags: metrics_tags(source, error_code: "job_error",
@@ -200,6 +202,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
 
     metrics.increment("fcs_fx_ingestion_failed_total", tags: metrics_tags(source, error_code: error_code,
       severity: context[:severity]))
+    broadcast_history(ingestion: ingestion)
     return unless error_code == "validation_failed"
 
     metrics.increment("fcs_fx_ingestion_validation_failed_total",
@@ -284,5 +287,57 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
 
   def metrics
     FCS::Application::Base::NoopMetrics.new
+  end
+
+  def broadcast_history(ingestion:)
+    metadata = ingestion.metadata || {}
+    account_id = metadata["requested_by_account_id"] || metadata[:requested_by_account_id]
+    return if account_id.blank?
+
+    role = metadata["requested_by_role"] || metadata[:requested_by_role] || "operator"
+    locale = metadata["requested_locale"] || metadata[:requested_locale] || I18n.default_locale
+    history_stream = Admin::Fx::Api.history_stream(account_id: account_id)
+
+    I18n.with_locale(locale) do
+      snapshot = Admin::Fx::Rates::Repository.new.uncached_history_snapshot(sort_order: "desc")
+      sources = Admin::Fx::Api.active_sources
+
+      Turbo::StreamsChannel.broadcast_replace_to(
+        history_stream,
+        target: FxRateUpload.table_dom_id,
+        partial: "admin/fx/history/history_table",
+        locals: {
+          dates: snapshot.fetch(:dates),
+          supported_pairs: snapshot.fetch(:supported_pairs),
+          rates_by_pair: snapshot.fetch(:rates_by_pair),
+          role: role,
+          sort_order: snapshot.fetch(:sort_order),
+          navigation_context: {},
+          empty_history: snapshot.fetch(:empty_history),
+          selected_source: nil,
+          fx_sources: sources,
+          selected_market: nil,
+          available_markets: [],
+          latest_upload: nil,
+          upload_status_stream: history_stream,
+          latest_ingestions: latest_ingestions(sources),
+          rate_lineage: {}
+        }
+      )
+
+      Turbo::StreamsChannel.broadcast_replace_to(
+        history_stream,
+        target: "fx-recent-events",
+        partial: "admin/fx/history/recent_events",
+        locals: {events: FxRateEvent.order(created_at: :desc).limit(10), compact: true}
+      )
+    end
+  end
+
+  def latest_ingestions(sources)
+    FxRateIngestion.where(source_id: sources.map(&:id))
+      .order(created_at: :desc)
+      .group_by(&:source_id)
+      .transform_values(&:first)
   end
 end

@@ -45,7 +45,10 @@
             loading_label: t("admin.fx.history.upload.preview.loading")
           } %>
       </div>
-      <div class="fx-history-table__controls-block fx-history-table__controls-block--source">
+      <div class="fx-history-table__controls-block fx-history-table__controls-block--source"
+        data-controller="fx--sync-status-poll"
+        data-fx--sync-status-poll-source-id-value="<%= selected_source_id %>"
+        data-fx--sync-status-poll-in-progress-value="<%= sync_in_progress? ? "true" : "false" %>">
         <span class="fx-history-table__controls-pill"><%= t("admin.fx.history.sync.source_label") %></span>
         <%= form_with url: admin_fx_history_index_path(navigation_context), method: :get, local: true, class: "fx-history-table__filters-form", data: { controller: "auto-submit" } do |form| %>
           <%= hidden_field_tag :sort, sort_order if sort_order.present? %>

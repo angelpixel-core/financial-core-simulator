@@ -15,7 +15,7 @@ class Admin::Fx::IngestionsController < ApplicationController
         alert: t("admin.fx.history.sync.select_source_hint")
     end
 
-    source = FxRateSource.find_by(id: params[:source_id])
+    source = fx_sources.find { |item| item.id == params[:source_id].to_i }
     if source.nil?
       return render json: {error: "invalid_source_id"}, status: :unprocessable_content if request.format.json?
 
@@ -36,7 +36,12 @@ class Admin::Fx::IngestionsController < ApplicationController
       source: source,
       status: "pending",
       correlation_id: correlation_id,
-      metadata: {"market" => market}
+      metadata: {
+        "market" => market,
+        "requested_by_account_id" => current_admin_account&.id,
+        "requested_by_role" => admin_shell_role,
+        "requested_locale" => I18n.locale.to_s
+      }
     )
 
     Admin::Fx::FetchFxRatesJob.perform_later(
@@ -46,28 +51,9 @@ class Admin::Fx::IngestionsController < ApplicationController
       market: market
     )
 
-    @fx_sources = FxRateSource.order(:name)
-    @latest_ingestions = latest_ingestions(@fx_sources)
-    @recent_events = FxRateEvent.order(created_at: :desc).limit(10)
-
     respond_to do |format|
       format.turbo_stream do
-        render turbo_stream: [
-          turbo_stream.replace(
-            "fx-ingestion-status",
-            partial: "admin/fx/history/ingestion_status",
-            locals: {
-              fx_sources: @fx_sources,
-              latest_ingestions: @latest_ingestions,
-              selected_source: source
-            }
-          ),
-          turbo_stream.replace(
-            "fx-recent-events",
-            partial: "admin/fx/history/recent_events",
-            locals: {events: @recent_events}
-          )
-        ]
+        redirect_to admin_fx_history_index_path(@navigation_context.merge(sync_source_id: source.id, market: market))
       end
       format.json do
         render json: {
@@ -78,7 +64,7 @@ class Admin::Fx::IngestionsController < ApplicationController
         }, status: :ok
       end
       format.html do
-        redirect_to admin_fx_history_index_path(@navigation_context.merge(source_id: source.id, market: market)),
+        redirect_to admin_fx_history_index_path(@navigation_context.merge(sync_source_id: source.id, market: market)),
           notice: t("admin.fx.history.sync.started")
       end
     end
@@ -94,7 +80,7 @@ class Admin::Fx::IngestionsController < ApplicationController
       return render json: {error: "invalid_source_id"}, status: :unprocessable_content if source.nil?
     end
 
-    sources = FxRateSource.order(:name)
+    sources = fx_sources
     sources = sources.where(id: params[:source_id]) if params[:source_id].present?
     latest = latest_ingestions(sources)
 
@@ -136,13 +122,10 @@ class Admin::Fx::IngestionsController < ApplicationController
   end
 
   def available_markets_for(source)
-    return [] if source.nil?
+    Admin::Fx::Api.available_markets_for(source: source)
+  end
 
-    case source.code
-    when "BCRA"
-      ["USDARS"]
-    else
-      []
-    end
+  def fx_sources
+    @fx_sources ||= Admin::Fx::Api.active_sources.to_a
   end
 end

@@ -22,7 +22,8 @@ RSpec.describe "Admin FX ingestions", type: :request do
     ingestion = FxRateIngestion.last
     expect(ingestion.status).to eq("pending")
     expect(ingestion.metadata["market"]).to eq("USDARS")
-    expect(response).to have_http_status(:ok)
+    expect(ingestion.metadata["requested_by_role"]).to be_present
+    expect(response).to have_http_status(:found)
   end
 
   it "forbids viewers" do
