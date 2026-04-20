@@ -2,17 +2,19 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static values = {
+    enabled: Boolean,
     sourceId: String,
     inProgress: Boolean,
   }
 
   connect() {
-    if (!this.inProgressValue || !this.sourceIdValue) return
+    if (!this.enabledValue || !this.sourceIdValue) return
 
     const attempts = Number(window.sessionStorage.getItem(this.counterKey()) || "0")
     if (attempts >= 25) return
 
-    this.timer = window.setTimeout(() => this.pollStatus(), 2000)
+    const delay = this.inProgressValue ? 2000 : 300
+    this.timer = window.setTimeout(() => this.pollStatus(), delay)
   }
 
   disconnect() {
@@ -61,6 +63,7 @@ export default class extends Controller {
     const url = new URL(window.location.href)
     url.searchParams.delete("sync_source_id")
     url.searchParams.delete("market")
+    url.searchParams.delete("sync_poll")
 
     if (window.Turbo && typeof window.Turbo.visit === "function") {
       window.Turbo.visit(url.toString(), { action: "replace" })

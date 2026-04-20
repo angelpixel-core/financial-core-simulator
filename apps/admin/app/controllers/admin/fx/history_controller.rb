@@ -16,6 +16,7 @@ class Admin::Fx::HistoryController < ApplicationController
     end
 
     @selected_source = resolve_source(params[:sync_source_id])
+    @sync_poll = params[:sync_poll].present?
 
     @available_markets = available_markets_for(@selected_source)
     @selected_market = resolve_market(params[:market], source: @selected_source)
@@ -145,6 +146,7 @@ class Admin::Fx::HistoryController < ApplicationController
       source_id: @source_filter&.id,
       source_name: @source_filter&.name,
       market: @selected_market,
+      sync_poll: @sync_poll,
       available_markets: @available_markets,
       sort_order: @sort_order,
       dates: @dates.map(&:iso8601),

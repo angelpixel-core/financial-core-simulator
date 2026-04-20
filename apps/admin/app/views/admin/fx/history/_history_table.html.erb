@@ -1,6 +1,7 @@
 <% selected_source = local_assigns.fetch(:selected_source, nil) %>
 <% fx_sources = local_assigns.fetch(:fx_sources, []) %>
 <% selected_market = local_assigns.fetch(:selected_market, nil) %>
+<% sync_poll = local_assigns.fetch(:sync_poll, false) %>
 <% available_markets = local_assigns.fetch(:available_markets, []) %>
 <% latest_upload = local_assigns.fetch(:latest_upload, nil) %>
 <% upload_status_stream = local_assigns.fetch(:upload_status_stream, nil) %>
@@ -18,6 +19,7 @@
     selected_source: selected_source,
     fx_sources: fx_sources,
     selected_market: selected_market,
+    sync_poll: sync_poll,
     available_markets: available_markets,
     latest_upload: latest_upload,
     upload_status_stream: upload_status_stream,

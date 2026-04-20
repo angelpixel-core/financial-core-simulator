@@ -4,7 +4,7 @@ module Admin
   module Fx
     class HistoryTableComponent < ViewComponent::Base
       def initialize(dates:, supported_pairs:, rates_by_pair:, role:, sort_order:, navigation_context:, source_id: nil,
-        selected_source: nil, fx_sources: [], selected_market: nil, available_markets: [], latest_upload: nil,
+        selected_source: nil, fx_sources: [], selected_market: nil, sync_poll: false, available_markets: [], latest_upload: nil,
         upload_status_stream: nil, latest_ingestions: {}, rate_lineage: {})
         @dates = dates
         @supported_pairs = supported_pairs
@@ -16,6 +16,7 @@ module Admin
         @selected_source = selected_source
         @fx_sources = fx_sources
         @selected_market = selected_market
+        @sync_poll = sync_poll
         @available_markets = available_markets
         @latest_upload = latest_upload
         @upload_status_stream = upload_status_stream
@@ -103,7 +104,7 @@ module Admin
       end
 
       attr_reader :dates, :supported_pairs, :rates_by_pair, :role, :sort_order, :navigation_context, :source_id,
-        :selected_source, :fx_sources, :selected_market, :available_markets, :latest_upload, :upload_status_stream,
+        :selected_source, :fx_sources, :selected_market, :sync_poll, :available_markets, :latest_upload, :upload_status_stream,
         :latest_ingestions, :rate_lineage
     end
   end

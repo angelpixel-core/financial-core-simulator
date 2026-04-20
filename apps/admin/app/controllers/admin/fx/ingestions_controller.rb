@@ -53,7 +53,9 @@ class Admin::Fx::IngestionsController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream do
-        redirect_to admin_fx_history_index_path(@navigation_context.merge(sync_source_id: source.id, market: market))
+        redirect_to admin_fx_history_index_path(
+          @navigation_context.merge(sync_source_id: source.id, market: market, sync_poll: "1")
+        )
       end
       format.json do
         render json: {
@@ -64,7 +66,9 @@ class Admin::Fx::IngestionsController < ApplicationController
         }, status: :ok
       end
       format.html do
-        redirect_to admin_fx_history_index_path(@navigation_context.merge(sync_source_id: source.id, market: market)),
+        redirect_to admin_fx_history_index_path(
+          @navigation_context.merge(sync_source_id: source.id, market: market, sync_poll: "1")
+        ),
           notice: t("admin.fx.history.sync.started")
       end
     end
