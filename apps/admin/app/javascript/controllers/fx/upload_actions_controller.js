@@ -1,10 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["fileInput", "fileIcon", "submitButton", "previewSubmit"]
+  static targets = ["fileInput", "fileIcon", "submitButton", "previewSubmit", "actionLabel", "actionIcon"]
   static values = {
     defaultIcon: String,
     readyIcon: String,
+    loadLabel: String,
+    runLabel: String,
+    processing: Boolean,
   }
 
   connect() {
@@ -18,8 +21,8 @@ export default class extends Controller {
   onSubmitEnd(event) {
     if (this.isPreviewSubmission(event)) return
 
-    const success = Boolean(event?.detail?.success)
-    if (success) this.clearFile()
+    this.processingValue = true
+    this.refreshState()
   }
 
   handleReviewClick(event) {
@@ -54,9 +57,26 @@ export default class extends Controller {
 
   refreshState() {
     const hasFile = this.hasFileInputTarget && this.fileInputTarget.files && this.fileInputTarget.files.length > 0
+    const isReady = hasFile || this.processingValue
+    const isLoading = this.processingValue
 
     if (this.hasSubmitButtonTarget) {
-      this.submitButtonTarget.disabled = !hasFile
+      this.submitButtonTarget.disabled = !hasFile || isLoading
+      this.submitButtonTarget.classList.toggle("overview__icon-button--primary", isReady)
+      this.submitButtonTarget.classList.toggle("fx-history-action--ready", isReady)
+      this.submitButtonTarget.classList.toggle("fx-history-action--loading", isLoading)
+      const title = isReady ? this.runLabelValue : this.loadLabelValue
+      this.submitButtonTarget.setAttribute("title", title)
+      this.submitButtonTarget.setAttribute("aria-label", title)
+    }
+
+    if (this.hasActionLabelTarget) {
+      this.actionLabelTarget.hidden = isReady
+      this.actionLabelTarget.textContent = this.loadLabelValue
+    }
+
+    if (this.hasActionIconTarget) {
+      this.actionIconTarget.hidden = !isReady
     }
 
     if (this.hasFileIconTarget) {

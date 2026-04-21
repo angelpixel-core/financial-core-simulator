@@ -3907,6 +3907,34 @@ body {
   border-color: rgba(148, 163, 184, 0.3);
 }
 
+.fx-history-action {
+  min-width: 84px;
+  justify-content: center;
+  gap: 6px;
+}
+
+.fx-history-action__label,
+.fx-history-action__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.fx-history-action__label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fx-history-action__icon {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fx-history-action--loading {
+  cursor: progress;
+}
+
 .fx-history-item__note {
   font-size: 11px;
   color: #94a3b8;

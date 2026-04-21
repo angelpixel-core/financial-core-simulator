@@ -5,7 +5,6 @@
     <% end %>
     <div class="fx-history-table__controls-row">
       <div class="fx-history-table__controls-block fx-history-table__controls-block--loader demo-dataset-preview" data-controller="fx--upload-preview">
-        <span class="fx-history-table__controls-pill"><%= t("admin.fx.history.loader.label") %></span>
         <%= form_with url: admin_fx_rate_uploads_path(locale: I18n.locale),
                       method: :post,
                       multipart: true,
@@ -15,7 +14,10 @@
                         action: "turbo:submit-start->fx--upload-preview#start turbo:submit-end->fx--upload-preview#finish turbo:submit-end->fx--upload-actions#onSubmitEnd fx-rate-upload:clear-file@window->fx--upload-actions#clearFile",
                         controller: "fx--upload-actions",
                         "fx--upload-actions-default-icon-value": asset_path("icons/xls.svg"),
-                        "fx--upload-actions-ready-icon-value": asset_path("icons/review.svg")
+                        "fx--upload-actions-ready-icon-value": asset_path("icons/review.svg"),
+                        "fx--upload-actions-load-label-value": t("admin.fx.history.loader.label"),
+                        "fx--upload-actions-run-label-value": t("admin.fx.history.upload.tooltip.run"),
+                        "fx--upload-actions-processing-value": latest_upload&.processing_status? ? "true" : "false"
                       } do |form| %>
           <%= hidden_field_tag :locale, I18n.locale %>
           <%= form.file_field :file,
@@ -26,11 +28,14 @@
               "fx--upload-actions-target": "fileInput",
               action: "change->fx--upload-actions#onFileChange"
             } %>
+          <button class="overview__icon-button fx-history-action" type="submit" title="<%= t("admin.fx.history.loader.label") %>" aria-label="<%= t("admin.fx.history.loader.label") %>" disabled data-fx--upload-actions-target="submitButton">
+            <span class="fx-history-action__label" data-fx--upload-actions-target="actionLabel"><%= t("admin.fx.history.loader.label") %></span>
+            <span class="fx-history-action__icon" data-fx--upload-actions-target="actionIcon" hidden>
+              <%= image_tag("icons/play.svg", class: "overview__icon", alt: "") %>
+            </span>
+          </button>
           <button type="button" class="overview__icon-button" title="<%= t("admin.fx.history.upload.tooltip.review") %>" aria-label="<%= t("admin.fx.history.upload.tooltip.review") %>" data-action="click->fx--upload-actions#handleReviewClick">
             <%= image_tag("icons/xls.svg", class: "overview__icon", alt: "", data: { "fx--upload-actions-target": "fileIcon" }) %>
-          </button>
-          <button class="overview__icon-button overview__icon-button--primary" type="submit" title="<%= t("admin.fx.history.upload.tooltip.run") %>" aria-label="<%= t("admin.fx.history.upload.tooltip.run") %>" disabled data-fx--upload-actions-target="submitButton">
-            <%= image_tag("icons/play.svg", class: "overview__icon", alt: "") %>
           </button>
           <button type="submit" hidden data-fx--upload-actions-target="previewSubmit" data-fx-rate-upload-preview-submit="true" formaction="<%= preview_admin_fx_rate_uploads_path(locale: I18n.locale) %>" formmethod="post" data-turbo-frame="fx-rate-upload-preview"></button>
         <% end %>
@@ -50,7 +55,24 @@
         data-fx--sync-status-poll-source-id-value="<%= selected_source_id %>"
         data-fx--sync-status-poll-enabled-value="<%= sync_poll ? "true" : "false" %>"
         data-fx--sync-status-poll-in-progress-value="<%= sync_in_progress? ? "true" : "false" %>">
-        <span class="fx-history-table__controls-pill"><%= t("admin.fx.history.sync.source_label") %></span>
+        <%= form_with url: sync_admin_fx_ingestions_path(locale: I18n.locale), method: :post, local: true, class: "fx-history-table__sync-form" do |form| %>
+          <%= hidden_field_tag :locale, I18n.locale %>
+          <%= hidden_field_tag :source_id, selected_source_id %>
+          <%= hidden_field_tag :market, selected_market %>
+          <% sync_button_ready = sync_ready? || sync_in_progress? %>
+          <button
+            class="overview__icon-button fx-history-action <%= "overview__icon-button--primary fx-history-action--ready" if sync_button_ready %> <%= "fx-history-action--loading" if sync_in_progress? %>"
+            type="submit"
+            title="<%= sync_button_ready ? t("admin.fx.history.sync.tooltip.run") : t("admin.fx.history.sync.source_label") %>"
+            aria-label="<%= sync_button_ready ? t("admin.fx.history.sync.tooltip.run") : t("admin.fx.history.sync.source_label") %>"
+            <%= "disabled" unless sync_ready? && !sync_in_progress? %>
+          >
+            <span class="fx-history-action__label"><%= t("admin.fx.history.sync.source_label") %></span>
+            <span class="fx-history-action__icon">
+              <%= image_tag("icons/play.svg", class: "overview__icon", alt: "") %>
+            </span>
+          </button>
+          <% end %>
         <%= form_with url: admin_fx_history_index_path(navigation_context), method: :get, local: true, class: "fx-history-table__filters-form", data: { controller: "auto-submit" } do |form| %>
           <%= hidden_field_tag :sort, sort_order if sort_order.present? %>
           <%= form.select :sync_source_id,
@@ -69,14 +91,6 @@
             disabled: selected_source_id.blank?,
             data: { action: "change->auto-submit#submit" } %>
         <% end %>
-        <%= form_with url: sync_admin_fx_ingestions_path(locale: I18n.locale), method: :post, local: true, class: "fx-history-table__sync-form" do |form| %>
-          <%= hidden_field_tag :locale, I18n.locale %>
-          <%= hidden_field_tag :source_id, selected_source_id %>
-          <%= hidden_field_tag :market, selected_market %>
-          <button class="overview__icon-button overview__icon-button--primary" type="submit" title="<%= t("admin.fx.history.sync.tooltip.run") %>" aria-label="<%= t("admin.fx.history.sync.tooltip.run") %>" <%= "disabled" unless sync_ready? %>>
-            <%= image_tag("icons/play.svg", class: "overview__icon", alt: "") %>
-          </button>
-          <% end %>
         </div>
       </div>
       <%= render "admin/fx/history/upload_status", upload: latest_upload %>
