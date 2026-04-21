@@ -1,6 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static MAX_ATTEMPTS = 300
+
   static values = {
     enabled: Boolean,
     sourceId: String,
@@ -11,10 +13,13 @@ export default class extends Controller {
     if (!this.enabledValue || !this.sourceIdValue) return
 
     const attempts = Number(window.sessionStorage.getItem(this.counterKey()) || "0")
-    if (attempts >= 25) return
+    if (attempts >= this.maxAttempts()) {
+      this.clearCounter()
+      return this.refreshWithoutSyncParams()
+    }
 
     const delay = this.inProgressValue ? 2000 : 300
-    this.timer = window.setTimeout(() => this.pollStatus(), delay)
+    this.schedulePoll(delay)
   }
 
   disconnect() {
@@ -40,23 +45,21 @@ export default class extends Controller {
       const status = payload?.sources?.[0]?.status
 
       if (status === "pending" || status === "running") {
-        return this.refreshWithCurrentUrl()
+        this.inProgressValue = true
+        this.schedulePoll(2000)
+        return
       }
 
       this.clearCounter()
       this.refreshWithoutSyncParams()
     } catch (_error) {
-      this.refreshWithCurrentUrl()
+      this.schedulePoll(3000)
     }
   }
 
-  refreshWithCurrentUrl() {
-    if (window.Turbo && typeof window.Turbo.visit === "function") {
-      window.Turbo.visit(window.location.href, { action: "replace" })
-      return
-    }
-
-    window.location.reload()
+  schedulePoll(delayMs) {
+    if (this.timer) window.clearTimeout(this.timer)
+    this.timer = window.setTimeout(() => this.pollStatus(), delayMs)
   }
 
   refreshWithoutSyncParams() {
@@ -84,5 +87,9 @@ export default class extends Controller {
 
   counterKey() {
     return `fx-sync-poll:${this.sourceIdValue}`
+  }
+
+  maxAttempts() {
+    return this.constructor.MAX_ATTEMPTS
   }
 }

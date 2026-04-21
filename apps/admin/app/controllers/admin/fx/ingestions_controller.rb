@@ -103,6 +103,7 @@ class Admin::Fx::IngestionsController < ApplicationController
       end
     }, status: :ok
   rescue => e
+    Rails.logger.error("[FX Ingestions#index] #{e.class}: #{e.message}")
     raise unless request.format.json?
 
     render json: {error: "internal_error", message: e.message}, status: :internal_server_error
@@ -130,6 +131,6 @@ class Admin::Fx::IngestionsController < ApplicationController
   end
 
   def fx_sources
-    @fx_sources ||= Admin::Fx::Api.active_sources.to_a
+    @fx_sources ||= Admin::Fx::Api.active_sources
   end
 end
