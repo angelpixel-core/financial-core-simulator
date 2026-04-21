@@ -95,6 +95,41 @@
       </div>
       <%= render "admin/fx/history/upload_status", upload: latest_upload %>
     <% end %>
+    <% if usd_market_charts? %>
+      <section class="fx-history-charts" aria-label="<%= t("admin.fx.history.charts.aria") %>">
+        <header class="fx-history-charts__header">
+          <h3 class="fx-history-charts__title"><%= t("admin.fx.history.charts.title") %></h3>
+          <p class="fx-history-charts__subtitle"><%= t("admin.fx.history.charts.subtitle") %></p>
+        </header>
+        <section
+          class="dashboard-card fx-history-charts__card"
+          data-controller="fx--market-line-chart"
+          data-fx--market-line-chart-title-value="<%= t("admin.fx.history.charts.title") %>"
+          data-fx--market-line-chart-tooltip-label-value="<%= t("admin.fx.history.charts.tooltip_label") %>"
+          data-fx--market-line-chart-series-value="<%= usd_market_series.to_json %>"
+          data-fx--market-line-chart-points-value="<%= usd_chart_points.to_json %>"
+        >
+          <div class="fx-history-charts__toggles">
+            <% usd_market_series.each do |series| %>
+              <button
+                type="button"
+                class="fx-history-charts__toggle is-active"
+                data-series-key="<%= series[:key] %>"
+                data-action="click->fx--market-line-chart#toggleSeries"
+                data-fx--market-line-chart-target="toggle"
+                style="--series-color: <%= series[:color] %>"
+                aria-pressed="true"
+              >
+                <span class="fx-history-charts__toggle-dot" aria-hidden="true"></span>
+                <span><%= series[:label] %></span>
+              </button>
+            <% end %>
+          </div>
+          <div class="trend-chart trend-chart--fx-market" data-fx--market-line-chart-target="chart" aria-label="<%= t("admin.fx.history.charts.aria") %>"></div>
+          <p class="empty-state" data-fx--market-line-chart-target="fallback" hidden><%= t("admin.fx.history.charts.empty") %></p>
+        </section>
+      </section>
+    <% end %>
     <div class="shad-table-wrap">
       <table class="shad-table fx-history-table__table">
         <thead>

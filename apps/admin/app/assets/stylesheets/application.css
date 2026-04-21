@@ -3310,6 +3310,71 @@ body {
   }
 }
 
+.fx-history-charts {
+  display: grid;
+  gap: 12px;
+}
+
+.fx-history-charts__header {
+  display: grid;
+  gap: 4px;
+}
+
+.fx-history-charts__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.fx-history-charts__subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.fx-history-charts__card {
+  display: grid;
+  gap: 10px;
+}
+
+.fx-history-charts__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fx-history-charts__toggle {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.55);
+  color: #cbd5e1;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fx-history-charts__toggle.is-active {
+  border-color: color-mix(in srgb, var(--series-color) 55%, #ffffff 45%);
+  background: color-mix(in srgb, var(--series-color) 22%, rgba(15, 23, 42, 0.78) 78%);
+  color: #f8fafc;
+}
+
+.fx-history-charts__toggle-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--series-color, #38bdf8);
+}
+
+.trend-chart--fx-market {
+  height: 220px;
+  min-height: 220px;
+}
+
 .fx-history-table__header {
   display: flex;
   align-items: center;

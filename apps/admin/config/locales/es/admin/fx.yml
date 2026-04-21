@@ -58,6 +58,12 @@ es:
           panel_label: "Flujo de eventos"
           panel_title: "Eventos recientes de FX"
           empty: "Aun no hay eventos."
+        charts:
+          aria: "Markets en USD"
+          title: "Markets en USD"
+          subtitle: "Tendencias de mercados disponibles normalizadas a USD."
+          tooltip_label: "Valor en USD"
+          empty: "Activa al menos un market para mostrar el chart."
         table:
           date: "Fecha"
           sort_asc: "Mas antiguas primero"

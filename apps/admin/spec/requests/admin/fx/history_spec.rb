@@ -22,12 +22,22 @@ RSpec.describe 'Admin FX history', type: :request do
       rate: '1000',
       source: 'manual'
     )
+    FxDailyRate.create!(
+      operational_date: Date.new(2026, 3, 30),
+      base_currency: 'BTC',
+      quote_currency: 'USD',
+      rate: '62000',
+      source: 'manual'
+    )
 
     get '/admin/fx/history', headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include('USD/ARS')
+    expect(response.body).to include(admin_t('fx.history.charts.title', locale: :en))
+    expect(response.body).to include('data-controller="fx--market-line-chart"')
+    expect(response.body).to include('ARS/USD')
     expect(response.body).to include('BTC/USD')
+    expect(response.body).to include('USD/ARS')
     expect(response.body).to include('BTC/ARS')
     expect(response.body).to include('ETH/USD')
     expect(response.body).to include('ETH/ARS')

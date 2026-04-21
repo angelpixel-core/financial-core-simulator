@@ -58,6 +58,12 @@ en:
           panel_label: "Event stream"
           panel_title: "Recent FX events"
           empty: "No events yet."
+        charts:
+          aria: "Markets in USD"
+          title: "Markets in USD"
+          subtitle: "Line trends for available markets normalized to USD."
+          tooltip_label: "USD value"
+          empty: "Turn on at least one market to display the chart."
         table:
           date: "Date"
           sort_asc: "Oldest first"

@@ -21,7 +21,7 @@ module Admin
 
         rates = FxDailyRate.where(*supported_pair_conditions)
         rates = rates.where(source_id: source_id) if source_id.present?
-        rates = rates.includes(:rate_source).order(operational_date: sort_order).to_a
+        rates = rates.includes(:rate_source, :placeholder_gap).order(operational_date: sort_order).to_a
 
         preload_placeholder_gaps!(rates)
 
