@@ -59,11 +59,16 @@ en:
           panel_title: "Recent FX events"
           empty: "No events yet."
         charts:
-          aria: "Markets in USD"
-          title: "Markets in USD"
-          subtitle: "Line trends for available markets normalized to USD."
-          tooltip_label: "USD value"
+          aria: "Fiat markets"
+          tooltip_label: "Value"
           empty: "Turn on at least one market to display the chart."
+          fiat:
+            title: "Fiat markets"
+            subtitle: "Track ARS/USD and ARS/EUR over time."
+          crypto:
+            aria: "Crypto markets"
+            title: "Crypto markets"
+            subtitle: "Track BTC/USD and ETH/USD over time."
         table:
           date: "Date"
           sort_asc: "Oldest first"

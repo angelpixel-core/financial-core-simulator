@@ -103,48 +103,48 @@ module Admin
         [[I18n.t("admin.fx.history.filter.all_sources"), ""]] + fx_sources.map { |source| [source.name, source.id] }
       end
 
-      def usd_market_charts
-        @usd_market_charts ||= usd_market_series
+      def fiat_chart_series
+        @fiat_chart_series ||= [
+          {key: "ars_usd", label: "ARS/USD", color: "#38bdf8"},
+          {key: "ars_eur", label: "ARS/EUR", color: "#a78bfa"}
+        ].select { |series| chart_has_values?(points: fiat_chart_points, key: series[:key]) }
       end
 
-      def usd_market_charts?
-        return false if usd_market_series.empty?
-
-        usd_chart_points.any? do |point|
-          usd_market_series.any? { |series| point[series[:key]].present? }
-        end
-      end
-
-      def usd_market_series
-        @usd_market_series ||= begin
-          palette = ["#38bdf8", "#a78bfa", "#22c55e", "#f59e0b", "#f97316", "#e879f9"]
-          candidate_currencies.each_with_index.filter_map do |currency, index|
-            key = market_key(currency)
-            points = usd_chart_points.map { |point| point[key] }.compact
-            next if points.empty?
-
-            {
-              key: key,
-              label: "#{currency}/USD",
-              color: palette[index % palette.length]
-            }
-          end
-        end
-      end
-
-      def usd_chart_points
-        @usd_chart_points ||= dates.map do |date|
-          point = {
+      def fiat_chart_points
+        @fiat_chart_points ||= dates.map do |date|
+          {
             label: I18n.l(date),
-            timestamp: date.iso8601
+            timestamp: date.iso8601,
+            "ars_usd" => inverse_pair_value(base_currency: "USD", quote_currency: "ARS", date: date),
+            "ars_eur" => inverse_pair_value(base_currency: "EUR", quote_currency: "ARS", date: date)
           }
-
-          candidate_currencies.each do |currency|
-            point[market_key(currency)] = usd_value_for(currency: currency, date: date)
-          end
-
-          point
         end
+      end
+
+      def fiat_chart?
+        chart_renderable?(series: fiat_chart_series, points: fiat_chart_points)
+      end
+
+      def crypto_chart_series
+        @crypto_chart_series ||= [
+          {key: "btc_usd", label: "BTC/USD", color: "#22c55e"},
+          {key: "eth_usd", label: "ETH/USD", color: "#f59e0b"}
+        ].select { |series| chart_has_values?(points: crypto_chart_points, key: series[:key]) }
+      end
+
+      def crypto_chart_points
+        @crypto_chart_points ||= dates.map do |date|
+          {
+            label: I18n.l(date),
+            timestamp: date.iso8601,
+            "btc_usd" => rate_value(base_currency: "BTC", quote_currency: "USD", date: date),
+            "eth_usd" => rate_value(base_currency: "ETH", quote_currency: "USD", date: date)
+          }
+        end
+      end
+
+      def crypto_chart?
+        chart_renderable?(series: crypto_chart_series, points: crypto_chart_points)
       end
 
       attr_reader :dates, :supported_pairs, :rates_by_pair, :role, :sort_order, :navigation_context, :source_id,
@@ -153,14 +153,6 @@ module Admin
 
       private
 
-      def candidate_currencies
-        @candidate_currencies ||= supported_pairs.flatten.map(&:upcase).uniq - ["USD"]
-      end
-
-      def market_key(currency)
-        "#{currency.downcase}_usd"
-      end
-
       def format_market_label(market)
         normalized = market.to_s.upcase.gsub(/[^A-Z]/, "")
         return market if normalized.length != 6
@@ -168,29 +160,28 @@ module Admin
         "#{normalized[0, 3]}/#{normalized[3, 3]}"
       end
 
-      def usd_value_for(currency:, date:)
-        direct_value = rate_value(base_currency: currency, quote_currency: "USD", date: date)
-        return direct_value if direct_value.present?
-
-        inverse_value = rate_value(base_currency: "USD", quote_currency: currency, date: date)
-        if inverse_value.present?
-          inverse = inverse_value.to_f
-          return (1.0 / inverse) if inverse.positive?
-        end
-
-        base_ars = rate_value(base_currency: currency, quote_currency: "ARS", date: date)
-        usd_ars = rate_value(base_currency: "USD", quote_currency: "ARS", date: date)
-        return nil if base_ars.blank? || usd_ars.blank?
-
-        usd_ars_value = usd_ars.to_f
-        return nil unless usd_ars_value.positive?
-
-        base_ars.to_f / usd_ars_value
-      end
-
       def rate_value(base_currency:, quote_currency:, date:)
         pair = rates_by_pair.fetch("#{base_currency}/#{quote_currency}", {})
-        pair[date]&.rate
+        pair[date]&.rate&.to_f
+      end
+
+      def inverse_pair_value(base_currency:, quote_currency:, date:)
+        direct = rate_value(base_currency: base_currency, quote_currency: quote_currency, date: date)
+        return nil if direct.blank? || direct <= 0
+
+        1.0 / direct
+      end
+
+      def chart_has_values?(points:, key:)
+        points.any? { |point| point[key].present? }
+      end
+
+      def chart_renderable?(series:, points:)
+        return false if series.empty?
+
+        points.any? do |point|
+          series.any? { |item| point[item[:key]].present? }
+        end
       end
 
     end

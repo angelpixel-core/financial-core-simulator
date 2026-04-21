@@ -6,6 +6,7 @@ module Admin
       SYMBOL_DELIMITERS = ["/", "-", "_"].freeze
       SUPPORTED_PAIRS = [
         %w[USD ARS],
+        %w[EUR ARS],
         %w[BTC USD],
         %w[BTC ARS],
         %w[ETH USD],

@@ -33,11 +33,14 @@ RSpec.describe 'Admin FX history', type: :request do
     get '/admin/fx/history', headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include(admin_t('fx.history.charts.title', locale: :en))
+    expect(response.body).to include(admin_t('fx.history.charts.fiat.title', locale: :en))
+    expect(response.body).to include(admin_t('fx.history.charts.crypto.title', locale: :en))
     expect(response.body).to include('data-controller="fx--market-line-chart"')
     expect(response.body).to include('ARS/USD')
+    expect(response.body).to include('ARS/EUR')
     expect(response.body).to include('BTC/USD')
     expect(response.body).to include('USD/ARS')
+    expect(response.body).to include('EUR/ARS')
     expect(response.body).to include('BTC/ARS')
     expect(response.body).to include('ETH/USD')
     expect(response.body).to include('ETH/ARS')
