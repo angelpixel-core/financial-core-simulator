@@ -16,6 +16,19 @@ default: &default
           EURARS: "EUR"
         base_url: "https://api.bcra.gob.ar/estadisticascambiarias/v1.0"
         currency_code: "USD"
+    - name: "Binance Spot"
+      code: "BINANCE_SPOT"
+      source_type: "api"
+      version: "v1"
+      active: true
+      config:
+        base_url: "https://api.binance.com"
+        interval: "1d"
+        default_limit: 1000
+        quote_asset: "USDT"
+        markets:
+          - "BTCUSDT"
+          - "ETHUSDT"
 
 development: *default
 test: *default

@@ -67,6 +67,10 @@ RSpec.describe 'Admin FX history', type: :request do
     expect(source).to be_present
     expect(source.name).to eq('BCRA')
     expect(Admin::Fx::SourceCatalog.available_markets_for(source)).to include('USDARS', 'EURARS')
+
+    binance = FxRateSource.find_by(code: 'BINANCE_SPOT')
+    expect(binance).to be_present
+    expect(Admin::Fx::SourceCatalog.available_markets_for(binance)).to include('BTCUSDT', 'ETHUSDT')
   end
 
   def admin_session_headers(role: 'viewer')

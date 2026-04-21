@@ -13,6 +13,20 @@ RSpec.describe "Admin FX ingestions", type: :request do
     )
   end
 
+  let(:binance_source) do
+    FxRateSource.create!(
+      name: "Binance Spot",
+      code: "BINANCE_SPOT",
+      source_type: "api",
+      version: "v1",
+      config: {
+        "base_url" => "https://api.binance.com",
+        "interval" => "1d",
+        "markets" => ["BTCUSDT", "ETHUSDT"]
+      }
+    )
+  end
+
   it "enqueues sync jobs for operators" do
     expect do
       post "/admin/fx/ingestions/sync", params: {source_id: source.id, market: "USDARS"},
@@ -50,6 +64,18 @@ RSpec.describe "Admin FX ingestions", type: :request do
     expect(payload.fetch("source_id")).to eq(source.id)
     expect(payload.fetch("ingestion_id")).to eq(ingestion.id)
     expect(payload.fetch("status")).to eq("running")
+  end
+
+  it "enqueues sync jobs for binance markets" do
+    expect do
+      post "/admin/fx/ingestions/sync", params: {source_id: binance_source.id, market: "BTCUSDT"},
+        headers: admin_session_headers.merge("Accept" => "text/vnd.turbo-stream.html")
+    end.to have_enqueued_job(Admin::Fx::FetchFxRatesJob)
+
+    ingestion = FxRateIngestion.last
+    expect(ingestion.status).to eq("pending")
+    expect(ingestion.metadata["market"]).to eq("BTCUSDT")
+    expect(response).to have_http_status(:found)
   end
 
   def admin_session_headers(role: "operator")

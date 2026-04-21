@@ -11,6 +11,8 @@ module Admin
           case source.code
           when "BCRA"
             Adapters::BcraAdapter.new(source: source)
+          when "BINANCE_SPOT"
+            Adapters::BinanceAdapter.new(source: source)
           end
         end
       end

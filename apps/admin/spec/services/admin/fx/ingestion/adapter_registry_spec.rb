@@ -15,6 +15,20 @@ RSpec.describe Admin::Fx::Ingestion::AdapterRegistry do
     expect(adapter).to be_a(Admin::Fx::Ingestion::Adapters::BcraAdapter)
   end
 
+  it "builds a Binance adapter for supported sources" do
+    source = FxRateSource.create!(
+      name: "Binance Spot",
+      code: "BINANCE_SPOT",
+      source_type: "api",
+      version: "v1",
+      config: {"base_url" => "https://api.binance.com", "markets" => ["BTCUSDT", "ETHUSDT"]}
+    )
+
+    adapter = described_class.build(source)
+
+    expect(adapter).to be_a(Admin::Fx::Ingestion::Adapters::BinanceAdapter)
+  end
+
   it "returns nil for unknown sources" do
     source = FxRateSource.create!(
       name: "Manual",
