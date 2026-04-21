@@ -20,40 +20,7 @@ class ApplicationController < ActionController::Base
   private
 
   def policy_user
-    account = current_admin_account
-    if account.present?
-      return {
-        id: account.id.to_s,
-        role: admin_shell_role
-      }
-    end
-
-    role = request.headers["X-Admin-Role"].to_s.strip.downcase
-    user = request.headers["X-Admin-User"].to_s.strip
-    if Admin::Authorization::ROLE_ORDER.key?(role)
-      return {
-        id: user.presence || "header-user",
-        role: role
-      }
-    end
-
-    return machine_policy_user if machine_policy_user_allowed?
-
-    nil
-  end
-
-  def machine_policy_user_allowed?
-    auth = Admin::Authorization.new(request: request)
-    auth.allow_machine_ui_token?(required_role: "viewer")
-  rescue
-    false
-  end
-
-  def machine_policy_user
-    {
-      id: "machine-user",
-      role: "operator"
-    }
+    @policy_user ||= authorization.policy_actor(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")
   end
 
   def authorize_policy!(policy_class, query, record: nil)
@@ -83,5 +50,9 @@ class ApplicationController < ActionController::Base
 
     candidate = value.to_s.tr("-", "_").to_sym
     I18n.available_locales.include?(candidate) ? candidate : I18n.default_locale
+  end
+
+  def authorization
+    @authorization ||= Admin::Authorization.new(request: request)
   end
 end

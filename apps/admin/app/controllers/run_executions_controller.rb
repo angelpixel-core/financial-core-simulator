@@ -3,7 +3,6 @@ class RunExecutionsController < ApplicationController
 
   before_action :load_run
   before_action :authorize_run_execution!
-  before_action :authorize_run_policy!
 
   def create
     if async_requested?
@@ -32,11 +31,13 @@ class RunExecutionsController < ApplicationController
   private
 
   def authorize_run_execution!
-    authorize_machine_or_session_operator!
-  end
-
-  def authorize_run_policy!
-    authorize_policy!(RunPolicy, :execute?, record: @run)
+    authorize_with_policy!(
+      policy_class: RunPolicy,
+      query: :execute?,
+      record: @run,
+      required_role: "operator",
+      gate: :machine_or_session
+    )
   end
 
   def load_run

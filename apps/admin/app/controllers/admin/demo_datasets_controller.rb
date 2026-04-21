@@ -3,7 +3,6 @@
 class Admin::DemoDatasetsController < ApplicationController
   include AdminUiAuthorizable
 
-  before_action :authorize_admin_session_operator!
   before_action :authorize_demo_dataset_policy!
 
   def create
@@ -81,6 +80,12 @@ class Admin::DemoDatasetsController < ApplicationController
   end
 
   def authorize_demo_dataset_policy!
-    authorize_policy!(Admin::Demo::DatasetPolicy, :"#{action_name}?", record: :demo_dataset)
+    authorize_with_policy!(
+      policy_class: Admin::Demo::DatasetPolicy,
+      query: :"#{action_name}?",
+      record: :demo_dataset,
+      required_role: "operator",
+      gate: :session
+    )
   end
 end

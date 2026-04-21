@@ -43,6 +43,22 @@ module AdminUiAuthorizable
     authorize_machine_or_session!(required_role: "admin", token_key: token_key)
   end
 
+  def authorize_with_policy!(policy_class:, query:, record:, required_role: "viewer", gate: :session,
+    token_key: "ADMIN_UI_TOKEN")
+    case gate
+    when :session
+      authorize_admin_session!(required_role: required_role)
+    when :machine_or_session
+      authorize_machine_or_session!(required_role: required_role, token_key: token_key)
+    else
+      raise ArgumentError, "Unsupported authorization gate: #{gate}"
+    end
+
+    return if performed?
+
+    authorize_policy!(policy_class, query, record: record)
+  end
+
   def allow_admin_session_gate?(auth, required_role:)
     return auth.allow_admin_session?(required_role: required_role) if auth.respond_to?(:allow_admin_session?)
 

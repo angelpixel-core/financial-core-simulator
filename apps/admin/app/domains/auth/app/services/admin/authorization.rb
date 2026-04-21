@@ -92,6 +92,18 @@ module Admin
       audit_machine_decision(allowed, required_role: required_role, token_key: "ADMIN_ARTIFACTS_TOKEN")
     end
 
+    def policy_actor(required_role: "viewer", token_key: "ADMIN_UI_TOKEN")
+      user = current_user
+      return {id: user.fetch(:id), role: user.fetch(:role)} if user
+
+      return nil unless allow_machine_ui_token?(required_role: required_role, token_key: token_key)
+
+      {
+        id: "machine-user",
+        role: "operator"
+      }
+    end
+
     private
 
     def current_user

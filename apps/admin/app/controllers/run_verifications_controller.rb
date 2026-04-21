@@ -3,7 +3,6 @@ class RunVerificationsController < ApplicationController
 
   before_action :load_run
   before_action :authorize_run_verification!
-  before_action :authorize_run_policy!
 
   def create
     result = Runs::Api.verify_input_hash(run: @run)
@@ -27,11 +26,13 @@ class RunVerificationsController < ApplicationController
   private
 
   def authorize_run_verification!
-    authorize_machine_or_session_operator!
-  end
-
-  def authorize_run_policy!
-    authorize_policy!(RunPolicy, :verify?, record: @run)
+    authorize_with_policy!(
+      policy_class: RunPolicy,
+      query: :verify?,
+      record: @run,
+      required_role: "operator",
+      gate: :machine_or_session
+    )
   end
 
   def load_run
