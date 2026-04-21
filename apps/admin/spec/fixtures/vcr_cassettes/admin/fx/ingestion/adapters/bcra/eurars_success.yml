@@ -1,0 +1,35 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://api.bcra.gob.ar/estadisticascambiarias/v1.0/Cotizaciones/EUR?fechadesde=2024-06-01&fechahasta=2024-06-30&limit=1000&offset=0
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+      Host:
+      - api.bcra.gob.ar
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Length:
+      - '2315'
+      Content-Type:
+      - application/json; charset=utf-8
+      X-Jws-Signature:
+      - eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTc3Njc0OTQ5MiwiZXhwIjoxNzc2Nzc4MjkyfQ..Wf4owdurLYBc085HI25wcxS9U_RqcI9kHg8FjGJ28cMZHp1aBfP2EbOwszstl4gK8AkJ_7BNIXUqq2kMw6N5ruVYyUlSbcod8jCtqgsYMoi0M1DdbYHFcIieviusqUwpOtwszvBTtKtjuyJZBNq37ssF5DvFS1G-1tDtHJqGwPaUHioxy7YGcbHcRdSFO_WAYrc3zmYDuM9bx1sQvhFEd-CMtXE5GJKv0AGceSP7UrnBwOlJNEbDvRKp3mfLkvBZV93x-J8GHHM0Jcnk1JudZwdy1ME2-WTHHlUTeeMs0dBapmonzPGB_fhD59jGywyRmzX5lR4xjskIIyBgbiQ5IQ
+      Date:
+      - Tue, 21 Apr 2026 05:31:31 GMT
+    body:
+      encoding: UTF-8
+      string: '{"status":200,"metadata":{"resultset":{"count":17,"offset":0,"limit":1000}},"results":[{"fecha":"2024-06-28","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.07140000,"tipoCotizacion":977.11680000}]},{"fecha":"2024-06-27","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.07030000,"tipoCotizacion":975.57845000}]},{"fecha":"2024-06-26","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.06850000,"tipoCotizacion":973.40350000}]},{"fecha":"2024-06-25","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.07140000,"tipoCotizacion":973.90260000}]},{"fecha":"2024-06-24","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.07250000,"tipoCotizacion":974.36625000}]},{"fecha":"2024-06-19","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.07440000,"tipoCotizacion":975.01800000}]},{"fecha":"2024-06-18","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.07350000,"tipoCotizacion":971.51750000}]},{"fecha":"2024-06-14","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.06980000,"tipoCotizacion":966.56430000}]},{"fecha":"2024-06-13","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.07420000,"tipoCotizacion":968.92840000}]},{"fecha":"2024-06-12","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.08300000,"tipoCotizacion":976.32450000}]},{"fecha":"2024-06-11","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.07420000,"tipoCotizacion":968.92840000}]},{"fecha":"2024-06-10","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.07600000,"tipoCotizacion":970.55200000}]},{"fecha":"2024-06-07","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.08040000,"tipoCotizacion":971.27960000}]},{"fecha":"2024-06-06","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.08920000,"tipoCotizacion":978.10160000}]},{"fecha":"2024-06-05","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.08670000,"tipoCotizacion":976.39995000}]},{"fecha":"2024-06-04","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.08830000,"tipoCotizacion":976.20510000}]},{"fecha":"2024-06-03","detalle":[{"codigoMoneda":"EUR","descripcion":"EURO","tipoPase":1.08880000,"tipoCotizacion":976.65360000}]}]}'
+  recorded_at: Tue, 21 Apr 2026 05:30:20 GMT
+recorded_with: VCR 6.4.0

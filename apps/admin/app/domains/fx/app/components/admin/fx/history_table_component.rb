@@ -96,7 +96,7 @@ module Admin
       end
 
       def market_select_options
-        available_markets.map { |market| [market, market] }
+        available_markets.map { |market| [format_market_label(market), market] }
       end
 
       def source_select_options
@@ -159,6 +159,13 @@ module Admin
 
       def market_key(currency)
         "#{currency.downcase}_usd"
+      end
+
+      def format_market_label(market)
+        normalized = market.to_s.upcase.gsub(/[^A-Z]/, "")
+        return market if normalized.length != 6
+
+        "#{normalized[0, 3]}/#{normalized[3, 3]}"
       end
 
       def usd_value_for(currency:, date:)

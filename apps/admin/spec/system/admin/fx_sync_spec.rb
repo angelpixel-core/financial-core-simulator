@@ -23,7 +23,7 @@ RSpec.describe 'Admin FX sync', type: :system, js: true do
       password_hash: BCrypt::Password.create(password)
     )
     FxRateSource.create!(
-      name: 'Banco Central de la Republica Argentina',
+      name: 'BCRA',
       code: 'BCRA',
       source_type: 'api',
       version: 'v1',
@@ -37,17 +37,17 @@ RSpec.describe 'Admin FX sync', type: :system, js: true do
 
     expect(page).to have_button(I18n.t('admin.fx.history.sync.source_label'), disabled: true)
 
-    select 'Banco Central de la Republica Argentina', from: 'sync_source_id'
-    expect(page).to have_select('sync_source_id', selected: 'Banco Central de la Republica Argentina')
-    select 'USDARS', from: 'market'
+    select 'BCRA', from: 'sync_source_id'
+    expect(page).to have_select('sync_source_id', selected: 'BCRA')
+    select 'USD/ARS', from: 'market'
 
     expect(page).to have_no_button(I18n.t('admin.fx.history.sync.source_label'), disabled: true)
 
     find("button[aria-label='#{I18n.t('admin.fx.history.sync.tooltip.run')}']").click
 
     expect(page).to have_current_path(%r{/admin/fx/history}, wait: 5)
-    expect(page).to have_select('sync_source_id', selected: 'Banco Central de la Republica Argentina')
-    expect(page).to have_select('market', selected: 'USDARS')
+    expect(page).to have_select('sync_source_id', selected: 'BCRA')
+    expect(page).to have_select('market', selected: 'USD/ARS')
   end
 
   it 'transitions upload action from load label to play action after selecting a file' do

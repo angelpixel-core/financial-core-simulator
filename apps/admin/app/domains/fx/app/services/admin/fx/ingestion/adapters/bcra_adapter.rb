@@ -18,9 +18,9 @@ module Admin
             @config = source.config || {}
           end
 
-          def fetch(date_from:, date_to:, limit: DEFAULT_LIMIT, offset: 0)
+          def fetch(date_from:, date_to:, limit: DEFAULT_LIMIT, offset: 0, market: nil)
             base_url = config_value("base_url")
-            currency_code = config_value("currency_code") || config_value("base_currency")
+            currency_code = currency_code_for(market)
 
             return missing_config_result("base_url") if base_url.blank?
             return missing_config_result("currency_code") if currency_code.blank?
@@ -58,6 +58,33 @@ module Admin
 
           def config_value(key)
             config.is_a?(Hash) ? config[key] || config[key.to_sym] : nil
+          end
+
+          def currency_code_for(market)
+            normalized_market = normalize_market(market)
+            if normalized_market.present?
+              configured = market_currency_codes[normalized_market]
+              return configured if configured.present?
+
+              base_currency, quote_currency = normalized_market[0, 3], normalized_market[3, 3]
+              return base_currency if quote_currency == "ARS"
+              return quote_currency if base_currency == "ARS"
+            end
+
+            config_value("currency_code") || config_value("base_currency")
+          end
+
+          def market_currency_codes
+            raw = config_value("market_currency_codes")
+            return {} unless raw.is_a?(Hash)
+
+            raw.each_with_object({}) do |(key, value), memo|
+              memo[normalize_market(key)] = value.to_s.upcase
+            end
+          end
+
+          def normalize_market(value)
+            value.to_s.upcase.gsub(/[^A-Z]/, "").presence
           end
 
           def build_uri(base_url:, currency_code:, date_from:, date_to:, limit:, offset:)

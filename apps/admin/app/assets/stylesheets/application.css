@@ -3288,6 +3288,16 @@ body {
   min-width: 170px;
 }
 
+.fx-history-table__filters-form #sync_source_id {
+  min-width: 68px;
+  width: 68px;
+}
+
+.fx-history-table__filters-form #market {
+  min-width: 7ch;
+  width: 7ch;
+}
+
 @media (min-width: 960px) {
   .fx-history-table__controls-row {
     grid-template-columns: 1fr 1fr;

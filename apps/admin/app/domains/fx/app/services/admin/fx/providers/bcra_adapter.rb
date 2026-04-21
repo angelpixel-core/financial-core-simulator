@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "date"
+require "bigdecimal"
 
 module Admin
   module Fx
@@ -26,9 +27,14 @@ module Admin
             at: operational_date
           )
           mapped = @payload_mapper.call(payload)
+          rate = normalize_rate_for_pair(
+            rate: mapped.fetch(:rate),
+            base_currency: base_currency,
+            quote_currency: quote_currency
+          )
 
           {
-            rate: mapped.fetch(:rate),
+            rate: rate,
             rate_source: BCRA_SOURCE,
             rate_missing: false,
             operational_date: operational_date
@@ -50,6 +56,18 @@ module Admin
             rate_missing: true,
             operational_date: operational_date
           }
+        end
+
+        def normalize_rate_for_pair(rate:, base_currency:, quote_currency:)
+          decimal = BigDecimal(rate.to_s)
+
+          if base_currency.to_s.upcase == "ARS" && quote_currency.to_s.upcase != "ARS"
+            return (BigDecimal("1") / decimal).to_s("F") if decimal.positive?
+
+            raise Admin::Fx::Providers::BcraPayloadMapper::InvalidPayloadError, "non-positive rate"
+          end
+
+          decimal.to_s("F")
         end
       end
     end

@@ -12,7 +12,11 @@ RSpec.describe Admin::Fx::Ingestion::Adapters::BcraAdapter do
       config: {
         "base_url" => "https://api.bcra.gob.ar/estadisticascambiarias/v1.0",
         "base_currency" => "USD",
-        "currency_code" => "USD"
+        "currency_code" => "USD",
+        "market_currency_codes" => {
+          "USDARS" => "USD",
+          "EURARS" => "EUR"
+        }
       }
     )
   end
@@ -28,6 +32,33 @@ RSpec.describe Admin::Fx::Ingestion::Adapters::BcraAdapter do
     expect(result).to be_success
     expect(result.data[:payload]["status"]).to eq(200)
     expect(result.metadata[:status]).to eq(200)
+  end
+
+  it "records a real EUR/ARS response with VCR", vcr: {cassette_name: "admin/fx/ingestion/adapters/bcra/eurars_success"} do
+    result = adapter.fetch(
+      date_from: Date.new(2024, 6, 1),
+      date_to: Date.new(2024, 6, 30),
+      market: "EURARS"
+    )
+
+    expect(result).to be_success
+    expect(result.metadata[:status]).to eq(200)
+    expect(result.metadata[:url]).to include("Cotizaciones/EUR")
+
+    payload = result.data.fetch(:payload)
+    expect(payload["results"]).to be_an(Array)
+    expect(payload["results"]).not_to be_empty
+    expect(Array(payload["results"].first["detalle"]).map { |entry| entry["codigoMoneda"] }).to include("EUR")
+  end
+
+  it "uses market-specific currency code when market is provided" do
+    allow(Net::HTTP).to receive(:get_response).and_return(success_response)
+
+    adapter.fetch(date_from: Date.new(2026, 4, 1), date_to: Date.new(2026, 4, 2), market: "EURARS")
+
+    expect(Net::HTTP).to have_received(:get_response) do |uri|
+      expect(uri.to_s).to include("Cotizaciones/EUR")
+    end
   end
 
   it "returns failure for missing base_url" do

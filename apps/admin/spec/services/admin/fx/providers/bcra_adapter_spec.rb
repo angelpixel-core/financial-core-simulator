@@ -23,6 +23,26 @@ RSpec.describe Admin::Fx::Providers::BcraAdapter do
     )
   end
 
+  it "maps EUR/ARS without inversion" do
+    client = instance_double(Admin::Fx::Providers::BcraClient)
+    allow(client).to receive(:fetch_official_rate).and_return(
+      {"results" => [{"date" => "2026-03-30", "close" => "1000"}]}
+    )
+
+    result = described_class.new(client: client).fetch_rate(
+      base_currency: "EUR",
+      quote_currency: "ARS",
+      at: operational_date
+    )
+
+    expect(result).to include(
+      rate: "1000.0",
+      rate_source: "bcra",
+      rate_missing: false,
+      operational_date: operational_date
+    )
+  end
+
   it "returns a missing response when BCRA client is rate limited" do
     client = instance_double(Admin::Fx::Providers::BcraClient)
     allow(client).to receive(:fetch_official_rate).and_raise(Admin::Fx::Providers::BcraClient::RateLimitedError)

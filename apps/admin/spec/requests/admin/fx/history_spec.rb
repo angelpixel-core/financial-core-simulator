@@ -62,7 +62,8 @@ RSpec.describe 'Admin FX history', type: :request do
     expect(response).to have_http_status(:ok)
     source = FxRateSource.find_by(code: 'BCRA')
     expect(source).to be_present
-    expect(Admin::Fx::SourceCatalog.available_markets_for(source)).to include('USDARS')
+    expect(source.name).to eq('BCRA')
+    expect(Admin::Fx::SourceCatalog.available_markets_for(source)).to include('USDARS', 'EURARS')
   end
 
   def admin_session_headers(role: 'viewer')

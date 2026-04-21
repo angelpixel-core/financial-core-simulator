@@ -8,6 +8,6 @@ RSpec.describe Admin::Fx::SourceCatalog do
 
     bcra = sources.find { |source| source.code == "BCRA" }
     expect(bcra).to be_present
-    expect(described_class.available_markets_for(bcra)).to eq(["USDARS"])
+    expect(described_class.available_markets_for(bcra)).to eq(["USDARS", "EURARS"])
   end
 end

@@ -24,7 +24,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     return fail_ingestion(ingestion, "adapter_missing", source: source) if adapter.nil?
 
     date_from, date_to = adapter.default_range
-    fetch_result = adapter.fetch(date_from: date_from, date_to: date_to)
+    fetch_result = adapter.fetch(date_from: date_from, date_to: date_to, market: market)
 
     if fetch_result.failure?
       return fail_ingestion(ingestion, fetch_result.error_code, source: source,
@@ -61,7 +61,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
         event_type: "fx_rate.validation_failed")
     end
 
-    mapper_result = Admin::Fx::Ingestion::Mappers::BcraRateMapper.call(payload: payload, source: source)
+    mapper_result = Admin::Fx::Ingestion::Mappers::BcraRateMapper.call(payload: payload, source: source, market: market)
     if mapper_result.failure?
       log_mapping_failure(ingestion: ingestion, source: source, context: mapper_result.context)
       return fail_ingestion(ingestion, "mapping_failed", source: source,

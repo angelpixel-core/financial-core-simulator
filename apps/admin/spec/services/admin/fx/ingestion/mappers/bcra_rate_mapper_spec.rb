@@ -11,7 +11,11 @@ RSpec.describe Admin::Fx::Ingestion::Mappers::BcraRateMapper do
         "base_currency" => "USD",
         "quote_currency" => "ARS",
         "base_url" => "https://api.bcra.gob.ar/estadisticascambiarias/v1.0",
-        "currency_code" => "USD"
+        "currency_code" => "USD",
+        "market_currency_codes" => {
+          "USDARS" => "USD",
+          "EURARS" => "EUR"
+        }
       }
     )
   end
@@ -43,6 +47,29 @@ RSpec.describe Admin::Fx::Ingestion::Mappers::BcraRateMapper do
     expect(rate.rate.to_s("F")).to eq("901.5")
     expect(rate.source_id).to eq(source.id)
     expect(rate.source_code).to eq("BCRA")
+  end
+
+  it "maps EURARS market directly from BCRA EUR quote" do
+    payload = {
+      "status" => 200,
+      "metadata" => {"resultset" => {"count" => 1, "offset" => 0, "limit" => 1000}},
+      "results" => [
+        {
+          "fecha" => "2024-06-12",
+          "detalle" => [
+            {"codigoMoneda" => "EUR", "tipoCotizacion" => "1000"}
+          ]
+        }
+      ]
+    }
+
+    result = described_class.call(payload: payload, source: source, market: "EURARS")
+
+    expect(result).to be_success
+    rate = result.data.fetch(:rates).first
+    expect(rate.base_currency).to eq("EUR")
+    expect(rate.quote_currency).to eq("ARS")
+    expect(rate.rate.to_s("F")).to eq("1000.0")
   end
 
   it "returns failure when mapping encounters invalid values" do

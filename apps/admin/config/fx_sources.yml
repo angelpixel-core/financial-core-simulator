@@ -1,6 +1,6 @@
 default: &default
   sources:
-    - name: "Banco Central de la Republica Argentina"
+    - name: "BCRA"
       code: "BCRA"
       source_type: "api"
       version: "v1"
@@ -10,6 +10,10 @@ default: &default
         quote_currency: "ARS"
         markets:
           - "USDARS"
+          - "EURARS"
+        market_currency_codes:
+          USDARS: "USD"
+          EURARS: "EUR"
         base_url: "https://api.bcra.gob.ar/estadisticascambiarias/v1.0"
         currency_code: "USD"
 
