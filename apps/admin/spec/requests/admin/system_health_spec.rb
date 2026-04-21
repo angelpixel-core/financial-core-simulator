@@ -19,7 +19,11 @@ RSpec.describe "Admin system health", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t("overview.activity.pnl_trend.empty_title", locale: :en))
-    expect(response.body).to include(admin_t("overview.financial_results.run_comparison.empty", locale: :en))
+    expect(response.body).to include(admin_t("fx.observability.events.title", locale: :en))
+    expect(response.body).to include(admin_t("fx.observability.events.empty", locale: :en))
+    expect(response.body).not_to include(admin_t("overview.financial_results.title", locale: :en))
+    expect(response.body).not_to include(admin_t("overview.financial_results.latest_run.title", locale: :en))
+    expect(response.body).not_to include(admin_t("overview.financial_results.run_comparison.title", locale: :en))
   end
 
   it "renders pnl trend chart hooks when successful runs include canonical pnl values" do
@@ -47,7 +51,7 @@ RSpec.describe "Admin system health", type: :request do
     end
   end
 
-  it "renders run comparison card when recent runs exist" do
+  it "renders recent events and hides financial results when recent runs exist" do
     previous_run = Run.create!(
       status: :succeeded,
       created_at: 2.days.ago,
@@ -105,8 +109,11 @@ RSpec.describe "Admin system health", type: :request do
       get "/admin/system-health", headers: admin_session_headers
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include(admin_t("overview.financial_results.run_comparison.title", locale: :en))
-      expect(response.body).to include("Identical output for matching input hash.")
+      expect(response.body).to include(admin_t("fx.observability.events.title", locale: :en))
+      expect(response.body).not_to include(admin_t("overview.financial_results.title", locale: :en))
+      expect(response.body).not_to include(admin_t("overview.financial_results.latest_run.title", locale: :en))
+      expect(response.body).not_to include(admin_t("overview.financial_results.global_pnl.title", locale: :en))
+      expect(response.body).not_to include(admin_t("overview.financial_results.run_comparison.title", locale: :en))
     end
   end
 

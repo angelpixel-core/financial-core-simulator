@@ -135,62 +135,6 @@ RSpec.describe 'Admin FX API', type: :request do
     end
   end
 
-  path '/admin/fx/observability' do
-    get 'FX observability' do
-      tags 'FX'
-      produces 'application/json'
-      parameter name: 'X-Admin-User', in: :header, type: :string, required: true
-      parameter name: 'X-Admin-Role', in: :header, type: :string, required: true
-      parameter name: :source_id, in: :query, type: :integer, required: false
-      parameter name: :days, in: :query, type: :integer, required: false
-      security [{ AdminUser: [], AdminRole: [] }]
-
-      response '200', 'observability payload' do
-        schema({ '$ref' => '#/components/schemas/FxObservabilityResponse' })
-
-        before do
-          FxRateSource.create!(
-            name: 'Banco Central',
-            code: 'BCRA',
-            source_type: 'api',
-            version: 'v1',
-            config: {
-              'base_currency' => 'USD',
-              'quote_currency' => 'ARS',
-              'base_url' => 'https://api.bcra.gob.ar/estadisticascambiarias/v1.0',
-              'currency_code' => 'USD'
-            }
-          )
-        end
-
-        let(:"X-Admin-User") { admin_headers['X-Admin-User'] }
-        let(:"X-Admin-Role") { admin_headers['X-Admin-Role'] }
-
-        run_test!
-      end
-
-      response '422', 'invalid request' do
-        schema type: :object
-        let(:source_id) { 999_999 }
-        let(:"X-Admin-User") { admin_headers['X-Admin-User'] }
-        let(:"X-Admin-Role") { admin_headers['X-Admin-Role'] }
-
-        run_test!
-      end
-
-      response '500', 'server error' do
-        schema type: :object
-        before do
-          allow(Admin::Fx::ObservabilitySnapshot).to receive(:call).and_raise(StandardError, 'boom')
-        end
-        let(:"X-Admin-User") { admin_headers['X-Admin-User'] }
-        let(:"X-Admin-Role") { admin_headers['X-Admin-Role'] }
-
-        run_test!
-      end
-    end
-  end
-
   path '/admin/fx/ingestions' do
     get 'List FX ingestions' do
       tags 'FX'

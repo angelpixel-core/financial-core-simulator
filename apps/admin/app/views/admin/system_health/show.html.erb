@@ -1,16 +1,10 @@
 <% navigation_context = @navigation_context || {} %>
 <% shell_role = admin_shell_role %>
 <% secondary_action = shell_role == "operator" ? nil : { label: t("admin.nav.open_runs"), path: avo.resources_runs_path } %>
-<% run_details_path = ->(run_id) { avo.resources_run_path({ id: run_id }.merge(navigation_context)) } %>
-<% latest_run_hash = @metrics.dig(:latest_run, :input_hash).to_s %>
-<% latest_run_hash_present = latest_run_hash.present? %>
-<% latest_run_hash_truncated = latest_run_hash_present ? "#{latest_run_hash.first(10)}..." : nil %>
-<% reporting_currency = ReportingSetting.current.reporting_currency %>
 <% sidebar_items = [
   { label: t("admin.nav.overview"), path: admin_overview_path(navigation_context), active: false, icon_key: "overview", external: false }
 ] %>
 <% sidebar_items << { label: t("admin.nav.history"), path: admin_fx_history_index_path(navigation_context), active: false, icon_key: "dollar", external: false } %>
-<% sidebar_items << { label: t("admin.nav.observability"), path: admin_fx_observability_path(navigation_context), active: false, icon_key: "layout-dashboard", external: false } %>
 <% runs_item = {
   label: t("admin.nav.runs"),
   path: admin_system_health_path(navigation_context),
@@ -43,6 +37,9 @@
       </div>
     </section>
     <section class="workspace__overview">
+      <section class="overview__domain" aria-label="Runs">
+        <h2 class="overview__domain-title">Runs</h2>
+      </section>
       <section class="overview__domain" aria-label="<%= t("admin.overview.system_metrics.aria") %>">
         <h2 class="overview__domain-title"><%= t("admin.overview.system_metrics.title") %></h2>
         <section class="dashboard-card">
@@ -62,67 +59,6 @@
             <li>
               <span><%= t("admin.overview.system_metrics.avg_duration.title") %></span>
               <strong><%= @metrics[:avg_duration_ms_last_50].nil? ? t("admin.common.na") : "#{@metrics[:avg_duration_ms_last_50]} #{t("admin.common.ms")}" %></strong>
-            </li>
-          </ul>
-        </section>
-      </section>
-      <% fx_range = @fx_observability_snapshot.fetch(:range) %>
-      <% fx_summary = @fx_observability_snapshot.fetch(:summary) %>
-      <% recent_failure = @fx_observability_recent_failure %>
-      <section class="overview__domain" aria-label="<%= t("admin.fx.observability.aria") %>">
-        <h2 class="overview__domain-title"><%= t("admin.fx.observability.title") %></h2>
-        <section class="dashboard-card">
-          <header class="dashboard-card__header">
-            <h2><%= t("admin.fx.observability.title") %></h2>
-            <a class="overview__link" href="<%= admin_fx_observability_path(navigation_context.merge(source_id: @fx_observability_source&.id, days: @fx_observability_days)) %>"><%= t("admin.common.view_details") %></a>
-          </header>
-          <p class="dashboard-card__meta"><%= t("admin.fx.observability.range", from: fx_range[:from], to: fx_range[:to]) %></p>
-          <%= form_with url: admin_system_health_path(navigation_context),
-                        method: :get,
-                        local: true,
-                        class: "fx-observability-filters",
-                        data: { controller: "auto-submit" } do |form| %>
-            <%= hidden_field_tag :source, @selected_source if @selected_source.present? %>
-            <%= hidden_field_tag :field, @selected_field if @selected_field.present? %>
-            <div class="fx-observability-filters__row">
-              <%= form.label :fx_source_id, t("admin.fx.observability.filter.label") %>
-              <%= form.select :fx_source_id,
-                [[t("admin.fx.observability.filter.all_sources"), ""]] + @fx_observability_sources.map { |source| [source.name, source.id] },
-                { selected: @fx_observability_source&.id },
-                class: "fx-observability-filters__select",
-                data: { action: "change->auto-submit#submit" } %>
-            </div>
-            <div class="fx-observability-filters__row">
-              <%= form.label :fx_days, t("admin.fx.observability.filter.range_label") %>
-              <%= form.select :fx_days,
-                [
-                  [t("admin.fx.observability.filter.range_7d"), 7],
-                  [t("admin.fx.observability.filter.range_14d"), 14],
-                  [t("admin.fx.observability.filter.range_30d"), 30]
-                ],
-                { selected: @fx_observability_days },
-                class: "fx-observability-filters__select",
-                data: { action: "change->auto-submit#submit" } %>
-            </div>
-          <% end %>
-          <ul class="detail-list">
-            <li>
-              <span><%= t("admin.fx.observability.summary.total") %></span>
-              <strong><%= fx_summary[:total] %></strong>
-            </li>
-            <li>
-              <span><%= t("admin.fx.observability.summary.failed") %></span>
-              <strong><%= fx_summary[:failed] %></strong>
-            </li>
-            <li>
-              <span><%= t("admin.fx.observability.summary.recent_failure") %></span>
-              <strong>
-                <% if recent_failure.present? %>
-                  <%= recent_failure[:error_code] %> · <%= recent_failure[:occurred_at] %>
-                <% else %>
-                  <%= t("admin.fx.observability.summary.recent_failure_empty") %>
-                <% end %>
-              </strong>
             </li>
           </ul>
         </section>
@@ -219,6 +155,9 @@
             navigation_context: navigation_context
           } %>
         </section>
+      </section>
+      <section class="overview__domain" aria-label="FX rates">
+        <h2 class="overview__domain-title">FX rates</h2>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
             <h2><%= t("admin.overview.validation.fx_ingestion_title") %></h2>
@@ -253,82 +192,32 @@
           <% end %>
         </section>
       </section>
-      <section class="overview__domain" aria-label="<%= t("admin.overview.financial_results.aria") %>">
-        <h2 class="overview__domain-title"><%= t("admin.overview.financial_results.title") %></h2>
+      <% events = @fx_observability_snapshot.fetch(:events, []) %>
+      <section class="overview__domain" aria-label="<%= t("admin.fx.observability.events.title") %>">
+        <h2 class="overview__domain-title"><%= t("admin.fx.observability.events.title") %></h2>
         <section class="dashboard-card">
           <header class="dashboard-card__header">
-            <h2><%= t("admin.overview.financial_results.latest_run.title") %></h2>
-            <% if @metrics[:latest_run].present? %>
-              <a class="overview__link" href="<%= run_details_path.call(@metrics[:latest_run][:id]) %>"><%= t("admin.overview.financial_results.latest_run.link") %></a>
-            <% end %>
+            <h2><%= t("admin.fx.observability.events.title") %></h2>
           </header>
-          <% if @metrics[:latest_run].nil? %>
-            <p class="empty-state"><%= t("admin.overview.financial_results.latest_run.empty") %></p>
+          <% if events.blank? %>
+            <p class="empty-state"><%= t("admin.fx.observability.events.empty") %></p>
           <% else %>
-            <ul class="detail-list">
-              <li><span><%= t("admin.overview.financial_results.latest_run.run") %></span><strong>#<%= @metrics[:latest_run][:id] %></strong></li>
-              <li>
-                <span><%= t("admin.overview.financial_results.latest_run.input_hash") %></span>
-                <% if latest_run_hash_present %>
-                  <div
-                    class="detail-list__value hash-inline"
-                    data-controller="copy"
-                    data-copy-text-value="<%= latest_run_hash %>"
-                    data-copy-default-label-value="<%= t("admin.common.copy") %>"
-                    data-copy-copied-label-value="<%= t("admin.common.copied") %>"
-                  >
-                    <code class="hash-inline__code"><%= latest_run_hash_truncated %></code>
-                    <button class="hash-inline__button" type="button" data-action="copy#copy">
-                      <svg class="hash-inline__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false">
-                        <path fill="none" d="M0 0h448v512H0z" />
-                        <path
-                          fill="currentColor"
-                          d="M384 336H192c-8.8 0-16-7.2-16-16V64c0-8.8 7.2-16 16-16l140.1 0L400 115.9V320c0 8.8-7.2 16-16 16zM192 384H384c35.3 0 64-28.7 64-64V115.9c0-12.7-5.1-24.9-14.1-33.9L366.1 14.1c-9-9-21.2-14.1-33.9-14.1H192c-35.3 0-64 28.7-64 64V320c0 35.3 28.7 64 64 64zM64 128c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H256c35.3 0 64-28.7 64-64V416H272v32c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192c0-8.8 7.2-16 16-16H96V128H64z"
-                        />
-                      </svg>
-                      <span data-copy-target="label"><%= t("admin.common.copy") %></span>
-                    </button>
-                    <span class="visually-hidden" data-copy-target="status" aria-live="polite"></span>
+            <ol class="fx-observability-timeline">
+              <% events.each do |event| %>
+                <li class="fx-observability-timeline__item">
+                  <div class="fx-observability-timeline__meta">
+                    <p class="fx-observability-timeline__type"><%= event[:event_type] %></p>
+                    <p class="fx-observability-timeline__time"><%= event[:created_at] %></p>
                   </div>
-                <% else %>
-                  <strong><%= t("admin.common.na") %></strong>
-                <% end %>
-              </li>
-              <li><span><%= t("admin.overview.financial_results.latest_run.duration") %></span><strong><%= @metrics[:latest_run][:duration_ms] %> <%= t("admin.common.ms") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.latest_run.schema") %></span><strong><%= @metrics[:latest_run][:schema_version] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.latest_run.engine") %></span><strong><%= @metrics[:latest_run][:engine_version] %></strong></li>
-            </ul>
-          <% end %>
-        </section>
-        <section class="dashboard-card">
-          <h2><%= t("admin.overview.financial_results.global_pnl.title") %></h2>
-          <% if @metrics[:latest_global].nil? %>
-            <p class="empty-state"><%= t("admin.overview.financial_results.global_pnl.empty") %></p>
-          <% else %>
-            <ul class="detail-list">
-              <li><span><%= t("admin.overview.financial_results.global_pnl.total") %></span><strong><%= truncate_fiat(@metrics[:latest_global]["totalPnLQuote"], reporting_currency) %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.global_pnl.realized_net") %></span><strong><%= truncate_fiat(@metrics[:latest_global]["realizedNetPnLQuote"], reporting_currency) %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.global_pnl.unrealized") %></span><strong><%= truncate_fiat(@metrics[:latest_global]["unrealizedPnLQuote"], reporting_currency) %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.global_pnl.total_usd") %></span><strong><%= @metrics[:latest_global]["totalPnLUsd"].present? ? truncate_fiat(@metrics[:latest_global]["totalPnLUsd"], "USD") : t("admin.common.na") %></strong></li>
-            </ul>
-          <% end %>
-        </section>
-        <section class="dashboard-card">
-          <header class="dashboard-card__header">
-            <h2><%= t("admin.overview.financial_results.run_comparison.title") %></h2>
-          </header>
-          <% run_comparison = @metrics[:run_comparison] %>
-          <% if run_comparison.nil? || run_comparison[:previous_run_id].nil? %>
-            <p class="empty-state"><%= t("admin.overview.financial_results.run_comparison.empty") %></p>
-          <% else %>
-            <ul class="detail-list">
-              <li><span><%= t("admin.overview.financial_results.run_comparison.current_run") %></span><strong>#<%= run_comparison[:current_run_id] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.previous_run") %></span><strong>#<%= run_comparison[:previous_run_id] %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.pnl_delta") %></span><strong><%= run_comparison[:total_pnl_delta].present? ? truncate_fiat(run_comparison[:total_pnl_delta], reporting_currency) : t("admin.common.na") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.realized_delta") %></span><strong><%= run_comparison[:realized_delta].present? ? truncate_fiat(run_comparison[:realized_delta], reporting_currency) : t("admin.common.na") %></strong></li>
-              <li><span><%= t("admin.overview.financial_results.run_comparison.unrealized_delta") %></span><strong><%= run_comparison[:unrealized_delta].present? ? truncate_fiat(run_comparison[:unrealized_delta], reporting_currency) : t("admin.common.na") %></strong></li>
-            </ul>
-            <p class="dashboard-card__meta"><%= run_comparison[:deterministic_result] %></p>
+                  <div class="fx-observability-timeline__details">
+                    <span><%= t("admin.fx.observability.events.source") %>: <%= event[:source_code] || event[:source_id] || t("admin.common.na") %></span>
+                    <span><%= t("admin.fx.observability.events.ingestion") %>: <%= event[:ingestion_id] || t("admin.common.na") %></span>
+                    <span><%= t("admin.fx.observability.events.error_code") %>: <%= event[:error_code] || t("admin.common.na") %></span>
+                    <span><%= t("admin.fx.observability.events.severity") %>: <%= event[:severity] || t("admin.common.na") %></span>
+                  </div>
+                </li>
+              <% end %>
+            </ol>
           <% end %>
         </section>
       </section>

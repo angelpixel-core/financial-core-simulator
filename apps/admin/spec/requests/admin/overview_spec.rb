@@ -31,7 +31,8 @@ RSpec.describe "Admin overview", type: :request do
     get admin_system_health_path, headers: admin_session_headers
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include(admin_t("overview.financial_results.latest_run.empty", locale: :en))
+    expect(response.body).to include("Runs")
+    expect(response.body).to include("FX rates")
     expect(response.body).to include(admin_t("overview.validation.title", locale: :en))
   end
 
@@ -205,12 +206,11 @@ RSpec.describe "Admin overview", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t("overview.activity.run_trend.link", locale: :en))
     expect(response.body).to include(admin_t("overview.activity.status_mix.link", locale: :en))
-    expect(response.body).to include(admin_t("overview.financial_results.latest_run.link", locale: :en))
     expect(response.body).to include(admin_t("overview.validation.cta_label", locale: :en))
     expect(response.body).to include(%(href="#{admin_overview_runs_trend_path}"))
     expect(response.body).to include(%(href="#{admin_overview_status_mix_path}"))
     expect(response.body).to include(%(href="#{admin_overview_ingestion_validation_errors_path}"))
-    expect(response.body).to include(%(href="/admin/resources/runs/#{run.id}"))
+    expect(response.body).not_to include(%(href="/admin/resources/runs/#{run.id}"))
   end
 
   it "renders dedicated runs trend and status mix pages" do
