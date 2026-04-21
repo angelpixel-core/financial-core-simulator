@@ -30,11 +30,29 @@ class ApplicationController < ActionController::Base
 
     role = request.headers["X-Admin-Role"].to_s.strip.downcase
     user = request.headers["X-Admin-User"].to_s.strip
-    return nil unless Admin::Authorization::ROLE_ORDER.key?(role)
+    if Admin::Authorization::ROLE_ORDER.key?(role)
+      return {
+        id: user.presence || "header-user",
+        role: role
+      }
+    end
 
+    return machine_policy_user if machine_policy_user_allowed?
+
+    nil
+  end
+
+  def machine_policy_user_allowed?
+    auth = Admin::Authorization.new(request: request)
+    auth.allow_machine_ui_token?(required_role: "viewer")
+  rescue
+    false
+  end
+
+  def machine_policy_user
     {
-      id: user.presence || "header-user",
-      role: role
+      id: "machine-user",
+      role: "operator"
     }
   end
 

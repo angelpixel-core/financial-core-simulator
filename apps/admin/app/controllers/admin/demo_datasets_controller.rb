@@ -4,6 +4,7 @@ class Admin::DemoDatasetsController < ApplicationController
   include AdminUiAuthorizable
 
   before_action :authorize_admin_session_operator!
+  before_action :authorize_demo_dataset_policy!
 
   def create
     file = params[:file]
@@ -77,5 +78,9 @@ class Admin::DemoDatasetsController < ApplicationController
     return true unless params.key?(:timeline_enabled)
 
     ActiveModel::Type::Boolean.new.cast(params[:timeline_enabled])
+  end
+
+  def authorize_demo_dataset_policy!
+    authorize_policy!(Admin::Demo::DatasetPolicy, :"#{action_name}?", record: :demo_dataset)
   end
 end
