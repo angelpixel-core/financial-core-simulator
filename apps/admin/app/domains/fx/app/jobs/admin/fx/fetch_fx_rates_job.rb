@@ -52,7 +52,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
       }
     )
 
-    contract = Admin::Fx::Ingestion::Validators::BcraContract.new
+    contract = validator_for(source).new
     validation = contract.call(payload.deep_symbolize_keys)
     unless validation.success?
       sample, payload_size = sample_payload(payload)
@@ -61,7 +61,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
         event_type: "fx_rate.validation_failed")
     end
 
-    mapper_result = Admin::Fx::Ingestion::Mappers::BcraRateMapper.call(payload: payload, source: source, market: market)
+    mapper_result = mapper_for(source).call(payload: payload, source: source, market: market)
     if mapper_result.failure?
       log_mapping_failure(ingestion: ingestion, source: source, context: mapper_result.context)
       return fail_ingestion(ingestion, "mapping_failed", source: source,
@@ -339,5 +339,27 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
       .order(created_at: :desc)
       .group_by(&:source_id)
       .transform_values(&:first)
+  end
+
+  def validator_for(source)
+    case source.code
+    when "BCRA"
+      Admin::Fx::Ingestion::Validators::BcraContract
+    when "BINANCE_SPOT"
+      Admin::Fx::Ingestion::Validators::BinanceContract
+    else
+      Admin::Fx::Ingestion::Validators::BcraContract
+    end
+  end
+
+  def mapper_for(source)
+    case source.code
+    when "BCRA"
+      Admin::Fx::Ingestion::Mappers::BcraRateMapper
+    when "BINANCE_SPOT"
+      Admin::Fx::Ingestion::Mappers::BinanceRateMapper
+    else
+      Admin::Fx::Ingestion::Mappers::BcraRateMapper
+    end
   end
 end

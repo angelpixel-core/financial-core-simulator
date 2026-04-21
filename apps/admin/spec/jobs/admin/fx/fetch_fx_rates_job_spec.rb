@@ -20,6 +20,20 @@ RSpec.describe Admin::Fx::FetchFxRatesJob, type: :job do
     instance_double(Admin::Fx::Ingestion::Adapters::BcraAdapter)
   end
 
+  let(:binance_source) do
+    FxRateSource.create!(
+      name: "Binance Spot",
+      code: "BINANCE_SPOT",
+      source_type: "api",
+      version: "v1",
+      config: {
+        "base_url" => "https://api.binance.com",
+        "interval" => "1d",
+        "markets" => ["BTCUSDT", "ETHUSDT"]
+      }
+    )
+  end
+
   let(:payload) do
     {
       "status" => 200,
@@ -95,5 +109,42 @@ RSpec.describe Admin::Fx::FetchFxRatesJob, type: :job do
     expect(ingestion.status).to eq("failed")
     expect(ingestion.error_code).to eq("mapping_failed")
     expect(FxRateEvent.where(event_type: "fx_rate.mapping_failed")).to exist
+  end
+
+  it "uses binance validator and mapper for BINANCE_SPOT source" do
+    binance_adapter = instance_double(Admin::Fx::Ingestion::Adapters::BinanceAdapter)
+    allow(Admin::Fx::Ingestion::AdapterRegistry).to receive(:build).with(binance_source).and_return(binance_adapter)
+    allow(binance_adapter).to receive(:default_range).and_return([Date.new(2024, 6, 1), Date.new(2024, 6, 30)])
+    allow(binance_adapter).to receive(:fetch).and_return(
+      Admin::Fx::Ingestion::Result.success(
+        data: {
+          payload: {
+            "status" => 200,
+            "metadata" => {"resultset" => {"count" => 1, "offset" => 0, "limit" => 1000}, "market" => "BTCUSDT", "interval" => "1d"},
+            "results" => [{"open_time" => 1_717_200_000_000, "close" => "68432.12", "close_time" => 1_717_286_399_999}]
+          }
+        }
+      )
+    )
+    validation = instance_double(Dry::Validation::Result, success?: true)
+    contract = instance_double(Admin::Fx::Ingestion::Validators::BinanceContract, call: validation)
+    allow(Admin::Fx::Ingestion::Validators::BinanceContract).to receive(:new).and_return(contract)
+    rate = Admin::Fx::ValueObjects::FxRate.new(
+      operational_date: Date.new(2024, 6, 1),
+      base_currency: "BTC",
+      quote_currency: "USD",
+      rate: "68432.12",
+      source_id: binance_source.id,
+      source_code: binance_source.code
+    )
+    mapper_result = Admin::Fx::Ingestion::Result.success(data: {rates: [rate]})
+    allow(Admin::Fx::Ingestion::Mappers::BinanceRateMapper).to receive(:call).and_return(mapper_result)
+    allow(Admin::Fx::RateUpserter).to receive(:call)
+
+    described_class.perform_now(binance_source.id, market: "BTCUSDT")
+
+    expect(Admin::Fx::Ingestion::Validators::BinanceContract).to have_received(:new)
+    expect(Admin::Fx::Ingestion::Mappers::BinanceRateMapper).to have_received(:call)
+    expect(Admin::Fx::RateUpserter).to have_received(:call)
   end
 end
