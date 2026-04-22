@@ -26,6 +26,8 @@ RSpec.describe "Admin overview", type: :request do
     )
     expect(response.body).to include(admin_t("overview.financial_overview.title", locale: :en))
     expect(response.body).to include(admin_t("overview.financial_results.title", locale: :en))
+    expect(response.body).to include(I18n.t("admin.overview.dataset.usage.summary", locale: :en, requests: 0, uploads: 0,
+      rejections: 0))
     expect(response.body).to include(I18n.t("admin.overview.dataset.lock.status", locale: :en,
       state: I18n.t("admin.overview.dataset.lock.available", locale: :en)))
     expect(response.body).to include('data-controller="poll"')

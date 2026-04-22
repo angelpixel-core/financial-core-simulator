@@ -114,6 +114,7 @@
               <% lock_info = @demo_lock_info || { enabled: false, state: :available, owner: nil } %>
               <% lock_label_key = lock_info[:state] == :in_use ? "in_use" : "available" %>
               <% lock_owner = lock_info.dig(:owner, :email).presence || t("admin.overview.dataset.lock.unknown_owner") %>
+              <% usage_summary = @demo_usage_summary || { requests_24h: 0, uploads_24h: 0, rejections_24h: 0 } %>
               <p class="overview__domain-reset-meta">
                 <%= t("admin.overview.dataset.reset.last_auto_reset", timestamp: reset_at_label, status: t("admin.overview.dataset.reset.status.#{reset_status_key}")) %>
               </p>
@@ -125,6 +126,9 @@
                 <% unless lock_info[:enabled] %>
                   · <%= t("admin.overview.dataset.lock.disabled") %>
                 <% end %>
+              </p>
+              <p class="overview__domain-reset-meta">
+                <%= t("admin.overview.dataset.usage.summary", requests: usage_summary[:requests_24h], uploads: usage_summary[:uploads_24h], rejections: usage_summary[:rejections_24h]) %>
               </p>
             </div>
             <section class="overview__grid overview__grid--kpi">

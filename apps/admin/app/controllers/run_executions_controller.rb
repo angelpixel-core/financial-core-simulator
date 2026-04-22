@@ -3,6 +3,7 @@ class RunExecutionsController < ApplicationController
 
   before_action :load_run
   before_action :authorize_run_execution!
+  before_action :enforce_demo_execution_abuse_protection!
 
   def create
     if async_requested?
@@ -70,5 +71,18 @@ class RunExecutionsController < ApplicationController
       "runId" => @run.id,
       "runStatus" => @run.reload.status
     }
+  end
+
+  def enforce_demo_execution_abuse_protection!
+    Admin::Demo::AbuseProtection.enforce_manual_execution!(request: request, account: current_admin_account)
+  rescue Admin::Demo::AbuseProtection::LimitExceeded => e
+    payload = execution_payload(status: "rate_limited").merge("error" => e.message, "code" => e.code)
+
+    respond_to do |format|
+      format.json { render json: payload, status: e.http_status }
+      format.html do
+        redirect_back fallback_location: "/admin/resources/runs/#{@run.id}", alert: e.message
+      end
+    end
   end
 end

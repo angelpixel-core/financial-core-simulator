@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_21_182000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_21_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -126,6 +126,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_21_182000) do
     t.datetime "updated_at", null: false
     t.index ["last_reset_at"], name: "index_demo_sandbox_states_on_last_reset_at"
     t.index ["singleton_key"], name: "index_demo_sandbox_states_on_singleton_key", unique: true
+  end
+
+  create_table "demo_usage_events", force: :cascade do |t|
+    t.string "action", null: false
+    t.string "actor_id", null: false
+    t.bigint "amount_bytes", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.string "ip_address"
+    t.jsonb "metadata", default: {}, null: false
+    t.string "reason"
+    t.string "status", null: false
+    t.index ["action", "actor_id", "created_at"], name: "idx_demo_usage_events_action_actor_created_at"
+    t.index ["action", "created_at"], name: "index_demo_usage_events_on_action_and_created_at"
+    t.index ["created_at"], name: "index_demo_usage_events_on_created_at"
+    t.index ["status", "created_at"], name: "index_demo_usage_events_on_status_and_created_at"
   end
 
   create_table "fx_daily_rates", force: :cascade do |t|

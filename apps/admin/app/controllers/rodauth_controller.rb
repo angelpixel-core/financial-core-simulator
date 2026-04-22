@@ -19,6 +19,7 @@ class RodauthController < ApplicationController
   # end
   layout :rodauth_layout
   before_action :redirect_logout_get_request
+  before_action :enforce_login_abuse_protection
 
   private
 
@@ -26,6 +27,19 @@ class RodauthController < ApplicationController
     return unless request.get? && rodauth.current_route == :logout
 
     redirect_to rodauth.login_path
+  end
+
+  def enforce_login_abuse_protection
+    return unless rodauth.current_route == :login && request.post?
+
+    Admin::Demo::AbuseProtection.enforce_login!(request: request)
+  rescue Admin::Demo::AbuseProtection::LimitExceeded => e
+    if request.format.json?
+      render json: {code: e.code, message: e.message}, status: e.http_status
+      return
+    end
+
+    redirect_to rodauth.login_path, alert: e.message
   end
 
   def rodauth_layout

@@ -27,6 +27,15 @@ en:
           in_use_by: "In use by %{owner}"
           unknown_owner: "another operator"
           disabled: "lock disabled"
+        usage:
+          summary: "Usage 24h: requests %{requests} · uploads %{uploads} · rejections %{rejections}"
+        abuse:
+          login_rate_limit_exceeded: "Too many login attempts. Please wait a minute and try again."
+          upload_rate_limit_exceeded: "Upload rate limit exceeded. Please try again later."
+          preview_rate_limit_exceeded: "Preview rate limit exceeded. Please try again later."
+          execution_rate_limit_exceeded: "Manual execution rate limit exceeded. Please try again later."
+          upload_quota_hour_exceeded: "Upload quota per hour exceeded for this user."
+          upload_volume_quota_exceeded: "Daily upload volume quota exceeded for this user."
         preview:
           cta: "Preview Excel"
           title: "Dataset preview"

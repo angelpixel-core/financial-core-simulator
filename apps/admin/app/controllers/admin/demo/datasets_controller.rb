@@ -7,6 +7,8 @@ module Admin
 
       before_action :authorize_admin_session_operator!
       before_action :authorize_demo_dataset_policy!
+      before_action :enforce_demo_upload_abuse_protection!, only: :create
+      before_action :enforce_demo_preview_abuse_protection!, only: :preview
       before_action :ensure_demo_lock_access!, only: %i[create preview reset]
 
       def create
@@ -315,6 +317,29 @@ module Admin
         end
 
         respond_upload_create_error(message: message, code: "DEMO_LOCKED")
+      end
+
+      def enforce_demo_upload_abuse_protection!
+        file = params[:file]
+        return if file.blank?
+
+        Admin::Demo::AbuseProtection.enforce_upload!(
+          request: request,
+          account: current_admin_account,
+          file_size_bytes: Admin::UploadLimits.file_size_bytes(file: file)
+        )
+      rescue Admin::Demo::AbuseProtection::LimitExceeded => e
+        respond_upload_create_error(message: e.message, code: e.code)
+      end
+
+      def enforce_demo_preview_abuse_protection!
+        Admin::Demo::AbuseProtection.enforce_preview!(request: request, account: current_admin_account)
+      rescue Admin::Demo::AbuseProtection::LimitExceeded => e
+        render_preview(
+          state: :invalid,
+          errors: [{code: e.code, message: e.message}],
+          status: e.http_status
+        )
       end
 
       def respond_upload_create_error(message:, code:, errors: nil, upload: nil)

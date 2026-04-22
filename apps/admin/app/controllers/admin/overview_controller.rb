@@ -43,6 +43,7 @@ class Admin::OverviewController < ApplicationController
     @reliable_selection = Runs::Api.reliable_selection
     @demo_sandbox_state = DemoSandboxState.current
     @demo_lock_info = load_demo_lock_info
+    @demo_usage_summary = Admin::Demo::AbuseProtection.summary
     load_fx_context
   end
 

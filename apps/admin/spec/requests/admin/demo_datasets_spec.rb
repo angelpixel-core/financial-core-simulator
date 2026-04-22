@@ -212,6 +212,43 @@ RSpec.describe "Admin demo dataset uploads", type: :request do
     ENV["DEMO_LOCK_ENABLED"] = previous_enabled
   end
 
+  it "returns quota message when upload rate limit is exceeded" do
+    previous_limit = ENV["DEMO_RATE_LIMIT_UPLOAD_PER_HOUR"]
+    ENV["DEMO_RATE_LIMIT_UPLOAD_PER_HOUR"] = "1"
+
+    input = {trades: [{timestamp: Time.utc(2026, 3, 29, 12, 0, 0).to_i}]}
+    result = Admin::Demo::Datasets::ExcelToInputParser::Result.new(valid?: true, input: input, errors: [])
+    allow(Admin::Demo::Datasets::ExcelToInputParser).to receive(:call).and_return(result)
+    stub_successful_run_execution
+
+    post "/admin/demo-datasets", params: {file: upload}, headers: admin_session_headers
+    expect(response).to have_http_status(:found)
+
+    post "/admin/demo-datasets", params: {file: upload}, headers: admin_session_headers
+    expect(response).to have_http_status(:found)
+    expect(flash[:alert]).to include("Upload rate limit exceeded")
+  ensure
+    ENV["DEMO_RATE_LIMIT_UPLOAD_PER_HOUR"] = previous_limit
+  end
+
+  it "returns 429 preview payload when preview rate limit is exceeded" do
+    previous_limit = ENV["DEMO_RATE_LIMIT_PREVIEW_PER_HOUR"]
+    ENV["DEMO_RATE_LIMIT_PREVIEW_PER_HOUR"] = "1"
+
+    input = {trades: [{tradeId: "t1"}], accounts: [], markets: []}
+    result = Admin::Demo::Datasets::ExcelToInputParser::Result.new(valid?: true, input: input, errors: [])
+    allow(Admin::Demo::Datasets::ExcelToInputParser).to receive(:call).and_return(result)
+
+    post "/admin/demo-datasets/preview", params: {file: upload}, headers: admin_session_headers
+    expect(response).to have_http_status(:ok)
+
+    post "/admin/demo-datasets/preview", params: {file: upload}, headers: admin_session_headers
+    expect(response).to have_http_status(:too_many_requests)
+    expect(response.body).to include("Preview rate limit exceeded")
+  ensure
+    ENV["DEMO_RATE_LIMIT_PREVIEW_PER_HOUR"] = previous_limit
+  end
+
   def admin_session_headers
     {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}
   end

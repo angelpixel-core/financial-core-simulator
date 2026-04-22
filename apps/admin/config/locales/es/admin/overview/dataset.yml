@@ -27,6 +27,15 @@ es:
           in_use_by: "En uso por %{owner}"
           unknown_owner: "otro operador"
           disabled: "lock desactivado"
+        usage:
+          summary: "Uso 24h: requests %{requests} · uploads %{uploads} · rechazos %{rejections}"
+        abuse:
+          login_rate_limit_exceeded: "Demasiados intentos de login. Espera un minuto e intenta nuevamente."
+          upload_rate_limit_exceeded: "Limite de subidas excedido. Intenta mas tarde."
+          preview_rate_limit_exceeded: "Limite de vistas previas excedido. Intenta mas tarde."
+          execution_rate_limit_exceeded: "Limite de ejecuciones manuales excedido. Intenta mas tarde."
+          upload_quota_hour_exceeded: "Cuota de subidas por hora excedida para este usuario."
+          upload_volume_quota_exceeded: "Cuota diaria de volumen de subidas excedida para este usuario."
         preview:
           cta: "Previsualizar Excel"
           title: "Vista previa del dataset"

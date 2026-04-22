@@ -96,4 +96,23 @@ RSpec.describe "Run executions", type: :request do
 
     expect(response).to have_http_status(:forbidden)
   end
+
+  it "returns 429 when manual execution rate limit is exceeded" do
+    previous_limit = ENV["DEMO_RATE_LIMIT_EXECUTION_PER_HOUR"]
+    ENV["DEMO_RATE_LIMIT_EXECUTION_PER_HOUR"] = "1"
+
+    run = Run.create!(status: :queued, input_json: {"schemaVersion" => "1.0"})
+    expect(Runs::Api).to receive(:execute).once.with(run: run, fee_enabled: true, explain: true, verbose: false)
+
+    post "/runs/#{run.id}/execute", headers: {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}, as: :json
+    expect(response).to have_http_status(:ok)
+
+    post "/runs/#{run.id}/execute", headers: {"X-Admin-User" => "ops", "X-Admin-Role" => "operator"}, as: :json
+
+    expect(response).to have_http_status(:too_many_requests)
+    payload = JSON.parse(response.body)
+    expect(payload.fetch("code")).to eq("EXECUTION_RATE_LIMIT_EXCEEDED")
+  ensure
+    ENV["DEMO_RATE_LIMIT_EXECUTION_PER_HOUR"] = previous_limit
+  end
 end

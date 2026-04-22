@@ -174,6 +174,22 @@ RSpec.describe "Admin routing compatibility", type: :request do
     expect(response).not_to have_http_status(:found)
   end
 
+  it "rate limits repeated login attempts" do
+    previous_limit = ENV["DEMO_RATE_LIMIT_LOGIN_PER_MINUTE"]
+    ENV["DEMO_RATE_LIMIT_LOGIN_PER_MINUTE"] = "1"
+
+    post "/admin/login", params: {email: "unknown@example.com", password: "wrong-pass"}
+    expect(response).not_to have_http_status(:found)
+
+    post "/admin/login", params: {email: "unknown@example.com", password: "wrong-pass"}
+
+    expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to end_with("/admin/login")
+    expect(DemoUsageEvent.for_action("login").rejected.count).to eq(1)
+  ensure
+    ENV["DEMO_RATE_LIMIT_LOGIN_PER_MINUTE"] = previous_limit
+  end
+
   it "logs out admin session and redirects to login" do
     previous_enabled = ENV["DEMO_LOCK_ENABLED"]
     ENV["DEMO_LOCK_ENABLED"] = "1"
