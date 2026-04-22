@@ -55,22 +55,10 @@
         data-fx--sync-status-poll-source-id-value="<%= selected_source_id %>"
         data-fx--sync-status-poll-enabled-value="<%= sync_poll ? "true" : "false" %>"
         data-fx--sync-status-poll-in-progress-value="<%= sync_in_progress? ? "true" : "false" %>">
-        <%= form_with url: sync_admin_fx_ingestions_path(locale: I18n.locale), method: :post, local: true, class: "fx-history-table__sync-form" do |form| %>
+        <%= form_with url: sync_admin_fx_ingestions_path(locale: I18n.locale), method: :post, local: true, class: "fx-history-table__sync-form", html: { id: "fx-sync-form" } do |form| %>
           <%= hidden_field_tag :locale, I18n.locale %>
           <%= hidden_field_tag :source_id, selected_source_id %>
           <%= hidden_field_tag :market, selected_market %>
-          <%= form.date_field :date_from,
-            value: sync_date_from,
-            class: "fx-history-hero__filter-select",
-            max: sync_date_to_max,
-            title: t("admin.fx.history.sync.tooltip.date_from"),
-            aria: { label: t("admin.fx.history.sync.tooltip.date_from") } %>
-          <%= form.date_field :date_to,
-            value: sync_date_to,
-            class: "fx-history-hero__filter-select",
-            max: sync_date_to_max,
-            title: t("admin.fx.history.sync.tooltip.date_to"),
-            aria: { label: t("admin.fx.history.sync.tooltip.date_to") } %>
           <% sync_button_ready = sync_ready? || sync_in_progress? %>
           <button
             class="overview__icon-button fx-history-action <%= "overview__icon-button--primary fx-history-action--ready" if sync_button_ready %> <%= "fx-history-action--loading" if sync_in_progress? %>"
@@ -103,6 +91,20 @@
             disabled: selected_source_id.blank?,
             data: { action: "change->auto-submit#submit" } %>
         <% end %>
+        <%= date_field_tag :date_from,
+          sync_date_from,
+          class: "fx-history-hero__filter-select",
+          max: sync_date_to_max,
+          form: "fx-sync-form",
+          title: t("admin.fx.history.sync.tooltip.date_from"),
+          aria: { label: t("admin.fx.history.sync.tooltip.date_from") } %>
+        <%= date_field_tag :date_to,
+          sync_date_to,
+          class: "fx-history-hero__filter-select",
+          max: sync_date_to_max,
+          form: "fx-sync-form",
+          title: t("admin.fx.history.sync.tooltip.date_to"),
+          aria: { label: t("admin.fx.history.sync.tooltip.date_to") } %>
         </div>
       </div>
       <%= render "admin/fx/history/upload_status", upload: latest_upload %>

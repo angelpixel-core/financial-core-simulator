@@ -3308,11 +3308,15 @@ body {
 
 @media (min-width: 960px) {
   .fx-history-table__controls-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     align-items: center;
   }
 
   .fx-history-table__controls-block--loader {
+    justify-content: flex-start;
+  }
+
+  .fx-history-table__controls-block--source {
     justify-content: flex-start;
   }
 }
