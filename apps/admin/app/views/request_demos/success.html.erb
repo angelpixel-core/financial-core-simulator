@@ -1,0 +1,23 @@
+<% content_for :title, "Demo request received" %>
+<% content_for :body_class, "landing-body" %>
+
+<main class="request-demo">
+  <div class="landing__background" aria-hidden="true">
+    <span class="landing__orb landing__orb--one"></span>
+    <span class="landing__orb landing__orb--two"></span>
+    <span class="landing__orb landing__orb--three"></span>
+  </div>
+
+  <div class="request-demo__container">
+    <section class="request-demo__card request-demo__card--success" aria-labelledby="request-demo-success-title">
+      <p class="request-demo__eyebrow">Request submitted</p>
+      <h1 id="request-demo-success-title" class="request-demo__title">Thanks, we got your demo request.</h1>
+      <p class="request-demo__subtitle">
+        Our team will follow up using your selected demo flow. If you asked for manual user provisioning, we will include setup instructions in the response.
+      </p>
+      <div class="request-demo__success-actions">
+        <a class="request-demo__submit" href="<%= root_path %>">Back to landing</a>
+      </div>
+    </section>
+  </div>
+</main>

@@ -2,7 +2,7 @@ class LandingController < ApplicationController
   layout "landing"
 
   def index
-    @demo_path = "/admin/login"
+    @demo_path = new_request_demo_path
     @source_url = "https://github.com/angelpixel-core/financial-core-simulator"
   end
 end

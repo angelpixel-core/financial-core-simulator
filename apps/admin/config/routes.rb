@@ -9,6 +9,9 @@ Rails.application.routes.draw do
   mount Rswag::Ui::Engine => "/api-docs"
   mount Rswag::Api::Engine => "/api-docs"
   root to: "landing#index"
+  get "/request-demo", to: "request_demos#new", as: :new_request_demo
+  post "/request-demo", to: "request_demos#create", as: :request_demo
+  get "/request-demo/success", to: "request_demos#success", as: :request_demo_success
   get "/demo-datasets/valid", to: "demo/datasets#valid", as: :demo_dataset_valid
   get "/demo-datasets/invalid", to: "demo/datasets#invalid", as: :demo_dataset_invalid
 

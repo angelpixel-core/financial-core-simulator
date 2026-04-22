@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client"
 const rootElement = document.getElementById("landing-react-root")
 
 if (rootElement) {
-  const demoPath = rootElement.dataset.demoPath || "/admin/login"
+  const demoPath = rootElement.dataset.demoPath || "/request-demo"
   const sourceUrl = rootElement.dataset.sourceUrl || "https://github.com/angelpixel-core/financial-core-simulator"
   const root = createRoot(rootElement)
 
@@ -110,7 +110,7 @@ function Landing({ demoPath, sourceUrl }) {
           </nav>
 
           <div className="landing__header-actions">
-            <a className="landing__primary-cta" href={demoPath}>View Demo</a>
+            <a className="landing__primary-cta" href={demoPath}>Request for Demo</a>
           </div>
         </div>
       </header>
@@ -131,7 +131,7 @@ function Landing({ demoPath, sourceUrl }) {
             </p>
 
             <div className="landing__hero-actions">
-              <a id="demo" className="landing__primary-cta" href={demoPath}>View Demo</a>
+              <a id="demo" className="landing__primary-cta" href={demoPath}>Request for Demo</a>
               <a className="landing__secondary-cta" href="#architecture">Explore Architecture</a>
             </div>
 

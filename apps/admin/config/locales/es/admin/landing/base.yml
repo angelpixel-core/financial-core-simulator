@@ -8,7 +8,7 @@ es:
         title: "Simulacion deterministica de ledger financiero"
         subtitle: "Simula cuentas, posiciones, PnL y modelos de riesgo usando un motor financiero deterministico orientado a eventos. Creado para experimentos reproducibles de infraestructura financiera."
         cta:
-          demo: "Ver demo"
+          demo: "Solicitar demo"
           github: "GitHub"
           documentation: "Documentacion"
           valid_excel: "Descargar Excel valido"

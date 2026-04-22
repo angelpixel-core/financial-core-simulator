@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_21_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_22_103000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -114,6 +114,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_21_200000) do
     t.index ["created_at"], name: "index_demo_dataset_uploads_on_created_at"
     t.index ["normalized_filename"], name: "idx_demo_dataset_uploads_normalized_filename_unique", unique: true, where: "(normalized_filename IS NOT NULL)"
     t.index ["run_id"], name: "index_demo_dataset_uploads_on_run_id"
+  end
+
+  create_table "demo_requests", force: :cascade do |t|
+    t.string "company", null: false
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.text "message"
+    t.string "name", null: false
+    t.string "preferred_contact", default: "video_call", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_demo_requests_on_created_at"
+    t.index ["email"], name: "index_demo_requests_on_email"
+    t.index ["status"], name: "index_demo_requests_on_status"
   end
 
   create_table "demo_sandbox_states", force: :cascade do |t|

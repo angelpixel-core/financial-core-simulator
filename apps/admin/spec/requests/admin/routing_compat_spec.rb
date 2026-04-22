@@ -36,7 +36,7 @@ RSpec.describe "Admin routing compatibility", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Deterministic Financial Engine")
-    expect(response.body).to include("View Demo")
+    expect(response.body).to include("Request for Demo")
     expect(response.body).not_to include("admin-shell-header")
 
     get "/admin/login"

@@ -1,0 +1,69 @@
+<% content_for :title, "Request for Demo" %>
+<% content_for :body_class, "landing-body" %>
+
+<main class="request-demo">
+  <div class="landing__background" aria-hidden="true">
+    <span class="landing__orb landing__orb--one"></span>
+    <span class="landing__orb landing__orb--two"></span>
+    <span class="landing__orb landing__orb--three"></span>
+  </div>
+
+  <div class="request-demo__container">
+    <a class="request-demo__back" href="<%= root_path %>">Back to landing</a>
+
+    <section class="request-demo__card" aria-labelledby="request-demo-title">
+      <p class="request-demo__eyebrow">Deterministic Financial Engine</p>
+      <h1 id="request-demo-title" class="request-demo__title">Request for Demo</h1>
+      <p class="request-demo__subtitle">
+        Tell us how you want to evaluate the platform. We can schedule a guided video call or set up manual user provisioning with setup instructions.
+      </p>
+
+      <% if @demo_request.errors.any? %>
+        <div class="request-demo__errors" role="alert" aria-live="polite">
+          <p>Please review the highlighted fields.</p>
+          <ul>
+            <% @demo_request.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <%= form_with model: @demo_request, url: request_demo_path, local: true, class: "request-demo__form" do |form| %>
+        <div class="request-demo__field">
+          <%= form.label :name, "Name" %>
+          <%= form.text_field :name, required: true, autocomplete: "name" %>
+        </div>
+
+        <div class="request-demo__field">
+          <%= form.label :email, "Email" %>
+          <%= form.email_field :email, required: true, autocomplete: "email" %>
+        </div>
+
+        <div class="request-demo__field">
+          <%= form.label :company, "Company" %>
+          <%= form.text_field :company, required: true, autocomplete: "organization" %>
+        </div>
+
+        <div class="request-demo__field">
+          <%= form.label :preferred_contact, "Preferred demo flow" %>
+          <%= form.select :preferred_contact,
+            options_for_select([
+              ["Guided video call", "video_call"],
+              ["Manual user provisioning + instructions", "user_provisioning"],
+              ["Email follow-up", "email"]
+            ], @demo_request.preferred_contact.presence || "video_call"),
+            {},
+            required: true %>
+        </div>
+
+        <div class="request-demo__field">
+          <%= form.label :message, "Message (optional)" %>
+          <%= form.text_area :message, rows: 4, placeholder: "Team size, use case, timeline, or any special requirements." %>
+        </div>
+
+        <%= form.submit "Send request", class: "request-demo__submit" %>
+      <% end %>
+    </section>
+  </div>
+</main>

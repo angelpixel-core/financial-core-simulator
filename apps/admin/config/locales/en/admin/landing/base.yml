@@ -8,7 +8,7 @@ en:
         title: "Deterministic financial ledger simulation"
         subtitle: "Simulate accounts, positions, PnL and risk models using a deterministic event-driven financial engine. Built for reproducible financial infrastructure experiments."
         cta:
-          demo: "View Demo"
+          demo: "Request for Demo"
           github: "GitHub"
           documentation: "Documentation"
           valid_excel: "Download valid Excel"
