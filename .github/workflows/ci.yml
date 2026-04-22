@@ -126,6 +126,10 @@ jobs:
       DEMO_RATE_LIMIT_EXECUTION_PER_HOUR: "40"
       DEMO_QUOTA_UPLOADS_PER_HOUR: "12"
       DEMO_QUOTA_UPLOAD_VOLUME_MB_PER_DAY: "200"
+      FX_SYNC_DEFAULT_RANGE_DAYS: "30"
+      FX_SYNC_MAX_RANGE_DAYS: "90"
+      BCRA_BANK_OPEN_HOUR_ART: "10"
+      BCRA_SYNC_CHUNK_DAYS: "7"
     services:
       postgres:
         image: postgres:16
