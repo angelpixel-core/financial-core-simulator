@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_21_173000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_21_182000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -89,6 +89,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_21_173000) do
     t.integer "status", default: 1, null: false
     t.index ["email"], name: "index_accounts_on_email", unique: true, where: "(status = ANY (ARRAY[1, 2]))"
     t.check_constraint "email ~ '^[^,;@ \r\n]+@[^,@; \r\n]+.[^,@; \r\n]+$'::citext", name: "valid_email"
+  end
+
+  create_table "demo_access_locks", force: :cascade do |t|
+    t.datetime "acquired_at"
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.string "holder_account_id"
+    t.string "holder_email"
+    t.string "singleton_key", default: "demo_access", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_demo_access_locks_on_expires_at"
+    t.index ["singleton_key"], name: "index_demo_access_locks_on_singleton_key", unique: true
   end
 
   create_table "demo_dataset_uploads", force: :cascade do |t|

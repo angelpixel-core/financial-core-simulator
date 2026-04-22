@@ -175,6 +175,9 @@ RSpec.describe "Admin routing compatibility", type: :request do
   end
 
   it "logs out admin session and redirects to login" do
+    previous_enabled = ENV["DEMO_LOCK_ENABLED"]
+    ENV["DEMO_LOCK_ENABLED"] = "1"
+
     Account.create!(
       email: "ops3@example.com",
       status: :verified,
@@ -184,15 +187,22 @@ RSpec.describe "Admin routing compatibility", type: :request do
     post "/admin/login", params: {email: "ops3@example.com", password: "secret-pass"}
     expect(response).to have_http_status(:found)
 
+    account = Account.find_by(email: "ops3@example.com")
+    Admin::Demo::Access.acquire(account_id: account.id, account_email: account.email)
+    expect(Admin::Demo::Access.current_user).to include(account_id: account.id.to_s)
+
     post "/admin/logout"
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/admin/login")
+    expect(Admin::Demo::Access.current_user).to be_nil
 
     get "/admin/overview"
 
     expect(response).to have_http_status(:found)
     expect(response.headers["Location"]).to end_with("/")
+  ensure
+    ENV["DEMO_LOCK_ENABLED"] = previous_enabled
   end
 
   it "does not expose a standalone logout page via GET" do

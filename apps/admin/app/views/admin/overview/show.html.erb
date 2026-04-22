@@ -111,8 +111,20 @@
               <% reset_state = @demo_sandbox_state %>
               <% reset_at_label = reset_state&.last_reset_at.present? ? l(reset_state.last_reset_at, format: :short) : t("admin.overview.dataset.reset.last_auto_reset_never") %>
               <% reset_status_key = reset_state&.status_key || "idle" %>
+              <% lock_info = @demo_lock_info || { enabled: false, state: :available, owner: nil } %>
+              <% lock_label_key = lock_info[:state] == :in_use ? "in_use" : "available" %>
+              <% lock_owner = lock_info.dig(:owner, :email).presence || t("admin.overview.dataset.lock.unknown_owner") %>
               <p class="overview__domain-reset-meta">
                 <%= t("admin.overview.dataset.reset.last_auto_reset", timestamp: reset_at_label, status: t("admin.overview.dataset.reset.status.#{reset_status_key}")) %>
+              </p>
+              <p class="overview__domain-reset-meta">
+                <%= t("admin.overview.dataset.lock.status", state: t("admin.overview.dataset.lock.#{lock_label_key}")) %>
+                <% if lock_info[:state] == :in_use %>
+                  · <%= t("admin.overview.dataset.lock.in_use_by", owner: lock_owner) %>
+                <% end %>
+                <% unless lock_info[:enabled] %>
+                  · <%= t("admin.overview.dataset.lock.disabled") %>
+                <% end %>
               </p>
             </div>
             <section class="overview__grid overview__grid--kpi">

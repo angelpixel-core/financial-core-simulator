@@ -26,6 +26,8 @@ RSpec.describe "Admin overview", type: :request do
     )
     expect(response.body).to include(admin_t("overview.financial_overview.title", locale: :en))
     expect(response.body).to include(admin_t("overview.financial_results.title", locale: :en))
+    expect(response.body).to include(I18n.t("admin.overview.dataset.lock.status", locale: :en,
+      state: I18n.t("admin.overview.dataset.lock.available", locale: :en)))
     expect(response.body).to include('data-controller="poll"')
     control_index = response.body.index(admin_t("overview.hero.eyebrow", locale: :en))
     metrics_index = response.body.index(admin_t("overview.system_metrics.title", locale: :en))
@@ -89,6 +91,8 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include(admin_t("overview.hero.title", locale: :es))
     expect(response.body).to include(admin_t("overview.hero.eyebrow", locale: :es))
     expect(response.body).to include(admin_t("overview.financial_overview.title", locale: :es))
+    expect(response.body).to include(I18n.t("admin.overview.dataset.lock.status", locale: :es,
+      state: I18n.t("admin.overview.dataset.lock.available", locale: :es)))
     expect(response.body).to include(
       I18n.t(
         "admin.overview.dataset.reset.last_auto_reset",
@@ -113,6 +117,36 @@ RSpec.describe "Admin overview", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t("overview.activity.run_trend.title", locale: :es))
     expect(response.body).to include(admin_t("overview.activity.status_mix.title", locale: :es))
+  end
+
+  it "shows demo in use when lock is enabled and held by another operator" do
+    previous_enabled = ENV["DEMO_LOCK_ENABLED"]
+    ENV["DEMO_LOCK_ENABLED"] = "1"
+
+    owner = Account.create!(
+      email: "owner-lock@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+    blocked = Account.create!(
+      email: "blocked-lock@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    Admin::Demo::Access.acquire(account_id: owner.id, account_email: owner.email)
+
+    post "/admin/login", params: {email: blocked.email, password: "secret-pass"}
+    expect(response).to have_http_status(:found)
+
+    get "/admin/overview"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include(I18n.t("admin.overview.dataset.lock.status", locale: :en,
+      state: I18n.t("admin.overview.dataset.lock.in_use", locale: :en)))
+    expect(response.body).to include(I18n.t("admin.overview.dataset.lock.in_use_by", locale: :en, owner: owner.email))
+  ensure
+    ENV["DEMO_LOCK_ENABLED"] = previous_enabled
   end
 
   it "keeps state-first navigation sequence discoverable in the shell" do

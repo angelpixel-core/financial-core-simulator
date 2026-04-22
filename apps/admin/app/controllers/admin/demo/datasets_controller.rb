@@ -7,6 +7,7 @@ module Admin
 
       before_action :authorize_admin_session_operator!
       before_action :authorize_demo_dataset_policy!
+      before_action :ensure_demo_lock_access!, only: %i[create preview reset]
 
       def create
         file = params[:file]
@@ -290,6 +291,30 @@ module Admin
           original_filename: file.original_filename
         )
         true
+      end
+
+      def ensure_demo_lock_access!
+        return if !Admin::Demo::Access.enabled? || current_admin_account.blank?
+
+        result = Admin::Demo::Access.acquire(
+          account_id: current_admin_account.id,
+          account_email: current_admin_account.email
+        )
+        return if result.granted
+
+        owner_label = result.owner&.dig(:email).presence || t("admin.overview.dataset.lock.unknown_owner")
+        message = t("admin.overview.dataset.lock.in_use_by", owner: owner_label)
+
+        if action_name == "preview"
+          render_preview(
+            state: :invalid,
+            errors: [{code: "DEMO_LOCKED", message: message}],
+            status: :locked
+          )
+          return
+        end
+
+        respond_upload_create_error(message: message, code: "DEMO_LOCKED")
       end
 
       def respond_upload_create_error(message:, code:, errors: nil, upload: nil)

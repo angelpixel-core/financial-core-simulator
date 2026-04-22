@@ -42,6 +42,7 @@ class Admin::OverviewController < ApplicationController
     @overview_recent_events = dashboard_ingestion_validation_errors.first(15)
     @reliable_selection = Runs::Api.reliable_selection
     @demo_sandbox_state = DemoSandboxState.current
+    @demo_lock_info = load_demo_lock_info
     load_fx_context
   end
 
@@ -338,6 +339,20 @@ class Admin::OverviewController < ApplicationController
     @fx_quote_currency = context.fetch(:quote_currency)
     @fx_rate_state = context.fetch(:rate_state)
     @fx_carry_forward_available = context.fetch(:carry_forward_available)
+  end
+
+  def load_demo_lock_info
+    account = current_admin_account
+
+    if Admin::Demo::Access.enabled? && account.present?
+      Admin::Demo::Access.acquire(account_id: account.id, account_email: account.email)
+    end
+
+    {
+      enabled: Admin::Demo::Access.enabled?,
+      state: Admin::Demo::Access.lock_state(current_account_id: account&.id),
+      owner: Admin::Demo::Access.current_user
+    }
   end
 
   def load_navigation_context

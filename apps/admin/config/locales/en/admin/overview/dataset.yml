@@ -20,6 +20,13 @@ en:
             running: "running"
             success: "ok"
             failed: "failed"
+        lock:
+          status: "Demo: %{state}"
+          available: "Demo available"
+          in_use: "Demo in use"
+          in_use_by: "In use by %{owner}"
+          unknown_owner: "another operator"
+          disabled: "lock disabled"
         preview:
           cta: "Preview Excel"
           title: "Dataset preview"

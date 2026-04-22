@@ -1,5 +1,6 @@
 require "rails_helper"
 require "rack/test"
+require "bcrypt"
 
 RSpec.describe "Admin demo dataset uploads", type: :request do
   let(:tempfile) { Tempfile.new(["demo", ".xlsx"]) }
@@ -181,6 +182,34 @@ RSpec.describe "Admin demo dataset uploads", type: :request do
     expect(FxRateEvent.count).to eq(1)
     expect(FxRateLineage.count).to eq(1)
     expect(DemoSandboxState.current.last_reset_at).to be_present
+  end
+
+  it "blocks demo uploads when lock is held by another user and flag is enabled" do
+    previous_enabled = ENV["DEMO_LOCK_ENABLED"]
+    ENV["DEMO_LOCK_ENABLED"] = "1"
+
+    owner = Account.create!(
+      email: "owner@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+    blocked = Account.create!(
+      email: "ops@example.com",
+      status: :verified,
+      password_hash: BCrypt::Password.create("secret-pass")
+    )
+
+    Admin::Demo::Access.acquire(account_id: owner.id, account_email: owner.email)
+
+    post "/admin/login", params: {email: blocked.email, password: "secret-pass"}
+    expect(response).to have_http_status(:found)
+
+    post "/admin/demo-datasets", params: {file: upload}
+
+    expect(response).to have_http_status(:found)
+    expect(flash[:alert]).to include("In use by #{owner.email}")
+  ensure
+    ENV["DEMO_LOCK_ENABLED"] = previous_enabled
   end
 
   def admin_session_headers

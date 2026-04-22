@@ -21,6 +21,8 @@ class RodauthMain < Rodauth::Rails::Auth
     extend_remember_deadline? true
 
     before_logout_route do
+      demo_account_id = session["admin_account_id"] || session[:admin_account_id] || session["account_id"] || session[:account_id]
+      Admin::Demo::Access.release(account_id: demo_account_id)
       redirect login_path if request.get?
     end
 

@@ -20,6 +20,13 @@ es:
             running: "en curso"
             success: "ok"
             failed: "fallido"
+        lock:
+          status: "Demo: %{state}"
+          available: "Demo disponible"
+          in_use: "Demo en uso"
+          in_use_by: "En uso por %{owner}"
+          unknown_owner: "otro operador"
+          disabled: "lock desactivado"
         preview:
           cta: "Previsualizar Excel"
           title: "Vista previa del dataset"
