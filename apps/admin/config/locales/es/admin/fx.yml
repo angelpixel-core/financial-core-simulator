@@ -41,10 +41,16 @@ es:
           select_source_hint: "Selecciona una fuente para sincronizar."
           select_market_hint: "Selecciona mercado"
           started: "Sincronizacion en cola"
+          apply_range: "Aplicar"
+          invalid_date_range: "Rango de fechas invalido. Verifica que inicio sea anterior a fin y que la cota superior este permitida."
+          range_too_wide: "El rango es demasiado amplio. Maximo %{max_days} dias."
           tooltip:
             source: "Seleccionar fuente"
             market: "Seleccionar mercado"
             run: "Ejecutar sincronizacion"
+            date_from: "Inicio del rango"
+            date_to: "Fin del rango"
+            apply_range: "Aplicar rango de fechas"
           status_title: "Estado de la ultima sincronizacion"
           status:
             none: "Sin ejecuciones"

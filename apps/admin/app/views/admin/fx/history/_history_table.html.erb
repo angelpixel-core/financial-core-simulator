@@ -7,6 +7,7 @@
 <% upload_status_stream = local_assigns.fetch(:upload_status_stream, nil) %>
 <% latest_ingestions = local_assigns.fetch(:latest_ingestions, {}) %>
 <% rate_lineage = local_assigns.fetch(:rate_lineage, {}) %>
+<% sync_date_range = local_assigns.fetch(:sync_date_range, nil) %>
 <div id="<%= FxRateUpload.table_dom_id %>">
   <%= render Admin::Fx::HistoryTableComponent.new(
     dates: dates,
@@ -21,6 +22,7 @@
     selected_market: selected_market,
     sync_poll: sync_poll,
     available_markets: available_markets,
+    sync_date_range: sync_date_range,
     latest_upload: latest_upload,
     upload_status_stream: upload_status_stream,
     latest_ingestions: latest_ingestions,

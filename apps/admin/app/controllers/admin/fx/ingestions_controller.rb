@@ -31,6 +31,20 @@ class Admin::Fx::IngestionsController < ApplicationController
         alert: t("admin.fx.history.sync.select_market_hint")
     end
 
+    range = Admin::Fx::SyncDateRange.resolve(
+      source: source,
+      date_from_param: params[:date_from],
+      date_to_param: params[:date_to]
+    )
+    unless range.valid?
+      message = t(range.error_message_key, max_days: ENV.fetch("FX_SYNC_MAX_RANGE_DAYS", 90))
+      return render json: {error: "invalid_date_range", message: message}, status: :unprocessable_content if request.format.json?
+
+      return redirect_to admin_fx_history_index_path(
+        @navigation_context.merge(sync_source_id: source.id, market: market)
+      ), alert: message
+    end
+
     correlation_id = SecureRandom.uuid
     ingestion = FxRateIngestion.create!(
       source: source,
@@ -38,6 +52,8 @@ class Admin::Fx::IngestionsController < ApplicationController
       correlation_id: correlation_id,
       metadata: {
         "market" => market,
+        "date_from" => range.date_from.iso8601,
+        "date_to" => range.date_to.iso8601,
         "requested_by_account_id" => current_admin_account&.id,
         "requested_by_role" => admin_shell_role,
         "requested_locale" => I18n.locale.to_s
@@ -48,13 +64,19 @@ class Admin::Fx::IngestionsController < ApplicationController
       source.id,
       correlation_id: correlation_id,
       ingestion_id: ingestion.id,
-      market: market
+      market: market,
+      date_from: range.date_from,
+      date_to: range.date_to
     )
 
     respond_to do |format|
       format.turbo_stream do
         redirect_to admin_fx_history_index_path(
-          @navigation_context.merge(sync_source_id: source.id, market: market, sync_poll: "1")
+          @navigation_context.merge(
+            sync_source_id: source.id,
+            market: market,
+            sync_poll: "1"
+          )
         )
       end
       format.json do
@@ -62,12 +84,18 @@ class Admin::Fx::IngestionsController < ApplicationController
           status: "queued",
           ingestion_id: ingestion.id,
           source_id: source.id,
-          market: market
+          market: market,
+          date_from: range.date_from.iso8601,
+          date_to: range.date_to.iso8601
         }, status: :ok
       end
       format.html do
         redirect_to admin_fx_history_index_path(
-          @navigation_context.merge(sync_source_id: source.id, market: market, sync_poll: "1")
+          @navigation_context.merge(
+            sync_source_id: source.id,
+            market: market,
+            sync_poll: "1"
+          )
         ),
           notice: t("admin.fx.history.sync.started")
       end

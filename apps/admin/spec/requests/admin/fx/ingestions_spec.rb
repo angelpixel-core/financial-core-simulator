@@ -29,15 +29,26 @@ RSpec.describe "Admin FX ingestions", type: :request do
 
   it "enqueues sync jobs for operators" do
     expect do
-      post "/admin/fx/ingestions/sync", params: {source_id: source.id, market: "USDARS"},
+      post "/admin/fx/ingestions/sync", params: {
+        source_id: source.id,
+        market: "USDARS",
+        date_from: "2026-04-01",
+        date_to: "2026-04-15"
+      },
         headers: admin_session_headers.merge("Accept" => "text/vnd.turbo-stream.html")
     end.to have_enqueued_job(Admin::Fx::FetchFxRatesJob)
 
     ingestion = FxRateIngestion.last
     expect(ingestion.status).to eq("pending")
     expect(ingestion.metadata["market"]).to eq("USDARS")
+    expect(ingestion.metadata["date_from"]).to eq("2026-04-01")
+    expect(ingestion.metadata["date_to"]).to eq("2026-04-15")
     expect(ingestion.metadata["requested_by_role"]).to be_present
     expect(response).to have_http_status(:found)
+    expect(response.headers["Location"]).to include("sync_source_id=#{source.id}")
+    expect(response.headers["Location"]).to include("market=USDARS")
+    expect(response.headers["Location"]).not_to include("date_from")
+    expect(response.headers["Location"]).not_to include("date_to")
   end
 
   it "forbids viewers" do
@@ -76,6 +87,19 @@ RSpec.describe "Admin FX ingestions", type: :request do
     expect(ingestion.status).to eq("pending")
     expect(ingestion.metadata["market"]).to eq("BTCUSDT")
     expect(response).to have_http_status(:found)
+  end
+
+  it "rejects invalid date ranges" do
+    post "/admin/fx/ingestions/sync", params: {
+      source_id: source.id,
+      market: "USDARS",
+      date_from: "2026-04-20",
+      date_to: "2026-04-01"
+    }, headers: admin_session_headers.merge("Accept" => "application/json")
+
+    expect(response).to have_http_status(:unprocessable_content)
+    body = JSON.parse(response.body)
+    expect(body.fetch("error")).to eq("invalid_date_range")
   end
 
   def admin_session_headers(role: "operator")

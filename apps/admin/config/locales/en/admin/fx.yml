@@ -41,10 +41,16 @@ en:
           select_source_hint: "Select a source to sync."
           select_market_hint: "Select market"
           started: "Sync queued"
+          apply_range: "Apply"
+          invalid_date_range: "Invalid date range. Ensure start date is before end date and upper bound is allowed."
+          range_too_wide: "Date range is too wide. Maximum %{max_days} days."
           tooltip:
             source: "Select source"
             market: "Select market"
             run: "Run source sync"
+            date_from: "Range start"
+            date_to: "Range end"
+            apply_range: "Apply selected date range"
           status_title: "Latest sync status"
           status:
             none: "Not run yet"

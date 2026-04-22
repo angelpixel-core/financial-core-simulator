@@ -24,6 +24,12 @@ class Admin::Fx::HistoryController < ApplicationController
       return render json: {error: "invalid_market"}, status: :unprocessable_content
     end
 
+    @sync_date_range = Admin::Fx::SyncDateRange.resolve(
+      source: @selected_source,
+      date_from_param: params[:date_from],
+      date_to_param: params[:date_to]
+    )
+
     snapshot = Admin::Fx::Api.history_snapshot(sort_order: params[:sort], source_id: @source_filter&.id)
     @supported_pairs = snapshot.fetch(:supported_pairs)
     @sort_order = snapshot.fetch(:sort_order)
@@ -146,6 +152,8 @@ class Admin::Fx::HistoryController < ApplicationController
       source_id: @source_filter&.id,
       source_name: @source_filter&.name,
       market: @selected_market,
+      date_from: @sync_date_range.date_from&.iso8601,
+      date_to: @sync_date_range.date_to&.iso8601,
       sync_poll: @sync_poll,
       available_markets: @available_markets,
       sort_order: @sort_order,

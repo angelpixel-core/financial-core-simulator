@@ -59,6 +59,18 @@
           <%= hidden_field_tag :locale, I18n.locale %>
           <%= hidden_field_tag :source_id, selected_source_id %>
           <%= hidden_field_tag :market, selected_market %>
+          <%= form.date_field :date_from,
+            value: sync_date_from,
+            class: "fx-history-hero__filter-select",
+            max: sync_date_to_max,
+            title: t("admin.fx.history.sync.tooltip.date_from"),
+            aria: { label: t("admin.fx.history.sync.tooltip.date_from") } %>
+          <%= form.date_field :date_to,
+            value: sync_date_to,
+            class: "fx-history-hero__filter-select",
+            max: sync_date_to_max,
+            title: t("admin.fx.history.sync.tooltip.date_to"),
+            aria: { label: t("admin.fx.history.sync.tooltip.date_to") } %>
           <% sync_button_ready = sync_ready? || sync_in_progress? %>
           <button
             class="overview__icon-button fx-history-action <%= "overview__icon-button--primary fx-history-action--ready" if sync_button_ready %> <%= "fx-history-action--loading" if sync_in_progress? %>"
@@ -172,7 +184,7 @@
             <th class="shad-table__th fx-history-table__th fx-history-table__th--date">
               <div class="fx-history-table__header">
                 <span><%= t("admin.fx.history.table.date") %></span>
-                <%= link_to admin_fx_history_index_path(navigation_context.merge(sort: toggle_sort_order, sync_source_id: selected_source_id, market: selected_market)),
+                <%= link_to admin_fx_history_index_path(history_link_params(sort: toggle_sort_order)),
                           class: "fx-history-table__sort",
                           aria: { label: sort_label },
                           title: sort_label,

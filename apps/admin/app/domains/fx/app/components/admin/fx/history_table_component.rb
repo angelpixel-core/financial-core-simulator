@@ -5,7 +5,7 @@ module Admin
     class HistoryTableComponent < ViewComponent::Base
       def initialize(dates:, supported_pairs:, rates_by_pair:, role:, sort_order:, navigation_context:, source_id: nil,
         selected_source: nil, fx_sources: [], selected_market: nil, sync_poll: false, available_markets: [], latest_upload: nil,
-        upload_status_stream: nil, latest_ingestions: {}, rate_lineage: {})
+        sync_date_range: nil, upload_status_stream: nil, latest_ingestions: {}, rate_lineage: {})
         @dates = dates
         @supported_pairs = supported_pairs
         @rates_by_pair = rates_by_pair
@@ -18,6 +18,7 @@ module Admin
         @selected_market = selected_market
         @sync_poll = sync_poll
         @available_markets = available_markets
+        @sync_date_range = sync_date_range
         @latest_upload = latest_upload
         @upload_status_stream = upload_status_stream
         @latest_ingestions = latest_ingestions
@@ -103,6 +104,26 @@ module Admin
         [[I18n.t("admin.fx.history.filter.all_sources"), ""]] + fx_sources.map { |source| [source.name, source.id] }
       end
 
+      def sync_date_from
+        sync_date_range&.date_from&.iso8601
+      end
+
+      def sync_date_to
+        sync_date_range&.date_to&.iso8601
+      end
+
+      def sync_date_to_max
+        sync_date_range&.max_date_to&.iso8601
+      end
+
+      def history_link_params(extra = {})
+        navigation_context.merge(
+          sort: sort_order,
+          sync_source_id: selected_source_id,
+          market: selected_market
+        ).merge(extra).compact
+      end
+
       def fiat_chart_series
         @fiat_chart_series ||= [
           {key: "ars_usd", label: "ARS/USD", color: "#38bdf8"},
@@ -149,7 +170,7 @@ module Admin
 
       attr_reader :dates, :supported_pairs, :rates_by_pair, :role, :sort_order, :navigation_context, :source_id,
         :selected_source, :fx_sources, :selected_market, :sync_poll, :available_markets, :latest_upload, :upload_status_stream,
-        :latest_ingestions, :rate_lineage
+        :latest_ingestions, :rate_lineage, :sync_date_range
 
       private
 

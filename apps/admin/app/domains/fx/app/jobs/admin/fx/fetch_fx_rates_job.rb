@@ -5,7 +5,8 @@ require "securerandom"
 class Admin::Fx::FetchFxRatesJob < ApplicationJob
   queue_as :default
 
-  def perform(source_id, correlation_id: nil, causation_id: nil, ingestion_id: nil, market: nil)
+  def perform(source_id, correlation_id: nil, causation_id: nil, ingestion_id: nil, market: nil, date_from: nil,
+    date_to: nil)
     ingestion = ingestion_id.present? ? FxRateIngestion.find(ingestion_id) : nil
     source = ingestion&.source || FxRateSource.find(source_id)
     correlation_id ||= ingestion&.correlation_id || SecureRandom.uuid
@@ -23,7 +24,7 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     adapter = Admin::Fx::Ingestion::AdapterRegistry.build(source)
     return fail_ingestion(ingestion, "adapter_missing", source: source) if adapter.nil?
 
-    date_from, date_to = adapter.default_range
+    date_from, date_to = resolve_range(adapter: adapter, date_from: date_from, date_to: date_to)
     fetch_result = adapter.fetch(date_from: date_from, date_to: date_to, market: market)
 
     if fetch_result.failure?
@@ -361,5 +362,15 @@ class Admin::Fx::FetchFxRatesJob < ApplicationJob
     else
       Admin::Fx::Ingestion::Mappers::BcraRateMapper
     end
+  end
+
+  def resolve_range(adapter:, date_from:, date_to:)
+    if date_from.present? && date_to.present?
+      return [Date.iso8601(date_from.to_s), Date.iso8601(date_to.to_s)]
+    end
+
+    adapter.default_range
+  rescue ArgumentError
+    adapter.default_range
   end
 end
