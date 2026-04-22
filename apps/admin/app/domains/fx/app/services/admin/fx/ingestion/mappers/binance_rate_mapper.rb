@@ -27,7 +27,11 @@ module Admin
             return failure("missing_payload", message: "Payload is required") unless payload.is_a?(Hash)
 
             base_currency, quote_currency = pair_from_market
-            return failure("invalid_market", market: market) if base_currency.blank? || quote_currency.blank?
+            if base_currency.nil? || base_currency.empty? || quote_currency.nil? || quote_currency.empty?
+              return failure("invalid_market", market: market)
+            end
+            base_currency = T.must(base_currency)
+            quote_currency = T.must(quote_currency)
 
             rates = []
             errors = []
@@ -75,7 +79,7 @@ module Admin
           sig { returns(T::Array[T.nilable(String)]) }
           def pair_from_market
             normalized_market = market.to_s.upcase.gsub(/[^A-Z0-9]/, "")
-            configured_markets = Array(source.config&.[]("markets")).map { |value| value.to_s.upcase }
+            configured_markets = Array(source.config["markets"]).map { |value| value.to_s.upcase }
             return [nil, nil] unless configured_markets.include?(normalized_market)
 
             if normalized_market.end_with?("USDT")

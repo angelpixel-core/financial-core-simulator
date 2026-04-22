@@ -28,7 +28,7 @@ module Admin
 
             base_currency, quote_currency, currency_code = pair_config
 
-            if base_currency.blank? || quote_currency.blank?
+            if base_currency.empty? || quote_currency.empty?
               return failure("missing_config", message: "Missing FX source currency config")
             end
 
@@ -40,7 +40,7 @@ module Admin
               adapter.entries.each do |entry|
                 date = entry.date
                 entry.details.each do |detail|
-                  if currency_code.present? && normalize_currency(detail.currency_code) != normalize_currency(currency_code)
+                  if !currency_code.empty? && normalize_currency(detail.currency_code) != normalize_currency(currency_code)
                     next
                   end
 
@@ -97,20 +97,21 @@ module Admin
             FCS::Currency.normalize(value)
           end
 
-          sig { returns(T::Array[String]) }
+          sig { returns([String, String, String]) }
           def pair_config
-            if market.present?
-              normalized_market = normalize_market(market)
+            market_code = market
+            if market_code && !market_code.empty?
+              normalized_market = normalize_market(market_code)
               if normalized_market.length == 6
-                base_currency = normalized_market[0, 3]
-                quote_currency = normalized_market[3, 3]
+                base_currency = T.must(normalized_market[0, 3])
+                quote_currency = T.must(normalized_market[3, 3])
                 currency_code = currency_code_for_market(normalized_market) || default_currency_code(base_currency)
                 return [base_currency, quote_currency, currency_code]
               end
             end
 
-            base_currency = config_value("base_currency")
-            quote_currency = config_value("quote_currency")
+            base_currency = config_value("base_currency").to_s.upcase
+            quote_currency = config_value("quote_currency").to_s.upcase
             currency_code = default_currency_code(base_currency)
             [base_currency, quote_currency, currency_code]
           end
@@ -126,7 +127,8 @@ module Admin
             return nil unless raw.is_a?(Hash)
 
             symbol_match = raw[market_code] || raw[market_code.to_sym]
-            return symbol_match.to_s.upcase if symbol_match.present?
+            normalized_symbol_match = symbol_match.to_s.upcase
+            return normalized_symbol_match unless normalized_symbol_match.empty?
 
             raw.each do |key, value|
               return value.to_s.upcase if normalize_market(key) == market_code
