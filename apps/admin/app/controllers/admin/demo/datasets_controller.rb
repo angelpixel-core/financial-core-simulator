@@ -55,12 +55,12 @@ module Admin
           end
           parser_errors = normalize_parser_errors(result.errors)
           persist_parser_validation_errors(run, parser_errors)
-          if parser_errors.present?
+          if parser_errors.present? && run.succeeded?
             run.update!(
-              status: :failed,
+              status: :succeeded,
               reliable: false,
-              error_code: ::Runs::ErrorCodeMapper::VALIDATION_GENERAL,
-              error_message: "Run completed with parser validation errors"
+              error_code: nil,
+              error_message: nil
             )
           end
 

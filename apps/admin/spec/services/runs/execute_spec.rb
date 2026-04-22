@@ -78,17 +78,20 @@ RSpec.describe Runs::Execute do
       expect(run.positions_csv_path).to eq(File.join(output_dir, "positions.csv"))
       expect(run.pnl_csv_path).to eq(File.join(output_dir, "pnl.csv"))
       expect(event_bus).to have_received(:publish).with("runs.execution.completed", hash_including(runId: run.id))
-      expect(metrics).to have_received(:increment).with("runs.execution.completed", tags: {status: "succeeded"})
+      expect(metrics).to have_received(:increment).with(
+        "runs.execution.completed",
+        tags: {status: "succeeded", partial: "false"}
+      )
       expect(metrics).to have_received(:observe).with("runs.execution.duration_ms", value: 42,
-        tags: {status: "succeeded"})
+        tags: {status: "succeeded", partial: "false"})
       expect(logger).to have_received(:info).with(
         event: "runs.execution.completed",
         payload: hash_including(runId: run.id, durationMs: 42),
-        tags: {status: "succeeded"}
+        tags: {status: "succeeded", partial: "false"}
       )
     end
 
-    it "marks run as failed when validation errors are present while persisting processed artifacts" do
+    it "keeps run succeeded and marks it non-reliable when validation errors are present" do
       run = Run.create!(input_json: input_json)
       output_dir = Rails.root.join("storage", "runs", "out_unreliable").to_s
       execution_result = FCS::Contracts::RunExecutionResult.from_hash!(
@@ -124,13 +127,13 @@ RSpec.describe Runs::Execute do
       service.call(run)
       run.reload
 
-      expect(run).to be_failed
+      expect(run).to be_succeeded
       expect(run.reliable).to eq(false)
-      expect(run.error_code).to eq(Runs::ErrorCodeMapper::VALIDATION_GENERAL)
+      expect(run.error_code).to be_nil
       expect(run.run_validation_errors.where(code: "INVALID_TRADE", trade_id: "trade-1")).to exist
       expect(event_bus).to have_received(:publish).with(
-        "runs.execution.failed",
-        hash_including(runId: run.id, partial: true, errorCode: Runs::ErrorCodeMapper::VALIDATION_GENERAL)
+        "runs.execution.completed",
+        hash_including(runId: run.id, partial: true, reliable: false)
       )
     end
 

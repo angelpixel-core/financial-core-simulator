@@ -58,5 +58,5 @@ es:
           duplicate_file: "El archivo %{file_name} ya fue procesado."
           valid: "Dataset procesado correctamente"
           invalid: "El dataset tiene errores de validacion"
-          partial: "Dataset procesado con errores por fila; se omitieron trades invalidos"
+          partial: "Dataset procesado con errores por fila; se omitieron trades invalidos (estado: No confiable)"
           reset: "Base de datos reseteada"

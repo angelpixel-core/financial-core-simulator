@@ -58,5 +58,5 @@ en:
           duplicate_file: "File %{file_name} was already processed."
           valid: "Dataset processed successfully"
           invalid: "Dataset contains validation errors"
-          partial: "Dataset processed with row errors; invalid trades were skipped"
+          partial: "Dataset processed with row errors; invalid trades were skipped (state: Not reliable)"
           reset: "Database reset"

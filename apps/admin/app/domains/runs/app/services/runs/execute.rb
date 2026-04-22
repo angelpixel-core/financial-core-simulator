@@ -44,15 +44,13 @@ module Runs
       validation_errors = Array(execution_result[:validation_errors])
       reliable = execution_result.fetch(:reliable, true)
       reliable = false if validation_errors.present?
-      validation_failed = validation_errors.present?
-      failure_error_code = Runs::ErrorCodeMapper::VALIDATION_GENERAL
-      failure_message = "Run completed with validation errors"
+      partial_with_validation_errors = validation_errors.present?
       artifact_paths = @artifact_store.artifact_paths(output_dir: output_dir, execution_result: execution_result)
 
       @run_repository.save_run!(
         run_id: run.id,
         attributes: {
-          status: validation_failed ? :failed : :succeeded,
+          status: :succeeded,
           engine_version: FCS::VERSION,
           schema_version: execution_result.fetch(:schema_version),
           run_uuid: execution_result.fetch(:run_id),
@@ -63,24 +61,20 @@ module Runs
           reliable: reliable,
           artifacts: artifact_paths,
           duration_ms: duration_ms,
-          error_code: validation_failed ? failure_error_code : nil,
-          error_message: validation_failed ? failure_message : nil
+          error_code: nil,
+          error_message: nil
         }
       )
 
       persist_validation_errors(run, validation_errors, annotated_input)
 
-      if validation_failed
-        publish_failure_observability(
-          run: run,
-          duration_ms: duration_ms,
-          error_code: failure_error_code,
-          error_message: failure_message,
-          partial: true
-        )
-      else
-        publish_success_observability(run: run, duration_ms: duration_ms, artifact_paths: artifact_paths)
-      end
+      publish_success_observability(
+        run: run,
+        duration_ms: duration_ms,
+        artifact_paths: artifact_paths,
+        partial: partial_with_validation_errors,
+        reliable: reliable
+      )
 
       run = @run_repository.find_run(run_id: run.id)
       Runs::PersistDailyArtifacts.call(run: run, payload: execution_result[:payload])
@@ -108,26 +102,38 @@ module Runs
 
     private
 
-    def publish_success_observability(run:, duration_ms:, artifact_paths:)
+    def publish_success_observability(run:, duration_ms:, artifact_paths:, partial: false, reliable: true)
       safe_observe do
         @event_bus.publish("runs.execution.completed", {
           runId: run.id,
           status: "succeeded",
+          partial: partial,
+          reliable: reliable,
           durationMs: duration_ms,
           artifacts: artifact_paths
         })
       end
       safe_observe do
-        @metrics.increment("runs.execution.completed", tags: {status: "succeeded"})
+        @metrics.increment("runs.execution.completed", tags: {status: "succeeded", partial: partial.to_s})
       end
       safe_observe do
-        @metrics.observe("runs.execution.duration_ms", value: duration_ms, tags: {status: "succeeded"})
+        @metrics.observe(
+          "runs.execution.duration_ms",
+          value: duration_ms,
+          tags: {status: "succeeded", partial: partial.to_s}
+        )
       end
       safe_observe do
         @logger.info(
           event: "runs.execution.completed",
-          payload: {runId: run.id, durationMs: duration_ms, artifacts: artifact_paths},
-          tags: {status: "succeeded"}
+          payload: {
+            runId: run.id,
+            durationMs: duration_ms,
+            artifacts: artifact_paths,
+            partial: partial,
+            reliable: reliable
+          },
+          tags: {status: "succeeded", partial: partial.to_s}
         )
       end
     end

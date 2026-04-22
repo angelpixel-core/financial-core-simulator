@@ -110,9 +110,9 @@ RSpec.describe "Admin demo dataset uploads", type: :request do
 
     expect(response).to have_http_status(:found)
     expect(run).to be_present
-    expect(run.status).to eq("failed")
+    expect(run.status).to eq("succeeded")
     expect(run.reliable).to eq(false)
-    expect(run.error_code).to eq(Runs::ErrorCodeMapper::VALIDATION_GENERAL)
+    expect(run.error_code).to be_nil
     expect(upload_record).to be_present
     expect(upload_record.status).to eq("invalid")
     expect(upload_record.run_id).to eq(run.id)

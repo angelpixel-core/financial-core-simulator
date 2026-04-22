@@ -47,7 +47,7 @@ class Run < ApplicationRecord
   def result_json_link = artifact_link("View result.json", result_json_path, result_json_url)
   def positions_csv_link = artifact_link("Download positions.csv", positions_csv_path, positions_csv_url)
   def pnl_csv_link = artifact_link("Download pnl.csv", pnl_csv_path, pnl_csv_url)
-  def validation_failed? = failed? && run_validation_errors.exists?
+  def validation_failed? = run_validation_errors.exists?
 
   private
 
