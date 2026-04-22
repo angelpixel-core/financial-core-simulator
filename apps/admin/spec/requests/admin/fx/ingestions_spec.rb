@@ -30,11 +30,11 @@ RSpec.describe "Admin FX ingestions", type: :request do
   it "enqueues sync jobs for operators" do
     expect do
       post "/admin/fx/ingestions/sync", params: {
-        source_id: source.id,
-        market: "USDARS",
-        date_from: "2026-04-01",
-        date_to: "2026-04-15"
-      },
+                                          source_id: source.id,
+                                          market: "USDARS",
+                                          date_from: "2026-04-01",
+                                          date_to: "2026-04-15"
+                                        },
         headers: admin_session_headers.merge("Accept" => "text/vnd.turbo-stream.html")
     end.to have_enqueued_job(Admin::Fx::FetchFxRatesJob)
 
