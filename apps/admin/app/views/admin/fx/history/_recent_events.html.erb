@@ -1,4 +1,6 @@
 <% compact = local_assigns.fetch(:compact, false) %>
+<% pagination = local_assigns[:pagination] %>
+<% navigation_context = local_assigns.fetch(:navigation_context, {}) %>
 <section class="<%= compact ? "fx-history-events fx-history-events--compact" : "dashboard-card fx-history-events" %>">
   <% unless compact %>
     <header class="dashboard-card__header">
@@ -33,6 +35,45 @@
           </li>
         <% end %>
       </ul>
+      <% if pagination && pagination[:total_pages] > 1 %>
+        <nav class="pagination pagination--pnl" aria-label="<%= t("admin.fx.history.events.pagination_aria") %>">
+          <ul class="pagination-content">
+            <li class="pagination-item">
+              <% if pagination[:page] > 1 %>
+                <%= link_to admin_fx_history_index_path(navigation_context.merge(events_page: pagination[:page] - 1)), class: "pagination-link pagination-prev" do %>
+                  <span aria-hidden="true">‹</span>
+                  <span class="pagination-text"><%= t("admin.common.previous") %></span>
+                <% end %>
+              <% else %>
+                <span class="pagination-link pagination-prev pagination-disabled">
+                  <span aria-hidden="true">‹</span>
+                  <span class="pagination-text"><%= t("admin.common.previous") %></span>
+                </span>
+              <% end %>
+            </li>
+            <% total_pages = pagination[:total_pages] %>
+            <% current_page = pagination[:page] %>
+            <% (1..total_pages).each do |page_number| %>
+              <li class="pagination-item">
+                <%= link_to page_number, admin_fx_history_index_path(navigation_context.merge(events_page: page_number)), class: "pagination-link#{" is-active" if page_number == current_page}" %>
+              </li>
+            <% end %>
+            <li class="pagination-item">
+              <% if pagination[:page] < pagination[:total_pages] %>
+                <%= link_to admin_fx_history_index_path(navigation_context.merge(events_page: pagination[:page] + 1)), class: "pagination-link pagination-next" do %>
+                  <span class="pagination-text"><%= t("admin.common.next") %></span>
+                  <span aria-hidden="true">›</span>
+                <% end %>
+              <% else %>
+                <span class="pagination-link pagination-next pagination-disabled">
+                  <span class="pagination-text"><%= t("admin.common.next") %></span>
+                  <span aria-hidden="true">›</span>
+                </span>
+              <% end %>
+            </li>
+          </ul>
+        </nav>
+      <% end %>
     <% end %>
   </div>
 </section>

@@ -193,6 +193,8 @@
         </section>
       </section>
       <% events = @fx_observability_snapshot.fetch(:events, []) %>
+      <% events_pagination = @fx_events_pagination || { page: 1, total_pages: 1 } %>
+      <% events_query = request.query_parameters.symbolize_keys %>
       <section class="overview__domain" aria-label="<%= t("admin.fx.observability.events.title") %>">
         <h2 class="overview__domain-title"><%= t("admin.fx.observability.events.title") %></h2>
         <section class="dashboard-card">
@@ -218,6 +220,45 @@
                 </li>
               <% end %>
             </ol>
+            <% if events_pagination[:total_pages] > 1 %>
+              <nav class="pagination pagination--pnl" aria-label="<%= t("admin.fx.observability.events.pagination_aria") %>">
+                <ul class="pagination-content">
+                  <li class="pagination-item">
+                    <% if events_pagination[:page] > 1 %>
+                      <%= link_to admin_system_health_path(events_query.merge(events_page: events_pagination[:page] - 1)), class: "pagination-link pagination-prev" do %>
+                        <span aria-hidden="true">‹</span>
+                        <span class="pagination-text"><%= t("admin.common.previous") %></span>
+                      <% end %>
+                    <% else %>
+                      <span class="pagination-link pagination-prev pagination-disabled">
+                        <span aria-hidden="true">‹</span>
+                        <span class="pagination-text"><%= t("admin.common.previous") %></span>
+                      </span>
+                    <% end %>
+                  </li>
+                  <% total_pages = events_pagination[:total_pages] %>
+                  <% current_page = events_pagination[:page] %>
+                  <% (1..total_pages).each do |page_number| %>
+                    <li class="pagination-item">
+                      <%= link_to page_number, admin_system_health_path(events_query.merge(events_page: page_number)), class: "pagination-link#{" is-active" if page_number == current_page}" %>
+                    </li>
+                  <% end %>
+                  <li class="pagination-item">
+                    <% if events_pagination[:page] < events_pagination[:total_pages] %>
+                      <%= link_to admin_system_health_path(events_query.merge(events_page: events_pagination[:page] + 1)), class: "pagination-link pagination-next" do %>
+                        <span class="pagination-text"><%= t("admin.common.next") %></span>
+                        <span aria-hidden="true">›</span>
+                      <% end %>
+                    <% else %>
+                      <span class="pagination-link pagination-next pagination-disabled">
+                        <span class="pagination-text"><%= t("admin.common.next") %></span>
+                        <span aria-hidden="true">›</span>
+                      </span>
+                    <% end %>
+                  </li>
+                </ul>
+              </nav>
+            <% end %>
           <% end %>
         </section>
       </section>

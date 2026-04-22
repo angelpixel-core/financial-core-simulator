@@ -67,7 +67,11 @@
         <button type="button" class="fx-events-panel__close" data-action="click->fx--right-panel#close">×</button>
       </header>
       <div class="fx-events-panel__body">
-        <%= render "admin/fx/history/recent_events", events: @recent_events, compact: true %>
+        <%= render "admin/fx/history/recent_events",
+          events: @recent_events,
+          compact: true,
+          pagination: @recent_events_pagination,
+          navigation_context: navigation_context %>
       </div>
       <footer class="fx-events-panel__footer">
         <% if shell_role != "operator" %>

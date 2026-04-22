@@ -64,6 +64,7 @@ es:
           panel_label: "Flujo de eventos"
           panel_title: "Eventos recientes de FX"
           empty: "Aun no hay eventos."
+          pagination_aria: "Paginacion de eventos recientes FX"
         charts:
           aria: "Markets fiat"
           tooltip_label: "Valor"
@@ -205,6 +206,7 @@ es:
         events:
           title: "Eventos recientes"
           empty: "No hay eventos FX en este rango."
+          pagination_aria: "Paginacion de eventos FX"
           source: "Fuente"
           ingestion: "Ingesta"
           error_code: "Codigo de error"

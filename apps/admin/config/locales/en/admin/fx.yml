@@ -64,6 +64,7 @@ en:
           panel_label: "Event stream"
           panel_title: "Recent FX events"
           empty: "No events yet."
+          pagination_aria: "Recent FX events pagination"
         charts:
           aria: "Fiat markets"
           tooltip_label: "Value"
@@ -205,6 +206,7 @@ en:
         events:
           title: "Recent events"
           empty: "No FX events in this range."
+          pagination_aria: "FX events pagination"
           source: "Source"
           ingestion: "Ingestion"
           error_code: "Error code"

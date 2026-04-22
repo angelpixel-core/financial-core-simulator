@@ -1,5 +1,6 @@
 require "rails_helper"
 require "json"
+require "nokogiri"
 require "tmpdir"
 
 RSpec.describe "Admin system health", type: :request do
@@ -115,6 +116,50 @@ RSpec.describe "Admin system health", type: :request do
       expect(response.body).not_to include(admin_t("overview.financial_results.global_pnl.title", locale: :en))
       expect(response.body).not_to include(admin_t("overview.financial_results.run_comparison.title", locale: :en))
     end
+  end
+
+  it "paginates FX observability events with ten events per page" do
+    source = FxRateSource.create!(
+      name: "BCRA",
+      code: "BCRA",
+      source_type: "api",
+      version: "v1",
+      config: {"base_url" => "https://example.test"}
+    )
+
+    11.times do |index|
+      timestamp = index.minutes.ago
+      FxRateEvent.create!(
+        event_type: "event-#{index}",
+        data: {
+          "source_id" => source.id.to_s,
+          "source_code" => source.code,
+          "error_code" => "ERR_#{index}",
+          "severity" => "warning"
+        },
+        metadata: {"ingestion_id" => (100 + index).to_s},
+        created_at: timestamp,
+        updated_at: timestamp
+      )
+    end
+
+    get "/admin/system-health", headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    document = Nokogiri::HTML(response.body)
+    expect(document.css(".fx-observability-timeline__item").count).to eq(10)
+    expect(response.body).to include("event-0")
+    expect(response.body).to include("event-9")
+    expect(response.body).not_to include("event-10")
+    expect(response.body).to include(admin_t("fx.observability.events.pagination_aria", locale: :en))
+
+    get "/admin/system-health", params: {events_page: 2}, headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    document = Nokogiri::HTML(response.body)
+    expect(document.css(".fx-observability-timeline__item").count).to eq(1)
+    expect(response.body).to include("event-10")
+    expect(response.body).not_to include("event-0")
   end
 
   def admin_session_headers

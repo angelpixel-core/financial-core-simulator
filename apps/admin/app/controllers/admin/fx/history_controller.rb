@@ -38,7 +38,8 @@ class Admin::Fx::HistoryController < ApplicationController
     @empty_history = snapshot.fetch(:empty_history)
     @rate_lineage = build_rate_lineage(snapshot.fetch(:rates))
     @latest_ingestions = latest_ingestions(@fx_sources)
-    @recent_events = recent_events
+    @recent_events_pagination = recent_events_pagination(events: recent_events, page: params[:events_page])
+    @recent_events = @recent_events_pagination[:entries]
     session_upload_id = session[:fx_rate_upload_id]
     upload_active = session[:fx_rate_upload_active] == true
     @latest_upload = if upload_active && session_upload_id.present?
@@ -89,7 +90,26 @@ class Admin::Fx::HistoryController < ApplicationController
       source_id = selected_source.id.to_s
       scope = scope.where("data ->> 'source_id' = ? OR metadata ->> 'source_id' = ?", source_id, source_id)
     end
-    scope.limit(10)
+    scope.limit(50)
+  end
+
+  def recent_events_pagination(events:, page: nil)
+    per_page = 10
+    current = page.to_i
+    current = 1 if current < 1
+    total_pages = (events.length.to_f / per_page).ceil
+    total_pages = 1 if total_pages.zero?
+    current = total_pages if current > total_pages
+
+    start_index = (current - 1) * per_page
+    entries = events.slice(start_index, per_page) || []
+
+    {
+      entries: entries,
+      page: current,
+      total_pages: total_pages,
+      per_page: per_page
+    }
   end
 
   def resolve_source(source_id)

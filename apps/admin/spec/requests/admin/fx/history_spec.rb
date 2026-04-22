@@ -73,6 +73,37 @@ RSpec.describe "Admin FX history", type: :request do
     expect(Admin::Fx::SourceCatalog.available_markets_for(binance)).to include("BTCUSDT", "ETHUSDT")
   end
 
+  it "paginates recent events with ten events per page" do
+    11.times do |index|
+      timestamp = index.minutes.ago
+      FxRateEvent.create!(
+        event_type: "event-#{index}",
+        data: {"error_code" => "ERR_#{index}"},
+        metadata: {},
+        created_at: timestamp,
+        updated_at: timestamp
+      )
+    end
+
+    get "/admin/fx/history", headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    document = Nokogiri::HTML(response.body)
+    expect(document.css(".fx-history-events__item").count).to eq(10)
+    expect(response.body).to include("event-0")
+    expect(response.body).to include("event-9")
+    expect(response.body).not_to include("event-10")
+    expect(response.body).to include(admin_t("fx.history.events.pagination_aria", locale: :en))
+
+    get "/admin/fx/history", params: {events_page: 2}, headers: admin_session_headers
+
+    expect(response).to have_http_status(:ok)
+    document = Nokogiri::HTML(response.body)
+    expect(document.css(".fx-history-events__item").count).to eq(1)
+    expect(response.body).to include("event-10")
+    expect(response.body).not_to include("event-0")
+  end
+
   def admin_session_headers(role: "viewer")
     {"X-Admin-User" => "alice", "X-Admin-Role" => role}
   end

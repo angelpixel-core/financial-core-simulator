@@ -14,7 +14,9 @@ class Admin::SystemHealthController < ApplicationController
     @ingestion_errors_pagination = ingestion_errors_pagination(errors: ingestion_errors, page: params[:errors_page])
     @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
     @fx_ingestion_failures = fx_ingestion_failures
-    @fx_observability_snapshot = Admin::Fx::ObservabilitySnapshot.call
+    snapshot = Admin::Fx::ObservabilitySnapshot.call
+    @fx_events_pagination = fx_observability_events_pagination(events: snapshot.fetch(:events, []), page: params[:events_page])
+    @fx_observability_snapshot = snapshot.merge(events: @fx_events_pagination[:entries])
   end
 
   def pnl_trend
@@ -71,6 +73,25 @@ class Admin::SystemHealthController < ApplicationController
 
     start_index = (current - 1) * per_page
     entries = errors.slice(start_index, per_page) || []
+
+    {
+      entries: entries,
+      page: current,
+      total_pages: total_pages,
+      per_page: per_page
+    }
+  end
+
+  def fx_observability_events_pagination(events:, page: nil)
+    per_page = 10
+    current = page.to_i
+    current = 1 if current < 1
+    total_pages = (events.length.to_f / per_page).ceil
+    total_pages = 1 if total_pages.zero?
+    current = total_pages if current > total_pages
+
+    start_index = (current - 1) * per_page
+    entries = events.slice(start_index, per_page) || []
 
     {
       entries: entries,
