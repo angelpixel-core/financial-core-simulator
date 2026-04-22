@@ -121,6 +121,14 @@ module Admin
       def available_markets_for(source:)
         Admin::Fx::SourceCatalog.available_markets_for(source)
       end
+
+      def sync_date_range(source:, date_from_param:, date_to_param:)
+        Admin::Fx::SyncDateRange.resolve(
+          source: source,
+          date_from_param: date_from_param,
+          date_to_param: date_to_param
+        )
+      end
     end
   end
 end

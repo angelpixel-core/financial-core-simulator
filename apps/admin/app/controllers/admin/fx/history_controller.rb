@@ -24,7 +24,7 @@ class Admin::Fx::HistoryController < ApplicationController
       return render json: {error: "invalid_market"}, status: :unprocessable_content
     end
 
-    @sync_date_range = Admin::Fx::SyncDateRange.resolve(
+    @sync_date_range = Admin::Fx::Api.sync_date_range(
       source: @selected_source,
       date_from_param: params[:date_from],
       date_to_param: params[:date_to]

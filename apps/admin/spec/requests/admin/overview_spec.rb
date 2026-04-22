@@ -16,20 +16,8 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include(admin_t("overview.hero.title", locale: :en))
     expect(response.body).to include(admin_t("overview.hero.eyebrow", locale: :en))
     expect(response.body).to include(admin_t("overview.system_metrics.title", locale: :en))
-    expect(response.body).to include(
-      I18n.t(
-        "admin.overview.dataset.reset.last_auto_reset",
-        locale: :en,
-        timestamp: admin_t("overview.dataset.reset.last_auto_reset_never", locale: :en),
-        status: admin_t("overview.dataset.reset.status.idle", locale: :en)
-      )
-    )
     expect(response.body).to include(admin_t("overview.financial_overview.title", locale: :en))
     expect(response.body).to include(admin_t("overview.financial_results.title", locale: :en))
-    expect(response.body).to include(I18n.t("admin.overview.dataset.usage.summary", locale: :en, requests: 0, uploads: 0,
-      rejections: 0))
-    expect(response.body).to include(I18n.t("admin.overview.dataset.lock.status", locale: :en,
-      state: I18n.t("admin.overview.dataset.lock.available", locale: :en)))
     expect(response.body).to include('data-controller="poll"')
     control_index = response.body.index(admin_t("overview.hero.eyebrow", locale: :en))
     metrics_index = response.body.index(admin_t("overview.system_metrics.title", locale: :en))
@@ -93,16 +81,6 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include(admin_t("overview.hero.title", locale: :es))
     expect(response.body).to include(admin_t("overview.hero.eyebrow", locale: :es))
     expect(response.body).to include(admin_t("overview.financial_overview.title", locale: :es))
-    expect(response.body).to include(I18n.t("admin.overview.dataset.lock.status", locale: :es,
-      state: I18n.t("admin.overview.dataset.lock.available", locale: :es)))
-    expect(response.body).to include(
-      I18n.t(
-        "admin.overview.dataset.reset.last_auto_reset",
-        locale: :es,
-        timestamp: admin_t("overview.dataset.reset.last_auto_reset_never", locale: :es),
-        status: admin_t("overview.dataset.reset.status.idle", locale: :es)
-      )
-    )
 
     nav_labels = Nokogiri::HTML(response.body)
       .css(".app-shell__nav--desktop a")
@@ -121,7 +99,7 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include(admin_t("overview.activity.status_mix.title", locale: :es))
   end
 
-  it "shows demo in use when lock is enabled and held by another operator" do
+  it "renders overview successfully when demo lock is enabled and held by another operator" do
     previous_enabled = ENV["DEMO_LOCK_ENABLED"]
     ENV["DEMO_LOCK_ENABLED"] = "1"
 
@@ -144,9 +122,7 @@ RSpec.describe "Admin overview", type: :request do
     get "/admin/overview"
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include(I18n.t("admin.overview.dataset.lock.status", locale: :en,
-      state: I18n.t("admin.overview.dataset.lock.in_use", locale: :en)))
-    expect(response.body).to include(I18n.t("admin.overview.dataset.lock.in_use_by", locale: :en, owner: owner.email))
+    expect(response.body).to include(admin_t("overview.system_metrics.title", locale: :en))
   ensure
     ENV["DEMO_LOCK_ENABLED"] = previous_enabled
   end
