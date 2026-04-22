@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_16_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_21_173000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -102,6 +102,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_16_120000) do
     t.index ["created_at"], name: "index_demo_dataset_uploads_on_created_at"
     t.index ["normalized_filename"], name: "idx_demo_dataset_uploads_normalized_filename_unique", unique: true, where: "(normalized_filename IS NOT NULL)"
     t.index ["run_id"], name: "index_demo_dataset_uploads_on_run_id"
+  end
+
+  create_table "demo_sandbox_states", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "last_reset_at"
+    t.integer "last_reset_duration_ms"
+    t.jsonb "last_reset_result", default: {}, null: false
+    t.string "last_reset_status", default: "idle", null: false
+    t.string "singleton_key", default: "demo_sandbox", null: false
+    t.datetime "updated_at", null: false
+    t.index ["last_reset_at"], name: "index_demo_sandbox_states_on_last_reset_at"
+    t.index ["singleton_key"], name: "index_demo_sandbox_states_on_singleton_key", unique: true
   end
 
   create_table "fx_daily_rates", force: :cascade do |t|

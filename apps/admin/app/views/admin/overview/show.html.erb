@@ -104,10 +104,16 @@
                   </button>
                   <button type="submit" hidden data-overview--dataset-actions-target="previewSubmit" data-demo-dataset-preview-submit="true" formaction="<%= admin_demo_datasets_preview_path(locale: I18n.locale) %>" formmethod="post" data-turbo-frame="demo-dataset-preview"></button>
                 <% end %>
-                <%= button_to admin_demo_datasets_reset_path(locale: I18n.locale), method: :post, class: "overview__icon-button overview__icon-button--danger", title: t("admin.overview.dataset.reset.cta"), form: { class: "overview__dataset-reset", data: { turbo_confirm: t("admin.overview.dataset.reset.confirm") } }, aria: { label: t("admin.overview.dataset.reset.cta") } do %>
+              <%= button_to admin_demo_datasets_reset_path(locale: I18n.locale), method: :post, class: "overview__icon-button overview__icon-button--danger", title: t("admin.overview.dataset.reset.cta"), form: { class: "overview__dataset-reset", data: { turbo_confirm: t("admin.overview.dataset.reset.confirm") } }, aria: { label: t("admin.overview.dataset.reset.cta") } do %>
                   <%= image_tag("icons/trash.svg", class: "overview__icon", alt: "") %>
                 <% end %>
               </div>
+              <% reset_state = @demo_sandbox_state %>
+              <% reset_at_label = reset_state&.last_reset_at.present? ? l(reset_state.last_reset_at, format: :short) : t("admin.overview.dataset.reset.last_auto_reset_never") %>
+              <% reset_status_key = reset_state&.status_key || "idle" %>
+              <p class="overview__domain-reset-meta">
+                <%= t("admin.overview.dataset.reset.last_auto_reset", timestamp: reset_at_label, status: t("admin.overview.dataset.reset.status.#{reset_status_key}")) %>
+              </p>
             </div>
             <section class="overview__grid overview__grid--kpi">
               <%= render Admin::Dashboard::KpiCardComponent.new(

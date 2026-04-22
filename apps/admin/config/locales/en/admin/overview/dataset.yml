@@ -12,7 +12,14 @@ en:
           file_hint: "Selecting a file keeps timeline generation enabled."
         reset:
           cta: "Reset database"
-          confirm: "This will delete all runs, demo uploads, FX rates, FX gaps, FX events, FX ingestions, and FX uploads. Continue?"
+          confirm: "This will delete demo runs, demo uploads, and demo FX artifacts. Continue?"
+          last_auto_reset: "Last auto reset: %{timestamp} (%{status})"
+          last_auto_reset_never: "Not run yet"
+          status:
+            idle: "idle"
+            running: "running"
+            success: "ok"
+            failed: "failed"
         preview:
           cta: "Preview Excel"
           title: "Dataset preview"

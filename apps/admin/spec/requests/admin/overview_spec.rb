@@ -16,6 +16,14 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include(admin_t("overview.hero.title", locale: :en))
     expect(response.body).to include(admin_t("overview.hero.eyebrow", locale: :en))
     expect(response.body).to include(admin_t("overview.system_metrics.title", locale: :en))
+    expect(response.body).to include(
+      I18n.t(
+        "admin.overview.dataset.reset.last_auto_reset",
+        locale: :en,
+        timestamp: admin_t("overview.dataset.reset.last_auto_reset_never", locale: :en),
+        status: admin_t("overview.dataset.reset.status.idle", locale: :en)
+      )
+    )
     expect(response.body).to include(admin_t("overview.financial_overview.title", locale: :en))
     expect(response.body).to include(admin_t("overview.financial_results.title", locale: :en))
     expect(response.body).to include('data-controller="poll"')
@@ -81,6 +89,14 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include(admin_t("overview.hero.title", locale: :es))
     expect(response.body).to include(admin_t("overview.hero.eyebrow", locale: :es))
     expect(response.body).to include(admin_t("overview.financial_overview.title", locale: :es))
+    expect(response.body).to include(
+      I18n.t(
+        "admin.overview.dataset.reset.last_auto_reset",
+        locale: :es,
+        timestamp: admin_t("overview.dataset.reset.last_auto_reset_never", locale: :es),
+        status: admin_t("overview.dataset.reset.status.idle", locale: :es)
+      )
+    )
 
     nav_labels = Nokogiri::HTML(response.body)
       .css(".app-shell__nav--desktop a")

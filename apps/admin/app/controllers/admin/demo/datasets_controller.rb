@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "fileutils"
-
 module Admin
   module Demo
     class DatasetsController < ApplicationController
@@ -100,15 +98,7 @@ module Admin
       end
 
       def reset
-        ::Run.delete_all
-        ::DemoDatasetUpload.delete_all
-        ::FxRateGap.delete_all
-        ::FxDailyRate.delete_all
-        ::FxRateEvent.delete_all
-        ::FxRateLineage.delete_all
-        ::FxRateIngestion.delete_all
-        ::FxRateUpload.delete_all
-        FileUtils.rm_rf(Rails.root.join("storage", "runs"))
+        Admin::Demo::Sandbox::Reset.new.call(trigger: "manual")
         redirect_to admin_overview_path(locale: I18n.locale), notice: t("admin.overview.dataset.flash.reset")
       end
 

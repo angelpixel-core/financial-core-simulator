@@ -41,6 +41,7 @@ class Admin::OverviewController < ApplicationController
     @ingestion_validation_errors = @ingestion_errors_pagination[:entries]
     @overview_recent_events = dashboard_ingestion_validation_errors.first(15)
     @reliable_selection = Runs::Api.reliable_selection
+    @demo_sandbox_state = DemoSandboxState.current
     load_fx_context
   end
 

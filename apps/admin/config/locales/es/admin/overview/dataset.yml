@@ -12,7 +12,14 @@ es:
           file_hint: "Al seleccionar un archivo se mantiene habilitado el timeline de PnL."
         reset:
           cta: "Resetear base de datos"
-          confirm: "Esto eliminara todos los runs, uploads demo, tasas FX, gaps FX, eventos FX, ingestas FX y uploads FX. Deseas continuar?"
+          confirm: "Esto eliminara runs demo, uploads demo y artefactos FX de demo. Deseas continuar?"
+          last_auto_reset: "Ultimo reset automatico: %{timestamp} (%{status})"
+          last_auto_reset_never: "Aun no ejecutado"
+          status:
+            idle: "inactivo"
+            running: "en curso"
+            success: "ok"
+            failed: "fallido"
         preview:
           cta: "Previsualizar Excel"
           title: "Vista previa del dataset"

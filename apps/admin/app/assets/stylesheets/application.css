@@ -2190,6 +2190,14 @@ body {
   justify-content: flex-end;
 }
 
+.overview__domain-reset-meta {
+  width: 100%;
+  margin: 0;
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .overview__dataset-actions {
   display: flex;
   align-items: center;

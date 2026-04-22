@@ -132,14 +132,25 @@ RSpec.describe "Admin demo dataset uploads", type: :request do
     expect(flash[:alert]).to include("already processed")
   end
 
-  it "resets runs and FX history data" do
-    Run.create!(status: :succeeded, input_json: {"schemaVersion" => "1.0", "trades" => []})
-    DemoDatasetUpload.create!(status: :valid, original_filename: "demo.xlsx")
-    FxDailyRate.create!(operational_date: Date.new(2026, 3, 30), base_currency: "USD", quote_currency: "ARS", rate: "100",
-      source: "manual")
-    FxRateGap.create!(operational_date: Date.new(2026, 3, 30), base_currency: "USD", quote_currency: "ARS",
-      status: "open")
-    FxRateUpload.create!(status: "success", original_filename: "fx.xlsx")
+  it "resets only demo sandbox records" do
+    demo_run = Run.create!(status: :succeeded, input_json: {"schemaVersion" => "1.0", "trades" => []})
+    DemoDatasetUpload.create!(status: :valid, run_id: demo_run.id, original_filename: "demo.xlsx")
+
+    non_demo_run = Run.create!(status: :succeeded, input_json: {"schemaVersion" => "1.0", "trades" => []})
+    FxDailyRate.create!(
+      operational_date: Date.new(2026, 3, 30),
+      base_currency: "USD",
+      quote_currency: "ARS",
+      rate: "100",
+      source: "manual"
+    )
+    FxRateGap.create!(operational_date: Date.new(2026, 3, 30), base_currency: "USD", quote_currency: "ARS", status: "open")
+    FxRateUpload.create!(
+      status: "success",
+      original_filename: "fx.xlsx",
+      created_context: {"source" => "non_demo_upload"}
+    )
+
     source = FxRateSource.find_or_create_by!(code: "ext", source_type: "api", version: "1") do |record|
       record.name = "Ext API"
       record.active = true
@@ -160,14 +171,16 @@ RSpec.describe "Admin demo dataset uploads", type: :request do
     post "/admin/demo-datasets/reset", headers: admin_session_headers
 
     expect(response).to have_http_status(:found)
-    expect(Run.count).to eq(0)
+    expect(Run.exists?(demo_run.id)).to eq(false)
+    expect(Run.exists?(non_demo_run.id)).to eq(true)
     expect(DemoDatasetUpload.count).to eq(0)
-    expect(FxDailyRate.count).to eq(0)
-    expect(FxRateGap.count).to eq(0)
-    expect(FxRateUpload.count).to eq(0)
-    expect(FxRateIngestion.count).to eq(0)
-    expect(FxRateEvent.count).to eq(0)
-    expect(FxRateLineage.count).to eq(0)
+    expect(FxDailyRate.count).to eq(1)
+    expect(FxRateGap.count).to eq(1)
+    expect(FxRateUpload.count).to eq(1)
+    expect(FxRateIngestion.count).to eq(1)
+    expect(FxRateEvent.count).to eq(1)
+    expect(FxRateLineage.count).to eq(1)
+    expect(DemoSandboxState.current.last_reset_at).to be_present
   end
 
   def admin_session_headers
