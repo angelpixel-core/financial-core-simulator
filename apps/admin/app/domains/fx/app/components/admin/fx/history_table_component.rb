@@ -113,8 +113,8 @@ module Admin
       def fiat_chart_points
         @fiat_chart_points ||= dates.map do |date|
           {
-            label: I18n.l(date),
-            timestamp: date.iso8601,
+            :label => I18n.l(date),
+            :timestamp => date.iso8601,
             "ars_usd" => inverse_pair_value(base_currency: "USD", quote_currency: "ARS", date: date),
             "ars_eur" => inverse_pair_value(base_currency: "EUR", quote_currency: "ARS", date: date)
           }
@@ -135,8 +135,8 @@ module Admin
       def crypto_chart_points
         @crypto_chart_points ||= dates.map do |date|
           {
-            label: I18n.l(date),
-            timestamp: date.iso8601,
+            :label => I18n.l(date),
+            :timestamp => date.iso8601,
             "btc_usd" => rate_value(base_currency: "BTC", quote_currency: "USD", date: date),
             "eth_usd" => rate_value(base_currency: "ETH", quote_currency: "USD", date: date)
           }
@@ -183,7 +183,6 @@ module Admin
           series.any? { |item| point[item[:key]].present? }
         end
       end
-
     end
   end
 end

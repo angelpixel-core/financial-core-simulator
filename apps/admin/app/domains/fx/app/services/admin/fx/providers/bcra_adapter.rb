@@ -62,7 +62,7 @@ module Admin
           decimal = BigDecimal(rate.to_s)
 
           if base_currency.to_s.upcase == "ARS" && quote_currency.to_s.upcase != "ARS"
-            return (BigDecimal("1") / decimal).to_s("F") if decimal.positive?
+            return (BigDecimal(1) / decimal).to_s("F") if decimal.positive?
 
             raise Admin::Fx::Providers::BcraPayloadMapper::InvalidPayloadError, "non-positive rate"
           end

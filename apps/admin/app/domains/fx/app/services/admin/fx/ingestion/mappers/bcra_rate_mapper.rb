@@ -140,7 +140,7 @@ module Admin
             return raw_rate if base_currency == currency_code && quote_currency == "ARS"
 
             if base_currency == "ARS" && quote_currency == currency_code
-              return BigDecimal("1") / raw_rate
+              return BigDecimal(1) / raw_rate
             end
 
             raw_rate

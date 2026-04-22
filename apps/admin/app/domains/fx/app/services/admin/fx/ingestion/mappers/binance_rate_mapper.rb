@@ -33,29 +33,27 @@ module Admin
             errors = []
 
             Array(payload["results"]).each_with_index do |row, index|
-              begin
-                operational_date = Time.at(Integer(row.fetch("open_time")) / 1000).utc.to_date
-                raw_quote_currency = normalize_currency(quote_currency)
-                normalized_quote = raw_quote_currency == "USDT" ? "USD" : raw_quote_currency
+              operational_date = Time.at(Integer(row.fetch("open_time")) / 1000).utc.to_date
+              raw_quote_currency = normalize_currency(quote_currency)
+              normalized_quote = (raw_quote_currency == "USDT") ? "USD" : raw_quote_currency
 
-                rate = Admin::Fx::ValueObjects::FxRate.new(
-                  operational_date: operational_date,
-                  base_currency: base_currency,
-                  quote_currency: normalized_quote,
-                  rate: row.fetch("close"),
-                  source_id: source.id,
-                  source_code: source.code,
-                  raw_payload: {"market" => market, "row" => row}
-                )
+              rate = Admin::Fx::ValueObjects::FxRate.new(
+                operational_date: operational_date,
+                base_currency: base_currency,
+                quote_currency: normalized_quote,
+                rate: row.fetch("close"),
+                source_id: source.id,
+                source_code: source.code,
+                raw_payload: {"market" => market, "row" => row}
+              )
 
-                rates << rate
-              rescue => e
-                errors << {
-                  row_index: index,
-                  message: e.message,
-                  raw_row: row
-                }
-              end
+              rates << rate
+            rescue => e
+              errors << {
+                row_index: index,
+                message: e.message,
+                raw_row: row
+              }
             end
 
             return failure("mapping_failed", errors: errors) if errors.any?
