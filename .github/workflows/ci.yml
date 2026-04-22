@@ -118,6 +118,14 @@ jobs:
     env:
       RAILS_ENV: test
       DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/admin_test
+      DEMO_LOCK_ENABLED: "0"
+      DEMO_LOCK_TTL_SECONDS: "900"
+      DEMO_RATE_LIMIT_LOGIN_PER_MINUTE: "10"
+      DEMO_RATE_LIMIT_UPLOAD_PER_HOUR: "24"
+      DEMO_RATE_LIMIT_PREVIEW_PER_HOUR: "60"
+      DEMO_RATE_LIMIT_EXECUTION_PER_HOUR: "40"
+      DEMO_QUOTA_UPLOADS_PER_HOUR: "12"
+      DEMO_QUOTA_UPLOAD_VOLUME_MB_PER_DAY: "200"
     services:
       postgres:
         image: postgres:16
