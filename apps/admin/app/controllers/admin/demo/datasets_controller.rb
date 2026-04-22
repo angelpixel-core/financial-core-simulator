@@ -13,16 +13,27 @@ module Admin
       def create
         file = params[:file]
         if file.blank?
-          redirect_to admin_overview_path(locale: I18n.locale),
-            alert: t("admin.overview.dataset.flash.missing_file")
+          respond_upload_create_error(
+            message: t("admin.overview.dataset.flash.missing_file"),
+            code: "MISSING_FILE"
+          )
+          return
+        end
+
+        if upload_file_too_large?(file)
+          respond_upload_create_error(
+            message: t("admin.overview.dataset.flash.file_too_large", max_mb: Admin::UploadLimits.max_upload_file_size_mb),
+            code: "FILE_SIZE_EXCEEDED"
+          )
           return
         end
 
         original_filename = normalize_upload_filename(file.original_filename)
         if duplicate_filename?(original_filename)
-          redirect_to admin_overview_path(locale: I18n.locale),
-            alert: t("admin.overview.dataset.flash.duplicate_file",
-              file_name: original_filename)
+          respond_upload_create_error(
+            message: t("admin.overview.dataset.flash.duplicate_file", file_name: original_filename),
+            code: "DUPLICATE_FILE"
+          )
           return
         end
 
@@ -67,14 +78,24 @@ module Admin
             reporting_currency: ::ReportingSetting.current.reporting_currency
           )
           message_key = parser_errors.present? ? "admin.overview.dataset.flash.partial" : "admin.overview.dataset.flash.valid"
-          redirect_to admin_overview_path(locale: I18n.locale), notice: t(message_key)
+          respond_upload_create_success(
+            message: t(message_key),
+            run: run,
+            upload: upload,
+            parser_errors: parser_errors
+          )
         else
-          ::DemoDatasetUpload.create!(
+          upload = ::DemoDatasetUpload.create!(
             status: :invalid,
             validation_errors: result.errors,
             original_filename: original_filename
           )
-          redirect_to admin_overview_path(locale: I18n.locale), alert: t("admin.overview.dataset.flash.invalid")
+          respond_upload_create_error(
+            message: t("admin.overview.dataset.flash.invalid"),
+            code: "INVALID_DATASET",
+            errors: result.errors,
+            upload: upload
+          )
         end
       end
 
@@ -95,6 +116,21 @@ module Admin
         file = params[:file]
         if file.blank?
           render_preview(state: :error, errors: [{code: "MISSING_FILE"}], status: :unprocessable_content)
+          return
+        end
+
+        if upload_file_too_large?(file, stage: :preview)
+          render_preview(
+            state: :invalid,
+            errors: [
+              {
+                code: "FILE_SIZE_EXCEEDED",
+                message: t("admin.overview.dataset.flash.file_too_large", max_mb: Admin::UploadLimits.max_upload_file_size_mb)
+              }
+            ],
+            status: :unprocessable_content,
+            file_name: file.original_filename
+          )
           return
         end
 
@@ -140,6 +176,19 @@ module Admin
 
       def render_preview(state:, summary: nil, sample_rows: [], errors: [], status: :ok, file_name: nil, sample_rows_truncated: false,
         errors_truncated: false)
+        if request.format.json?
+          render json: {
+            state: state,
+            summary: summary,
+            sample_rows: sample_rows,
+            errors: errors,
+            file_name: file_name,
+            sample_rows_truncated: sample_rows_truncated,
+            errors_truncated: errors_truncated
+          }, status: status
+          return
+        end
+
         @state = state
         @summary = summary
         @sample_rows = sample_rows
@@ -237,6 +286,50 @@ module Admin
         return false if normalized.blank?
 
         ::DemoDatasetUpload.exists?(normalized_filename: normalized)
+      end
+
+      def upload_file_too_large?(file, stage: :process)
+        return false unless Admin::UploadLimits.exceeds_file_size?(file: file)
+
+        Admin::UploadTelemetry.rejection(
+          domain: "demo",
+          stage: stage,
+          reason: "file_size_exceeded",
+          max_file_size_bytes: Admin::UploadLimits.max_upload_file_size_bytes,
+          file_size_bytes: Admin::UploadLimits.file_size_bytes(file: file),
+          original_filename: file.original_filename
+        )
+        true
+      end
+
+      def respond_upload_create_error(message:, code:, errors: nil, upload: nil)
+        if request.format.json?
+          render json: {
+            state: "invalid",
+            code: code,
+            message: message,
+            errors: Array(errors),
+            upload_id: upload&.id
+          }, status: :unprocessable_content
+          return
+        end
+
+        redirect_to admin_overview_path(locale: I18n.locale), alert: message
+      end
+
+      def respond_upload_create_success(message:, run:, upload:, parser_errors:)
+        if request.format.json?
+          render json: {
+            state: parser_errors.present? ? "partial" : "success",
+            message: message,
+            run_id: run.id,
+            upload_id: upload.id,
+            parser_errors_count: parser_errors.size
+          }, status: :ok
+          return
+        end
+
+        redirect_to admin_overview_path(locale: I18n.locale), notice: message
       end
     end
   end

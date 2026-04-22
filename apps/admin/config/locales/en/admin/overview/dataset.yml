@@ -53,6 +53,7 @@ en:
           line: "Line"
         flash:
           missing_file: "File is required"
+          file_too_large: "File exceeds %{max_mb} MB limit"
           invalid_filename_format: "File name must include a YYYYMMDD timestamp."
           duplicate_file: "File %{file_name} was already processed."
           valid: "Dataset processed successfully"

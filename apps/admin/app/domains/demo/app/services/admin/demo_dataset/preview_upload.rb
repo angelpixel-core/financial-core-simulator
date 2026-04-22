@@ -12,7 +12,7 @@ module Admin
       end
 
       def call(file_path:, timeline_enabled:)
-        result = @file_adapter.parse(file_path: file_path, timeline_enabled: timeline_enabled)
+        result = @file_adapter.parse(file_path: file_path, timeline_enabled: timeline_enabled, stage: :preview)
         @presenter.present(result)
       end
     end

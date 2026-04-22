@@ -85,6 +85,7 @@ en:
           success: "FX rates uploaded."
           invalid: "Upload failed. %{count} issue(s) found."
           error: "Upload error: %{message}"
+          file_too_large: "File exceeds the %{max_mb}MB limit."
           clear_cta: "Clear rates"
           clear_confirm: "Delete all FX daily rates?"
           clear_success: "%{count} FX daily rate(s) deleted."
@@ -109,6 +110,7 @@ en:
             invalid_body: "Fix these rows before uploading."
             errors_title: "Validation errors"
             errors_empty: "No validation errors found."
+            errors_truncated: "Showing a preview subset of errors."
             error_title: "Unable to preview"
             error_body: "Try again or validate the template structure."
           status:

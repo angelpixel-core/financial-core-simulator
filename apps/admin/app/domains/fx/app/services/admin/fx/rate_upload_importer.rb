@@ -8,6 +8,9 @@ module Admin
       Result = Struct.new(:valid?, :errors, :message, keyword_init: true)
 
       REQUIRED_HEADERS = %w[id operational_date base_currency quote_currency rate].freeze
+      MAX_FILE_SIZE_BYTES = Admin::UploadLimits.max_upload_file_size_bytes
+      MAX_ROWS = Admin::UploadLimits.max_upload_rows
+      BATCH_SIZE = Admin::UploadLimits.batch_size
 
       def self.call(file_path:, created_by_id: nil, created_by_role: nil, created_context: {}, source_upload_id: nil)
         new(
@@ -30,6 +33,18 @@ module Admin
       end
 
       def call
+        if Admin::UploadLimits.exceeds_file_size?(file_path: @file_path)
+          register_error(1, "FILE_SIZE_EXCEEDED", "File exceeds maximum size of #{MAX_FILE_SIZE_BYTES} bytes")
+          Admin::UploadTelemetry.rejection(
+            domain: "fx",
+            stage: "process",
+            reason: "file_size_exceeded",
+            file_size_bytes: Admin::UploadLimits.file_size_bytes(file_path: @file_path),
+            max_file_size_bytes: MAX_FILE_SIZE_BYTES
+          )
+          return result(false)
+        end
+
         workbook = Roo::Spreadsheet.open(@file_path)
         sheet_names = workbook.sheets
         if sheet_names.empty?
@@ -50,9 +65,25 @@ module Admin
 
         return result(true, message: "No FX rates found. Upload skipped.") if sheet.last_row.nil? || sheet.last_row < 2
 
-        (2..sheet.last_row).each do |line|
-          row = headers.zip(sheet.row(line)).to_h
+        processed_rows = 0
+        each_sheet_row(sheet) do |line, row_values|
+          next if line == 1
+
+          row = headers.zip(row_values).to_h
           next if row.values.all?(&:blank?)
+
+          processed_rows += 1
+          if processed_rows > MAX_ROWS
+            register_error(line, "MAX_ROWS_EXCEEDED", "Row limit exceeded (max #{MAX_ROWS})")
+            Admin::UploadTelemetry.rejection(
+              domain: "fx",
+              stage: "process",
+              reason: "max_rows_exceeded",
+              line: line,
+              max_rows: MAX_ROWS
+            )
+            break
+          end
 
           parse_row(row, line, sheet_name: sheet_name)
         end
@@ -61,28 +92,50 @@ module Admin
 
         return result(false) if @errors.any?
 
-        @rows.each do |row|
-          Admin::Fx::RateUpserter.call(
-            operational_date: row[:operational_date],
-            base_currency: row[:base_currency],
-            quote_currency: row[:quote_currency],
-            rate: row[:rate],
-            source: "upload",
-            source_upload_id: @source_upload_id,
-            enforce_operational_date: false,
-            created_by_id: @created_by_id,
-            created_by_role: @created_by_role,
-            created_context: @created_context
-          )
+        @rows.each_slice(BATCH_SIZE) do |batch|
+          batch.each do |row|
+            Admin::Fx::RateUpserter.call(
+              operational_date: row[:operational_date],
+              base_currency: row[:base_currency],
+              quote_currency: row[:quote_currency],
+              rate: row[:rate],
+              source: "upload",
+              source_upload_id: @source_upload_id,
+              enforce_operational_date: false,
+              created_by_id: @created_by_id,
+              created_by_role: @created_by_role,
+              created_context: @created_context
+            )
+          end
         end
 
         result(true)
       rescue => e
+        Admin::UploadTelemetry.rejection(
+          domain: "fx",
+          stage: "process",
+          reason: "parse_error",
+          message: e.message
+        )
         register_error(1, "IMPORT_FAILED", e.message)
         result(false)
       end
 
       private
+
+      def each_sheet_row(sheet)
+        if sheet.respond_to?(:each_row_streaming)
+          sheet.each_row_streaming(pad_cells: true).with_index(1) do |cells, line|
+            values = cells.map { |cell| cell.respond_to?(:value) ? cell.value : cell }
+            yield line, values
+          end
+          return
+        end
+
+        (1..sheet.last_row).each do |line|
+          yield line, sheet.row(line)
+        end
+      end
 
       def validate_headers!(headers, sheet_name)
         missing = REQUIRED_HEADERS - headers

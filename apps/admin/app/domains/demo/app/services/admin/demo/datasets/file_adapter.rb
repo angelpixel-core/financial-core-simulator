@@ -10,8 +10,8 @@ module Admin
           @parser = parser
         end
 
-        def parse(file_path:, timeline_enabled: false)
-          result = @parser.call(file_path: file_path, timeline_enabled: timeline_enabled)
+        def parse(file_path:, timeline_enabled: false, stage: :process)
+          result = parse_with_optional_stage(file_path: file_path, timeline_enabled: timeline_enabled, stage: stage)
 
           ParseResult.new(
             valid?: result.valid?,
@@ -20,11 +20,19 @@ module Admin
           )
         end
 
-        def load(file_path:, timeline_enabled: false, **_options)
-          parse(file_path: file_path, timeline_enabled: timeline_enabled)
+        def load(file_path:, timeline_enabled: false, stage: :process, **_options)
+          parse(file_path: file_path, timeline_enabled: timeline_enabled, stage: stage)
         end
 
         private
+
+        def parse_with_optional_stage(file_path:, timeline_enabled:, stage:)
+          @parser.call(file_path: file_path, timeline_enabled: timeline_enabled, stage: stage)
+        rescue ArgumentError => e
+          raise unless e.message.include?("stage")
+
+          @parser.call(file_path: file_path, timeline_enabled: timeline_enabled)
+        end
 
         def normalize_errors(errors)
           Array(errors).map do |entry|

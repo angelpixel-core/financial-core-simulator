@@ -85,6 +85,7 @@ es:
           success: "Tasas FX subidas."
           invalid: "La carga fallo. %{count} error(es) encontrados."
           error: "Error de carga: %{message}"
+          file_too_large: "El archivo supera el limite de %{max_mb}MB."
           clear_cta: "Limpiar tasas"
           clear_confirm: "Eliminar todas las tasas diarias de FX?"
           clear_success: "Se eliminaron %{count} tasa(s) diaria(s) de FX."
@@ -109,6 +110,7 @@ es:
             invalid_body: "Corrige estas filas antes de subir."
             errors_title: "Errores de validacion"
             errors_empty: "No se encontraron errores de validacion."
+            errors_truncated: "Se muestra un subconjunto de errores en la vista previa."
             error_title: "No se pudo generar la vista previa"
             error_body: "Intenta de nuevo o valida la estructura de la plantilla."
           status:

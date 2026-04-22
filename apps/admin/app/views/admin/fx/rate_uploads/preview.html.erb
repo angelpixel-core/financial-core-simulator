@@ -79,6 +79,9 @@
           </div>
           <section class="demo-dataset-preview__section">
             <h3 class="demo-dataset-preview__section-title"><%= t("admin.fx.history.upload.preview.errors_title") %></h3>
+            <% if @errors_truncated %>
+              <p class="demo-dataset-preview__empty-body"><%= t("admin.fx.history.upload.preview.errors_truncated") %></p>
+            <% end %>
             <% if Array(@errors).any? %>
               <ul class="demo-dataset-preview-errors">
                 <% Array(@errors).each do |error| %>

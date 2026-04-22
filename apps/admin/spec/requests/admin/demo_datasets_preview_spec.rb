@@ -24,6 +24,16 @@ RSpec.describe "Admin demo dataset preview", type: :request do
     expect(response.body).to include(I18n.t("admin.overview.dataset.preview.error_title"))
   end
 
+  it "returns json preview payload when file is missing" do
+    post "/admin/demo-datasets/preview", headers: admin_session_headers.merge("ACCEPT" => "application/json")
+
+    expect(response).to have_http_status(:unprocessable_content)
+    payload = JSON.parse(response.body)
+    expect(payload["state"]).to eq("error")
+    expect(payload["errors"]).to be_an(Array)
+    expect(payload["errors"].first["code"]).to eq("MISSING_FILE")
+  end
+
   it "returns preview summary and sample rows for valid upload" do
     input = {
       schemaVersion: "1.0",

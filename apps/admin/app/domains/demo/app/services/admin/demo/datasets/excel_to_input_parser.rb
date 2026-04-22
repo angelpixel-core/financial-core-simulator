@@ -9,10 +9,10 @@ module Admin
       class ExcelToInputParser
         Result = Struct.new(:valid?, :input, :errors, keyword_init: true)
 
-        MAX_FILE_SIZE_BYTES = 10.megabytes
-        MAX_ROWS = 50_000
-        MAX_PREVIEW_ROWS = 200
-        MAX_PREVIEW_ERRORS = 100
+        MAX_FILE_SIZE_BYTES = Admin::UploadLimits.max_upload_file_size_bytes
+        MAX_ROWS = Admin::UploadLimits.max_upload_rows
+        MAX_PREVIEW_ROWS = Admin::UploadLimits.max_preview_rows
+        MAX_PREVIEW_ERRORS = Admin::UploadLimits.max_preview_errors
 
         REQUIRED_HEADERS = %w[
           trade_id account_id market_id timestamp seq side
@@ -21,13 +21,14 @@ module Admin
         ALLOWED_SIDES = %w[BUY SELL].freeze
         ALLOWED_MARKETS = %w[ETH-USD].freeze
 
-        def self.call(file_path:, timeline_enabled: false)
-          new(file_path: file_path, timeline_enabled: timeline_enabled).call
+        def self.call(file_path:, timeline_enabled: false, stage: :process)
+          new(file_path: file_path, timeline_enabled: timeline_enabled, stage: stage).call
         end
 
-        def initialize(file_path:, timeline_enabled: false)
+        def initialize(file_path:, timeline_enabled: false, stage: :process)
           @file_path = file_path
           @timeline_enabled = timeline_enabled
+          @stage = stage
           @errors = []
           @rows = []
           @row_errors = {}
@@ -78,6 +79,10 @@ module Admin
           validate_duplicates!
 
           build_result
+        rescue => e
+          log_limit_rejection(code: "PARSE_ERROR")
+          @errors << {code: "PARSE_ERROR", message: e.message}
+          build_result
         end
 
         private
@@ -105,13 +110,11 @@ module Admin
         end
 
         def file_size_exceeded?
-          File.size(@file_path) > MAX_FILE_SIZE_BYTES
-        rescue Errno::ENOENT
-          false
+          Admin::UploadLimits.exceeds_file_size?(file_path: @file_path)
         end
 
         def register_file_size_error
-          file_size = File.size(@file_path)
+          file_size = Admin::UploadLimits.file_size_bytes(file_path: @file_path)
           log_limit_rejection(code: "FILE_SIZE_EXCEEDED", file_size_bytes: file_size)
           @errors << {
             code: "FILE_SIZE_EXCEEDED",
@@ -137,16 +140,23 @@ module Admin
         end
 
         def log_limit_rejection(code:, line: nil, file_size_bytes: nil)
-          payload = {
-            event: "demo_dataset_upload_rejected",
+          reason = case code
+          when "FILE_SIZE_EXCEEDED" then "file_size_exceeded"
+          when "MAX_ROWS_EXCEEDED" then "max_rows_exceeded"
+          else
+            "parse_error"
+          end
+
+          Admin::UploadTelemetry.rejection(
+            domain: "demo",
+            stage: @stage,
+            reason: reason,
             code: code,
             max_rows: MAX_ROWS,
             max_file_size_bytes: MAX_FILE_SIZE_BYTES,
             line: line,
             file_size_bytes: file_size_bytes
-          }.compact
-
-          Rails.logger.warn(payload.to_json)
+          )
         end
 
         def validate_headers!(headers)

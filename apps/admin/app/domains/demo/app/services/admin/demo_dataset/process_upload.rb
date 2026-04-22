@@ -25,7 +25,7 @@ module Admin
       end
 
       def call(file_path:, timeline_enabled:, original_filename:)
-        result = @file_adapter.parse(file_path: file_path, timeline_enabled: timeline_enabled)
+        result = @file_adapter.parse(file_path: file_path, timeline_enabled: timeline_enabled, stage: :process)
 
         return handle_invalid(result, original_filename: original_filename) unless result.valid?
 

@@ -5,10 +5,13 @@ require "roo"
 module Admin
   module Fx
     class RateUploadPreview
-      Result = Struct.new(:valid?, :errors, :sample_rows, :total_rows, keyword_init: true)
+      Result = Struct.new(:valid?, :errors, :sample_rows, :total_rows, :total_errors, keyword_init: true)
 
       REQUIRED_HEADERS = RateUploadImporter::REQUIRED_HEADERS
-      MAX_PREVIEW_ROWS = 25
+      MAX_PREVIEW_ROWS = Admin::UploadLimits.max_preview_rows
+      MAX_PREVIEW_ERRORS = Admin::UploadLimits.max_preview_errors
+      MAX_FILE_SIZE_BYTES = Admin::UploadLimits.max_upload_file_size_bytes
+      MAX_ROWS = Admin::UploadLimits.max_upload_rows
 
       def self.call(file_path:)
         new(file_path: file_path).call
@@ -19,9 +22,22 @@ module Admin
         @errors = []
         @sample_rows = []
         @total_rows = 0
+        @total_errors = 0
       end
 
       def call
+        if Admin::UploadLimits.exceeds_file_size?(file_path: @file_path)
+          register_error(1, "FILE_SIZE_EXCEEDED", "File exceeds maximum size of #{MAX_FILE_SIZE_BYTES} bytes")
+          Admin::UploadTelemetry.rejection(
+            domain: "fx",
+            stage: "preview",
+            reason: "file_size_exceeded",
+            file_size_bytes: Admin::UploadLimits.file_size_bytes(file_path: @file_path),
+            max_file_size_bytes: MAX_FILE_SIZE_BYTES
+          )
+          return result(false)
+        end
+
         workbook = Roo::Spreadsheet.open(@file_path)
         sheet_names = workbook.sheets
         if sheet_names.empty?
@@ -42,20 +58,56 @@ module Admin
 
         return result(true) if sheet.last_row.nil? || sheet.last_row < 2
 
-        (2..sheet.last_row).each do |line|
-          row = headers.zip(sheet.row(line)).to_h
+        processed_rows = 0
+        each_sheet_row(sheet) do |line, row_values|
+          next if line == 1
+
+          row = headers.zip(row_values).to_h
           next if row.values.all?(&:blank?)
+
+          processed_rows += 1
+          if processed_rows > MAX_ROWS
+            register_error(line, "MAX_ROWS_EXCEEDED", "Row limit exceeded (max #{MAX_ROWS})")
+            Admin::UploadTelemetry.rejection(
+              domain: "fx",
+              stage: "preview",
+              reason: "max_rows_exceeded",
+              line: line,
+              max_rows: MAX_ROWS
+            )
+            break
+          end
 
           parse_row(row, line, sheet_name: sheet_name)
         end
 
         result(@errors.empty?)
       rescue => e
+        Admin::UploadTelemetry.rejection(
+          domain: "fx",
+          stage: "preview",
+          reason: "parse_error",
+          message: e.message
+        )
         register_error(1, "PREVIEW_FAILED", e.message)
         result(false)
       end
 
       private
+
+      def each_sheet_row(sheet)
+        if sheet.respond_to?(:each_row_streaming)
+          sheet.each_row_streaming(pad_cells: true).with_index(1) do |cells, line|
+            values = cells.map { |cell| cell.respond_to?(:value) ? cell.value : cell }
+            yield line, values
+          end
+          return
+        end
+
+        (1..sheet.last_row).each do |line|
+          yield line, sheet.row(line)
+        end
+      end
 
       def validate_headers!(headers, sheet_name)
         missing = REQUIRED_HEADERS - headers
@@ -164,11 +216,14 @@ module Admin
       end
 
       def register_error(line, code, message)
+        @total_errors += 1
+        return if @errors.size >= MAX_PREVIEW_ERRORS
+
         @errors << {line: line, code: code, message: message}
       end
 
       def result(valid)
-        Result.new(valid?: valid, errors: @errors, sample_rows: @sample_rows, total_rows: @total_rows)
+        Result.new(valid?: valid, errors: @errors, sample_rows: @sample_rows, total_rows: @total_rows, total_errors: @total_errors)
       end
     end
   end

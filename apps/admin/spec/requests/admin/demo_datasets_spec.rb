@@ -58,6 +58,15 @@ RSpec.describe "Admin demo dataset uploads", type: :request do
     expect(FxRateGap.where(status: "open").count).to eq(1)
   end
 
+  it "returns json error payload when upload file is missing" do
+    post "/admin/demo-datasets", headers: admin_session_headers.merge("ACCEPT" => "application/json")
+
+    expect(response).to have_http_status(:unprocessable_content)
+    payload = JSON.parse(response.body)
+    expect(payload["code"]).to eq("MISSING_FILE")
+    expect(payload["state"]).to eq("invalid")
+  end
+
   it "persists run and valid trades when parser returns row errors" do
     input = {
       trades: [

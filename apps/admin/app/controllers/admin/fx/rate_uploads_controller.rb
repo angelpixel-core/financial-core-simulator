@@ -11,8 +11,18 @@ class Admin::Fx::RateUploadsController < ApplicationController
     upload = nil
     file = params[:file]
     if file.blank?
-      redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale),
-        alert: t("admin.fx.history.upload.missing")
+      respond_upload_create_error(
+        message: t("admin.fx.history.upload.missing"),
+        code: "MISSING_FILE"
+      )
+      return
+    end
+
+    if upload_file_too_large?(file, stage: :process)
+      respond_upload_create_error(
+        message: t("admin.fx.history.upload.file_too_large", max_mb: Admin::UploadLimits.max_upload_file_size_mb),
+        code: "FILE_SIZE_EXCEEDED"
+      )
       return
     end
 
@@ -30,9 +40,18 @@ class Admin::Fx::RateUploadsController < ApplicationController
 
     Admin::Fx::Api.enqueue_rate_upload(upload.id)
 
-    redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale),
-      notice: t("admin.fx.history.upload.processing")
+    respond_upload_create_success(
+      message: t("admin.fx.history.upload.processing"),
+      upload: upload
+    )
   rescue => e
+    Admin::UploadTelemetry.rejection(
+      domain: "fx",
+      stage: "process",
+      reason: "parse_error",
+      message: e.message,
+      original_filename: file&.respond_to?(:original_filename) ? file.original_filename : nil
+    )
     Rails.logger.error(
       "[fx-rate-upload] create failed #{e.class}: #{e.message}\n#{Array(e.backtrace).first(8).join("\n")}"
     )
@@ -42,8 +61,11 @@ class Admin::Fx::RateUploadsController < ApplicationController
       Admin::Fx::Api.mark_upload_exception(upload: upload, message: e.message)
       broadcast_status(upload)
     end
-    redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale),
-      alert: t("admin.fx.history.upload.error", message: e.message)
+    respond_upload_create_error(
+      message: t("admin.fx.history.upload.error", message: e.message),
+      code: "UPLOAD_FAILED",
+      upload: upload
+    )
   end
 
   def preview
@@ -53,7 +75,25 @@ class Admin::Fx::RateUploadsController < ApplicationController
       return
     end
 
+    if upload_file_too_large?(file, stage: :preview)
+      render_preview(
+        state: :invalid,
+        errors: [
+          {
+            code: "FILE_SIZE_EXCEEDED",
+            message: t("admin.fx.history.upload.file_too_large", max_mb: Admin::UploadLimits.max_upload_file_size_mb)
+          }
+        ],
+        status: :unprocessable_content,
+        file_name: file.original_filename
+      )
+      return
+    end
+
     result = Admin::Fx::Api.preview_rate_upload(file_path: file.path)
+    preview_errors = Array(result.errors)
+    errors_truncated = result.respond_to?(:total_errors) ? result.total_errors > preview_errors.size : false
+
     render_preview(
       state: result.valid? ? :success : :invalid,
       summary: {
@@ -61,11 +101,19 @@ class Admin::Fx::RateUploadsController < ApplicationController
         sample_rows_count: result.sample_rows.size
       },
       sample_rows: result.sample_rows,
-      errors: result.errors,
+      errors: preview_errors,
       file_name: file.original_filename,
-      sample_rows_truncated: result.total_rows > result.sample_rows.size
+      sample_rows_truncated: result.total_rows > result.sample_rows.size,
+      errors_truncated: errors_truncated
     )
   rescue => e
+    Admin::UploadTelemetry.rejection(
+      domain: "fx",
+      stage: "preview",
+      reason: "parse_error",
+      message: e.message,
+      original_filename: file&.respond_to?(:original_filename) ? file.original_filename : nil
+    )
     render_preview(
       state: :error,
       errors: [{code: "PREVIEW_FAILED", message: e.message}],
@@ -93,13 +141,27 @@ class Admin::Fx::RateUploadsController < ApplicationController
   private
 
   def render_preview(state:, summary: nil, sample_rows: [], errors: [], status: :ok, file_name: nil,
-    sample_rows_truncated: false)
+    sample_rows_truncated: false, errors_truncated: false)
+    if request.format.json?
+      render json: {
+        state: state,
+        summary: summary,
+        sample_rows: sample_rows,
+        errors: errors,
+        file_name: file_name,
+        sample_rows_truncated: sample_rows_truncated,
+        errors_truncated: errors_truncated
+      }, status: status
+      return
+    end
+
     @state = state
     @summary = summary
     @sample_rows = sample_rows
     @errors = errors
     @file_name = file_name
     @sample_rows_truncated = sample_rows_truncated
+    @errors_truncated = errors_truncated
 
     render "admin/fx/rate_uploads/preview", status: status
   end
@@ -115,6 +177,47 @@ class Admin::Fx::RateUploadsController < ApplicationController
       ip: request.remote_ip,
       locale: I18n.locale
     }
+  end
+
+  def upload_file_too_large?(file, stage:)
+    return false unless Admin::UploadLimits.exceeds_file_size?(file: file)
+
+    Admin::UploadTelemetry.rejection(
+      domain: "fx",
+      stage: stage,
+      reason: "file_size_exceeded",
+      max_file_size_bytes: Admin::UploadLimits.max_upload_file_size_bytes,
+      file_size_bytes: Admin::UploadLimits.file_size_bytes(file: file),
+      original_filename: file.original_filename
+    )
+    true
+  end
+
+  def respond_upload_create_error(message:, code:, upload: nil)
+    if request.format.json?
+      render json: {
+        state: "invalid",
+        code: code,
+        message: message,
+        upload_id: upload&.id
+      }, status: :unprocessable_content
+      return
+    end
+
+    redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale), alert: message
+  end
+
+  def respond_upload_create_success(message:, upload:)
+    if request.format.json?
+      render json: {
+        state: "processing",
+        message: message,
+        upload_id: upload.id
+      }, status: :accepted
+      return
+    end
+
+    redirect_back fallback_location: admin_fx_history_index_path(locale: I18n.locale), notice: message
   end
 
   def persist_file(file, upload_id)
