@@ -11,6 +11,7 @@ module Admin
       module Adapters
         class BcraAdapter
           DEFAULT_LIMIT = 1000
+          DEFAULT_CHUNK_DAYS = 7
           ENDPOINT_PATH = "Cotizaciones"
 
           def initialize(source:)
@@ -25,20 +26,49 @@ module Admin
             return missing_config_result("base_url") if base_url.blank?
             return missing_config_result("currency_code") if currency_code.blank?
 
-            uri = build_uri(base_url: base_url, currency_code: currency_code, date_from: date_from,
-              date_to: date_to, limit: limit, offset: offset)
+            urls = []
+            combined_results = []
+            status = nil
 
-            response = Net::HTTP.get_response(uri)
-            status = response.code.to_i
+            chunk_ranges(date_from: date_from, date_to: date_to).each do |chunk_from, chunk_to|
+              uri = build_uri(
+                base_url: base_url,
+                currency_code: currency_code,
+                date_from: chunk_from,
+                date_to: chunk_to,
+                limit: limit,
+                offset: offset
+              )
 
-            return failure("http_error", status: status, url: uri.to_s) unless status.between?(200, 299)
+              response = Net::HTTP.get_response(uri)
+              status = response.code.to_i
+              urls << uri.to_s
 
-            payload = JSON.parse(response.body)
-            normalized_payload = normalize_payload(payload, status: status, limit: limit, offset: offset)
+              unless status.between?(200, 299)
+                return failure("http_error", status: status, url: uri.to_s, chunk_from: chunk_from,
+                  chunk_to: chunk_to)
+              end
+
+              payload = JSON.parse(response.body)
+              normalized_payload = normalize_payload(payload, status: status, limit: limit, offset: offset)
+              combined_results.concat(Array(normalized_payload["results"]))
+            end
+
+            normalized_payload = {
+              "status" => status,
+              "metadata" => {
+                "resultset" => {
+                  "count" => combined_results.length,
+                  "offset" => offset,
+                  "limit" => limit
+                }
+              },
+              "results" => combined_results
+            }
 
             Admin::Fx::Ingestion::Result.success(
               data: {payload: normalized_payload},
-              metadata: {status: status, url: uri.to_s}
+              metadata: {status: status, url: urls.first, urls: urls}
             )
           rescue JSON::ParserError => e
             failure("invalid_json", error: e.message)
@@ -97,6 +127,29 @@ module Admin
               offset: offset
             )
             uri
+          end
+
+          def chunk_ranges(date_from:, date_to:)
+            from = Date.iso8601(date_from.to_s)
+            to = Date.iso8601(date_to.to_s)
+            chunk_days = chunk_days_per_request
+
+            ranges = []
+            current = from
+            while current <= to
+              chunk_to = [current + (chunk_days - 1), to].min
+              ranges << [current, chunk_to]
+              current = chunk_to + 1
+            end
+
+            ranges
+          rescue ArgumentError
+            [[date_from, date_to]]
+          end
+
+          def chunk_days_per_request
+            value = ENV.fetch("BCRA_SYNC_CHUNK_DAYS", DEFAULT_CHUNK_DAYS).to_i
+            value.positive? ? value : DEFAULT_CHUNK_DAYS
           end
 
           def missing_config_result(key)

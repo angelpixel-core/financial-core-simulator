@@ -40,7 +40,7 @@ module Admin
               adapter.entries.each do |entry|
                 date = entry.date
                 entry.details.each do |detail|
-                  if !currency_code.empty? && normalize_currency(detail.currency_code) != normalize_currency(currency_code)
+                  if !currency_code.empty? && !currency_matches?(detail.currency_code, currency_code)
                     next
                   end
 
@@ -66,6 +66,15 @@ module Admin
                 raw_entry: e.raw_entry,
                 raw_detail: e.raw_detail
               )
+            end
+
+            if errors.empty? && rates.empty?
+              errors << {
+                field: "codigoMoneda",
+                message: "No matching currency rows found for market",
+                expected_currency_code: currency_code,
+                market: market
+              }
             end
 
             return failure("mapping_failed", errors: errors) if errors.any?
@@ -151,6 +160,23 @@ module Admin
           sig { params(value: T.untyped).returns(String) }
           def normalize_market(value)
             value.to_s.upcase.gsub(/[^A-Z]/, "")
+          end
+
+          sig { params(value: T.untyped).returns(String) }
+          def normalize_currency_code(value)
+            normalized = normalize_market(value)
+            return normalized if normalized.length <= 3
+
+            T.must(normalized[0, 3])
+          end
+
+          sig { params(detail_currency_code: String, expected_currency_code: String).returns(T::Boolean) }
+          def currency_matches?(detail_currency_code, expected_currency_code)
+            detail = normalize_currency_code(detail_currency_code)
+            expected = normalize_currency_code(expected_currency_code)
+            return false if detail.empty? || expected.empty?
+
+            detail == expected
           end
 
           # @return [Hash]

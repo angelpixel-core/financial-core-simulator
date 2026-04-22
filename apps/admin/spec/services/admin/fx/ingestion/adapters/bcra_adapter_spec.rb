@@ -35,6 +35,9 @@ RSpec.describe Admin::Fx::Ingestion::Adapters::BcraAdapter do
   end
 
   it "records a real EUR/ARS response with VCR", vcr: {cassette_name: "admin/fx/ingestion/adapters/bcra/eurars_success"} do
+    previous_chunk = ENV["BCRA_SYNC_CHUNK_DAYS"]
+    ENV["BCRA_SYNC_CHUNK_DAYS"] = "31"
+
     result = adapter.fetch(
       date_from: Date.new(2024, 6, 1),
       date_to: Date.new(2024, 6, 30),
@@ -49,6 +52,8 @@ RSpec.describe Admin::Fx::Ingestion::Adapters::BcraAdapter do
     expect(payload["results"]).to be_an(Array)
     expect(payload["results"]).not_to be_empty
     expect(Array(payload["results"].first["detalle"]).map { |entry| entry["codigoMoneda"] }).to include("EUR")
+  ensure
+    ENV["BCRA_SYNC_CHUNK_DAYS"] = previous_chunk
   end
 
   it "uses market-specific currency code when market is provided" do
@@ -104,6 +109,22 @@ RSpec.describe Admin::Fx::Ingestion::Adapters::BcraAdapter do
     expect(result).to be_failure
     expect(result.error_code).to eq("http_error")
     expect(result.context[:status]).to eq(500)
+  end
+
+  it "chunks large ranges into multiple upstream requests" do
+    previous_chunk = ENV["BCRA_SYNC_CHUNK_DAYS"]
+    ENV["BCRA_SYNC_CHUNK_DAYS"] = "7"
+
+    allow(Net::HTTP).to receive(:get_response).and_return(success_response)
+
+    result = adapter.fetch(date_from: Date.new(2026, 4, 1), date_to: Date.new(2026, 4, 20), market: "USDARS")
+
+    expect(result).to be_success
+    expect(Net::HTTP).to have_received(:get_response).exactly(3).times
+    expect(result.metadata[:urls]).to be_an(Array)
+    expect(result.metadata[:urls].size).to eq(3)
+  ensure
+    ENV["BCRA_SYNC_CHUNK_DAYS"] = previous_chunk
   end
 
   it "builds a 30-day default range" do

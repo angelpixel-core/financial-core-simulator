@@ -72,6 +72,49 @@ RSpec.describe Admin::Fx::Ingestion::Mappers::BcraRateMapper do
     expect(rate.rate.to_s("F")).to eq("1000.0")
   end
 
+  it "maps EURARS when BCRA returns descriptive currency code" do
+    payload = {
+      "status" => 200,
+      "metadata" => {"resultset" => {"count" => 1, "offset" => 0, "limit" => 1000}},
+      "results" => [
+        {
+          "fecha" => "2024-06-12",
+          "detalle" => [
+            {"codigoMoneda" => "EURO", "tipoCotizacion" => "1000"}
+          ]
+        }
+      ]
+    }
+
+    result = described_class.call(payload: payload, source: source, market: "EURARS")
+
+    expect(result).to be_success
+    rate = result.data.fetch(:rates).first
+    expect(rate.base_currency).to eq("EUR")
+    expect(rate.quote_currency).to eq("ARS")
+  end
+
+  it "fails mapping when currency rows do not match selected market" do
+    payload = {
+      "status" => 200,
+      "metadata" => {"resultset" => {"count" => 1, "offset" => 0, "limit" => 1000}},
+      "results" => [
+        {
+          "fecha" => "2024-06-12",
+          "detalle" => [
+            {"codigoMoneda" => "USD", "tipoCotizacion" => "900"}
+          ]
+        }
+      ]
+    }
+
+    result = described_class.call(payload: payload, source: source, market: "EURARS")
+
+    expect(result).to be_failure
+    expect(result.error_code).to eq("mapping_failed")
+    expect(result.context[:errors].first[:field]).to eq("codigoMoneda")
+  end
+
   it "returns failure when mapping encounters invalid values" do
     payload = {
       "status" => 200,
