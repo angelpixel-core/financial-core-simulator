@@ -177,16 +177,16 @@ Open:
 
 This project is:
 
-✅ A high-fidelity financial processing demo
-✅ A portfolio-level architecture showcase
-✅ A deterministic simulation engine
+- ✅ A high-fidelity financial processing demo
+- ✅ A portfolio-level architecture showcase
+- ✅ A deterministic simulation engine
 
 This project is NOT (yet):
 
-❌ A production SaaS
-❌ Multi-tenant
-❌ Real-time trading system
-❌ Fully SRE-hardened platform
+- ❌ A production SaaS
+- ❌ Multi-tenant
+- ❌ Real-time trading system
+- ❌ Fully SRE-hardened platform
 
 ---
 
