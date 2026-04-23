@@ -2,234 +2,240 @@
 
 [![CI](https://github.com/angelpixel-core/financial-core-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/angelpixel-core/financial-core-simulator/actions/workflows/ci.yml)
 [![Mutation Tests](https://github.com/angelpixel-core/financial-core-simulator/actions/workflows/mutation-nightly.yml/badge.svg)](https://github.com/angelpixel-core/financial-core-simulator/actions/workflows/mutation-nightly.yml)
-![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen)
 ![Ruby](https://img.shields.io/badge/ruby-3.4%2B-red)
 ![Code Style](https://img.shields.io/badge/code%20style-standardrb-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 
-Financial Core Simulator is a deterministic trading infrastructure demo that models the core components of a modern exchange backend:
+# Financial Core Simulator
 
-- Limit order book (price-time priority)
-- Matching engine (deterministic execution)
-- Append-only ledger (audit-friendly state transitions)
-- Snapshot export (JSON schema)
-- Market visualization UI (depth + trade tape)
+> Deterministic financial processing engine with ingestion, FX enrichment, reproducible execution, and operational observability.
 
-The project is designed as a technical portfolio piece to demonstrate production-grade architectural patterns used in trading systems, without implementing a real-money exchange.
+---
 
-## Goals
+## 🚀 What is this?
 
-- Model exchange-grade domain primitives (Order, Trade, Book, Money)
-- Separate domain from infrastructure via clean architecture
-- Ensure deterministic replayability
-- Provide auditability via append-only ledger
-- Enable visualization of market depth and trade flow
-- Keep the core engine framework-agnostic
+Financial Core Simulator (FCS) is a **modular financial processing system** designed to simulate, validate, and analyze financial event streams with **deterministic execution and full auditability**.
 
-## Known Issues
+It combines:
 
-- FX rate history: the dynamic chart does not refresh after a rate change; reload the page to see updates.
+- A **core engine** (`lib/fcs`) for deterministic financial computation
+- A **Rails operational workspace** (`apps/admin`) for ingestion, FX sourcing, dashboards, and observability
 
-## Quality Tooling
+👉 This is not a toy project.
+👉 It is a **portfolio-grade system demonstrating real architecture and production-oriented patterns**.
 
-This repo runs CI checks for:
+---
 
-- RSpec
-- Mutant (mutation testing)
-- SimpleCov (coverage)
-- Bullet (N+1 detection)
-- StandardRB
-- Reek
-- RubyCritic
-- Brakeman (admin app)
-- Bundler Audit
+## ✨ Key Capabilities
 
-Coverage badge is updated manually. If you want it automated, integrate Codecov or Coveralls.
+### 1. Deterministic Financial Execution
 
-This repository represents the public demo track.
-The engine is intentionally simplified and deterministic.
+- Canonical JSON normalization + SHA256 hashing
+- Reproducible runs for identical inputs
+- Post-run verification of input integrity
 
-## Packwerk Boundaries
-
-Admin app (Rails, `apps/admin`) uses Packwerk to enforce domain boundaries:
-
-- Domain packages live under `apps/admin/app/domains/*` with `package.yml`.
-- Controllers, views, and assets stay in `apps/admin/app` for now.
-- All admin packages set `public_path: app` and enforce dependencies/privacy.
-- Base Rails classes live in `apps/admin/app/domains/core` (e.g. `ApplicationRecord`, `ApplicationJob`).
-- Avoid depending on the root package (`.`); depend on explicit domain packages instead.
-
-Lib gem (core engine, `lib`) uses Packwerk packages:
-
-- Packages live under `lib/fcs/*` with `package.yml`.
-- `lib/fcs/ports` is the boundary for cross-package interfaces.
-- Packwerk config: `lib/packwerk.yml` with a minimal Rails harness in `lib/config` for validation.
-
-Common commands:
-
-```bash
-# Admin app
-cd apps/admin
-bundle exec packwerk check
-bundle exec packwerk validate
-
-# Lib gem
-cd lib
-bundle exec packwerk check
-bundle exec packwerk validate
+```txt
+Same input → Same output → Same hash → Same artifacts
 ```
 
-## Repository layout
+---
 
-Root
+## 2. Ingestion Pipeline (Robust + Fault-Tolerant)
 
-| Path | Responsibility |
-| --- | --- |
-| `apps/` | Applications (admin UI lives in `apps/admin`). |
-| `lib/` | Core engine gem (FCS). |
-| `docs/` | Product and technical documentation (EN/ES). |
-| `bin/` | CLI tools and local automation scripts. |
-| `spec/` | Test suite for the core engine. |
-| `scripts/` | Developer utilities (benchmarks, helpers). |
-| `output/` | Generated CLI artifacts (not committed); FCS defaults to `output/fcs/`. |
-| `artifacts/` | Generated benchmark artifacts (not committed). |
-| `run_*/` | Generated run outputs (not committed). |
-| `tmp/` | Temp files, logs, cache (not committed). |
-| `coverage/` | Coverage output (not committed). |
+- File upload with preview
+- Contract validation (schema, trades, timeline)
+- Partial failure handling (runs can execute with known errors)
+- Idempotency guards for source events
 
-Admin app (`apps/admin`)
+---
 
-| Path | Responsibility |
-| --- | --- |
-| `app/` | Rails app code (controllers, views, domains). |
-| `app/domains/` | Packwerk domain packages. |
-| `script/seed_admin.rb` | Canonical seed entry point (all admin demo flows). |
-| `storage/` | Generated admin artifacts and seed reports (not committed). |
-| `config/` | Rails configuration and initializers. |
-| `db/` | Migrations and seeds. |
-| `spec/` | Admin app tests. |
+## 3. FX Multi-Source Enrichment
 
-## Reproducible Bootstrap (Story 1.1)
+Supports:
 
-Prerequisites:
+- 🇦🇷 BCRA (fiat rates)
+- ₿ Binance (crypto rates)
+- 📄 Manual uploads (Excel)
 
-- Ruby 3.3+
-- Bundler 2.5+
+Includes:
 
-Environment configuration (clean machine):
+- Mapping + validation pipelines
+- Lineage tracking
+- Historical queries
+- Event visibility
 
-```bash
-ruby -v
-bundle -v
-bundle config set path "vendor/bundle"
+---
+
+## 4. Financial Engine (Core Domain)
+
+- Position tracking (FIFO / AVG)
+- PnL computation
+- Risk checks
+- Valuation against FX snapshots
+
+---
+
+## 5. Reporting & Artifacts
+
+- JSON reports
+- CSV exports (positions, pnl)
+- Deterministic artifact generation
+- Replay capabilities
+
+---
+
+## 6. Operational Workspace (Admin UI)
+
+- Overview dashboard (KPIs, trends, status mix)
+- Dataset preview + validation errors
+- FX sourcing & history
+- System health + event stream
+- Backoffice via Avo
+
+---
+
+## 7. Observability (Built-in)
+
+- Run success/failure tracking
+- FX ingestion failures
+- Event stream with pagination
+- Operational metrics
+
+---
+
+# 🧠 Architecture
+
+FCS follows a modular monolith architecture with strong domain separation.
+
+```
+lib/fcs        → Core engine (pure domain)
+apps/admin     → Operational workspace (Rails)
 ```
 
-No `.env` setup is required for the canonical demo run.
+Patterns used
 
-## Internationalization (i18n)
+- Domain Driven Design (partial but real)
+- Hexagonal Architecture (ports/adapters)
+- Packwerk boundaries
+- Deterministic computation
+- Event instrumentation
+- Auditability + lineage
 
-The admin app and CLI support English (`en`) and Spanish (`es`), defaulting to English and falling back to English for unsupported locales.
+📄 See full architecture:
+👉 [ARCHITECTURE](docs/ARCHITECTURE.md)
 
-Admin locale selection:
+---
 
-```bash
-# Per-request locale selection (persists in session)
-https://localhost:3000/admin?locale=es
+# ⚙️ Quickstart
+
 ```
-
-CLI locale selection:
-
-```bash
-FCS_LOCALE=es bin/fcs run --input lib/fcs/fixtures/demo_input.json
-```
-
-Locale selection does not change JSON payload keys; only user-facing labels and diagnostics are translated.
-
-Bootstrap and first canonical run:
-
-```bash
 bundle install
-bin/fcs run --input lib/fcs/fixtures/demo_input.json --verbose
+bin/rails db:prepare
+
+BUNDLE_GEMFILE=apps/admin/Gemfile \
+bundle exec rails runner apps/admin/script/seed_admin.rb --type local-demo
+
+bin/rails server
 ```
 
-Expected canonical artifacts:
+Open:
 
-- `output/fcs/result.json`
-- `output/fcs/positions.csv`
-- `output/fcs/pnl.csv`
+- Landing → http://localhost:3000
+- Admin → http://localhost:3000/admin
 
-Determinism check (same input + same config -> identical artifacts):
+---
 
-```bash
-bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/fcs/run1
-bin/fcs run --input lib/fcs/fixtures/demo_input.json --output-dir output/fcs/run2
-shasum -a 256 output/fcs/run1/result.json output/fcs/run2/result.json output/fcs/run1/positions.csv output/fcs/run2/positions.csv output/fcs/run1/pnl.csv output/fcs/run2/pnl.csv
+# 🎬 Demo Flow (5–10 min)
+
+![demo](./docs/demo.gif)
+
+1. Upload dataset → preview + validation
+2. Execute run → deterministic outputs
+3. Explore dashboards → KPIs + trends
+4. Sync FX rates → BCRA / Binance
+5. Inspect system health → events + failures
+6. Explore backoffice (Avo)
+
+📄 Full runbook:
+👉 docs/DEMO_RUNBOOK.md￼
+
+---
+
+# 🧪 Engineering Quality
+
+- RSpec test suite
+- Mutation testing (Mutant)
+- Packwerk boundary enforcement
+- Brakeman (security)
+- Bundler Audit
+- RubyCritic
+- CI pipelines (multi-layer)
+
+---
+
+# ⚠️ Current Scope (Honest Positioning)
+
+This project is:
+
+✅ A high-fidelity financial processing demo
+✅ A portfolio-level architecture showcase
+✅ A deterministic simulation engine
+
+This project is NOT (yet):
+
+❌ A production SaaS
+❌ Multi-tenant
+❌ Real-time trading system
+❌ Fully SRE-hardened platform
+
+---
+
+# 🧭 Why this project matters
+
+Most demos fake complexity.
+
+This one demonstrates:
+
+- deterministic computation
+- reproducibility guarantees
+- ingestion correctness
+- FX integration patterns
+- operational observability
+- architectural discipline
+
+👉 The value is not just features — it’s how they are built.
+
+---
+
+# 🔗 Repository Structure
+
+```
+lib/fcs/
+  → core financial engine
+
+apps/admin/
+  → UI + orchestration + ingestion + FX + observability
 ```
 
-Acceptance criterion: each run1/run2 pair above must produce identical SHA-256 values.
-If any pair differs, the determinism check fails.
+---
 
-Error-path sanity checks:
+# 📈 Future Directions
 
-```bash
-# Missing input (deterministic exit code 2)
-bin/fcs run
+- Multi-tenancy
+- API-first exposure
+- stronger ports/adapters isolation
+- real event-driven pipelines
+- SRE-level observability
 
-# Invalid input payload (deterministic diagnostic JSON)
-mkdir -p tmp
-printf '{ invalid-json\n' > tmp/bad.json
-bin/fcs run --input tmp/bad.json --output-dir output/fcs
-```
+---
 
-## Admin seed operations (canonical)
+# 👤 Author
 
-Use the canonical admin entry point for all seed flows:
+Angel Pixel
+Senior Fullstack Engineer (Ruby / TS / Fintech / Web3)
 
-```bash
-BUNDLE_GEMFILE=apps/admin/Gemfile bundle exec rails runner apps/admin/script/seed_admin.rb --type <verified|interactive|dashboard|ops|local-demo>
-```
+---
 
-Verification evidence:
-- `apps/admin/storage/runs/seed_reports/seed_<timestamp>.json`
+📜 License
 
-Cleanup guidance:
-- Admin storage artifacts (manual): `apps/admin/storage/runs/dashboard_seed`, `apps/admin/storage/runs/run_*`, `apps/admin/storage/runs/root_output`
-- FCS generated artifacts: `output/fcs/result.json`, `output/fcs/positions.csv`, `output/fcs/pnl.csv`, `output/fcs/checkpoint_*.json`, `output/fcs/benchmarks/benchmark_report_*.json`, `output/fcs/run_1/`
-
-Docs:
-- `docs/10-valid-run.md`
-- `docs/11-reset-db-and-ops.md`
-- `docs/13-demo-reading-guide.md`
-
-## Deterministic Performance Benchmark (NFR4)
-
-Benchmark fixture definition:
-
-- `lib/fcs/fixtures/benchmark_fixture.json`
-- 100,000 trades, 10 accounts, 5 markets, fixed valuation timestamp
-
-Run the deterministic benchmark and persist evidence artifacts:
-
-```bash
-bin/fcs bench --runs 5
-```
-
-Expected outputs:
-
-- `output/fcs/benchmarks/artifacts/result.json`
-- `output/fcs/benchmarks/artifacts/positions.csv`
-- `output/fcs/benchmarks/artifacts/pnl.csv`
-- `output/fcs/benchmarks/benchmark_report_*.json`
-
-The report includes the command, timestamps, p95 runtime, input hash, run id, and artifact paths.
-
-Gate criteria:
-
-- Benchmark passes only when `p95_seconds < 2.0` for the fixture above.
-- If the gate fails, the benchmark command exits with a deterministic validation error and preserves the report.
-
-Perf gate isolation:
-
-- Benchmark specs are tagged `:perf` and should run as a separate job to avoid flakiness in the main suite.
-- Run locally or in CI with: `bundle exec rspec --tag perf`.
-- Exclude from the default suite with: `bundle exec rspec --tag ~perf`.
+MIT
