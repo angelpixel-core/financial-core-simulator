@@ -19,6 +19,8 @@ RSpec.describe "Admin overview", type: :request do
     expect(response.body).to include(admin_t("overview.financial_overview.title", locale: :en))
     expect(response.body).to include(admin_t("overview.financial_results.title", locale: :en))
     expect(response.body).to include('data-controller="poll"')
+    expect(response.body).to include('id="overview-dataset-upload-file"')
+    expect(response.body).to include('data-turbo-frame="demo-dataset-preview"')
     control_index = response.body.index(admin_t("overview.hero.eyebrow", locale: :en))
     metrics_index = response.body.index(admin_t("overview.system_metrics.title", locale: :en))
     financial_overview_index = response.body.index(admin_t("overview.financial_overview.title", locale: :en))

@@ -12,6 +12,8 @@ RSpec.describe "Admin FX history", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(admin_t("fx.history.title", locale: :en))
     expect(response.body).to include(admin_t("fx.history.empty", locale: :en))
+    expect(response.body).to include('id="fx-rate-history-table"')
+    expect(response.body).to include('id="fx-recent-events"')
   end
 
   it "renders supported pair sections when rates exist" do
